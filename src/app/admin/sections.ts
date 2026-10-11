@@ -21,9 +21,9 @@ export interface AdminSection {
 export const ADMIN_SECTIONS: AdminSection[] = [
   { href: "/admin", label: "Обзор", permission: "panel", ready: true },
   { href: "/admin/users", label: "Пользователи", permission: "users", ready: true },
-  { href: "/admin/moderation", label: "Модерация", permission: "moderation", ready: false },
-  { href: "/admin/content", label: "Контент", permission: "content", ready: false },
+  { href: "/admin/moderation", label: "Модерация", permission: "moderation", ready: true },
+  { href: "/admin/content", label: "Контент", permission: "content", ready: true },
   { href: "/admin/economy", label: "Экономика", permission: "economy", ready: false },
   { href: "/admin/errors", label: "Журнал ошибок", permission: "settings", ready: true },
-  { href: "/admin/settings", label: "Настройки", permission: "settings", ready: false },
+  { href: "/admin/settings", label: "Настройки", permission: "settings", ready: true },
 ];

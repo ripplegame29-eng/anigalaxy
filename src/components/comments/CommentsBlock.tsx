@@ -18,6 +18,7 @@
 import { useEffect, useRef, useState } from "react";
 import { AvatarView } from "@/components/profile/AvatarView";
 import { AgTag } from "@/components/progression/AgTag";
+import { ReportButton } from "@/components/ReportButton";
 import { FRAMES } from "@/lib/cosmetics";
 import { isPremiumActive } from "@/lib/auth";
 import { useAccount } from "@/lib/use-account";
@@ -146,6 +147,8 @@ interface CardProps {
   onReply: (item: CommentMsg) => void;
   onVote: (id: string, dir: "up" | "down") => void;
   onRemove: (id: string) => void;
+  /** Идентификатор тайтла для жалобы. В профиле пусто — жаловаться не на что. */
+  titleId: string;
 }
 
 function CommentCard({
@@ -157,9 +160,11 @@ function CommentCard({
   onReply,
   onVote,
   onRemove,
+  titleId,
 }: CardProps) {
   const [revealed, setRevealed] = useState(false);
   const [menu, setMenu] = useState(false);
+  const [reporting, setReporting] = useState(false);
   const meta = metaFor(item.author);
 
   return (
@@ -232,6 +237,22 @@ function CommentCard({
                   >
                     Удалить
                   </button>
+
+                  {/* Жалоба уходит на сервер, а не остаётся в браузере
+                      автора: иначе модератор о ней не узнает. На странице
+                      профиля жаловаться не на что, поэтому пункт не показываем. */}
+                  {titleId ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMenu(false);
+                        setReporting(true);
+                      }}
+                      className="block w-full px-3 py-2 text-left text-[11px] font-bold text-white/60 transition hover:bg-white/6 hover:text-white"
+                    >
+                      Пожаловаться
+                    </button>
+                  ) : null}
                 </div>
               )}
             </span>
@@ -299,6 +320,16 @@ function CommentCard({
             </button>
           </div>
 
+          {reporting ? (
+            <div className="mt-2">
+              <ReportButton
+                commentId={item.id}
+                titleId={titleId}
+                onClose={() => setReporting(false)}
+              />
+            </div>
+          ) : null}
+
           {replies.length > 0 && (
             <ul className="mt-3 space-y-2 border-l-2 border-accent/25 pl-3">
               {replies.map((reply, replyIndex) => (
@@ -312,6 +343,7 @@ function CommentCard({
                   onReply={onReply}
                   onVote={onVote}
                   onRemove={onRemove}
+                  titleId={titleId}
                 />
               ))}
             </ul>
@@ -569,6 +601,7 @@ export function CommentsBlock({ scope }: { scope: CommentsScope }) {
               onReply={startReply}
               onVote={vote}
               onRemove={remove}
+              titleId={titleId}
             />
           ))}
         </ul>
