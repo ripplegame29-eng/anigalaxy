@@ -36,6 +36,18 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+# ...но шаблон с названиями переменных коммитим — по нему видно, что нужно заполнить
+!.env.example
+
+# база данных Prisma (SQLite) — создаётся миграциями, в историю не идёт
+/prisma/*.db
+/prisma/*.db-journal
+/prisma/*.db-wal
+/prisma/*.db-shm
+/dev.db
+/dev.db-journal
+/dev.db-wal
+/dev.db-shm
 
 # Ролики главной страницы: 195 МБ, в историю не идут.
 # Инструкция по распаковке — public/video/README.md.
