@@ -16,6 +16,7 @@ import { DailyBonusHost } from "@/components/DailyBonusHost";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 import { getFeatures } from "@/lib/features";
+import { getSiteConfig } from "@/lib/site-config";
 import { ProgressionBoot } from "@/components/ProgressionBoot";
 import { DevPanel } from "@/components/progression/DevPanel";
 import { EcoBoot } from "@/components/progression/EcoBoot";
@@ -31,7 +32,13 @@ const unbounded = Unbounded({
   display: "swap",
 });
 
-export const metadata: Metadata = {
+/**
+ * Базовая часть метаданных. Не экспортируется: Next не принимает `metadata`
+ * и `generateMetadata` в одном файле, а база всё равно нужна внутри
+ * generateMetadata — как запасной вариант и как общий источник полей,
+ * которые не зависят от настроек.
+ */
+const BASE_METADATA: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
   title: {
     default: "AniGalaxy — смотреть аниме онлайн в HD",
@@ -49,6 +56,40 @@ export const metadata: Metadata = {
   },
   robots: { index: true, follow: true },
 };
+
+/**
+ * Метаданные сайта с учётом настроек из панели.
+ *
+ * Именно generateMetadata, а не константа: заголовок вкладки должен подхватывать
+ * «Название сайта» из раздела «Настройки», а константа читается один раз при
+ * сборке и проигнорировала бы правку.
+ *
+ * Падение при чтении базы не должно ронять сайт: без настроек остаются
+ * зашитые значения. Администратор увидит, что настройка не применилась, по
+ * журналу ошибок, но страница останется доступной.
+ */
+export async function generateMetadata(): Promise<Metadata> {
+  const config = await getSiteConfig().catch(() => null);
+
+  if (!config) return BASE_METADATA;
+
+  const title = `${config.title} — смотреть аниме онлайн в HD`;
+
+  return {
+    ...BASE_METADATA,
+    title: {
+      default: title,
+      template: `%s · ${config.title}`,
+    },
+    description: config.tagline,
+    openGraph: {
+      ...BASE_METADATA.openGraph,
+      siteName: config.title,
+      title,
+      description: config.tagline,
+    },
+  };
+}
 
 export const viewport: Viewport = {
   themeColor: "#07070c",

@@ -1,19 +1,13 @@
 import Link from "next/link";
-import { revalidatePath } from "next/cache";
 
 import { db } from "@/lib/db";
 import { requirePermission } from "@/lib/require-admin";
 
+import { ErrorFeed, type ErrorRow } from "./error-feed";
+
 export const metadata = { title: "Журнал ошибок — панель AniGalaxy" };
 
 const PAGE_SIZE = 40;
-
-/** Цвет плашки по уровню — тот же язык, что в консоли разработчика. */
-const LEVEL_TONE: Record<string, string> = {
-  error: "bg-red-500/20 text-red-300",
-  warn: "bg-amber-500/20 text-amber-300",
-  info: "bg-sky-500/20 text-sky-300",
-};
 
 const SOURCE_LABELS: Record<string, string> = {
   kodik: "Kodik",
@@ -28,175 +22,15 @@ const SOURCE_LABELS: Record<string, string> = {
   job: "Задачи",
 };
 
-export default async function AdminErrorsPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ show?: string; source?: string }>;
-}) {
-  await requirePermission("settings", "/admin/errors");
-  const { show, source } = await searchParams;
+/** Чипы-фильтры из макета. `where` собирается сервером, а не в браузере. */
+const FILTERS = {
+  all: { label: "Все", level: null, unresolved: false },
+  crit: { label: "Критичные", level: "error", unresolved: false },
+  warn: { label: "Внимание", level: "warn", unresolved: false },
+  unread: { label: "Непрочитанные", level: null, unresolved: true },
+} as const;
 
-  // По умолчанию показываем неразобранные: закрытые — архив, за ними
-  // не нужно ходить каждый день.
-  const onlyOpen = show !== "all";
-  const where = {
-    ...(onlyOpen ? { resolved: false } : {}),
-    ...(source ? { source } : {}),
-  };
-
-  const [errors, openCount] = await Promise.all([
-    db.errorLog.findMany({
-      where,
-      orderBy: { lastSeenAt: "desc" },
-      take: PAGE_SIZE,
-    }),
-    db.errorLog.count({ where: { resolved: false } }),
-  ]);
-
-  async function toggleResolved(formData: FormData) {
-    "use server";
-    const session = await requirePermission("settings", "/admin/errors");
-    const id = String(formData.get("id") ?? "");
-    if (!/^[a-z0-9]{20,30}$/i.test(id)) return;
-
-    const entry = await db.errorLog.findUnique({ where: { id } });
-    if (!entry) return;
-
-    await db.errorLog.update({
-      where: { id },
-      data: {
-        resolved: !entry.resolved,
-        resolvedById: session.user.id,
-        // lastSeenAt — время последнего повтора, а не время закрытия,
-        // поэтому после закрытия остаётся видно, как долго ошибка жила.
-        lastSeenAt: Date.now(),
-      },
-    });
-
-    revalidatePath("/admin/errors");
-  }
-
-  return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold">Журнал ошибок</h1>
-          <p className="mt-1 text-sm text-white/50">
-            Неразобранных: <span className="text-white">{openCount}</span>. Одинаковые
-            ошибки схлопываются в одну строку со счётчиком.
-          </p>
-        </div>
-
-        <div className="flex flex-wrap gap-2 text-sm">
-          <Link
-            href="/admin/errors"
-            className={
-              onlyOpen
-                ? "rounded-lg bg-white/10 px-3 py-1.5 text-white"
-                : "rounded-lg border border-white/10 px-3 py-1.5 text-white/50"
-            }
-          >
-            Неразобранные
-          </Link>
-          <Link
-            href="/admin/errors?show=all"
-            className={
-              !onlyOpen
-                ? "rounded-lg bg-white/10 px-3 py-1.5 text-white"
-                : "rounded-lg border border-white/10 px-3 py-1.5 text-white/50"
-            }
-          >
-            Все
-          </Link>
-        </div>
-      </div>
-
-      {errors.length === 0 ? (
-        <p className="rounded-2xl border border-white/10 bg-white/[0.03] px-5 py-10 text-center text-white/40">
-          {onlyOpen
-            ? "Неразобранных ошибок нет. Или ни одна внешняя ругалка ещё не ловилась."
-            : "Журнал пуст."}
-        </p>
-      ) : (
-        <ul className="space-y-3">
-          {errors.map((entry) => (
-            <li
-              key={entry.id}
-              className={[
-                "rounded-2xl border bg-white/[0.03] p-5",
-                entry.resolved
-                  ? "border-white/5 opacity-60"
-                  : "border-white/10",
-              ].join(" ")}
-            >
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <p className="flex flex-wrap items-center gap-2 text-sm">
-                    <span
-                      className={`rounded-md px-1.5 py-0.5 text-[10px] ${LEVEL_TONE[entry.level] ?? LEVEL_TONE.error}`}
-                    >
-                      {entry.level}
-                    </span>
-                    <span className="rounded-md bg-white/10 px-1.5 py-0.5 text-[10px] text-white/60">
-                      {SOURCE_LABELS[entry.source] ?? entry.source}
-                    </span>
-                    {entry.operation ? (
-                      <code className="text-xs text-white/50">{entry.operation}</code>
-                    ) : null}
-                    {entry.count > 1 ? (
-                      <span className="rounded-md bg-white/10 px-1.5 py-0.5 text-[10px] text-white/70">
-                        ×{entry.count}
-                      </span>
-                    ) : null}
-                  </p>
-
-                  <p className="mt-2 font-mono text-sm text-white/90">{entry.message}</p>
-
-                  <p className="mt-1 text-xs text-white/35">
-                    впервые {new Date(Number(entry.firstSeenAt)).toLocaleString("ru-RU")} ·
-                    повтор {new Date(Number(entry.lastSeenAt)).toLocaleString("ru-RU")}
-                  </p>
-
-                  {entry.context ? (
-                    <details className="mt-2">
-                      <summary className="cursor-pointer text-xs text-white/40 hover:text-white/70">
-                        Контекст
-                      </summary>
-                      <pre className="mt-2 max-h-64 overflow-auto rounded-xl border border-white/10 bg-black/40 p-3 text-xs text-white/60">
-                        {safeJson(entry.context)}
-                      </pre>
-                    </details>
-                  ) : null}
-
-                  {entry.stack ? (
-                    <details className="mt-2">
-                      <summary className="cursor-pointer text-xs text-white/40 hover:text-white/70">
-                        Стек
-                      </summary>
-                      <pre className="mt-2 max-h-64 overflow-auto whitespace-pre-wrap rounded-xl border border-white/10 bg-black/40 p-3 text-xs text-white/50">
-                        {entry.stack.slice(0, 2000)}
-                      </pre>
-                    </details>
-                  ) : null}
-                </div>
-
-                <form action={toggleResolved}>
-                  <input type="hidden" name="id" value={entry.id} />
-                  <button
-                    type="submit"
-                    className="rounded-lg border border-white/15 px-2.5 py-1 text-xs text-white/70 transition hover:border-white/35"
-                  >
-                    {entry.resolved ? "Вернуть в работу" : "Пометить решённой"}
-                  </button>
-                </form>
-              </div>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
-  );
-}
+type FilterKey = keyof typeof FILTERS;
 
 /** Контекст мог остаться битым после ручной правки БД — не роняем из-за него страницу. */
 function safeJson(raw: string): string {
@@ -205,4 +39,130 @@ function safeJson(raw: string): string {
   } catch {
     return raw;
   }
+}
+
+function when(ms: bigint | number | null): string {
+  if (ms === null) return "—";
+  return new Date(Number(ms)).toLocaleString("ru-RU", {
+    day: "2-digit",
+    month: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+export default async function AdminErrorsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ f?: string; source?: string }>;
+}) {
+  await requirePermission("settings", "/admin/errors");
+  const { f, source } = await searchParams;
+
+  const key = ((f && f in FILTERS ? f : "unread") as FilterKey) || "unread";
+  const filter = FILTERS[key];
+
+  const where = {
+    ...(filter.unresolved ? { resolved: false } : {}),
+    ...(filter.level ? { level: filter.level } : {}),
+    ...(source ? { source } : {}),
+  };
+
+  const [entries, counts, sources] = await Promise.all([
+    db.errorLog.findMany({
+      where,
+      orderBy: { lastSeenAt: "desc" },
+      take: PAGE_SIZE,
+    }),
+    // Счётчики для чипов считаются по всем уровням разом: четыре отдельных
+    // count-запроса дали бы тот же результат дороже вчетверо.
+    db.errorLog.groupBy({ by: ["level", "resolved"], _count: { _all: true } }),
+    db.errorLog.groupBy({ by: ["source"], _count: { _all: true } }),
+  ]);
+
+  const tally = { all: 0, crit: 0, warn: 0, unread: 0 };
+  for (const row of counts) {
+    const n = row._count._all;
+    tally.all += n;
+    if (row.level === "error") tally.crit += n;
+    if (row.level === "warn") tally.warn += n;
+    if (!row.resolved) tally.unread += n;
+  }
+
+  const rows: ErrorRow[] = entries.map((entry) => ({
+    id: entry.id,
+    level: entry.level,
+    source: entry.source,
+    sourceLabel: SOURCE_LABELS[entry.source] ?? entry.source,
+    operation: entry.operation,
+    message: entry.message,
+    resolved: entry.resolved,
+    count: entry.count,
+    firstSeen: when(entry.firstSeenAt),
+    lastSeen: when(entry.lastSeenAt),
+    context: entry.context ? safeJson(entry.context) : null,
+    // Стек обрезаем здесь, на сервере: в панель он попадает только для чтения,
+    // а целиком это сотни строк на каждую из сорока записей.
+    stack: entry.stack ? entry.stack.slice(0, 2000) : null,
+    userAgent: entry.userAgent,
+  }));
+
+  /** Ссылка на тот же фильтр, но с другим чипом или источником. */
+  const href = (nextKey: FilterKey, nextSource?: string) => {
+    const params = new URLSearchParams();
+    // «Все» — фильтр по умолчанию в макете; если выбран он и источник не
+    // задан, ссылка должна быть чистой, иначе появляется ?f=all.
+    if (nextKey !== "unread") params.set("f", nextKey);
+    if (nextSource) params.set("source", nextSource);
+    const query = params.toString();
+    return query ? `/admin/errors?${query}` : "/admin/errors";
+  };
+
+  return (
+    <div className="ag-section" style={{ gap: 28 }}>
+      <div className="ag-head">
+        <div>
+          <h1 className="ag-h1">Журнал ошибок</h1>
+          <p className="ag-sub">
+            Одинаковые ошибки схлопываются в одну строку со счётчиком повторов:
+            один починенный парсер не превращается в сотню жалоб. Отметка
+            «решённой» ничего не чинит — она честно говорит «я это посмотрел».
+          </p>
+        </div>
+      </div>
+
+      <div className="ag-section" style={{ gap: 12 }}>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }} role="group" aria-label="Фильтр по уровню">
+          {(Object.keys(FILTERS) as FilterKey[]).map((k) => (
+            <Link
+              key={k}
+              href={href(k, source)}
+              className={`ag-chip${k === key ? " on" : ""}`}
+              aria-current={k === key ? "true" : undefined}
+            >
+              {FILTERS[k].label} <i>{tally[k]}</i>
+            </Link>
+          ))}
+        </div>
+
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center" }}>
+          <span className="ag-note">Источник:</span>
+          <Link href={href(key)} className={`ag-chip${!source ? " on" : ""}`}>
+            любой
+          </Link>
+          {sources.map((s) => (
+            <Link
+              key={s.source}
+              href={href(key, s.source)}
+              className={`ag-chip${source === s.source ? " on" : ""}`}
+            >
+              {SOURCE_LABELS[s.source] ?? s.source} <i>{s._count._all}</i>
+            </Link>
+          ))}
+        </div>
+      </div>
+
+      <ErrorFeed entries={rows} level={filter.level ?? "all"} />
+    </div>
+  );
 }

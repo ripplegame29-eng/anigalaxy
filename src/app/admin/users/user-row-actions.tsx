@@ -30,12 +30,7 @@ function Button({
     <button
       type="submit"
       disabled={pending || disabled}
-      className={[
-        "rounded-lg border px-2.5 py-1 text-xs transition disabled:cursor-not-allowed disabled:opacity-40",
-        tone === "danger"
-          ? "border-red-500/30 text-red-300 hover:border-red-500/60"
-          : "border-white/15 text-white/70 hover:border-white/35 hover:text-white",
-      ].join(" ")}
+      className={`ag-btn sm${tone === "danger" ? " danger" : ""}`}
     >
       {pending ? "…" : children}
     </button>
@@ -64,12 +59,8 @@ function Action({
   return (
     <>
       <form action={formAction}>{children}</form>
-      {state.error ? (
-        <p className="mt-1 text-[11px] text-red-300">{state.error}</p>
-      ) : null}
-      {state.ok ? (
-        <p className="mt-1 text-[11px] text-emerald-300">{state.ok}</p>
-      ) : null}
+      {state.error ? <p className="ag-bad">{state.error}</p> : null}
+      {state.ok ? <p className="ag-ok">{state.ok}</p> : null}
     </>
   );
 }
@@ -88,8 +79,8 @@ export function UserRowActions({
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="w-full max-w-sm space-y-2 sm:w-auto">
-      <div className="flex flex-wrap justify-end gap-2">
+    <div style={{ width: "100%", maxWidth: 380 }}>
+      <div className="ag-act" style={{ justifyContent: "flex-end" }}>
         {isBanned ? (
           <Action action={unbanUserAction}>
             <input type="hidden" name="id" value={userId} />
@@ -114,33 +105,45 @@ export function UserRowActions({
         <button
           type="button"
           onClick={() => setOpen((v) => !v)}
-          className="rounded-lg border border-white/15 px-2.5 py-1 text-xs text-white/70 transition hover:border-white/35"
+          className="ag-btn sm"
+          aria-expanded={open}
         >
           {open ? "Скрыть" : "Ещё"}
         </button>
       </div>
 
       {open ? (
-        <div className="space-y-2 rounded-xl border border-white/10 bg-black/20 p-3">
+        <div
+          className="ag-section"
+          style={{
+            marginTop: 12,
+            gap: 16,
+            padding: 16,
+            border: "1px solid var(--ag-line)",
+            borderRadius: 12,
+          }}
+        >
           <Action action={setRoleAction}>
             <input type="hidden" name="id" value={userId} />
-            <p className="mb-1 text-[11px] text-white/40">Роль</p>
-            <div className="flex gap-2">
-              <select
-                name="role"
-                defaultValue={isRole(currentRole) ? currentRole : "user"}
-                className="flex-1 rounded-lg border border-white/15 bg-black/40 px-2 py-1 text-xs"
-              >
-                {ROLES.map((role) => (
-                  <option key={role} value={role}>
-                    {ROLE_LABELS[role]}
-                  </option>
-                ))}
-              </select>
-              <Button disabled={isSelf}>Сменить</Button>
-            </div>
+            <label className="ag-field">
+              <span>Роль</span>
+              <div style={{ display: "flex", gap: 8 }}>
+                <select
+                  name="role"
+                  defaultValue={isRole(currentRole) ? currentRole : "user"}
+                  className="ag-select"
+                >
+                  {ROLES.map((role) => (
+                    <option key={role} value={role}>
+                      {ROLE_LABELS[role]}
+                    </option>
+                  ))}
+                </select>
+                <Button disabled={isSelf}>Сменить</Button>
+              </div>
+            </label>
             {isSelf ? (
-              <p className="mt-1 text-[11px] text-white/30">
+              <p className="ag-note">
                 Снять роль с себя нельзя — иначе можно потерять доступ к панели.
               </p>
             ) : null}
@@ -148,44 +151,42 @@ export function UserRowActions({
 
           <Action action={grantPremiumAction}>
             <input type="hidden" name="id" value={userId} />
-            <p className="mb-1 text-[11px] text-white/40">Premium</p>
-            <div className="flex gap-2">
-              <select
-                name="days"
-                defaultValue="30"
-                className="flex-1 rounded-lg border border-white/15 bg-black/40 px-2 py-1 text-xs"
-              >
-                <option value="7">+7 дней</option>
-                <option value="30">+30 дней</option>
-                <option value="90">+90 дней</option>
-                <option value="365">+1 год</option>
-              </select>
-              <Button>Выдать</Button>
-            </div>
+            <label className="ag-field">
+              <span>Premium</span>
+              <div style={{ display: "flex", gap: 8 }}>
+                <select name="days" defaultValue="30" className="ag-select">
+                  <option value="7">+7 дней</option>
+                  <option value="30">+30 дней</option>
+                  <option value="90">+90 дней</option>
+                  <option value="365">+1 год</option>
+                </select>
+                <Button>Выдать</Button>
+              </div>
+            </label>
           </Action>
 
           {isSelf ? null : (
             <Action action={banUserAction}>
               <input type="hidden" name="id" value={userId} />
-              <p className="mb-1 text-[11px] text-white/40">Бан на срок</p>
-              <div className="flex gap-2">
-                <select
-                  name="days"
-                  defaultValue="7"
-                  className="flex-1 rounded-lg border border-white/15 bg-black/40 px-2 py-1 text-xs"
-                >
-                  <option value="1">1 день</option>
-                  <option value="7">7 дней</option>
-                  <option value="30">30 дней</option>
-                  <option value="">навсегда</option>
-                </select>
-                <input
-                  name="reason"
-                  placeholder="причина"
-                  className="w-28 rounded-lg border border-white/15 bg-black/40 px-2 py-1 text-xs"
-                />
-                <Button tone="danger">Применить</Button>
-              </div>
+              <label className="ag-field">
+                <span>Бан на срок</span>
+                <div style={{ display: "flex", gap: 8 }}>
+                  <select name="days" defaultValue="7" className="ag-select">
+                    <option value="1">1 день</option>
+                    <option value="7">7 дней</option>
+                    <option value="30">30 дней</option>
+                    <option value="">навсегда</option>
+                  </select>
+                  <input
+                    name="reason"
+                    placeholder="причина"
+                    aria-label="Причина бана"
+                    className="ag-input"
+                    style={{ maxWidth: 180 }}
+                  />
+                  <Button tone="danger">Применить</Button>
+                </div>
+              </label>
             </Action>
           )}
         </div>

@@ -52,10 +52,10 @@ async function loadEconomy() {
 
 function Card({ label, value, hint }: { label: string; value: string; hint?: string }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
-      <p className="text-sm text-white/50">{label}</p>
-      <p className="mt-2 text-3xl font-semibold">{value}</p>
-      {hint ? <p className="mt-1 text-xs text-white/35">{hint}</p> : null}
+    <div className="ag-kpi">
+      <span>{label}</span>
+      <strong>{value}</strong>
+      {hint ? <em>{hint}</em> : null}
     </div>
   );
 }
@@ -66,16 +66,18 @@ export default async function AdminEconomyPage() {
     await loadEconomy();
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold">Экономика</h1>
-        <p className="mt-1 text-sm text-white/50">
-          Прогресс игроков зеркалится на сервер из браузера — пока хранилище
-          клиентское, это копия для наблюдения и ручных правок.
-        </p>
+    <div className="ag-section" style={{ gap: 28 }}>
+      <div className="ag-head">
+        <div>
+          <h1 className="ag-h1">Экономика</h1>
+          <p className="ag-sub">
+            Прогресс игроков зеркалится на сервер из браузера — пока хранилище
+            клиентское, это копия для наблюдения и ручных правок.
+          </p>
+        </div>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="ag-kpis">
         <Card label="Документов" value={String(totalDocs)} />
         <Card label="Средний уровень" value={String(avgLevel)} />
         <Card label="AC на игроков" value={totalAc.toLocaleString("ru-RU")} />
@@ -83,23 +85,24 @@ export default async function AdminEconomyPage() {
       </div>
 
       {/* ---------------------------- Промокоды --------------------------- */}
-      <section className="space-y-3">
+      <section className="ag-section">
         <div>
-          <h2 className="text-lg font-medium">Промокоды</h2>
-          <p className="text-sm text-white/50">
-            Действующие коды. Пока промокод не создан здесь, игроки пользуются
-            хардкод-словарём из <code className="text-xs">lib/premium-perks.ts</code>.
+          <h2 className="ag-h2">Промокоды</h2>
+          <p className="ag-sub">
+            Коды, созданные здесь. Пока такой код не создан, игроки пользуются
+            хардкод-словарём из <span className="ag-code">lib/premium-perks.ts</span> —
+            сервер их не проверяет.
           </p>
         </div>
 
         <CreatePromoForm />
 
         {promos.length === 0 ? (
-          <p className="rounded-2xl border border-white/10 bg-white/[0.03] px-5 py-8 text-center text-white/40">
-            Промокодов пока нет.
-          </p>
+          <div className="ag-box">
+            <div className="ag-empty">Промокодов пока нет.</div>
+          </div>
         ) : (
-          <ul className="space-y-2">
+          <ul className="ag-section" style={{ listStyle: "none", margin: 0, padding: 0, gap: 8 }}>
             {promos.map((promo) => (
               <PromoRow
                 key={promo.id}
@@ -108,7 +111,7 @@ export default async function AdminEconomyPage() {
                 kind={promo.kind}
                 value={promo.value}
                 active={promo.active}
-                usedCount={promo.usedCount}
+                usedCount={promo._count.redemptions}
                 maxUses={promo.maxUses}
                 description={promo.description}
               />
@@ -118,10 +121,10 @@ export default async function AdminEconomyPage() {
       </section>
 
       {/* ------------------------------ Сезоны ---------------------------- */}
-      <section className="space-y-3">
+      <section className="ag-section">
         <div>
-          <h2 className="text-lg font-medium">Сезоны</h2>
-          <p className="text-sm text-white/50">
+          <h2 className="ag-h2">Сезоны</h2>
+          <p className="ag-sub">
             Сезоны боевого пропуска и кланов. Статус можно выставить досрочно, не
             сдвигая границы.
           </p>
@@ -130,11 +133,11 @@ export default async function AdminEconomyPage() {
         <CreateSeasonForm />
 
         {seasons.length === 0 ? (
-          <p className="rounded-2xl border border-white/10 bg-white/[0.03] px-5 py-8 text-center text-white/40">
-            Сезонов пока нет.
-          </p>
+          <div className="ag-box">
+            <div className="ag-empty">Сезонов пока нет.</div>
+          </div>
         ) : (
-          <ul className="space-y-2">
+          <ul className="ag-section" style={{ listStyle: "none", margin: 0, padding: 0, gap: 8 }}>
             {seasons.map((season) => (
               <SeasonRow
                 key={season.id}
@@ -150,57 +153,65 @@ export default async function AdminEconomyPage() {
         )}
       </section>
 
-      {summaries.length === 0 ? (
-        <div className="rounded-2xl border border-white/10 bg-white/[0.03] px-5 py-10 text-center">
-          <p className="text-white/50">Пока нет ни одного документа.</p>
-          <p className="mt-2 text-sm text-white/35">
-            Зеркало наполняется, когда игрок с серверным аккаунтом играет: вход
-            через /login, затем обычные действия на сайте. Документ уезжает на
-            сервер один раз в несколько секунд.
-          </p>
-        </div>
-      ) : (
-        <ul className="space-y-3">
-          {summaries.map((s) => (
-            <li
-              key={s.userId}
-              className="rounded-2xl border border-white/10 bg-white/[0.03] p-5"
-            >
-              <div className="flex flex-wrap items-start justify-between gap-4">
-                <div>
-                  <p className="flex flex-wrap items-center gap-2 text-sm">
-                    <span className="font-medium">{names.get(s.userId) ?? s.userId}</span>
-                    <span className="rounded-md bg-white/10 px-1.5 py-0.5 text-[10px] text-white/60">
-                      ур. {s.level}
-                    </span>
-                    {s.touchedByAdmin ? (
-                      <span className="rounded-md bg-amber-500/20 px-1.5 py-0.5 text-[10px] text-amber-300">
-                        правили вручную
-                      </span>
-                    ) : null}
-                  </p>
-                  <p className="mt-1 text-xs text-white/40">
-                    XP {s.xpTotal.toLocaleString("ru-RU")} · AC{" "}
-                    {s.ac.toLocaleString("ru-RU")} · серия {s.streak} ·{" "}
-                    {s.achievements} достижений · {s.tags} тегов · {s.purchases} покупок
-                  </p>
-                  <p className="mt-0.5 text-xs text-white/30">
-                    обновлено{" "}
-                    {new Date(s.updatedAt).toLocaleString("ru-RU")} · правка №
-                    {s.revision}
-                  </p>
-                </div>
+      {/* ------------------------- Зеркало прогресса ---------------------- */}
+      <section className="ag-section">
+        <h2 className="ag-h2">Прогресс игроков</h2>
 
-                <ProgressEditor
-                  userId={s.userId}
-                  nickname={names.get(s.userId) ?? s.userId}
-                  current={{ level: s.level, xpTotal: s.xpTotal, acBalance: s.ac }}
-                />
-              </div>
-            </li>
-          ))}
-        </ul>
-      )}
+        {summaries.length === 0 ? (
+          <div className="ag-box">
+            <div className="ag-empty">
+              <p>Пока нет ни одного документа.</p>
+              <p style={{ marginTop: 8 }}>
+                Зеркало наполняется, когда игрок с серверным аккаунтом играет: вход
+                через /login, затем обычные действия на сайте. Документ уезжает на
+                сервер один раз в несколько секунд.
+              </p>
+            </div>
+          </div>
+        ) : (
+          <ul className="ag-section" style={{ listStyle: "none", margin: 0, padding: 0, gap: 12 }}>
+            {summaries.map((s) => (
+              <li className="ag-box pad" key={s.userId}>
+                <div
+                  style={{
+                    display: "flex",
+                    flexWrap: "wrap",
+                    gap: 16,
+                    alignItems: "flex-start",
+                    justifyContent: "space-between",
+                  }}
+                >
+                  <div>
+                    <p style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 8 }}>
+                      <b>{names.get(s.userId) ?? s.userId}</b>
+                      <span className="ag-n">ур. {s.level}</span>
+                      {s.touchedByAdmin ? (
+                        <span className="ag-lvl">правили вручную</span>
+                      ) : null}
+                    </p>
+                    <p className="ag-note" style={{ marginTop: 4 }}>
+                      XP {s.xpTotal.toLocaleString("ru-RU")} · AC{" "}
+                      {s.ac.toLocaleString("ru-RU")} · серия {s.streak} ·{" "}
+                      {s.achievements} достижений · {s.tags} тегов · {s.purchases} покупок
+                    </p>
+                    <p className="ag-note" style={{ marginTop: 2 }}>
+                      обновлено{" "}
+                      {new Date(s.updatedAt).toLocaleString("ru-RU")} · правка №
+                      {s.revision}
+                    </p>
+                  </div>
+
+                  <ProgressEditor
+                    userId={s.userId}
+                    nickname={names.get(s.userId) ?? s.userId}
+                    current={{ level: s.level, xpTotal: s.xpTotal, acBalance: s.ac }}
+                  />
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
     </div>
   );
 }

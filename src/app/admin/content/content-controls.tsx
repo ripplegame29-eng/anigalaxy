@@ -27,12 +27,7 @@ function Submit({
     <button
       type="submit"
       disabled={pending}
-      className={[
-        "rounded-lg border px-2.5 py-1 text-xs transition disabled:cursor-not-allowed disabled:opacity-40",
-        tone === "danger"
-          ? "border-red-500/30 text-red-300 hover:border-red-500/60"
-          : "border-white/15 text-white/70 hover:border-white/35 hover:text-white",
-      ].join(" ")}
+      className={`ag-btn sm${tone === "danger" ? " danger" : ""}`}
     >
       {pending ? "…" : children}
     </button>
@@ -40,8 +35,8 @@ function Submit({
 }
 
 function Feedback({ state }: { state: ContentState }) {
-  if (state.error) return <p className="mt-1 text-[11px] text-red-300">{state.error}</p>;
-  if (state.ok) return <p className="mt-1 text-[11px] text-emerald-300">{state.ok}</p>;
+  if (state.error) return <p className="ag-bad">{state.error}</p>;
+  if (state.ok) return <p className="ag-ok">{state.ok}</p>;
   return null;
 }
 
@@ -56,21 +51,19 @@ export function CreateBlockForm() {
   const spec = CONTENT_KINDS[kind];
 
   return (
-    <form
-      action={formAction}
-      className="space-y-3 rounded-2xl border border-white/10 bg-white/[0.03] p-5"
-    >
+    <form action={formAction} className="ag-box pad ag-section" style={{ gap: 16 }}>
       <div>
-        <h2 className="text-lg font-medium">Новый блок</h2>
-        <p className="text-sm text-white/50">{spec.hint}</p>
+        <h2 className="ag-h2">Новый блок</h2>
+        <p className="ag-sub">{spec.hint}</p>
       </div>
 
-      <div className="flex gap-2">
+      <div style={{ display: "flex", gap: 8 }}>
         <select
           name="kind"
           value={kind}
           onChange={(e) => setKind(e.target.value as ContentKind)}
-          className="flex-1 rounded-lg border border-white/15 bg-black/40 px-2.5 py-2 text-sm"
+          className="ag-select"
+          style={{ flex: 1 }}
         >
           {Object.entries(CONTENT_KINDS).map(([value, item]) => (
             <option key={value} value={value}>
@@ -81,14 +74,18 @@ export function CreateBlockForm() {
         <input
           name="title"
           placeholder="Название (для списка в панели)"
+          aria-label="Название блока"
           maxLength={200}
-          className="flex-1 rounded-lg border border-white/15 bg-black/40 px-2.5 py-2 text-sm outline-none focus:border-[#1f7bff]"
+          className="ag-input"
+          style={{ flex: 1 }}
         />
       </div>
 
       <PayloadEditor kind={kind} name="payload" defaultValue={JSON.stringify(spec.example, null, 2)} />
 
-      <Submit>Создать</Submit>
+      <div>
+        <Submit>Создать</Submit>
+      </div>
       <Feedback state={state} />
     </form>
   );
@@ -114,22 +111,32 @@ function PayloadEditor({
   const [value, setValue] = useState(defaultValue ?? "");
 
   return (
-    <div className="space-y-1.5">
-      <p className="text-xs text-white/50">
+    <label className="ag-field">
+      <span>
         Поля для «{CONTENT_KINDS[kind].label}»:{" "}
         {CONTENT_KINDS[kind].fields
           .map((f) => `${f.name}${f.required ? " *" : ""}`)
           .join(", ")}
-      </p>
+      </span>
       <textarea
         name={name}
         value={value}
         onChange={(e) => setValue(e.target.value)}
         rows={7}
         spellCheck={false}
-        className="w-full resize-y rounded-lg border border-white/15 bg-black/40 px-2.5 py-2 font-mono text-xs outline-none focus:border-[#1f7bff]"
+        aria-label="Содержимое блока в формате JSON"
+        style={{
+          width: "100%",
+          padding: "10px 12px",
+          border: "1px solid var(--ag-line)",
+          borderRadius: 10,
+          background: "var(--ag-bg)",
+          fontFamily: "ui-monospace, Menlo, monospace",
+          fontSize: 12,
+          lineHeight: 1.5,
+        }}
       />
-    </div>
+    </label>
   );
 }
 
@@ -165,28 +172,30 @@ export function BlockRow({
   const [open, setOpen] = useState(false);
 
   return (
-    <li className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p className="flex flex-wrap items-center gap-2 text-sm">
-            <span className="font-medium">{title ?? "без названия"}</span>
-            <span className="rounded-md bg-white/10 px-1.5 py-0.5 text-[10px] text-white/60">
-              {CONTENT_KINDS[kind]?.label ?? kind}
+    <li className="ag-box pad ag-section" style={{ gap: 12 }}>
+      <div
+        style={{
+          display: "flex",
+          flexWrap: "wrap",
+          gap: 12,
+          alignItems: "flex-start",
+          justifyContent: "space-between",
+        }}
+      >
+        <p style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 8 }}>
+          <b>{title ?? "без названия"}</b>
+          <span className="ag-n">{CONTENT_KINDS[kind]?.label ?? kind}</span>
+          {enabled ? (
+            <span className="ag-lvl" style={{ background: "var(--ag-okbg)", color: "var(--ag-grn)" }}>
+              на сайте
             </span>
-            {enabled ? (
-              <span className="rounded-md bg-emerald-500/20 px-1.5 py-0.5 text-[10px] text-emerald-300">
-                на сайте
-              </span>
-            ) : (
-              <span className="rounded-md bg-white/10 px-1.5 py-0.5 text-[10px] text-white/50">
-                выключен
-              </span>
-            )}
-            <span className="text-[10px] text-white/35">порядок {sortOrder}</span>
-          </p>
-        </div>
+          ) : (
+            <span className="ag-n">выключен</span>
+          )}
+          <span className="ag-note">порядок {sortOrder}</span>
+        </p>
 
-        <div className="flex gap-2">
+        <div className="ag-act">
           <form action={toggleAction}>
             <input type="hidden" name="id" value={id} />
             <Submit tone={enabled ? "danger" : "neutral"}>
@@ -196,7 +205,8 @@ export function BlockRow({
           <button
             type="button"
             onClick={() => setOpen((v) => !v)}
-            className="rounded-lg border border-white/15 px-2.5 py-1 text-xs text-white/70 transition hover:border-white/35"
+            className="ag-btn sm"
+            aria-expanded={open}
           >
             {open ? "Скрыть" : "Править"}
           </button>
@@ -211,22 +221,26 @@ export function BlockRow({
       <Feedback state={deleteState} />
 
       {open ? (
-        <form action={updateAction} className="mt-3 space-y-2 border-t border-white/10 pt-3">
+        <form action={updateAction} className="ag-section" style={{ gap: 10, borderTop: "1px solid var(--ag-line)", paddingTop: 12 }}>
           <input type="hidden" name="id" value={id} />
 
-          <div className="flex gap-2">
+          <div style={{ display: "flex", gap: 8 }}>
             <input
               name="title"
               defaultValue={title ?? ""}
               placeholder="Название"
+              aria-label="Название блока"
               maxLength={200}
-              className="flex-1 rounded-lg border border-white/15 bg-black/40 px-2.5 py-1.5 text-sm outline-none focus:border-[#1f7bff]"
+              className="ag-input"
+              style={{ flex: 1 }}
             />
             <input
               name="sortOrder"
               type="number"
               defaultValue={sortOrder}
-              className="w-24 rounded-lg border border-white/15 bg-black/40 px-2.5 py-1.5 text-sm outline-none focus:border-[#1f7bff]"
+              aria-label="Порядок блока на главной"
+              className="ag-input"
+              style={{ width: 110 }}
             />
           </div>
 
@@ -235,10 +249,22 @@ export function BlockRow({
             defaultValue={payload}
             rows={8}
             spellCheck={false}
-            className="w-full resize-y rounded-lg border border-white/15 bg-black/40 px-2.5 py-2 font-mono text-xs outline-none focus:border-[#1f7bff]"
+            aria-label="Содержимое блока в формате JSON"
+            style={{
+              width: "100%",
+              padding: "10px 12px",
+              border: "1px solid var(--ag-line)",
+              borderRadius: 10,
+              background: "var(--ag-bg)",
+              fontFamily: "ui-monospace, Menlo, monospace",
+              fontSize: 12,
+              lineHeight: 1.5,
+            }}
           />
 
-          <Submit>Сохранить</Submit>
+          <div>
+            <Submit>Сохранить</Submit>
+          </div>
           <Feedback state={updateState} />
         </form>
       ) : null}

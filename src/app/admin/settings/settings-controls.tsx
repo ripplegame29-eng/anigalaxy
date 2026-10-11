@@ -19,12 +19,7 @@ function Submit({ children, tone = "neutral" }: { children: React.ReactNode; ton
     <button
       type="submit"
       disabled={pending}
-      className={[
-        "rounded-lg border px-2.5 py-1 text-xs transition disabled:cursor-not-allowed disabled:opacity-40",
-        tone === "danger"
-          ? "border-red-500/30 text-red-300 hover:border-red-500/60"
-          : "border-white/15 text-white/70 hover:border-white/35 hover:text-white",
-      ].join(" ")}
+      className={`ag-btn sm${tone === "danger" ? " danger" : ""}`}
     >
       {pending ? "…" : children}
     </button>
@@ -33,8 +28,8 @@ function Submit({ children, tone = "neutral" }: { children: React.ReactNode; ton
 
 /** Форма + строка обратной связи. По одному экшену на форму. */
 function Feedback({ state }: { state: SettingsState }) {
-  if (state.error) return <p className="mt-1 text-[11px] text-red-300">{state.error}</p>;
-  if (state.ok) return <p className="mt-1 text-[11px] text-emerald-300">{state.ok}</p>;
+  if (state.error) return <p className="ag-bad">{state.error}</p>;
+  if (state.ok) return <p className="ag-ok">{state.ok}</p>;
   return null;
 }
 
@@ -53,21 +48,33 @@ export function FlagToggle({
   );
 
   return (
-    <form action={formAction}>
+    <form action={formAction} style={{ flex: "none" }}>
       <input type="hidden" name="key" value={flagKey} />
       <button
         type="submit"
         title={enabled ? "Выключить" : "Включить"}
-        className={[
-          "relative h-6 w-11 rounded-full transition",
-          enabled ? "bg-emerald-500/70" : "bg-white/15",
-        ].join(" ")}
+        aria-pressed={enabled}
+        style={{
+          position: "relative",
+          width: 44,
+          height: 26,
+          borderRadius: 999,
+          border: "1px solid var(--ag-line)",
+          background: enabled ? "var(--ag-grn)" : "var(--ag-chipbg)",
+          transition: "background .2s, border-color .2s",
+        }}
       >
         <span
-          className={[
-            "absolute top-0.5 h-5 w-5 rounded-full bg-white transition-all",
-            enabled ? "left-[22px]" : "left-0.5",
-          ].join(" ")}
+          style={{
+            position: "absolute",
+            top: 2,
+            left: enabled ? 22 : 3,
+            width: 20,
+            height: 20,
+            borderRadius: "50%",
+            background: enabled ? "var(--ag-card)" : "var(--ag-mut)",
+            transition: "left .2s var(--ag-ease), background .2s",
+          }}
         />
         <span className="sr-only">
           {enabled ? "Выключить" : "Включить"} флаг {flagKey}
@@ -91,18 +98,22 @@ export function FlagDescriptionEditor({
   );
 
   return (
-    <form action={formAction} className="flex gap-2">
-      <input type="hidden" name="key" value={flagKey} />
-      <input
-        name="description"
-        defaultValue={description}
-        placeholder="Что делает флаг"
-        maxLength={200}
-        className="flex-1 rounded-lg border border-white/15 bg-black/40 px-2 py-1 text-xs outline-none focus:border-[#1f7bff]"
-      />
-      <Submit>Сохранить</Submit>
+    <>
+      <form action={formAction} style={{ display: "flex", gap: 8, marginTop: 8 }}>
+        <input type="hidden" name="key" value={flagKey} />
+        <input
+          name="description"
+          defaultValue={description}
+          placeholder="Что делает флаг"
+          aria-label={`Описание флага ${flagKey}`}
+          maxLength={200}
+          className="ag-input"
+          style={{ minHeight: 36 }}
+        />
+        <Submit>Сохранить</Submit>
+      </form>
       <Feedback state={state} />
-    </form>
+    </>
   );
 }
 
@@ -123,19 +134,24 @@ export function SettingEditor({
   );
 
   return (
-    <div className="rounded-xl border border-white/10 bg-white/[0.02] p-4">
-      <p className="font-mono text-xs text-white/80">{settingKey}</p>
+    <div className="ag-box pad">
+      <p>
+        <span className="ag-code" style={{ fontSize: 13 }}>{settingKey}</span>
+      </p>
       {description ? (
-        <p className="mt-0.5 text-xs text-white/40">{description}</p>
+        <p className="ag-note" style={{ marginTop: 4 }}>
+          {description}
+        </p>
       ) : null}
 
-      <form action={formAction} className="mt-2 flex gap-2">
+      <form action={formAction} style={{ display: "flex", gap: 8, marginTop: 10 }}>
         <input type="hidden" name="key" value={settingKey} />
         <input
           name="value"
           defaultValue={value}
+          aria-label={`Значение настройки ${settingKey}`}
           maxLength={5000}
-          className="flex-1 rounded-lg border border-white/15 bg-black/40 px-2.5 py-1.5 text-sm outline-none focus:border-[#1f7bff]"
+          className="ag-input"
         />
         <Submit>Сохранить</Submit>
       </form>
@@ -153,7 +169,7 @@ export function HealthCheckButton() {
   );
 
   return (
-    <form action={formAction}>
+    <form action={formAction} style={{ display: "flex", gap: 12, alignItems: "center" }}>
       <Submit>Проверить сейчас</Submit>
       <Feedback state={state} />
     </form>

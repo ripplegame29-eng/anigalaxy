@@ -2,15 +2,23 @@ import Link from "next/link";
 
 import { db } from "@/lib/db";
 import { requireAdmin } from "@/lib/require-admin";
+import { ROLE_LABELS } from "@/lib/roles";
+
+import { AuditFeed, type AuditEntry } from "./audit-feed";
+import { HeroProgress } from "./hero-progress";
 
 const DAY_MS = 86_400_000;
+/** Дней в графике обзора. Три недели — достаточно, чтобы заметить рост сбоев. */
+const CHART_DAYS = 21;
+/** Сколько строк ленты грузим с сервера: с запасом против SHOWN в AuditFeed. */
+const AUDIT_TAKE = 50;
 
-function card(label: string, value: string, hint?: string) {
+function kpi(label: string, value: string, hint?: string, tone?: "warn" | "up") {
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
-      <p className="text-sm text-white/50">{label}</p>
-      <p className="mt-2 text-3xl font-semibold">{value}</p>
-      {hint ? <p className="mt-1 text-xs text-white/35">{hint}</p> : null}
+    <div className={`ag-kpi${tone ? ` ${tone}` : ""}`}>
+      <span>{label}</span>
+      <strong>{value}</strong>
+      {hint ? <em>{hint}</em> : null}
     </div>
   );
 }
@@ -35,8 +43,10 @@ async function loadOverview() {
     activeSessions,
     openErrors,
     errorsLast24h,
+    totalErrors,
     disabledFlags,
     recentAudit,
+    series,
   ] = await Promise.all([
     db.user.count(),
     db.user.count({ where: { createdAt: { gte: dayAgo } } }),
@@ -47,13 +57,34 @@ async function loadOverview() {
     db.session.count({ where: { expiresAt: { gt: at } } }),
     db.errorLog.count({ where: { resolved: false } }),
     db.errorLog.count({ where: { lastSeenAt: { gte: dayAgo } } }),
+    db.errorLog.count(),
     db.featureFlag.count({ where: { enabled: false } }),
     db.auditLog.findMany({
-      take: 10,
+      take: AUDIT_TAKE,
       orderBy: { createdAt: "desc" },
       include: { actor: { select: { nickname: true } } },
     }),
+    // Ряд по дням для графика. Забираем все записи за период и раскладываем
+    // по суткам в памяти: в SQLite агрегат по доле секунды не выразить без
+    // UDF, а записей за три недели здесь единицы, не тысячи.
+    db.errorLog.findMany({
+      where: { lastSeenAt: { gte: BigInt(now - CHART_DAYS * DAY_MS) } },
+      select: { lastSeenAt: true },
+    }),
   ]);
+
+  // Дни считаем назад от сегодняшнего, а не от первого дня выборки: иначе если
+  // в старый день сбоев не было, график сдвигается и «вчера» окажется справа
+  // не у последней точки.
+  const days: number[] = new Array(CHART_DAYS).fill(0);
+  const startOfToday = now - (now % DAY_MS);
+
+  for (const row of series) {
+    const day = Math.floor((Number(row.lastSeenAt) - startOfToday) / DAY_MS);
+    // day <= 0 — сегодня; day < 0 — вчера (смещение минус один день).
+    const index = day >= 0 ? day : CHART_DAYS - 1 + day;
+    if (index >= 0 && index < CHART_DAYS) days[index] += 1;
+  }
 
   return {
     totalUsers,
@@ -63,8 +94,10 @@ async function loadOverview() {
     activeSessions,
     openErrors,
     errorsLast24h,
+    totalErrors,
     disabledFlags,
     recentAudit,
+    series: days,
   };
 }
 
@@ -72,66 +105,138 @@ export default async function AdminHome() {
   const session = await requireAdmin("/admin");
   const stats = await loadOverview();
 
+  const auditEntries: AuditEntry[] = stats.recentAudit.map((entry) => ({
+    id: entry.id,
+    summary: entry.summary,
+    action: entry.action,
+    actor: entry.actor?.nickname ?? "система",
+    when: new Date(Number(entry.createdAt)).toLocaleString("ru-RU", {
+      day: "2-digit",
+      month: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+    }),
+  }));
+
+  const donePercent =
+    stats.totalErrors === 0 ? 100 : ((stats.totalErrors - stats.openErrors) / stats.totalErrors) * 100;
+
+  const name = session.user.displayName ?? session.user.nickname;
+  const clean = stats.openErrors === 0;
+
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-semibold">Обзор</h1>
-        <p className="mt-1 text-sm text-white/50">
-          Вы вошли как {session.user.nickname}. Здесь видно, что происходит с сайтом.
-        </p>
-      </div>
-
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {card("Пользователей", String(stats.totalUsers), `+${stats.newUsers} за сутки`)}
-        {card("Активных сессий", String(stats.activeSessions))}
-        {card("Неразобранных ошибок", String(stats.openErrors), `${stats.errorsLast24h} за сутки`)}
-        {card("Сотрудников", String(stats.admins), `${stats.banned} забанено`)}
-      </div>
-
-      {stats.openErrors > 0 ? (
-        <Link
-          href="/admin/errors"
-          className="flex items-center justify-between rounded-2xl border border-amber-500/30 bg-amber-500/10 px-5 py-4 transition hover:border-amber-500/50"
-        >
-          <span className="text-amber-200">
-            {stats.openErrors} неразобранных ошибок в журнале
+    <div className="ag-section" style={{ gap: 28 }}>
+      {/* --------------------------------- Hero ---------------------------- */}
+      <section className="ag-hero">
+        <div className="ag-hl">
+          <span className="ag-pill">
+            Рабочая смена <i>{ROLE_LABELS[session.user.role]}</i> {name}
           </span>
-          <span className="text-sm text-amber-300/70">открыть журнал →</span>
-        </Link>
-      ) : null}
 
-      {stats.disabledFlags > 0 ? (
-        <div className="rounded-2xl border border-white/10 bg-white/[0.03] px-5 py-4 text-sm text-white/60">
-          Выключено флагов: {stats.disabledFlags}. Раздел «Настройки» ещё не сделан —
-          менять флаги пока негде.
+          <h1 className="ag-ht">
+            {clean ? (
+              <>
+                Спокойный <span className="ag-u">сайт</span> — и это проверено
+              </>
+            ) : (
+              <>
+                <span className="ag-u">{stats.openErrors}</span> неразобранных
+                ошибок в журнале
+              </>
+            )}
+          </h1>
+
+          <p>
+            {clean
+              ? "Журнал пуст: последние сбои разобраны, парсеры отвечают, страницы отдаются. Загляните в «Настройки», если нужно временно снять сломанную механику."
+              : "Ошибки сгруппированы по отпечатку — одинаковые сбои не засоряют список. Разберите их по одной, и они перестанут попадать в KPI."}
+          </p>
+
+          <HeroProgress
+            series={stats.series}
+            done={donePercent}
+            label="ошибок разобрано"
+            caption={`${stats.errorsLast24h} за последние сутки`}
+          />
         </div>
-      ) : null}
 
-      <section>
-        <h2 className="mb-3 text-lg font-medium">Последние действия</h2>
-        {stats.recentAudit.length === 0 ? (
-          <p className="text-sm text-white/40">Журнал пуст.</p>
-        ) : (
-          <ul className="divide-y divide-white/5 rounded-2xl border border-white/10 bg-white/[0.03]">
-            {stats.recentAudit.map((entry) => (
-              <li key={entry.id} className="flex items-baseline justify-between gap-4 px-5 py-3">
-                <span className="min-w-0 truncate text-sm">
-                  {entry.summary ?? entry.action}
-                </span>
-                <span className="shrink-0 text-xs text-white/35">
-                  {entry.actor?.nickname ?? "система"} ·{" "}
-                  {new Date(Number(entry.createdAt)).toLocaleString("ru-RU", {
-                    day: "2-digit",
-                    month: "2-digit",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
-                </span>
-              </li>
-            ))}
-          </ul>
-        )}
+        <div className="ag-hr">
+          <span className="ag-note" style={{ fontWeight: 600 }}>Быстрые действия</span>
+          <Link className="ag-qa" href="/admin/errors">
+            <span>
+              {clean
+                ? "Проверить журнал ошибок"
+                : `Разобрать ошибки — ${stats.openErrors}`}
+            </span>
+            <span aria-hidden="true">→</span>
+          </Link>
+          <Link className="ag-qa" href="/admin/content">
+            <span>Выложить новый блок на главной</span>
+            <span aria-hidden="true">→</span>
+          </Link>
+          <Link className="ag-qa" href="/admin/economy">
+            <span>Выдать промокод или подкрутить прогресс</span>
+            <span aria-hidden="true">→</span>
+          </Link>
+          <Link className="ag-qa" href="/admin/settings">
+            <span>
+              {stats.disabledFlags
+                ? `Вернуть выключенные механики — ${stats.disabledFlags}`
+                : "Выключить сломанную механику"}
+            </span>
+            <span aria-hidden="true">→</span>
+          </Link>
+        </div>
       </section>
+
+      {/* --------------------------------- KPI ----------------------------- */}
+      <div className="ag-kpis">
+        {kpi(
+          "Пользователей",
+          String(stats.totalUsers),
+          `+${stats.newUsers} за сутки`,
+          "up",
+        )}
+        {kpi("Активных сессий", String(stats.activeSessions), "сейчас в системе")}
+        {kpi(
+          "Неразобранных ошибок",
+          String(stats.openErrors),
+          `${stats.errorsLast24h} за сутки`,
+          stats.openErrors ? "warn" : undefined,
+        )}
+        {kpi(
+          "Сотрудников",
+          String(stats.admins),
+          `${stats.banned} забанено`,
+          stats.banned ? "warn" : undefined,
+        )}
+      </div>
+
+      {/* --------------------------- Действия ----------------------------- */}
+      <div className="ag-cols">
+        <section className="ag-section" style={{ flex: "2 1 460px" }}>
+          <h2 className="ag-h2">Последние действия администраторов</h2>
+          <AuditFeed entries={auditEntries} />
+        </section>
+
+        <section className="ag-section" style={{ flex: "1 1 280px" }}>
+          <h2 className="ag-h2">Что проверить, если что-то сломалось</h2>
+          <ol className="ag-section" style={{ listStyle: "none", margin: 0, padding: 0, gap: 8 }}>
+            <li className="ag-qa" style={{ cursor: "default" }}>
+              <span>Каталог и карточки тайтлов — часто отваливается прокси картинок</span>
+            </li>
+            <li className="ag-qa" style={{ cursor: "default" }}>
+              <span>Страница тайтла — медленнее всего, тут же виден источник</span>
+            </li>
+            <li className="ag-qa" style={{ cursor: "default" }}>
+              <span>Раздел контента — последнее, что менялось</span>
+            </li>
+            <li className="ag-qa" style={{ cursor: "default" }}>
+              <span>Вход и зеркало прогресса — ломаются вместе с сессиями</span>
+            </li>
+          </ol>
+        </section>
+      </div>
     </div>
   );
 }

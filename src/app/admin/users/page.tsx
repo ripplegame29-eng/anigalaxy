@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { db } from "@/lib/db";
 import { requirePermission } from "@/lib/require-admin";
+import { isRole, ROLE_LABELS } from "@/lib/roles";
 
 import { UserRowActions } from "./user-row-actions";
 
@@ -75,35 +76,34 @@ export default async function AdminUsersPage({
   const { users, total, now } = await loadUsers(query, currentPage);
 
   const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const pageHref = (n: number) =>
+    `/admin/users?page=${n}${query ? `&q=${encodeURIComponent(query)}` : ""}`;
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-end justify-between gap-4">
+    <div className="ag-section" style={{ gap: 28 }}>
+      <div className="ag-head">
         <div>
-          <h1 className="text-2xl font-semibold">Пользователи</h1>
-          <p className="mt-1 text-sm text-white/50">
+          <h1 className="ag-h1">Пользователи</h1>
+          <p className="ag-sub">
             Всего {total}. Показаны {users.length}.
+            {query ? ` Поиск: «${query}»` : ""}
           </p>
         </div>
 
-        <form className="flex gap-2" method="get">
+        <form className="ag-form" method="get">
           <input
             name="q"
             defaultValue={query}
             placeholder="Ник или почта"
-            className="w-56 rounded-xl border border-white/10 bg-black/30 px-4 py-2 text-sm outline-none focus:border-[#1f7bff]"
+            aria-label="Поиск по нику или почте"
+            className="ag-input"
+            style={{ width: 260 }}
           />
-          <button
-            type="submit"
-            className="rounded-xl bg-white/10 px-4 py-2 text-sm text-white/80 transition hover:bg-white/15"
-          >
+          <button type="submit" className="ag-btn pri">
             Найти
           </button>
           {query ? (
-            <Link
-              href="/admin/users"
-              className="rounded-xl px-3 py-2 text-sm text-white/40 hover:text-white/70"
-            >
+            <Link href="/admin/users" className="ag-btn link sm">
               Сбросить
             </Link>
           ) : null}
@@ -111,11 +111,11 @@ export default async function AdminUsersPage({
       </div>
 
       {users.length === 0 ? (
-        <p className="rounded-2xl border border-white/10 bg-white/[0.03] px-5 py-8 text-center text-white/40">
-          Никого не нашлось.
-        </p>
+        <div className="ag-box">
+          <div className="ag-empty">Никого не нашлось.</div>
+        </div>
       ) : (
-        <ul className="space-y-3">
+        <ul className="ag-section" style={{ listStyle: "none", margin: 0, padding: 0, gap: 12 }}>
           {users.map((user) => {
             const banned =
               user.status === "banned" &&
@@ -127,40 +127,45 @@ export default async function AdminUsersPage({
                 : 0;
 
             return (
-              <li
-                key={user.id}
-                className="rounded-2xl border border-white/10 bg-white/[0.03] p-5"
-              >
-                <div className="flex flex-wrap items-start justify-between gap-4">
-                  <div className="min-w-0">
-                    <p className="flex flex-wrap items-center gap-2">
-                      <span className="font-medium">{user.nickname}</span>
-                      {self ? (
-                        <span className="rounded-md bg-white/10 px-1.5 py-0.5 text-[10px] text-white/60">
-                          это вы
-                        </span>
-                      ) : null}
-                      <span className="rounded-md bg-white/10 px-1.5 py-0.5 text-[10px] text-white/60">
-                        {user.role}
+              <li className="ag-box pad" key={user.id}>
+                <div
+                  style={{
+                    display: "flex",
+                    flexWrap: "wrap",
+                    gap: 16,
+                    alignItems: "flex-start",
+                    justifyContent: "space-between",
+                  }}
+                >
+                  <div style={{ minWidth: 0 }}>
+                    <p style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 8 }}>
+                      <b style={{ fontSize: 15 }}>{user.nickname}</b>
+                      {self ? <span className="ag-n">это вы</span> : null}
+                      <span className="ag-n">
+                        {isRole(user.role) ? ROLE_LABELS[user.role] : user.role}
                       </span>
                       {banned ? (
-                        <span className="rounded-md bg-red-500/20 px-1.5 py-0.5 text-[10px] text-red-300">
+                        <span className="ag-lvl" style={{ background: "var(--ag-crbg)", color: "var(--ag-red)" }}>
                           бан
                         </span>
                       ) : null}
                       {premiumLeft > 0 ? (
-                        <span className="rounded-md bg-[#1f7bff]/20 px-1.5 py-0.5 text-[10px] text-[#7db4ff]">
+                        <span className="ag-lvl" style={{ background: "var(--ag-accbg)", color: "var(--ag-acc)" }}>
                           Premium {premiumLeft} дн.
                         </span>
                       ) : null}
                     </p>
-                    <p className="mt-1 text-sm text-white/45">{user.email}</p>
-                    <p className="mt-1 text-xs text-white/30">
+
+                    <p className="ag-note" style={{ marginTop: 4 }}>
+                      {user.email}
+                    </p>
+                    <p className="ag-note" style={{ marginTop: 2 }}>
                       Регистрация {formatDate(Number(user.createdAt))} · активен{" "}
                       {formatDate(user.lastSeenAt === null ? null : Number(user.lastSeenAt))}
                     </p>
+
                     {user.banReason && banned ? (
-                      <p className="mt-2 text-xs text-red-300/80">
+                      <p className="ag-bad" style={{ marginTop: 8 }}>
                         Причина: {user.banReason}
                         {user.bannedUntil
                           ? ` · до ${formatDate(Number(user.bannedUntil))}`
@@ -183,23 +188,26 @@ export default async function AdminUsersPage({
       )}
 
       {pages > 1 ? (
-        <nav className="flex items-center justify-center gap-2 text-sm">
+        <nav
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 12,
+            fontSize: 14,
+          }}
+          aria-label="Страницы списка"
+        >
           {currentPage > 1 ? (
-            <Link
-              href={`/admin/users?page=${currentPage - 1}${query ? `&q=${encodeURIComponent(query)}` : ""}`}
-              className="rounded-lg border border-white/10 px-3 py-1.5 text-white/60 hover:text-white"
-            >
+            <Link href={pageHref(currentPage - 1)} className="ag-btn sm">
               ← Назад
             </Link>
           ) : null}
-          <span className="text-white/40">
+          <span className="ag-note">
             {currentPage} из {pages}
           </span>
           {currentPage < pages ? (
-            <Link
-              href={`/admin/users?page=${currentPage + 1}${query ? `&q=${encodeURIComponent(query)}` : ""}`}
-              className="rounded-lg border border-white/10 px-3 py-1.5 text-white/60 hover:text-white"
-            >
+            <Link href={pageHref(currentPage + 1)} className="ag-btn sm">
               Вперёд →
             </Link>
           ) : null}
