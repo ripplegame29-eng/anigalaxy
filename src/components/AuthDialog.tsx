@@ -430,6 +430,21 @@ export function AuthDialog() {
                     Зарегистрироваться
                   </button>
                 </p>
+
+                {/* Разделение двух разных входов. Эта форма проверяет
+                    localStorage-аккаунт (см. lib/auth.ts), а /login — серверную
+                    сессию в базе. Раньше единственным входом в админку был
+                    прямой заход на /login, и первый же сотрудник вводил свои
+                    данные сюда и получал «Аккаунт не найден». */}
+                <p className="mt-4 border-t border-white/10 pt-4 text-center text-xs text-muted/80">
+                  Сотрудник сайта?{" "}
+                  <a
+                    href="/login"
+                    className="font-bold text-accent transition hover:text-white"
+                  >
+                    Войти в панель управления
+                  </a>
+                </p>
               </form>
 
               {/* Демо-вход через Telegram: без токена бота подпись не проверить,

@@ -24,15 +24,33 @@ import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
 import { PrismaClient } from "@prisma/client";
 
 /**
- * Prisma и better-sqlite3 ждут путь по-разному: первая — `file:./dev.db`
- * в формате URL, вторая — обычный путь в файловой системе. Относительный путь
- * считаем от корня проекта, иначе при запуске из другой директории база
- * молча создастся рядом с process.cwd() — и каждый запуск получит свою копию.
+ * Куда смотреть за базой по умолчанию.
+ *
+ * Путь собирается литералом, а не `join(process.cwd(), raw)` с переменной:
+ * статический анализ Next разбирает только константы, и с переменной он не
+ * может оценить границы — из-за чего включает в сборку весь проект целиком
+ * (предупреждение «Dynamic filesystem access causes tracing of the whole
+ * project»). База лежит рядом со схемой, в `prisma/`, — там же её создают
+ * миграции, так что одна и та же строка в `.env` означает одно и то же и для
+ * CLI, и для рантайма.
  */
+const DEFAULT_DB_FILE = join(process.cwd(), "prisma", "dev.db");
+
 function resolveDatabaseUrl(url: string): string {
   const raw = url.startsWith("file:") ? url.slice("file:".length) : url;
-  if (raw === ":memory:" || isAbsolute(raw)) return raw;
-  return join(process.cwd(), raw);
+
+  if (!raw) return DEFAULT_DB_FILE;
+  // В памяти — для тестов и одноразовых скриптов.
+  if (raw === ":memory:") return raw;
+  // В проде путь обычно абсолютный (или базы нет вовсе и будет Postgres).
+  if (isAbsolute(raw)) return raw;
+
+  // Относительный путь: берём только имя файла и кладём в `prisma/`.
+  // Так база физически не может оказаться в корне репозитория — там её
+  // однажды уже создавал Prisma CLI, и в `.gitignore` пришлось бы дублировать
+  // правила на два возможных места.
+  const file = raw.split(/[/\\]/).pop() ?? "dev.db";
+  return join(process.cwd(), "prisma", file);
 }
 
 const globalForPrisma = globalThis as unknown as {

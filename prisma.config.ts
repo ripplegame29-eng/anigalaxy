@@ -21,6 +21,8 @@ export default defineConfig({
     seed: "node prisma/seed.ts",
   },
   datasource: {
-    url: process.env.DATABASE_URL ?? "file:./dev.db",
+    // Та же строка, что в DATABASE_URL: миграции и рантайм должны видеть одну
+    // базу. Относительный путь Prisma считает от корня проекта.
+    url: process.env.DATABASE_URL ?? "file:./prisma/dev.db",
   },
 });

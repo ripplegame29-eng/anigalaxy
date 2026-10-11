@@ -1,4 +1,6 @@
 import Link from "next/link";
+
+import { AdminFooterLink } from "./AdminFooterLink";
 import { Logo } from "./Logo";
 
 const GENRES = [
@@ -85,8 +87,13 @@ export function Footer() {
         </div>
 
         <div className="mt-12 flex flex-col gap-3 border-t border-line pt-6 text-xs text-muted/85 sm:flex-row sm:items-center sm:justify-between">
-          <p>© {new Date().getFullYear()} AniGalaxy. Все права на контент принадлежат правообладателям.</p>
-          <p>Видео предоставляется сторонними сервисами хранения.</p>
+          <div className="space-y-2">
+            <p>© {new Date().getFullYear()} AniGalaxy. Все права на контент принадлежат правообладателям.</p>
+            <p>Видео предоставляется сторонними сервисами хранения.</p>
+          </div>
+          {/* Ссылка рендерится только для тех, у кого есть серверная сессия
+              с правом `panel`. Неавторизованным — пусто. */}
+          <AdminFooterLink />
         </div>
       </div>
     </footer>

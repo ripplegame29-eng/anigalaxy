@@ -21,8 +21,10 @@ const db = new PrismaClient({ adapter });
 
 function resolveDatabaseUrl(url: string): string {
   const raw = url.startsWith("file:") ? url.slice("file:".length) : url;
+  if (!raw) return join(process.cwd(), "prisma", "dev.db");
   if (raw === ":memory:" || isAbsolute(raw)) return raw;
-  return join(process.cwd(), raw);
+  // Только имя файла, каталог фиксирован — так же, как в src/lib/db.ts.
+  return join(process.cwd(), "prisma", raw.split(/[/\\]/).pop() ?? "dev.db");
 }
 
 /**

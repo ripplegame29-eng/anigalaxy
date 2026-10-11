@@ -98,7 +98,11 @@ export function UserRowActions({
         ) : (
           <Action action={banUserAction}>
             <input type="hidden" name="id" value={userId} />
-            <Button tone="danger">Забанить</Button>
+            {/* Бан гасит и собственную сессию — у своей строки кнопка
+                заблокирована, а не просто спрятана. */}
+            <Button tone="danger" disabled={isSelf}>
+              {isSelf ? "Нельзя забанить себя" : "Забанить"}
+            </Button>
           </Action>
         )}
 
@@ -160,28 +164,30 @@ export function UserRowActions({
             </div>
           </Action>
 
-          <Action action={banUserAction}>
-            <input type="hidden" name="id" value={userId} />
-            <p className="mb-1 text-[11px] text-white/40">Бан на срок</p>
-            <div className="flex gap-2">
-              <select
-                name="days"
-                defaultValue="7"
-                className="flex-1 rounded-lg border border-white/15 bg-black/40 px-2 py-1 text-xs"
-              >
-                <option value="1">1 день</option>
-                <option value="7">7 дней</option>
-                <option value="30">30 дней</option>
-                <option value="">навсегда</option>
-              </select>
-              <input
-                name="reason"
-                placeholder="причина"
-                className="w-28 rounded-lg border border-white/15 bg-black/40 px-2 py-1 text-xs"
-              />
-              <Button tone="danger">Применить</Button>
-            </div>
-          </Action>
+          {isSelf ? null : (
+            <Action action={banUserAction}>
+              <input type="hidden" name="id" value={userId} />
+              <p className="mb-1 text-[11px] text-white/40">Бан на срок</p>
+              <div className="flex gap-2">
+                <select
+                  name="days"
+                  defaultValue="7"
+                  className="flex-1 rounded-lg border border-white/15 bg-black/40 px-2 py-1 text-xs"
+                >
+                  <option value="1">1 день</option>
+                  <option value="7">7 дней</option>
+                  <option value="30">30 дней</option>
+                  <option value="">навсегда</option>
+                </select>
+                <input
+                  name="reason"
+                  placeholder="причина"
+                  className="w-28 rounded-lg border border-white/15 bg-black/40 px-2 py-1 text-xs"
+                />
+                <Button tone="danger">Применить</Button>
+              </div>
+            </Action>
+          )}
         </div>
       ) : null}
     </div>

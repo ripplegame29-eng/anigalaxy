@@ -18,7 +18,9 @@ const ADMIN_PASSWORD = process.env.ADMIN_SEED_PASSWORD ?? "anigalaxy-admin-2026"
 
 function resolve(url) {
   const raw = url.startsWith("file:") ? url.slice(5) : url;
-  return raw === ":memory:" || isAbsolute(raw) ? raw : join(process.cwd(), raw);
+  if (!raw) return join(process.cwd(), "prisma", "dev.db");
+  if (raw === ":memory:" || isAbsolute(raw)) return raw;
+  return join(process.cwd(), "prisma", raw.split(/[/\\]/).pop() ?? "dev.db");
 }
 
 let failed = 0;
