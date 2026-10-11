@@ -38,6 +38,7 @@ import { appendEntry } from "./ledger";
 import { LEGACY_KEYS, markMigrated, migrateLegacy, needsMigration } from "./migrate";
 import { PROGRESSION_CONFIG } from "./progression.config";
 import { getProgressStore, type ProgressStore } from "./store";
+import { sync } from "./sync";
 import type { DomainEvent, ProgressDoc, ProgressEffect } from "./types";
 
 export interface EmitResult {
@@ -419,6 +420,9 @@ export function emit(event: DomainEvent): EmitResult {
   }
 
   st.set(result.doc);
+  // Зеркало на сервер для админки. Не ждём и не ловим ошибки: документ уже
+  // записан локально, синхронизация — второстепенная (см. lib/progression/sync.ts).
+  void sync(result.doc);
   applySideEffects(result.effects);
   if (result.effects.length) notify(result.effects, event);
 

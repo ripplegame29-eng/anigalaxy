@@ -69,6 +69,7 @@ model User {
   auditLogs AuditLog[] @relation("AuditActor")
   reports   Report[]   @relation("ReportAuthor")
   resolved  Report[]   @relation("ReportResolver")
+  progress  PlayerProgress?
 
   @@index([status])
   @@index([role])
@@ -191,6 +192,38 @@ model ContentBlock {
 }
 
 /* ------------------------------- Экономика ------------------------------ */
+
+/// Прогресс игрока — зеркало документа `ProgressDoc`.
+///
+/// Пока `storageMode: "local"`, документ живёт в браузере, а сюда копируется:
+/// это даёт админке возможность его читать и править, но не ломает сайт для
+/// гостей без серверного аккаунта. Когда игровой вход переедет на сервер,
+/// модель станет основным хранилищем, а `src/lib/progression/store.ts`
+/// переключится на `storageMode: "server"` — контракт `load/save` там
+/// асинхронный и для этого уже написан.
+///
+/// `revision` растёт на каждую запись: он же служит признаком того, чей
+/// документ свежее. Дальше по нему разрулится конфликт двух вкладок, когда
+/// хранилище станет серверным.
+model PlayerProgress {
+  userId    String @id
+  user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// JSON строкой: Prisma не умеет json в SQLite, а документ глубоко
+  /// вложенный (см. ProgressDoc в src/lib/progression/types.ts)
+  doc String
+  /// Схема документа на момент записи — нужна миграция при смене версии
+  schemaVersion Int @default(1)
+
+  /// Ниже для отчётов по выдаче: сколько раз админ правил прогресс
+  touchedByAdmin Boolean @default(false) @map("touched_by_admin")
+
+  createdAt BigInt @default(0)
+  updatedAt BigInt @default(0) @map("updated_at")
+  revision  Int    @default(1)
+
+  @@index([updatedAt])
+  @@map("player_progress")
+}
 
 /// Сезон боевого пропуска. Сейчас сезоны считаются из даты в конфиге на клиенте;
 /// серверная модель нужна, чтобы админ мог открыть/закрыть сезон и начислить награды.

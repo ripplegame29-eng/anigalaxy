@@ -23,7 +23,7 @@ export const ADMIN_SECTIONS: AdminSection[] = [
   { href: "/admin/users", label: "Пользователи", permission: "users", ready: true },
   { href: "/admin/moderation", label: "Модерация", permission: "moderation", ready: true },
   { href: "/admin/content", label: "Контент", permission: "content", ready: true },
-  { href: "/admin/economy", label: "Экономика", permission: "economy", ready: false },
+  { href: "/admin/economy", label: "Экономика", permission: "economy", ready: true },
   { href: "/admin/errors", label: "Журнал ошибок", permission: "settings", ready: true },
   { href: "/admin/settings", label: "Настройки", permission: "settings", ready: true },
 ];
