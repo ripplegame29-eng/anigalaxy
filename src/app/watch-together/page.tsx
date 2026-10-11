@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
+import { requireFeature } from "@/lib/features";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { WatchTogetherHero, WatchTogetherView } from "@/components/WatchTogetherView";
 
@@ -209,7 +210,9 @@ function ViewSkeleton() {
 /*  Страница                                                           */
 /* ------------------------------------------------------------------ */
 
-export default function WatchTogetherPage() {
+export default async function WatchTogetherPage() {
+  // Тумблер «watchTogether» в панели «Настройки». Выключенная механика — 404.
+  await requireFeature("watchTogether");
   return (
     <div className="relative overflow-hidden">
       {/* Фоновое свечение — как на страницах Premium и «Поддержать» */}

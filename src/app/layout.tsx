@@ -15,6 +15,7 @@ import { ChatWidget } from "@/components/ChatWidget";
 import { DailyBonusHost } from "@/components/DailyBonusHost";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
+import { getFeatures } from "@/lib/features";
 import { ProgressionBoot } from "@/components/ProgressionBoot";
 import { DevPanel } from "@/components/progression/DevPanel";
 import { EcoBoot } from "@/components/progression/EcoBoot";
@@ -55,7 +56,11 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  // Флаги читаются здесь, а не в Header: тот — клиентский компонент и сам
+  // базу открыть не может. Снимок на запрос кэшируется внутри getFeatures,
+  // поэтому шапка и подвал не делают по два одинаковых запроса.
+  const features = await getFeatures().catch(() => undefined);
   return (
     <html
       lang="ru"
@@ -111,7 +116,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         >
           Перейти к содержимому
         </a>
-        <Header />
+        <Header features={features} />
         {/* min-w-0 обязателен: main — флекс-элемент колоночного body, а у
             флекс-элементов min-width:auto. Без него любой широкий потомок
             (лента разделов магазина, карусели) растягивал всю страницу, и
@@ -119,7 +124,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <main id="main" className="relative z-[1] min-w-0 flex-1 pt-16">
           {children}
         </main>
-        <Footer />
+        <Footer features={features} />
         {/* Модалка авторизации живёт в layout, а не в шапке: у <header> есть
           backdrop-blur, а элементы с backdrop-filter/filter становятся
           containing block для position:fixed — панель тогда центрируется по
@@ -152,7 +157,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <AchievementEmblemIO />
 
         {/* Общий чат: плавающая кнопка + боковая панель (локальная симуляция) */}
-        <ChatWidget />
+        <ChatWidget showChat={features?.chat !== false} showClans={features?.clans !== false} />
 
         {/*
           Апскейл плеера живёт в самом WatchBox: кадры чужого iframe Kodik

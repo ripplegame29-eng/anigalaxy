@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { requireFeature } from "@/lib/features";
 import Image from "next/image";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { DonateCta } from "@/components/DonateCta";
@@ -95,7 +96,9 @@ const BONUSES = [
 
 /* ------------------------------ Страница -------------------------------- */
 
-export default function DonatePage() {
+export default async function DonatePage() {
+  // Тумблер «donate» в панели «Настройки». Выключенная механика — 404.
+  await requireFeature("donate");
   return (
     <div className="relative overflow-hidden">
       {/* Фоновое свечение — как на странице Premium */}
