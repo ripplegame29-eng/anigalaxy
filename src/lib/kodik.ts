@@ -9,6 +9,7 @@
  */
 import "server-only";
 import { absoluteUrl, cardKey, dedupeCards, toCard } from "./anime";
+import { logError } from "./logger";
 import type {
   AnimeCard,
   CatalogQuery,
@@ -103,16 +104,65 @@ async function kodikPost<T>(
       cache: "no-store",
     });
 
-    if (!res.ok) throw new KodikError(`Kodik API вернул ${res.status} для /${path}`);
+    if (!res.ok) {
+      // Текст ответа полезен: при 4xx/5xx Kodik часто кладёт туда причину,
+      // а HTTP-код сам по себе ни о чём не говорит.
+      const body = await res.text().catch(() => "");
+      throw new KodikError(
+        `Kodik API вернул ${res.status} для /${path}${body ? `: ${body.slice(0, 300)}` : ""}`,
+        res.status >= 400 && res.status < 600 ? res.status : 502,
+      );
+    }
 
-    const data = (await res.json()) as T & { error?: string };
-    if (data && typeof data === "object" && "error" in data && data.error) {
+    // Раньше ответ приводился `as T` и сразу отдавался вызывающему. Если Kodik
+    // сменит формат (или вернёт HTML от балансировщика), ошибка всплывёт позже
+    // и в другом файле — как «results.map is not a function». Проверяем форму
+    // здесь, у места, где ответ пришёл, и кладём в журнал.
+    const raw: unknown = await res.json();
+    if (!raw || typeof raw !== "object") {
+      throw new KodikError(
+        `Kodik /${path} вернул не объект: ${typeof raw}`,
+        502,
+      );
+    }
+
+    const data = raw as T & { error?: string };
+    if ("error" in data && data.error) {
       throw new KodikError(`Kodik API: ${data.error}`);
     }
+
+    if ("results" in data && !Array.isArray((data as { results?: unknown }).results)) {
+      throw new KodikError(
+        `Kodik /${path} вернул results не-массивом — сменился формат ответа`,
+        502,
+      );
+    }
+
     return data;
+  } catch (error: unknown) {
+    // Токен в params не пишется — redact() в логгере вычистил бы его и так,
+    // но и передавать секрет в журнал незачем.
+    void logError({
+      level: "error",
+      source: "kodik",
+      operation: path,
+      message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : null,
+      context: { params, isAbort: isAbortError(error) },
+    });
+    throw error;
   } finally {
     clearTimeout(timer);
   }
+}
+
+/** Отмена по таймауту — отдельный случай: в журнале он полезен отдельно,
+ *  потому что означает «источник не ответил», а не «источник сломался». */
+function isAbortError(error: unknown): boolean {
+  return (
+    error instanceof Error &&
+    (error.name === "AbortError" || error.name === "TimeoutError")
+  );
 }
 
 /* ------------------------------------------------------------------ */
@@ -368,6 +418,20 @@ function attr(source: string, name: string): string | undefined {
 }
 
 /**
+ * Фрагмент разметки вокруг первого вхождения `needle`.
+ *
+ * Нужен для починки парсеров: в журнал попадает не вся страница (это
+ * сотни килобайт) и не пустая строка, а то место, где что-то искали.
+ * Если маркер не найден — возвращаем начало документа: обычно поменявшаяся
+ * вёрстка уезжает именно туда.
+ */
+function sampleAround(html: string, needle: string, span = 1200): string {
+  const at = html.toLowerCase().indexOf(needle.toLowerCase());
+  if (at < 0) return html.slice(0, span);
+  return html.slice(Math.max(0, at - span / 2), at + span / 2);
+}
+
+/**
  * Список озвучек тайтла.
  *
  * В самой Kodik API отдельного «списка переводов тайтла» нет — он есть на
@@ -420,6 +484,27 @@ export async function getTranslations(id: string): Promise<TranslationOption[]> 
           mediaId: `${mediaType}-${mediaId}`,
           episodeCount: count || undefined,
           current: /\bselected\b/i.test(tag) || attr(tag, "selected") !== undefined,
+        });
+      }
+
+      // Ноль найденных option'ов — это не «у тайтла нет озвучек», а скорее
+      // всего сменилась вёрстка плеера и регулярка перестала совпадать.
+      // Без этой проверки сайт тихо теряет выбор озвучки, и заметить это
+      // можно только по жалобам в поддержку.
+      if (options.length === 0) {
+        void logError({
+          level: "warn",
+          source: "parser",
+          operation: "kodik.translations",
+          message:
+            "На странице плеера не найдено ни одной озвучки — вероятно, изменилась разметка",
+          context: {
+            titleId: id,
+            pageUrl,
+            htmlLength: html.length,
+            // фрагмент вокруг упоминания translations: парсер целится туда
+            htmlSample: sampleAround(html, "translations"),
+          },
         });
       }
 
