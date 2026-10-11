@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useSyncExternalStore } from "react";
 
 type Theme = "paper" | "space";
 
@@ -36,6 +36,24 @@ function subscribe(onChange: () => void): () => void {
 
 export function ThemeToggle() {
   const theme = useSyncExternalStore(subscribe, currentTheme, () => "paper" as Theme);
+
+  // Инлайн-скрипт в layout ставит тему только при полной загрузке страницы.
+  // При переходе на /admin клиентом React его не выполняет (скрипт внутри
+  // компонента), и панель мигнула бы светлой, а потом «прыгнула» в тёмную,
+  // когда прочитает localStorage. Поэтому на монтировании применяем сохранённую
+  // тему явно. Запись в DOM, а не setState: значение и так приедет через
+  // useSyncExternalStore.
+  useEffect(() => {
+    const stored = currentTheme();
+    const applied = document.documentElement.dataset.theme === "dark" ? "space" : "paper";
+
+    if (stored === applied) return;
+
+    if (stored === "space") document.documentElement.dataset.theme = "dark";
+    else delete document.documentElement.dataset.theme;
+
+    window.dispatchEvent(new Event("ag-theme-change"));
+  }, []);
 
   const pick = useCallback((next: Theme) => {
     const root = document.documentElement;
