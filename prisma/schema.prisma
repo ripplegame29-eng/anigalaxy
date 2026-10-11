@@ -70,6 +70,7 @@ model User {
   reports   Report[]   @relation("ReportAuthor")
   resolved  Report[]   @relation("ReportResolver")
   progress  PlayerProgress?
+  promoUses PromoRedemption[]
 
   @@index([status])
   @@index([role])
@@ -271,6 +272,10 @@ model PromoCode {
   createdAt BigInt @default(0)
   updatedAt BigInt @default(0)
 
+  /// Активации. Связь нужна, чтобы посчитать «код уже использовали» и чтобы
+  /// панель могла запретить удалять код с историей применений.
+  redemptions PromoRedemption[]
+
   @@index([active])
   @@map("promo_codes")
 }
@@ -278,10 +283,12 @@ model PromoCode {
 /// Кто и когда активировал промокод — без этого нельзя посчитать usedCount
 /// честно и нельзя ограничить «по одному на аккаунт».
 model PromoRedemption {
-  id         String @id @default(cuid())
+  id         String    @id @default(cuid())
   promoId    String
+  promo      PromoCode @relation(fields: [promoId], references: [id], onDelete: Cascade)
   userId     String
-  redeemedAt BigInt @default(0)
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  redeemedAt BigInt    @default(0)
 
   @@unique([promoId, userId])
   @@index([userId])
