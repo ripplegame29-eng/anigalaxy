@@ -1,0 +1,1598 @@
+/* ==================================================================
+   Боевой пропуск — оформление дорожки и сцены получения.
+
+   Основа — эталон «Hueco Mundo · Battle Pass»: стеклянные панели с
+   конической рамкой, гекс-эмблемы по редкости, кольцо уровня с
+   делениями, ползунок дорожки и сцена получения (заряд → лучи →
+   волны → вспышка → результат).
+
+   Отличия от эталона: визуал каждой награды настоящий (монета AC,
+   молния XP, капсула титула, аватар в рамке), а не одна монетка;
+   все слои анимации строятся на transform/opacity, тяжёлые
+   фильтры остались только на единичных элементах (кольцо, сцена).
+   Вне экрана анимации ставятся на паузу классом `ae-pz`
+   (см. AchievementEmblemIO), при reduced-motion — выключаются.
+   ================================================================== */
+
+@layer components {
+  /* ---------- Токены страницы ---------- */
+  .bp-page {
+    --bp-cy: var(--color-accent-2);
+    --bp-go: var(--color-gold);
+    --bp-ok: var(--color-mint);
+    --bp-vi: #b06bff;
+    --bp-glass: linear-gradient(160deg, rgb(20 22 34 / 74%), rgb(9 10 18 / 70%));
+  }
+
+  /* Фон сезона: пейзаж пустоши с затмением + дрейфующий туман.
+     Слой фиксированный и с `translateZ(0)`, чтобы не участвовал в
+     перерисовке при скролле; медленный зум — transform, без repaint. */
+  .bp-bg {
+    position: fixed;
+    inset: 0;
+    z-index: -2;
+    background: #07080d url("/bp/bp-bg.jpg") center 38% / cover no-repeat;
+    transform: translateZ(0);
+    animation: bp-bg 40s ease-in-out infinite alternate;
+  }
+  .bp-bg::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 50% 30%, transparent 30%, rgb(7 8 13 / 55%) 85%),
+      linear-gradient(180deg, rgb(7 8 13 / 0%) 40%, rgb(7 8 13 / 82%) 100%);
+  }
+  .bp-fog {
+    position: fixed;
+    left: -20%;
+    right: -20%;
+    bottom: 0;
+    height: 50vh;
+    z-index: -1;
+    pointer-events: none;
+    background:
+      radial-gradient(ellipse at 28% 100%, rgb(0 200 255 / 13%), transparent 60%),
+      radial-gradient(ellipse at 76% 100%, rgb(176 107 255 / 13%), transparent 60%);
+    animation: bp-fog 16s ease-in-out infinite alternate;
+  }
+  /* Тот же пейзаж под сценой получения — сцена «в том же мире» */
+  .bp-scene::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: #07080d url("/bp/bp-bg.jpg") center 38% / cover no-repeat;
+  }
+
+  /* Стеклянная панель с бегущей конической рамкой (mask xor) */
+  .bp-panel {
+    position: relative;
+    border-radius: 22px;
+    background: var(--bp-glass);
+    backdrop-filter: blur(8px) saturate(1.2);
+    -webkit-backdrop-filter: blur(8px) saturate(1.2);
+    box-shadow:
+      0 24px 70px rgb(0 0 0 / 55%),
+      inset 0 1px 0 rgb(255 255 255 / 6%);
+  }
+  .bp-panel::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    pointer-events: none;
+    background: linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--bp-cy) 55%, transparent),
+      rgb(176 107 255 / 12%) 42%,
+      rgb(176 107 255 / 50%)
+    );
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    mask-composite: exclude;
+  }
+
+  /* ---------- Шапка ---------- */
+  /* Шапка живёт в двухколоночной сетке рядом с блоком покупки, поэтому
+     внутренняя раскладка компактнее: кольцо, текст и действия. */
+  .bp-hd {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: 24px 28px;
+    padding: 30px 32px;
+  }
+  /* Кольцо уровня — визуальный центр шапки */
+  .bp-hd .hero {
+    width: 196px;
+    display: grid;
+    place-items: center;
+  }
+  .bp-hd .eyebrow {
+    margin: 0 0 4px;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.28em;
+    color: var(--bp-cy);
+  }
+  .bp-hd h1 {
+    margin: 0;
+    font-family: var(--font-accent), var(--font-sans);
+    font-size: clamp(26px, 4vw, 44px);
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: 0.02em;
+    text-shadow: 0 0 28px rgb(0 200 255 / 30%);
+  }
+  .bp-hd h1 span {
+    display: block;
+    font-size: 0.46em;
+    letter-spacing: 0.3em;
+    color: var(--color-muted);
+    text-shadow: none;
+  }
+  .bp-hd .sub {
+    margin: 10px 0 16px;
+    color: var(--color-muted);
+    max-width: 560px;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  /* Действия шапки: баланс, «Забрать все», Premium — встают в ряд под текстом,
+     иначе покупка-плашка отжимала бы заголовок в три строки */
+  .bp-act {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    grid-column: 2;
+  }
+  .bp-act > * {
+    flex: 0 0 auto;
+  }
+  .bp-ac {
+    font-size: 12px;
+    font-weight: 800;
+    color: var(--color-muted);
+    letter-spacing: 0.06em;
+    margin-right: auto;
+  }
+  .bp-ac b {
+    color: var(--bp-cy);
+    font-size: 16px;
+    text-shadow: 0 0 10px var(--bp-cy);
+  }
+
+  /* Компактные кнопки шапки: баланс, «Забрать все», Premium должны встать
+     в одну строку рядом с заголовком, не отжимая его в три строки */
+  .bp-hd .bp-btn {
+    padding: 9px 14px;
+    font-size: 12px;
+  }
+
+  /* Блок покупки пропуска — та же стеклянная панель, что шапка */
+  .bp-buy {
+    border-radius: 22px;
+    background: linear-gradient(160deg, rgb(20 22 34 / 78%), rgb(9 10 18 / 74%));
+    backdrop-filter: blur(8px) saturate(1.2);
+    -webkit-backdrop-filter: blur(8px) saturate(1.2);
+    box-shadow:
+      0 24px 70px rgb(0 0 0 / 55%),
+      inset 0 1px 0 rgb(255 255 255 / 6%);
+    padding: 20px;
+  }
+
+  /* Кнопки страницы — общий вид (btn-primary остаётся для действий) */
+  .bp-btn {
+    position: relative;
+    padding: 12px 16px;
+    border-radius: 13px;
+    border: 1px solid rgb(255 255 255 / 14%);
+    background: rgb(255 255 255 / 5%);
+    font-size: 13px;
+    font-weight: 800;
+    cursor: pointer;
+    transition:
+      transform 0.15s,
+      border-color 0.2s,
+      box-shadow 0.2s,
+      background 0.2s;
+  }
+  .bp-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    border-color: var(--bp-cy);
+    box-shadow: 0 8px 24px rgb(0 200 255 / 18%);
+  }
+  .bp-btn:active:not(:disabled) {
+    transform: translateY(0) scale(0.98);
+  }
+  .bp-btn:disabled {
+    opacity: 0.45;
+    cursor: default;
+  }
+  .bp-btn em {
+    font-style: normal;
+    margin-left: 6px;
+    padding: 1px 8px;
+    border-radius: 9px;
+    background: rgb(61 220 151 / 18%);
+    color: var(--bp-ok);
+  }
+  .bp-btn.vip {
+    background: linear-gradient(135deg, rgb(255 176 32 / 18%), rgb(255 138 31 / 14%));
+    border-color: rgb(255 176 32 / 50%);
+    color: #ffe9a8;
+  }
+  .bp-btn.vip.on {
+    border-color: var(--bp-ok);
+    color: var(--bp-ok);
+    background: rgb(61 220 151 / 10%);
+  }
+  .bp-btn.sm {
+    padding: 7px 12px;
+    font-size: 12px;
+  }
+
+  /* ---------- XP ---------- */
+  .bp-xpt {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--color-muted);
+    margin-bottom: 6px;
+  }
+  .bp-xpt span:first-child {
+    color: var(--color-bright);
+  }
+  .bp-xpb {
+    height: 12px;
+    border-radius: 9px;
+    background: rgb(255 255 255 / 7%);
+    overflow: hidden;
+    box-shadow: inset 0 1px 3px rgb(0 0 0 / 60%);
+  }
+  .bp-xpb i {
+    position: relative;
+    display: block;
+    height: 100%;
+    width: 0;
+    border-radius: inherit;
+    background: linear-gradient(90deg, #2a78ff, var(--bp-cy), var(--bp-vi));
+    box-shadow: 0 0 14px var(--bp-cy);
+    overflow: hidden;
+    transition: width 0.9s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  .bp-xpb i::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(100deg, transparent 30%, rgb(255 255 255 / 55%) 50%, transparent 70%);
+    transform: translateX(-100%);
+    animation: bp-sheen 3s ease-in-out infinite;
+  }
+
+  /* ---------- Кольцо уровня ---------- */
+  .bp-ring {
+    position: relative;
+    width: 196px;
+    height: 196px;
+    flex: none;
+  }
+  .bp-ring svg {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+  .bp-ring .tk {
+    stroke: rgb(255 255 255 / 16%);
+    stroke-width: 1.4;
+    stroke-linecap: round;
+  }
+  .bp-ring .tk.on {
+    stroke: var(--bp-cy);
+    filter: drop-shadow(0 0 2px var(--bp-cy));
+  }
+  .bp-ring .tk.k {
+    stroke-width: 2.4;
+  }
+  .bp-ring .tk.k.on {
+    stroke: var(--bp-go);
+    filter: drop-shadow(0 0 3px var(--bp-go));
+  }
+  .bp-ring .orb {
+    transform-origin: 85px 85px;
+    animation: bp-spin 28s linear infinite;
+  }
+  .bp-ring .halo {
+    animation: bp-halo 5s ease-in-out infinite alternate;
+    transform-origin: 85px 52px;
+  }
+  .bp-ring .cn {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-content: center;
+    text-align: center;
+    padding-top: 21%;
+  }
+  .bp-ring .cn small {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.24em;
+    color: var(--color-muted);
+  }
+  .bp-ring .cn b {
+    font-family: var(--font-accent), var(--font-sans);
+    font-size: 40px;
+    font-weight: 800;
+    line-height: 1;
+    text-shadow: 0 0 18px rgb(0 200 255 / 55%);
+  }
+
+  /* ---------- Дорожка ---------- */
+  .bp-track {
+    padding: 22px 22px 18px;
+  }
+  .bp-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 16px;
+    flex: 1;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    color: var(--color-muted);
+  }
+  .bp-legend i {
+    display: inline-block;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    margin-right: 6px;
+    vertical-align: -1px;
+  }
+  .bp-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 18px;
+    align-items: center;
+    margin-bottom: 14px;
+  }
+  .bp-nav {
+    display: flex;
+    gap: 6px;
+  }
+
+  /* Нативный скроллбар скрыт: положение окна показывает ползунок под дорожкой.
+     `scroll-snap` намеренно не используем — он перехватывает плавную
+     прокрутку к уровню (стрелка «откатывала» дорожку) и дёргает кадр при
+     перетаскивании; центрирование делают ползунок и кнопки навигации. */
+  .bp-sc {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding: 4px 2px 12px;
+    overscroll-behavior-x: contain;
+    cursor: grab;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .bp-sc.grabbing {
+    cursor: grabbing;
+    user-select: none;
+  }
+  .bp-sc::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Колонка уровня: слот / номер / слот.
+     Ширина по умолчанию — как у валюты и XP. Колонки с титулами шире:
+     капсула с длинным названием («Багровый рассвет») иначе обрезается.
+     Переключает класс `.bp-col--tag` в разметке. */
+  .bp-col {
+    flex: none;
+    width: var(--col-w, 134px);
+    display: grid;
+    grid-template-rows: 160px 34px 160px;
+    gap: 8px;
+    content-visibility: auto;
+    contain-intrinsic-size: auto 370px;
+  }
+  .bp-col--tag {
+    --col-w: 170px;
+  }
+
+  .bp-slot {
+    border-radius: 16px;
+    background: rgb(12 14 24 / 62%);
+    border: 1px dashed rgb(255 255 255 / 10%);
+    display: grid;
+    place-items: center;
+    min-width: 0;
+  }
+  .bp-slot.vip {
+    border-color: rgb(255 176 32 / 14%);
+  }
+  .bp-slot.has {
+    border-style: solid;
+  }
+  .bp-slot .dot::before {
+    content: "";
+    display: block;
+    width: 2px;
+    height: 2px;
+    border-radius: 50%;
+    background: #444a66;
+  }
+
+  .bp-num {
+    display: grid;
+    place-items: center;
+    border-radius: 11px;
+    font-weight: 800;
+    font-size: 13px;
+    color: var(--color-muted);
+    background: rgb(255 255 255 / 4%);
+    border: 1px solid rgb(255 255 255 / 8%);
+  }
+  .bp-col.past .bp-num {
+    color: #cfe;
+    background: rgb(0 200 255 / 10%);
+    border-color: rgb(0 200 255 / 28%);
+  }
+  .bp-col.cur .bp-num {
+    color: #fff;
+    background: linear-gradient(135deg, #1c4fd0, #2a78ff);
+    border-color: var(--bp-cy);
+    box-shadow: 0 0 18px rgb(42 120 255 / 70%);
+  }
+  .bp-col.key .bp-num {
+    color: var(--bp-go);
+    border-color: rgb(255 176 32 / 55%);
+    background: rgb(255 176 32 / 8%);
+  }
+  .bp-col.cur .bp-num {
+    color: #fff;
+  }
+
+  /* ---------- Награда в слоте ---------- */
+  .bp-rw {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    border-radius: inherit;
+    padding: 10px 6px 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    gap: 4px;
+    overflow: hidden;
+    text-align: center;
+    cursor: pointer;
+    background:
+      radial-gradient(circle at 50% 28%, color-mix(in srgb, var(--c) 14%, transparent), transparent 70%),
+      rgb(12 14 24 / 62%);
+    border: 1px solid color-mix(in srgb, var(--c) 28%, transparent);
+    transition:
+      border-color 0.2s,
+      box-shadow 0.2s,
+      transform 0.2s;
+  }
+  .bp-rw::before {
+    content: "";
+    position: absolute;
+    left: 18%;
+    right: 18%;
+    top: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--c), transparent);
+    opacity: 0.85;
+  }
+  .bp-rw:hover {
+    border-color: var(--c);
+    box-shadow: 0 0 22px color-mix(in srgb, var(--c) 30%, transparent);
+  }
+  .bp-rw .tg {
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.18em;
+    color: var(--color-muted);
+    text-transform: uppercase;
+  }
+  .bp-rw b {
+    font-size: 11px;
+    font-weight: 800;
+    line-height: 1.2;
+    max-width: 100%;
+    padding: 0 3px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .bp-rw.locked {
+    opacity: 0.8;
+  }
+  .bp-rw.got {
+    opacity: 0.9;
+  }
+  .bp-rw.got b {
+    color: #7d849c;
+  }
+  .bp-rw.vip.locked .bp-art {
+    filter: grayscale(0.5) brightness(0.72);
+  }
+
+  /* Пиллюля состояния */
+  .bp-pill {
+    width: calc(100% - 10px);
+    padding: 5px 2px;
+    border-radius: 9px;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    background: rgb(255 255 255 / 5%);
+    border: 1px solid rgb(255 255 255 / 10%);
+    color: var(--color-muted);
+  }
+  .bp-rw.got .bp-pill {
+    color: var(--bp-ok);
+    background: rgb(61 220 151 / 10%);
+    border-color: rgb(61 220 151 / 35%);
+  }
+  .bp-rw.can {
+    animation: bp-claim 2.2s ease-in-out infinite;
+  }
+  .bp-rw.can .bp-pill {
+    color: #04140b;
+    background: linear-gradient(135deg, var(--bp-ok), var(--bp-cy));
+    border: 0;
+    box-shadow: 0 0 16px rgb(61 220 151 / 55%);
+  }
+  .bp-rw.vip .bp-pill {
+    color: var(--bp-go);
+    border-color: rgb(255 176 32 / 35%);
+  }
+
+  /* Значок комплекта (бандл ×2/×3) */
+  .bp-bundle {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    z-index: 4;
+    padding: 1px 5px;
+    border-radius: 6px;
+    font-size: 9px;
+    font-weight: 800;
+    color: #fff;
+    background: rgb(255 255 255 / 14%);
+    border: 1px solid rgb(255 255 255 / 22%);
+  }
+
+  /* ---------- Ползунок дорожки ---------- */
+  .bp-sl {
+    position: relative;
+    height: 58px;
+    margin: 10px 8px 0;
+    touch-action: none;
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .bp-sl.dragging {
+    cursor: grabbing;
+  }
+  .bp-sl:focus-visible {
+    outline: 2px solid var(--bp-cy);
+    outline-offset: 4px;
+    border-radius: 14px;
+  }
+  .bp-sl .rail {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 30px;
+    height: 8px;
+    border-radius: 8px;
+    background: rgb(255 255 255 / 8%);
+    box-shadow: inset 0 1px 3px rgb(0 0 0 / 70%);
+  }
+  /* Градиентной заливки у шкалы нет: положение окна показывают бегунок
+     и ромб текущего уровня, а сама шкала остаётся нейтральной. */
+  .bp-sl .ticks {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 42px;
+    height: 10px;
+    background: repeating-linear-gradient(
+      90deg,
+      rgb(255 255 255 / 22%) 0 1px,
+      transparent 1px 10%
+    );
+  }
+  .bp-sl .key {
+    position: absolute;
+    top: 20px;
+    width: 3px;
+    height: 28px;
+    margin-left: -1.5px;
+    background: rgb(255 176 32 / 55%);
+    border-radius: 3px;
+    pointer-events: none;
+  }
+  .bp-sl .key.minor {
+    height: 20px;
+    top: 24px;
+    background: rgb(255 255 255 / 28%);
+  }
+  .bp-sl .pin {
+    position: absolute;
+    top: 25px;
+    width: 14px;
+    height: 14px;
+    margin-left: -7px;
+    transform: rotate(45deg);
+    background: var(--bp-ok);
+    box-shadow: 0 0 12px var(--bp-ok);
+    pointer-events: none;
+  }
+  .bp-sl .thumb {
+    position: absolute;
+    top: 0;
+    width: 0;
+    height: 100%;
+    pointer-events: none;
+    will-change: transform;
+  }
+  .bp-sl .thumb::before {
+    content: "";
+    position: absolute;
+    left: -26px;
+    top: 22px;
+    width: 52px;
+    height: 22px;
+    border-radius: 12px;
+    background: rgb(255 255 255 / 18%);
+    border: 1.5px solid #fff;
+    box-shadow: 0 0 18px rgb(0 200 255 / 45%);
+  }
+  .bp-sl .thumb b {
+    position: absolute;
+    left: -21px;
+    top: -8px;
+    width: 42px;
+    padding: 4px 0;
+    border-radius: 10px;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 800;
+    background: #fff;
+    color: #0b0d15;
+  }
+  .bp-sl .thumb b::after {
+    content: "";
+    position: absolute;
+    left: 15px;
+    bottom: -5px;
+    border: 5px solid transparent;
+    border-top-color: #fff;
+    border-bottom: 0;
+  }
+  .bp-sl.dragging .thumb b {
+    transform: translateY(-3px) scale(1.08);
+  }
+
+  /* ---------- Модалка награды ---------- */
+  .bp-ov {
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    display: grid;
+    place-items: center;
+    padding: 16px;
+    background: rgb(4 5 9 / 74%);
+    backdrop-filter: blur(6px);
+    opacity: 0;
+    visibility: hidden;
+    transition:
+      opacity 0.25s,
+      visibility 0.25s;
+  }
+  .bp-ov.on {
+    opacity: 1;
+    visibility: visible;
+  }
+  .bp-mdl {
+    position: relative;
+    width: min(440px, 100%);
+    max-height: 92vh;
+    overflow-y: auto;
+    text-align: center;
+    padding: 26px 22px 20px;
+    transform: translateY(18px) scale(0.96);
+    transition: transform 0.35s cubic-bezier(0.2, 1.2, 0.4, 1);
+  }
+  .bp-ov.on .bp-mdl {
+    transform: none;
+  }
+  .bp-mdl h2 {
+    margin: 0 0 10px;
+    font-family: var(--font-accent), var(--font-sans);
+    font-size: 24px;
+    font-weight: 800;
+    line-height: 1.15;
+    background: linear-gradient(100deg, #fff 0%, var(--c, var(--bp-cy)) 90%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .bp-chips {
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .bp-chips span {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 9px;
+    border-radius: 8px;
+    background: rgb(255 255 255 / 8%);
+    border: 1px solid rgb(255 255 255 / 14%);
+    color: #c9ccdf;
+  }
+  .bp-chips span.rc {
+    color: var(--c);
+    border-color: color-mix(in srgb, var(--c) 45%, transparent);
+    background: color-mix(in srgb, var(--c) 12%, rgb(12 14 24 / 60%));
+  }
+  .bp-box {
+    background: rgb(27 28 39 / 80%);
+    border-radius: 14px;
+    padding: 14px;
+    text-align: left;
+    margin: 16px 0 14px;
+    color: #c9ccdf;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  .bp-box small {
+    display: block;
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--color-muted);
+    margin-bottom: 4px;
+    letter-spacing: 0.1em;
+  }
+  .bp-box .ok {
+    color: var(--bp-ok);
+    font-weight: 800;
+    margin: 12px 0 2px;
+  }
+  .bp-box .ok.mu {
+    color: var(--color-muted);
+  }
+  .bp-box .row {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    font-size: 12px;
+    color: var(--color-muted);
+    margin-top: 8px;
+  }
+  .bp-box .row b {
+    font-weight: 800;
+    color: var(--color-bright);
+  }
+  .bp-mdl .btn {
+    width: 100%;
+    padding: 14px;
+    border-radius: 13px;
+    border: 1px solid rgb(255 255 255 / 14%);
+    background: rgb(255 255 255 / 6%);
+    font-weight: 800;
+    cursor: pointer;
+    transition:
+      transform 0.15s,
+      box-shadow 0.2s;
+  }
+  .bp-mdl .btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+  }
+  .bp-mdl .btn.pri {
+    border: 0;
+    background: linear-gradient(135deg, var(--bp-ok), var(--bp-cy));
+    color: #04140b;
+    box-shadow: 0 8px 26px rgb(61 220 151 / 35%);
+  }
+  .bp-mdl .btn.vip {
+    border: 0;
+    background: linear-gradient(135deg, #ffd04d, #ff8a1f);
+    color: #2a1500;
+  }
+  .bp-mdl .btn:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+  .bp-mdl .x {
+    position: absolute;
+    top: 10px;
+    right: 12px;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: 1px solid rgb(255 255 255 / 12%);
+    background: rgb(255 255 255 / 5%);
+    font-size: 20px;
+    line-height: 1;
+    cursor: pointer;
+  }
+
+  /* ================================================================
+     Сцена получения награды: заряд → лучи/столб → волны → вспышка →
+     разлёт частиц → карточка результата.
+     ================================================================ */
+  /* Появление — CSS-анимацией на монтировании, а не переключением класса:
+     React перерисовывает className и стирал бы класс, добавленный вручную */
+  .bp-scene {
+    position: fixed;
+    inset: 0;
+    z-index: 80;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    overflow: hidden;
+    cursor: pointer;
+    background:
+      radial-gradient(circle at 50% 45%, transparent 18%, rgb(2 3 8 / 86%) 78%),
+      linear-gradient(180deg, rgb(7 8 13 / 60%), rgb(7 8 13 / 88%));
+    animation: bpSceneIn 0.35s ease both;
+  }
+  .bp-scene.result {
+    cursor: default;
+  }
+  /* Стадия заряда скрывается, когда показана карточка результата */
+  .bp-stage.hidden {
+    display: none;
+  }
+  .bp-scene .hint {
+    position: absolute;
+    bottom: 24px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: var(--color-muted);
+    pointer-events: none;
+  }
+  .bp-scene.result .hint {
+    display: none;
+  }
+
+  .bp-dust {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+  }
+  .bp-dust i {
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 0 8px var(--oc, var(--bp-cy));
+    opacity: 0;
+    animation: bp-dust 4s ease-in-out infinite;
+  }
+
+  .bp-stage {
+    position: relative;
+    width: min(92vw, 520px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 5;
+  }
+  .bp-beam {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 0;
+    height: 0;
+    z-index: 4;
+    pointer-events: none;
+  }
+  .bp-beam::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 1000px;
+    height: 1000px;
+    transform: translate(-50%, -50%) scale(0);
+    border-radius: 50%;
+    opacity: 0;
+    background: repeating-conic-gradient(
+      color-mix(in srgb, var(--oc, var(--bp-cy)) 92%, transparent) 0 2deg,
+      transparent 2deg 11deg
+    );
+    -webkit-mask: radial-gradient(circle, #000 6%, transparent 60%);
+    mask: radial-gradient(circle, #000 6%, transparent 60%);
+  }
+  .bp-scene.burst .bp-beam::before {
+    animation: bp-beams 1.2s ease-out forwards;
+  }
+  .bp-pillar {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 80px;
+    height: 0;
+    transform: translate(-50%, -100%);
+    filter: blur(16px);
+    z-index: 4;
+    pointer-events: none;
+    opacity: 0;
+    background: linear-gradient(
+      180deg,
+      transparent 0%,
+      color-mix(in srgb, var(--oc, var(--bp-cy)) 60%, transparent) 20%,
+      color-mix(in srgb, var(--oc, var(--bp-cy)) 95%, transparent) 60%,
+      #fff 100%
+    );
+  }
+  .bp-scene.burst .bp-pillar {
+    animation: bp-pillar 1.5s ease-out forwards;
+  }
+  .bp-wave {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    border: 3px solid var(--oc, var(--bp-cy));
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 0;
+    pointer-events: none;
+    z-index: 5;
+    box-shadow: 0 0 50px color-mix(in srgb, var(--oc, var(--bp-cy)) 80%, transparent);
+  }
+  .bp-scene.burst .bp-wave {
+    animation: bp-wave 1.5s ease-out forwards;
+  }
+  .bp-wave.two {
+    animation-delay: 0.15s !important;
+    border-color: var(--oc2, var(--bp-vi));
+  }
+  .bp-wave.three {
+    animation-delay: 0.3s !important;
+    border-color: #fff;
+  }
+  .bp-flash {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #fff;
+    transform: translate(-50%, -50%) scale(0);
+    pointer-events: none;
+    z-index: 6;
+  }
+  .bp-flash.go {
+    animation: bp-flash 0.9s ease-out forwards;
+  }
+  .bp-core {
+    position: relative;
+    z-index: 5;
+    width: 240px;
+    height: 240px;
+    display: grid;
+    place-items: center;
+    animation: bp-core-in 0.7s cubic-bezier(0.2, 1.4, 0.4, 1) both;
+  }
+  .bp-core .cimg {
+    animation: bp-charge 1.4s ease-in forwards;
+  }
+  .bp-core.shake {
+    animation: bp-shake 0.09s linear infinite;
+  }
+  .bp-core.opened {
+    animation: bp-core-open 0.9s cubic-bezier(0.2, 1.4, 0.4, 1) forwards;
+  }
+  .bp-particles {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 0;
+    height: 0;
+    z-index: 7;
+    pointer-events: none;
+  }
+  .bp-particles span {
+    position: absolute;
+    left: 0;
+    top: 0;
+    border-radius: 50%;
+    background: #fff;
+    opacity: 0;
+    box-shadow: 0 0 14px currentColor;
+  }
+
+  .bp-res {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    width: min(92vw, 460px);
+    max-height: 94vh;
+    overflow-y: auto;
+    text-align: center;
+    z-index: 10;
+    padding: 24px 22px 20px;
+    border-radius: 22px;
+    animation: bp-res-in 0.6s cubic-bezier(0.2, 1.3, 0.4, 1) both;
+    background: linear-gradient(160deg, rgb(20 22 34 / 86%), rgb(9 10 18 / 84%));
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow:
+      0 24px 70px rgb(0 0 0 / 60%),
+      0 0 60px -10px color-mix(in srgb, var(--oc, var(--bp-cy)) 50%, transparent);
+    border: 1px solid color-mix(in srgb, var(--oc, var(--bp-cy)) 45%, transparent);
+  }
+  .bp-res.show {
+    display: flex;
+  }
+  .bp-res .got {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.5em;
+    padding-left: 0.5em;
+    color: var(--oc, var(--bp-cy));
+    text-shadow: 0 0 20px var(--oc, var(--bp-cy));
+  }
+  .bp-res .rart {
+    position: relative;
+    width: 168px;
+    height: 168px;
+    margin: 4px 0;
+    display: grid;
+    place-items: center;
+    animation: bp-floaty 4s ease-in-out infinite;
+  }
+  /* Веер лучей вокруг награды убран: он читался как «ползунок» (циферблат
+     с градами) и спорил с рамкой. Остались аура, ripple-кольца и искры. */
+  .bp-res h2 {
+    margin: 0;
+    font-family: var(--font-accent), var(--font-sans);
+    font-size: 26px;
+    font-weight: 800;
+    line-height: 1.15;
+    background: linear-gradient(100deg, #fff 0%, var(--oc, var(--bp-cy)) 90%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .bp-res .rrar {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    padding: 5px 14px;
+    border-radius: 99px;
+    color: var(--oc, var(--bp-cy));
+    border: 1px solid color-mix(in srgb, var(--oc, var(--bp-cy)) 50%, transparent);
+    background: color-mix(in srgb, var(--oc, var(--bp-cy)) 14%, transparent);
+  }
+  .bp-res .rmeta {
+    font-size: 12px;
+    color: var(--color-muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-weight: 800;
+  }
+  .bp-res .rmeta b {
+    color: var(--color-bright);
+  }
+  .bp-res .rdesc {
+    font-size: 13px;
+    color: #c9ccdf;
+    line-height: 1.55;
+    max-width: 380px;
+  }
+  .bp-res .more {
+    font-size: 12px;
+    font-weight: 800;
+    color: var(--bp-ok);
+  }
+
+  /* ================================================================
+     Визуал награды + эмблемные слои. Анимации включаются только для
+     «живых» наград (claimable), поэтому одновременно в кадре их единицы.
+     ================================================================ */
+  .bp-art {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: var(--as, 84px);
+    height: var(--as, 84px);
+    /* грид-бокс с фиксированной шириной: центрируем авто-margin'ом,
+       иначе в модалке/результате уезжает влево мимо text-align */
+    margin-inline: auto;
+    flex: none;
+    perspective: 700px;
+    transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+    transition: transform 0.15s;
+    pointer-events: none;
+  }
+  .bp-art.holo {
+    animation: bp-holo 9s linear infinite;
+  }
+  .bp-art .inner {
+    position: relative;
+    z-index: 3;
+    display: grid;
+    place-items: center;
+    width: 100%;
+    height: 100%;
+    filter: drop-shadow(0 0 10px color-mix(in srgb, var(--c) 45%, transparent));
+  }
+  .bp-art.rays {
+    animation: bp-spin 45s linear infinite;
+  }
+  .bp-art .rp {
+    position: absolute;
+    inset: 6%;
+    z-index: 1;
+    border-radius: 50%;
+    border: 1.5px solid var(--c);
+    opacity: 0;
+    animation: bp-rp 3.6s ease-out infinite;
+    animation-delay: var(--d, 0s);
+  }
+  .bp-art .aura {
+    position: absolute;
+    inset: -30%;
+    z-index: 0;
+    border-radius: 50%;
+    opacity: 0.5;
+    animation: bp-aura 3.2s ease-in-out infinite;
+    background: radial-gradient(
+      circle,
+      color-mix(in srgb, var(--c) 60%, transparent),
+      transparent 62%
+    );
+  }
+  .bp-art .sk {
+    position: absolute;
+    z-index: 2;
+    width: calc(var(--as, 84px) * 0.11);
+    height: calc(var(--as, 84px) * 0.11);
+    margin: calc(var(--as, 84px) * -0.055) 0 0 calc(var(--as, 84px) * -0.055);
+    background: linear-gradient(#fff, var(--c3));
+    clip-path: polygon(50% 0, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0 50%, 40% 40%);
+    animation: bp-tw var(--t) ease-in-out infinite;
+    animation-delay: var(--d);
+    scale: var(--z);
+  }
+  /* Веер лучей за артом (`rays-bg`) удалён по решению дизайна: у круга с
+     градами читался как циферблат и спорил с рамкой/капсулой награды.
+     Слои арта: аура, два ripple-кольца, искры и бегущая рамка. */
+  .bp-art .ring {
+    position: absolute;
+    inset: -3%;
+    z-index: 4;
+    border-radius: 50%;
+    padding: 1.5px;
+    pointer-events: none;
+    background: conic-gradient(
+      from var(--a, 0deg),
+      transparent 0 52%,
+      color-mix(in srgb, var(--c) 70%, transparent) 66%,
+      color-mix(in srgb, var(--c) 92%, #fff) 75%,
+      #fff 79%,
+      color-mix(in srgb, var(--c2) 70%, #fff) 86%,
+      transparent 96%
+    );
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    mask-composite: exclude;
+    animation: bp-ring 4.5s linear infinite;
+  }
+  /* Угол для бегущей рамки: анимируется только у @property-объявленного --a */
+  @property --a {
+    syntax: "<angle>";
+    inherits: false;
+    initial-value: 0deg;
+  }
+
+  /* Крупный визуал в модалке и сцене */
+  .bp-art.lg {
+    --as: 150px;
+  }
+  .bp-art.xl {
+    --as: 200px;
+  }
+
+  /* Появление липкого статус-бара и секций при прокрутке */
+  .animate-bp-bar-in {
+    animation: bpBarIn 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  .bp-revealed {
+    animation: bpSectionIn 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  /* Монета AC */
+  .bp-coin {
+    position: relative;
+    display: block;
+    width: 68%;
+    height: 68%;
+    background: center / contain no-repeat;
+    background-image: url("/coin.png");
+  }
+  /* Капсула титула по умолчанию компактная; в модалке и окне выдачи — шире,
+     там места хватает. В клетке дорожки размер задаёт колонка (`.bp-col--tag`). */
+  .bp-art .ag-tag {
+    width: max-content;
+    max-width: 148px;
+  }
+  /* В клетке дорожки капсула получает всю ширину слота и сжимает текст сама
+     (`ag-tag` умеет max-width) — иначе она вылезала за края и обрезалась. */
+  .bp-rw .bp-art {
+    width: 100%;
+  }
+  .bp-rw .bp-art .inner {
+    width: 100%;
+  }
+  .bp-rw .bp-art .ag-tag {
+    width: 100%;
+    max-width: 100%;
+  }
+  /* Название награды: не обрываем настолько рано */
+  .bp-rw b {
+    font-size: 11.5px;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+  }
+  /* Молния XP */
+  .bp-bolt {
+    display: grid;
+    place-items: center;
+    width: 58%;
+    height: 58%;
+    border-radius: 999px;
+    font-size: calc(var(--as, 84px) * 0.3);
+    color: var(--c);
+    background: radial-gradient(circle at 50% 35%, color-mix(in srgb, var(--c) 26%, transparent), transparent 70%);
+    border: 1px solid color-mix(in srgb, var(--c) 40%, transparent);
+    text-shadow: 0 0 18px color-mix(in srgb, var(--c) 70%, transparent);
+  }
+
+  /* Мобильная шапка */
+  @media (max-width: 900px) {
+    .bp-hd {
+      grid-template-columns: 1fr;
+      text-align: center;
+      padding: 22px 18px;
+    }
+    .bp-hd .hero {
+      margin: 0 auto;
+    }
+    .bp-hd .sub {
+      margin-inline: auto;
+    }
+    .bp-act {
+      justify-content: center;
+      grid-column: 1;
+    }
+    .bp-ac {
+      margin-right: 0;
+      width: 100%;
+      text-align: center;
+    }
+    .bp-ring {
+      width: 168px;
+      height: 168px;
+    }
+    .bp-ring .cn b {
+      font-size: 34px;
+    }
+  }
+  @media (max-width: 600px) {
+    .bp-core {
+      width: 190px;
+      height: 190px;
+    }
+    .bp-res .rart {
+      width: 140px;
+      height: 140px;
+    }
+  }
+}
+
+/* ------------------------------ Ключевые кадры ------------------------- */
+@keyframes bp-bg {
+  to {
+    transform: scale(1.04) translateZ(0);
+  }
+}
+@keyframes bpSceneIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes bp-fog {
+  to {
+    transform: translateX(6%) scale(1.08);
+  }
+}
+@keyframes bp-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes bp-halo {
+  to {
+    opacity: 0.55;
+    transform: scale(1.12);
+  }
+}
+@keyframes bp-sheen {
+  60%,
+  100% {
+    transform: translateX(100%);
+  }
+}
+@keyframes bp-claim {
+  50% {
+    box-shadow: 0 0 20px color-mix(in srgb, var(--bp-ok) 45%, transparent);
+    border-color: var(--bp-ok);
+  }
+}
+@keyframes bp-ring {
+  to {
+    --a: 360deg;
+  }
+}
+@keyframes bp-rp {
+  0% {
+    opacity: 0.7;
+    transform: scale(0.8);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.7);
+  }
+}
+@keyframes bp-aura {
+  0%,
+  100% {
+    opacity: 0.28;
+    transform: scale(0.94);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(1.08);
+  }
+}
+@keyframes bp-tw {
+  0%,
+  100% {
+    opacity: 0.1;
+    transform: scale(0.5);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.5);
+  }
+}
+@keyframes bp-holo {
+  to {
+    filter: hue-rotate(360deg);
+  }
+}
+@keyframes bp-dust {
+  0%,
+  100% {
+    opacity: 0;
+    transform: translateY(20px) scale(0.6);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-20px) scale(1.2);
+  }
+}
+@keyframes bp-core-in {
+  0% {
+    transform: scale(0.2) rotate(-30deg);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1) rotate(0);
+    opacity: 1;
+  }
+}
+@keyframes bp-core-open {
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.4);
+  }
+  100% {
+    transform: scale(1.15);
+  }
+}
+@keyframes bp-shake {
+  0%,
+  100% {
+    transform: translate(0, 0) rotate(0);
+  }
+  25% {
+    transform: translate(-5px, 2px) rotate(-2.5deg);
+  }
+  75% {
+    transform: translate(5px, -2px) rotate(2.5deg);
+  }
+}
+@keyframes bp-charge {
+  0% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 18px var(--oc, var(--bp-cy))) brightness(1);
+  }
+  100% {
+    transform: scale(1.14);
+    filter: drop-shadow(0 0 60px var(--oc, var(--bp-cy)))
+      drop-shadow(0 0 120px var(--oc, var(--bp-cy))) brightness(1.5);
+  }
+}
+@keyframes bp-beams {
+  0% {
+    transform: translate(-50%, -50%) scale(0) rotate(0);
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1) rotate(80deg);
+    opacity: 0;
+  }
+}
+@keyframes bp-pillar {
+  0% {
+    height: 0;
+    opacity: 0;
+    width: 40px;
+  }
+  20% {
+    height: 80vh;
+    opacity: 1;
+    width: 120px;
+  }
+  100% {
+    height: 140vh;
+    opacity: 0;
+    width: 40px;
+  }
+}
+@keyframes bp-wave {
+  0% {
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 1;
+    border-width: 8px;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(9);
+    opacity: 0;
+    border-width: 1px;
+  }
+}
+@keyframes bp-flash {
+  0% {
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 1;
+  }
+  40% {
+    transform: translate(-50%, -50%) scale(32);
+    opacity: 0.95;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(64);
+    opacity: 0;
+  }
+}
+@keyframes bp-floaty {
+  50% {
+    transform: translateY(-10px);
+  }
+}
+@keyframes bp-res-in {
+  0% {
+    transform: scale(0.85) translateY(30px);
+    opacity: 0;
+  }
+  100% {
+    transform: none;
+    opacity: 1;
+  }
+}
+@keyframes bpBarIn {
+  0% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes bpSectionIn {
+  0% {
+    opacity: 0;
+    transform: translateY(22px);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Пауза вне экрана (класс ставит AchievementEmblemIO) */
+.bp-art.ae-pz,
+.bp-art.ae-pz *,
+.bp-rw.ae-pz .bp-art *,
+.bp-sc.ae-pz .bp-art * {
+  animation-play-state: paused !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bp-ring,
+  .bp-ring *,
+  .bp-art,
+  .bp-art *,
+  .bp-scene,
+  .bp-scene *,
+  .bp-core,
+  .bp-core *,
+  .bp-res,
+  .bp-res *,
+  .bp-dust i,
+  .bp-xpb i::after {
+    animation: none !important;
+  }
+  .bp-rw.can {
+    animation: none !important;
+  }
+  .bp-res .rart::before,
+  .bp-art .rays-bg {
+    display: none;
+  }
+}

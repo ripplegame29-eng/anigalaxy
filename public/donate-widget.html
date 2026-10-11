@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AniGalaxy — донат и боевой пропуск</title>
+<style>
+:root{--cy:rgb(var(--a1));--bl:#3b6bff;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box;margin:0}
+body{min-height:100vh;background:transparent;display:grid;place-items:center;padding:20px 12px;overflow-x:hidden;font-family:system-ui,Segoe UI,Roboto,sans-serif}
+.stack{width:100%;max-width:1950px;display:grid;gap:clamp(18px,2.4vw,44px)}.wrap{width:100%;overflow-x:auto}
+/* min-width:0 обязателен: .wrow — элемент грида .stack, а у баннера
+   min-width:640px. Без нуля колонка грида растягивалась до 640, .wrap
+   становился шириной 640 и переставал прокручиваться — картинка просто
+   уезжала за край под обрезкой body. */
+.wrow{position:relative;min-width:0}
+/* Стрелки листания. Без них телефон вообще не даёт понять, что лента
+   прокручивается: полосы у iframe нет, свайп по картинке её не двигает,
+   и кнопка справа выглядит частью арта. Показаны только когда за краем
+   есть что листать, и только на узких экранах. */
+.nav{
+  position:absolute;top:50%;translate:0 -50%;z-index:3;
+  width:2.1rem;height:2.1rem;display:none;place-items:center;cursor:pointer;
+  border-radius:50%;color:#eaf9ff;font:700 20px/1 system-ui;padding-bottom:3px;
+  background:rgb(6 10 26 / 76%);
+  border:1px solid rgb(var(--a1) / .5);
+  box-shadow:0 0 0 1px rgb(0 0 0 / .45),0 6px 18px -8px rgb(0 0 0 / .9),0 0 14px rgb(var(--a1) / .4);
+  transition:opacity .2s ease,scale .15s ease;
+  -webkit-tap-highlight-color:transparent;
+}
+.nav.prev{left:.5rem}
+.nav.next{right:.5rem}
+.nav[hidden]{display:none}
+.nav:active{scale:.9}
+.w{position:relative;width:100%;min-width:640px;aspect-ratio:2140/465;border-radius:2.1%/9.6%;overflow:hidden;background:#050a1c;animation:in .9s both;cursor:default}
+@keyframes in{from{opacity:0;transform:translateY(20px) scale(.98)}}
+.w>img{position:absolute;inset:0;width:100%;height:100%;display:block;user-select:none;-webkit-user-drag:none}
+.rg{position:absolute;background-repeat:no-repeat;pointer-events:none}
+/* общий слой света, следящий за курсором */
+.light{position:absolute;inset:0;pointer-events:none;mix-blend-mode:screen;background:radial-gradient(circle 22vmin at var(--mx,50%) var(--my,50%),rgba(var(--a2),.22),transparent 70%);opacity:0;transition:opacity .4s}
+.w:hover .light{opacity:1}
+.scan{position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(0,0,0,.12) 0 1px,transparent 1px 4px);mix-blend-mode:multiply;animation:sc 9s linear infinite}
+@keyframes sc{to{background-position:0 80px}}
+.sweep{position:absolute;inset:0;pointer-events:none;mix-blend-mode:screen;background:linear-gradient(100deg,transparent 42%,rgba(var(--a4),.16) 50%,transparent 58%);translate:-130% 0;animation:sw 7s ease-in-out infinite}
+@keyframes sw{0%,60%{translate:-130% 0}100%{translate:130% 0}}
+svg.frame{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.frame rect,.frame polygon{fill:none;stroke-width:4;stroke-dasharray:110 890;animation:dash 6s linear infinite;filter:drop-shadow(0 0 8px rgb(var(--a1)))}
+@keyframes dash{to{stroke-dashoffset:-1000}}
+/* пульсирующее свечение */
+.glow{position:absolute;border-radius:50%;pointer-events:none;mix-blend-mode:screen;animation:pul 3.2s ease-in-out infinite}
+@keyframes pul{50%{opacity:.35;transform:scale(1.12)}}
+.st{position:absolute;width:1.3%;aspect-ratio:1;pointer-events:none;background:#e9f8ff;clip-path:polygon(50% 0,62% 38%,100% 50%,62% 62%,50% 100%,38% 62%,0 50%,38% 38%);filter:drop-shadow(0 0 6px rgb(var(--a1)));animation:tw 3s ease-in-out infinite}
+@keyframes tw{0%,100%{opacity:0;transform:scale(.2) rotate(0)}50%{opacity:1;transform:scale(1) rotate(90deg)}}
+.mote{position:absolute;width:.55%;aspect-ratio:1;border-radius:50%;background:#bfeaff;box-shadow:0 0 8px rgb(var(--a1));pointer-events:none;opacity:0;animation:rise var(--t) ease-out infinite;animation-delay:var(--d)}
+@keyframes rise{0%{transform:translateY(0);opacity:0}15%{opacity:1}100%{transform:translateY(-9vw);opacity:0}}
+/* глитч-слои региона */
+.gz{position:absolute;pointer-events:none;overflow:visible}
+.gz .rg{inset:0;mix-blend-mode:screen;opacity:0}
+.gz .a{filter:hue-rotate(70deg) saturate(1.8) brightness(1.1)}
+.gz .b{filter:hue-rotate(-70deg) saturate(1.8) brightness(1.1)}
+.gz.on .a{animation:ga .55s steps(1) both}.gz.on .b{animation:gb .55s steps(1) both}
+.gz.loop .a{animation:ga .55s steps(1) infinite}.gz.loop .b{animation:gb .55s steps(1) infinite}
+@keyframes ga{0%{opacity:.45;clip-path:inset(10% 0 62% 0);transform:translate(-3%)}20%{opacity:.45;clip-path:inset(62% 0 10% 0);transform:translate(3%)}40%{opacity:.45;clip-path:inset(35% 0 40% 0);transform:translate(-2%)}60%{opacity:.45;clip-path:inset(0 0 82% 0);transform:translate(4%)}80%{opacity:.45;clip-path:inset(75% 0 0 0);transform:translate(-3%)}100%{opacity:0}}
+@keyframes gb{0%{opacity:.45;clip-path:inset(50% 0 22% 0);transform:translate(3%)}20%{opacity:.45;clip-path:inset(6% 0 72% 0);transform:translate(-3%)}40%{opacity:.45;clip-path:inset(72% 0 6% 0);transform:translate(2%)}60%{opacity:.45;clip-path:inset(30% 0 36% 0);transform:translate(-4%)}80%{opacity:.45;clip-path:inset(15% 0 55% 0);transform:translate(3%)}100%{opacity:0}}
+/* кнопка */
+.cta{position:absolute;display:block;cursor:pointer;border-radius:1.4vw;-webkit-tap-highlight-color:transparent;outline:none}
+.cta .rg{inset:0;pointer-events:none;border-radius:inherit;transition:transform .25s cubic-bezier(.2,1.4,.4,1),filter .25s}
+.cta .ring{position:absolute;inset:-2px;border-radius:inherit;box-shadow:0 0 0 2px rgba(var(--a1),0),0 0 0 rgba(var(--a1),0);transition:box-shadow .25s;pointer-events:none}
+.cta .ring::after{content:"";position:absolute;inset:0;border-radius:inherit;box-shadow:0 0 0 1px rgba(var(--a1),.5),0 0 1.4vw rgba(var(--a1),.5);opacity:0;pointer-events:none}
+.cta .shine{position:absolute;inset:0;overflow:hidden;border-radius:inherit;pointer-events:none}
+.cta .shine::after{content:"";position:absolute;inset:0;background:linear-gradient(105deg,transparent 38%,rgba(255,255,255,.85) 50%,transparent 62%);translate:-130% 0;animation:sh 3.6s ease-in-out infinite;mix-blend-mode:soft-light}
+@keyframes sh{0%,55%{translate:-130% 0}100%{translate:130% 0}}
+.cta:hover .rg,.cta:focus-visible .rg{transform:scale(1.045);filter:brightness(1.12)}
+.cta:hover .ring,.cta:focus-visible .ring{box-shadow:0 0 0 2px rgb(var(--a1)),0 0 3vw rgba(var(--a1),.8)}
+.cta:active .rg{transform:scale(.96)}
+/* Пульс — через opacity на статической тени (композитор), а не box-shadow:
+   тот гнал repaint кнопки каждый кадр бесконечно. Вид пульса тот же. */
+.cta.idle .ring::after{animation:rg 2.4s ease-in-out infinite}
+@keyframes rg{50%{opacity:1}}
+.rip{position:absolute;border-radius:50%;background:rgba(var(--a3),.45);transform:scale(0);animation:rp .6s ease-out forwards;pointer-events:none}
+@keyframes rp{to{transform:scale(4);opacity:0}}
+/* зоны наведения для плашек и тега */
+.hs{position:absolute;border-radius:1vw;transition:box-shadow .25s,background .25s}
+.hs:hover{box-shadow:0 0 0 1.5px rgba(var(--a1),.8),0 0 2vw rgba(var(--a2),.6);background:rgba(var(--a2),.12)}
+.tagfx{position:absolute;pointer-events:none;overflow:hidden;border-radius:1vw;rotate:-9deg}
+.tagfx::after{content:"";position:absolute;inset:0;background:linear-gradient(100deg,transparent 40%,rgba(180,230,255,.5) 50%,transparent 60%);translate:-130% 0;animation:sh 5s 1s ease-in-out infinite;mix-blend-mode:screen}
+.spark{position:fixed;width:12px;height:12px;pointer-events:none;z-index:99;background:#e9f8ff;clip-path:polygon(50% 0,62% 38%,100% 50%,62% 62%,50% 100%,38% 62%,0 50%,38% 38%);animation:bu .9s ease-out forwards}
+@keyframes bu{to{transform:translate(var(--x),var(--y)) scale(.2) rotate(180deg);opacity:0}}
+.modal{position:fixed;inset:0;display:grid;place-items:center;padding:20px;background:rgba(2,5,20,.75);backdrop-filter:blur(8px);opacity:0;pointer-events:none;transition:opacity .3s;z-index:90}
+.modal.on{opacity:1;pointer-events:auto}
+.box{max-width:400px;width:100%;padding:30px;border-radius:22px;text-align:center;color:#e4f6ff;border:1.5px solid var(--bl);background:linear-gradient(160deg,#0d1b66,#070d28);box-shadow:0 0 50px rgba(59,107,255,.6);transform:scale(.85) rotate(-2deg);transition:transform .4s cubic-bezier(.2,1.4,.4,1)}
+.modal.on .box{transform:none}
+.box h3{font-size:22px;margin-bottom:8px}.box p{color:#9db6ee;font-size:14px;line-height:1.5}
+.box ul{list-style:none;padding:0;margin:18px 0;display:grid;gap:8px}
+.box li{padding:10px;border-radius:10px;background:rgba(59,107,255,.2);border:1px solid rgba(var(--a1),.3);font-weight:600;font-size:14px}
+.box button{border:0;cursor:pointer;padding:12px 26px;border-radius:12px;font:700 14px system-ui;color:#0a1450;background:linear-gradient(180deg,#f4fbff,#b9d8ff)}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+.pt{position:absolute;top:-6%;width:1.3%;aspect-ratio:1.5;border-radius:100% 0 100% 0;background:linear-gradient(135deg,#f0d8ff,#a56bff);opacity:.75;pointer-events:none;animation:fall var(--t) linear infinite;animation-delay:var(--d);filter:drop-shadow(0 0 4px rgba(190,130,255,.8))}
+@keyframes fall{0%{transform:translate(0,0) rotate(0)}50%{transform:translate(var(--sx),55vw) rotate(180deg) scaleX(.5)}100%{transform:translate(0,12vw) rotate(360deg)}}
+@keyframes fall2{to{top:106%}}
+.pt{animation:fall2 var(--t) linear infinite,sway 3s ease-in-out infinite alternate;animation-delay:var(--d),var(--d)}
+@keyframes sway{from{translate:-1.5vw 0;rotate:-30deg}to{translate:1.5vw 0;rotate:40deg}}
+.bd{position:absolute;pointer-events:none;mix-blend-mode:screen;animation:pul 2.8s ease-in-out infinite}
+
+.d{--a1:93,240,255;--a2:93,170,255;--a3:80,150,255;--a4:150,200,255}
+.b{--a1:197,139,255;--a2:170,110,255;--a3:190,120,255;--a4:220,180,255}
+.d .frame rect{stroke:url(#fg1)}.b .frame polygon{stroke:url(#fg2)}
+.b .cta{border-radius:.9vw}
+/* Перф без смены вида: полосы едут вниз, как и раньше (9s, сдвиг 80px —
+   кратно 4px периоду шва, он незаметен), но через transform — композитор,
+   а не repaint background-position на главном потоке каждый кадр. */
+.scan{top:-100px;bottom:-100px}
+@keyframes sc{to{translate:0 80px}}
+/* ===================== Узкие экраны ====================================
+   Баннеры свёрстаны под 2140×465, поэтому в натуральную величину они
+   не влезают ни в один телефон: держать min-width:640px и давать
+   доскролить. Раньше прокрутка была, но невидимая — у iframe нет
+   привычного скроллбара страницы, и кнопка «Поддержать» справа
+   выглядела как просто обрезанный баннер.
+
+   Что здесь добавлено:
+   • полоса прокрутки в стиле виджета — на телефоне она появляется при
+     свайпе и сразу показывает, что справа есть продолжение;
+   • затемнение у правого края .stack — оно не едет вместе с контентом,
+     потому что .stack позиционирован, а тень живёт поверх .wrap;
+   • невидимая зона нажатия 180×44 у CTA: нарисованная кнопка на 390px
+     это ~50×14, пальцем в неё не попасть. Зона привязана к правому краю
+     кнопки и уходит влево, поэтому не обрезается краем .w. */
+@media(max-width:720px){
+  .nav{display:grid}
+  .wrap{
+    overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
+    overscroll-behavior-x:contain;
+  }
+  .cta::before{
+    content:"";position:absolute;top:50%;right:0;translate:0 -50%;
+    width:180px;height:44px;
+  }
+}
+
+</style></head>
+<body><div class="stack">
+<div class="wrow d">
+<button class="nav prev" type="button" aria-label="Прокрутить баннер влево" hidden>&#8249;</button>
+<div class="wrap"><div class="w d" id="w1">
+  <img id="base1" src="banners/donate.webp" alt="Поддержи AniGalaxy — получи больше" draggable="false">
+  <div class="sweep"></div>
+  <svg class="frame" viewBox="0 0 2140 465" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="fg1"><stop offset="0" stop-color="#5df0ff"/><stop offset="1" stop-color="#a56bff"/></linearGradient></defs><rect x="14" y="15" width="2112" height="435" rx="42" pathLength="1000"/></svg>
+  <div class="light"></div>
+  <div class="scan"></div>
+</div></div>
+<button class="nav next" type="button" aria-label="Прокрутить баннер вправо" hidden>&#8250;</button>
+</div>
+
+<div class="modal d" id="modal1" role="dialog" aria-modal="true" aria-labelledby="mt">
+  <div class="box"><h3 id="mt">Спасибо за поддержку!</h3><p>Демо-окно. Здесь откроется страница оплаты. Ты получишь:</p>
+  <ul><li>10 000 AniCoin</li><li>Эксклюзивный глитч-эффект</li><li>Тег «Донатер»</li></ul><button id="close1">Закрыть</button></div>
+</div>
+
+
+<div class="wrow b">
+<button class="nav prev" type="button" aria-label="Прокрутить баннер влево" hidden>&#8249;</button>
+<div class="wrap"><div class="w b" id="w2">
+  <img id="base2" src="banners/pass.webp" alt="Боевой пропуск — Сезон 01" draggable="false">
+  <div class="sweep"></div>
+  <svg class="frame" viewBox="0 0 2120 387" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="fg2"><stop offset="0" stop-color="#d9a8ff"/><stop offset="1" stop-color="#5d8bff"/></linearGradient></defs><polygon pathLength="1000" points="22,7 2098,7 2112,21 2112,363 2098,377 22,377 8,363 8,21"/></svg>
+  <div class="light"></div>
+  <div class="scan"></div>
+</div></div>
+<button class="nav next" type="button" aria-label="Прокрутить баннер вправо" hidden>&#8250;</button>
+</div>
+
+<div class="modal b" id="modal2" role="dialog" aria-modal="true" aria-labelledby="mt">
+  <div class="box"><h3 id="mt">Боевой пропуск · Сезон 01</h3><p>Демо-окно. Здесь откроется страница пропуска. В него входит:</p>
+  <ul><li>Эксклюзивные награды</li><li>Уникальные скины</li><li>Доступ к особым ивентам</li></ul><button id="close2">Отлично</button></div>
+</div>
+
+</div>
+<script>
+const DONATE_URL="/donate"; // ссылка на страницу доната — кнопка «Поддержать» откроет её вместо демо-окна
+const PASS_URL="/battlepass";
+/* Стрелки листания лент. Скрываются у краёв — «вперёд» в начале и «назад»
+   в конце только мешали бы. Шаг — 70% ширины экрана, чтобы перелистывание
+   не выглядело как микроскопическое. */
+document.querySelectorAll(".wrow").forEach(row=>{
+  const wrap=row.querySelector(".wrap"),prev=row.querySelector(".prev"),next=row.querySelector(".next");
+  const max=()=>Math.max(0,wrap.scrollWidth-wrap.clientWidth);
+  const sync=()=>{prev.hidden=wrap.scrollLeft<=2;next.hidden=wrap.scrollLeft>=max()-2;};
+  /* Шаг считается в сторону нажатой стрелки. Раньше шаг всегда мерился
+     до правого края, и «назад» у правого края получала ноль: стрелка
+     была нажата, а лента не двигалась — выглядело как сломанная кнопка.
+     За шаг берём 90% кадра, а если остаток меньше — доводим до самого
+     края: иначе лента встаёт за 30px до конца, стрелка «вперёд» висит
+     поверх нарисованной кнопки справа, и тап по кнопке попадает в стрелку. */
+  const gap=to_=>{const page=wrap.clientWidth*.9,left=to_-wrap.scrollLeft;
+    return Math.abs(left)<=page?left:(left<0?-page:page);};
+  /* gap() уже возвращает смещение со знаком: для «назад» это ноль минус
+     текущая позиция, то есть отрицательное число. Дополнительный минус
+     разворачивал его обратно, и у правого края «назад» не двигала ничего */
+  prev.addEventListener("click",()=>wrap.scrollBy({left:gap(0),behavior:"smooth"}));
+  next.addEventListener("click",()=>wrap.scrollBy({left:gap(max()),behavior:"smooth"}));
+  wrap.addEventListener("scroll",sync,{passive:true});
+  window.addEventListener("resize",sync);
+  sync();
+});   // ссылка на страницу боевого пропуска — кнопка «Открыть боевой пропуск»
+(()=>{
+const W0=2140,H0=465,w=document.getElementById("w1"),src=document.getElementById("base1").src;
+const pc=(x,y,ww,hh)=>`left:${x/W0*100}%;top:${y/H0*100}%;width:${ww/W0*100}%;height:${hh/H0*100}%`;
+/* копия региона картинки (совпадает пиксель в пиксель с оригиналом) */
+const fillR=e=>{e.style.left=e.style.top="0";e.style.width=e.style.height="100%";return e};function region(x,y,ww,hh,cls="rg"){const e=document.createElement("div");e.className=cls;
+  e.style.cssText=pc(x,y,ww,hh)+`;background-image:url("${src}");background-size:${W0/ww*100}% ${H0/hh*100}%;background-position:${x/(W0-ww)*100}% ${y/(H0-hh)*100}%`;return e}
+function glitchZone(x,y,ww,hh){const z=document.createElement("div");z.className="gz";z.style.cssText=pc(x,y,ww,hh);
+  ["a","b"].forEach(k=>{const r=region(0,0,1,1);r.className="rg "+k;r.style.cssText=`inset:0;background-image:url("${src}");background-size:${W0/ww*100}% ${H0/hh*100}%;background-position:${x/(W0-ww)*100}% ${y/(H0-hh)*100}%`;z.appendChild(r)});
+  w.appendChild(z);return z}
+const pulse=(z,ms=550)=>{z.classList.add("on");setTimeout(()=>z.classList.remove("on"),ms)};
+/* зоны глитча: заголовок, монета, весь баннер */
+const gHead=glitchZone(515,100,390,80), gCoin=glitchZone(1480,60,260,220), gAll=glitchZone(0,0,2140,465);
+setInterval(()=>pulse(gHead),3600);
+setInterval(()=>pulse(gCoin,550),2300);
+setInterval(()=>pulse(gAll,400),8000);
+/* свечения и звёзды */
+function glow(cx,cy,r,c){const g=document.createElement("div");g.className="glow";g.style.cssText=pc(cx-r,cy-r,2*r,2*r)+`;background:radial-gradient(circle,${c},transparent 68%)`;w.appendChild(g)}
+glow(1180,250,230,"rgba(70,120,255,.45)");glow(1598,170,120,"rgba(150,120,255,.5)");
+[[1435,48],[1455,330],[880,205],[1730,85],[1240,20],[1090,420],[1690,300]].forEach(([x,y],i)=>{const s=document.createElement("i");s.className="st";s.style.cssText=`left:${x/W0*100}%;top:${y/H0*100}%;animation-delay:${i*.55}s;animation-duration:${2.4+i*.3}s`;w.appendChild(s)});
+for(let i=0;i<9;i++){const m=document.createElement("i");m.className="mote";m.style.cssText=`left:${(1000+i*55)/W0*100}%;top:${(300+(i%3)*30)/H0*100}%;--t:${3+i%4*.6}s;--d:${-i*.7}s`;w.appendChild(m)}
+/* блик на теге «Донатер» */
+const tf=document.createElement("div");tf.className="tagfx";tf.style.cssText=pc(1478,285,235,90);w.appendChild(tf);
+/* плашки: подсветка при наведении */
+[[77,355,220,62],[342,355,222,62],[610,355,224,62]].forEach(a=>{const h=document.createElement("div");h.className="hs";h.style.cssText=pc(...a);w.appendChild(h)});
+/* кнопка */
+const cta=document.createElement("a");cta.className="cta idle";
+/* href и target="_top" — рабочий переход без всякого JS: браузер сам
+   уводит верхнее окно на страницу. Раньше переход делался присваиванием
+   window.top.location из фрейма, и на части машин он блокировался —
+   кнопка выглядела рабочей, но ничего не открывала. */
+cta.href=DONATE_URL||"#donate";cta.target="_top";
+cta.setAttribute("role","button");cta.setAttribute("aria-label","Поддержать");
+cta.style.cssText=pc(1788,191,306,86);
+cta.append(fillR(region(1788,191,306,86)),Object.assign(document.createElement("div"),{className:"ring"}),Object.assign(document.createElement("div"),{className:"shine"}));
+const gBtn=glitchZone(1788,191,306,86);gBtn.style.zIndex=3;cta.style.zIndex=2;w.appendChild(cta);
+cta.addEventListener("pointerenter",()=>gBtn.classList.add("loop"));cta.addEventListener("pointerleave",()=>gBtn.classList.remove("loop"));
+/* следящий свет */
+w.addEventListener("pointermove",e=>{const r=w.getBoundingClientRect();w.style.setProperty("--mx",(e.clientX-r.left)/r.width*100+"%");w.style.setProperty("--my",(e.clientY-r.top)/r.height*100+"%")});
+/* клик */
+const modal=document.getElementById("modal1");
+const showModal=()=>setTimeout(()=>{modal.classList.add("on");document.getElementById("close1").focus()},300);
+cta.addEventListener("click",e=>{
+  if(!DONATE_URL){e.preventDefault();showModal();return}
+  const r=cta.getBoundingClientRect(),d=Math.max(r.width,r.height),s=document.createElement("i");
+  s.className="rip";s.style.cssText=`width:${d}px;height:${d}px;left:${e.clientX-r.left-d/2}px;top:${e.clientY-r.top-d/2}px`;cta.querySelector(".shine").appendChild(s);setTimeout(()=>s.remove(),600);
+  const cx=r.left+r.width/2,cy=r.top+r.height/2;
+  for(let i=0;i<20;i++){const p=document.createElement("i");p.className="spark";p.style.left=cx+"px";p.style.top=cy+"px";const a=Math.PI*2*i/20,L=60+Math.random()*90;p.style.setProperty("--x",Math.cos(a)*L+"px");p.style.setProperty("--y",Math.sin(a)*L+"px");document.body.appendChild(p);setTimeout(()=>p.remove(),900)}
+  pulse(gAll,550);pulse(gHead);pulse(gCoin);
+  /* preventDefault здесь нет: переход по target="_top" */
+});
+const shut=()=>modal.classList.remove("on");
+document.getElementById("close1").onclick=shut;modal.addEventListener("click",e=>{if(e.target===modal)shut()});addEventListener("keydown",e=>{if(e.key==="Escape")shut()});
+})();
+(()=>{
+const W0=2120,H0=387,w=document.getElementById("w2"),src=document.getElementById("base2").src;
+const pc=(x,y,ww,hh)=>`left:${x/W0*100}%;top:${y/H0*100}%;width:${ww/W0*100}%;height:${hh/H0*100}%`;
+const fillR=e=>{e.style.left=e.style.top="0";e.style.width=e.style.height="100%";return e};function region(x,y,ww,hh,cls="rg"){const e=document.createElement("div");e.className=cls;
+  e.style.cssText=pc(x,y,ww,hh)+`;background-image:url("${src}");background-size:${W0/ww*100}% ${H0/hh*100}%;background-position:${x/(W0-ww)*100}% ${y/(H0-hh)*100}%`;return e}
+function glitchZone(x,y,ww,hh){const z=document.createElement("div");z.className="gz";z.style.cssText=pc(x,y,ww,hh);
+  ["a","b"].forEach(k=>{const r=document.createElement("div");r.className="rg "+k;r.style.cssText=`inset:0;background-image:url("${src}");background-size:${W0/ww*100}% ${H0/hh*100}%;background-position:${x/(W0-ww)*100}% ${y/(H0-hh)*100}%`;z.appendChild(r)});
+  w.appendChild(z);return z}
+const pulse=(z,ms=550)=>{z.classList.add("on");setTimeout(()=>z.classList.remove("on"),ms)};
+/* глитч: заголовок, номер сезона, правая надпись, весь баннер */
+const gTitle=glitchZone(187,60,800,88), gSeason=glitchZone(38,10,114,187), gNote=glitchZone(1792,30,320,140), gAll=glitchZone(0,0,2120,387);
+setInterval(()=>pulse(gTitle),3400);
+setInterval(()=>pulse(gSeason,450),5200);
+setInterval(()=>pulse(gNote,500),4300);
+setInterval(()=>pulse(gAll,380),9000);
+/* свечения: сундук с картами, девушка, номер сезона */
+function glow(cx,cy,r,c,cls="glow"){const g=document.createElement("div");g.className=cls;g.style.cssText=pc(cx-r,cy-r,2*r,2*r)+`;border-radius:50%;background:radial-gradient(circle,${c},transparent 68%)`;w.appendChild(g)}
+glow(1070,235,190,"rgba(120,100,255,.45)");glow(1560,170,200,"rgba(190,130,255,.28)");glow(95,110,90,"rgba(190,140,255,.45)");
+/* блик по заголовку */
+const tf=document.createElement("div");tf.className="tagfx";tf.style.cssText=pc(187,60,800,88)+";rotate:0deg;border-radius:0";w.appendChild(tf);
+/* звёзды */
+[[1032,70],[850,200],[877,217],[1015,52],[1300,30],[1730,60],[60,30],[1500,330],[1250,300]].forEach(([x,y],i)=>{const s=document.createElement("i");s.className="st";s.style.cssText=`left:${x/W0*100}%;top:${y/H0*100}%;animation-delay:${i*.5}s;animation-duration:${2.4+i*.28}s`;w.appendChild(s)});
+/* лепестки */
+for(let i=0;i<16;i++){const p=document.createElement("i");p.className="pt";p.style.cssText=`left:${i*6.4+Math.random()*3}%;--t:${7+Math.random()*6}s;--d:${-Math.random()*12}s;--sx:${(Math.random()-.5)*8}vw;transform:scale(${.6+Math.random()*.8})`;w.appendChild(p)}
+/* мерцающие частицы над сундуком */
+for(let i=0;i<9;i++){const m=document.createElement("i");m.className="mote";m.style.cssText=`left:${(870+i*50)/W0*100}%;top:${(330+(i%3)*25)/H0*100}%;--t:${3+i%4*.6}s;--d:${-i*.7}s`;w.appendChild(m)}
+/* три пункта наград: подсветка */
+[[120,214,202,61],[364,214,178,61],[584,214,218,61]].forEach(a=>{const h=document.createElement("div");h.className="hs";h.style.cssText=pc(...a);w.appendChild(h)});
+/* кнопка */
+const cta=document.createElement("a");cta.className="cta idle";
+cta.href=PASS_URL||"#pass";cta.target="_top";
+cta.setAttribute("role","button");cta.setAttribute("aria-label","Открыть боевой пропуск");
+cta.style.cssText=pc(1662,234,410,118);
+cta.append(fillR(region(1662,234,410,118)),Object.assign(document.createElement("div"),{className:"ring"}),Object.assign(document.createElement("div"),{className:"shine"}));
+const gBtn=glitchZone(1662,234,410,118);gBtn.style.zIndex=3;cta.style.zIndex=2;w.appendChild(cta);
+cta.addEventListener("pointerenter",()=>gBtn.classList.add("loop"));cta.addEventListener("pointerleave",()=>gBtn.classList.remove("loop"));
+/* следящий свет */
+w.addEventListener("pointermove",e=>{const r=w.getBoundingClientRect();w.style.setProperty("--mx",(e.clientX-r.left)/r.width*100+"%");w.style.setProperty("--my",(e.clientY-r.top)/r.height*100+"%")});
+/* клик */
+const modal=document.getElementById("modal2");
+const showModal=()=>setTimeout(()=>{modal.classList.add("on");document.getElementById("close2").focus()},300);
+cta.addEventListener("click",e=>{
+  if(!PASS_URL){e.preventDefault();showModal();return}
+  const r=cta.getBoundingClientRect(),d=Math.max(r.width,r.height),s=document.createElement("i");
+  s.className="rip";s.style.cssText=`width:${d}px;height:${d}px;left:${e.clientX-r.left-d/2}px;top:${e.clientY-r.top-d/2}px`;cta.querySelector(".shine").appendChild(s);setTimeout(()=>s.remove(),600);
+  const cx=r.left+r.width/2,cy=r.top+r.height/2;
+  for(let i=0;i<20;i++){const p=document.createElement("i");p.className="spark";p.style.left=cx+"px";p.style.top=cy+"px";const a=Math.PI*2*i/20,L=60+Math.random()*90;p.style.setProperty("--x",Math.cos(a)*L+"px");p.style.setProperty("--y",Math.sin(a)*L+"px");document.body.appendChild(p);setTimeout(()=>p.remove(),900)}
+  pulse(gAll,550);pulse(gTitle);pulse(gSeason);pulse(gNote);
+  /* preventDefault здесь нет: переход по target="_top" */
+});
+const shut=()=>modal.classList.remove("on");
+document.getElementById("close2").onclick=shut;modal.addEventListener("click",e=>{if(e.target===modal)shut()});addEventListener("keydown",e=>{if(e.key==="Escape")shut()});
+})();
+</script></body></html>

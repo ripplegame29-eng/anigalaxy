@@ -1,0 +1,326 @@
+/* ===== StatsBlock / StatCard — дословно из эталона «Статистика профиля» ===== */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+@media (max-width: 720px) {
+  .stat-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.stat-card {
+  --c: #5b7cff;
+  --c2: #9a6bff;
+  --mx: 50%;
+  --my: 0%;
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  border-radius: 22px;
+  padding: 30px 12px 20px;
+  text-align: center;
+  color: #fff;
+  border: 1px solid color-mix(in srgb, var(--c) 24%, rgba(255, 255, 255, 0.06));
+  background: #0d0e16;
+  transform: perspective(800px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+  transition: transform 0.18s ease-out, border-color 0.3s, box-shadow 0.3s;
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.35),
+    0 0 40px color-mix(in srgb, var(--c) 10%, transparent);
+  opacity: 0;
+  animation: stat-in 0.8s cubic-bezier(0.2, 0.9, 0.3, 1) forwards;
+  animation-delay: calc(var(--i) * 110ms);
+}
+.stat-card:hover {
+  border-color: color-mix(in srgb, var(--c) 55%, transparent);
+  box-shadow:
+    0 18px 44px rgba(0, 0, 0, 0.5),
+    0 0 60px color-mix(in srgb, var(--c) 26%, transparent);
+}
+.stat-card > * {
+  position: relative;
+  z-index: 2;
+}
+.stat-card > i {
+  position: absolute;
+}
+/* aurora-блобы: сверху слева цветом акцента, снизу справа color2 */
+.stat-au {
+  z-index: 0;
+  width: 78%;
+  height: 70%;
+  left: -14%;
+  top: -34%;
+  border-radius: 50%;
+  background: var(--c);
+  opacity: 0.34;
+  filter: blur(34px);
+  animation: stat-dr 8s ease-in-out infinite alternate;
+}
+.stat-au.stat-au-b {
+  left: auto;
+  right: -20%;
+  top: auto;
+  bottom: -40%;
+  width: 60%;
+  height: 60%;
+  background: var(--c2);
+  opacity: 0.14;
+  animation-duration: 11s;
+}
+/* подсветка следом за курсором */
+.stat-sp {
+  z-index: 1;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(
+    220px circle at var(--mx) var(--my),
+    color-mix(in srgb, var(--c) 30%, transparent),
+    transparent 70%
+  );
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+/* светящаяся рамка по контуру */
+.stat-bd {
+  z-index: 3;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  opacity: 0;
+  transition: opacity 0.3s;
+  pointer-events: none;
+  background: radial-gradient(170px circle at var(--mx) var(--my), var(--c), transparent 70%);
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box exclude,
+    linear-gradient(#000 0 0);
+}
+.stat-card:hover .stat-sp,
+.stat-card:hover .stat-bd {
+  opacity: 1;
+}
+/* блик раз в ~6с */
+.stat-sh {
+  z-index: 1;
+  top: -10%;
+  bottom: -10%;
+  left: 0;
+  width: 34%;
+  transform: translateX(-260%) skewX(-18deg);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.12), transparent);
+  animation: stat-sh 6s ease-in-out infinite;
+  animation-delay: calc(var(--i) * 0.9s + 1.5s);
+}
+/* 7 всплывающих точек */
+.stat-pt {
+  z-index: 1;
+  left: var(--x);
+  bottom: 8%;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--c);
+  box-shadow: 0 0 6px var(--c);
+  opacity: 0;
+  animation: stat-fl var(--t) ease-out infinite;
+  animation-delay: var(--d);
+}
+.stat-ic {
+  position: absolute !important;
+  top: 12px;
+  right: 12px;
+  width: 22px;
+  height: 22px;
+  color: var(--c);
+  opacity: 0.9;
+  filter: drop-shadow(0 0 5px color-mix(in srgb, var(--c) 70%, transparent));
+}
+.stat-ic svg {
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  overflow: visible;
+}
+.stat-num {
+  display: block;
+  font-family: var(--font-unbounded), "Arial Black", system-ui, sans-serif;
+  font-weight: 900;
+  font-size: clamp(26px, 4.6vw, 44px);
+  line-height: 1.1;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  text-shadow:
+    0 0 26px color-mix(in srgb, var(--c) 65%, transparent),
+    0 2px 0 rgba(0, 0, 0, 0.35);
+}
+.stat-card.stat-done .stat-num {
+  animation: stat-pop 0.6s ease-out;
+}
+.stat-lb {
+  display: block;
+  margin-top: 8px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #7d8299;
+}
+/* скелетон loading */
+.stat-skel {
+  display: block;
+  margin: 0 auto;
+  width: 70%;
+  height: calc(clamp(26px, 4.6vw, 44px) * 1.1);
+  border-radius: 10px;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.05),
+    rgba(255, 255, 255, 0.14),
+    rgba(255, 255, 255, 0.05)
+  );
+  background-size: 200% 100%;
+  animation: stat-skel 1.4s ease-in-out infinite;
+}
+.stat-card.stat-link {
+  cursor: pointer;
+}
+.stat-card:focus-visible {
+  outline: 2px solid #7a8bff;
+  outline-offset: 3px;
+}
+/* скрытый текст с итоговым значением для скринридера */
+.stat-card > .stat-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+/* микро-анимации иконок */
+.stat-i-clock .stat-h {
+  transform-origin: 12px 12px;
+  animation: stat-spin 6s linear infinite;
+}
+.stat-i-tv .stat-an {
+  transform-origin: 12px 7px;
+  animation: stat-wig 2.4s ease-in-out infinite alternate;
+}
+.stat-i-play .stat-tr {
+  transform-origin: 12px 12px;
+  animation: stat-pu 1.8s ease-in-out infinite;
+}
+.stat-i-trophy .stat-gl {
+  animation: stat-tw 2.2s ease-in-out infinite;
+  transform-origin: 19px 3px;
+}
+/* пауза анимаций вне экрана */
+.stat-pz,
+.stat-pz * {
+  animation-play-state: paused !important;
+}
+@keyframes stat-in {
+  from {
+    opacity: 0;
+    translate: 0 22px;
+    scale: 0.96;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+    scale: 1;
+  }
+}
+@keyframes stat-dr {
+  to {
+    transform: translate(14%, 10%) scale(1.15);
+  }
+}
+@keyframes stat-sh {
+  0%,
+  60% {
+    transform: translateX(-260%) skewX(-18deg);
+  }
+  100% {
+    transform: translateX(520%) skewX(-18deg);
+  }
+}
+@keyframes stat-fl {
+  0% {
+    opacity: 0;
+    transform: translateY(0);
+  }
+  20% {
+    opacity: 0.9;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-70px);
+  }
+}
+@keyframes stat-pop {
+  40% {
+    transform: scale(1.08);
+  }
+}
+@keyframes stat-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes stat-wig {
+  from {
+    transform: rotate(-8deg);
+  }
+  to {
+    transform: rotate(8deg);
+  }
+}
+@keyframes stat-pu {
+  50% {
+    transform: scale(0.8);
+  }
+}
+@keyframes stat-tw {
+  0%,
+  100% {
+    opacity: 0.2;
+    transform: scale(0.5);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.3);
+  }
+}
+@keyframes stat-skel {
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .stat-card,
+  .stat-card * {
+    animation: none !important;
+  }
+  .stat-card {
+    opacity: 1;
+  }
+}

@@ -1,0 +1,754 @@
+@import "tailwindcss";
+
+/* ================================================================== */
+/*  Дизайн-токены AAA-темной темы                                      */
+/* ================================================================== */
+@theme {
+  /* Фон и поверхности */
+  --color-ink: #07070c;
+  --color-ink-soft: #0b0b12;
+  /* Тёмный фон, в который уходит видео-подложка hero */
+  --color-ink-hero: #0f0f13;
+  --color-surface: #101018;
+  --color-card: #14141f;
+  --color-elevated: #1a1a27;
+
+  /* Границы и текст */
+  --color-line: rgba(255, 255, 255, 0.08);
+  --color-line-strong: rgba(255, 255, 255, 0.16);
+  --color-muted: #9a9ab0;
+  --color-bright: #f4f4f8;
+
+  /* Акценты */
+  --color-accent: #1f7bff;
+  --color-accent-2: #00c8ff;
+  /* Заливка поверхностей под белый текст (активные вкладки, пилюли, бейджи).
+     Свежий #1f7bff с белым даёт 3.94:1 — ниже AA для мелкого текста, поэтому
+     такие заливки берут затемнённую производную. Сам бренд (градиенты,
+     свечения, текст-акцент на тёмном) остаётся на исходных токенах. */
+  --color-accent-deep: color-mix(in oklab, var(--color-accent) 86%, black);
+  --color-gold: #ffb020;
+  --color-mint: #3ddc97;
+
+  --font-sans: "Outfit", "Outfit Fallback", ui-sans-serif, system-ui, "Segoe UI", sans-serif;
+  /* Акцентный шрифт (заголовки, логотип) — как на референсе animeon.cc:
+     латиница/кириллица/латин-ext разбиты на сабсеты с unicode-range */
+  --font-accent: "delaLatin", "delaCyrillic", "delaLatinExt", "delaLatinExt Fallback";
+
+  /* Колонка контента (max-w-7xl): 1552px вместо 1280px — как на референсе,
+     где шапка/баннеры идут во всю колонку ≈1504px (без px-6) на
+     логическом экране 2560. Ниже 1552px контейнер прежний — узкие окна
+     и мобильные не меняются. */
+  --container-7xl: 1552px;
+}
+
+/* ================================================================== */
+/*  Шрифты (скопированы с animeon.cc): Outfit — основной, Dela — акцент */
+/* ================================================================== */
+@font-face {
+  font-family: Outfit;
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("./fonts/outfit-latin.woff2") format("woff2");
+  unicode-range: u+00??, u+0131, u+0152-0153, u+02bb-02bc, u+02c6, u+02da, u+02dc, u+0304, u+0308,
+    u+0329, u+2000-206f, u+20ac, u+2122, u+2191, u+2193, u+2212, u+2215, u+feff, u+fffd;
+}
+
+@font-face {
+  font-family: Outfit;
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("./fonts/outfit-latin-ext.woff2") format("woff2");
+  unicode-range: u+0100-02ba, u+02bd-02c5, u+02c7-02cc, u+02ce-02d7, u+02dd-02ff, u+0304, u+0308,
+    u+0329, u+1d00-1dbf, u+1e00-1e9f, u+1ef2-1eff, u+2020, u+20a0-20ab, u+20ad-20c4, u+2113,
+    u+2c60-2c7f, u+a720-a7ff;
+}
+
+/* Метрически выровненный фолбэк Outfit под кириллицу (на референсе — Arial) */
+@font-face {
+  font-family: "Outfit Fallback";
+  src: local("Arial");
+  ascent-override: 100.18%;
+  descent-override: 26.05%;
+  line-gap-override: 0%;
+  size-adjust: 99.82%;
+}
+
+@font-face {
+  font-family: delaLatin;
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("./fonts/dela-latin.woff2") format("woff2");
+  unicode-range: u+00??, u+0131, u+0152-0153, u+02bb-02bc, u+02c6, u+02da, u+02dc, u+0304, u+0308,
+    u+0329, u+2000-206f, u+20ac, u+2122, u+2191, u+2193, u+2212, u+2215, u+feff, u+fffd;
+}
+
+@font-face {
+  font-family: delaCyrillic;
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("./fonts/dela-cyrillic.woff2") format("woff2");
+  unicode-range: u+0301, u+0400-045f, u+0490-0491, u+04b0-04b1, u+2116;
+}
+
+@font-face {
+  font-family: delaLatinExt;
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("./fonts/dela-latin-ext.woff2") format("woff2");
+  unicode-range: u+0100-02ba, u+02bd-02c5, u+02c7-02cc, u+02ce-02d7, u+02dd-02ff, u+0304, u+0308,
+    u+0329, u+1d00-1dbf, u+1e00-1e9f, u+1ef2-1eff, u+2020, u+20a0-20ab, u+20ad-20c0, u+2113,
+    u+2c60-2c7f, u+a720-a7ff;
+}
+
+@font-face {
+  font-family: "delaLatinExt Fallback";
+  src: local("Arial");
+  ascent-override: 116%;
+  descent-override: 28.8%;
+  line-gap-override: 0%;
+  size-adjust: 100%;
+}
+
+/* ================================================================== */
+/*  Базовые стили                                                       */
+/* ================================================================== */
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    background-color: var(--color-ink);
+    color: var(--color-bright);
+    font-family: var(--font-sans);
+    font-feature-settings: "cv11", "ss01";
+    overflow-x: hidden;
+  }
+
+  /* Заголовки страниц и секций — акцентный шрифт Dela,
+     как на референсе animeon.cc (класс font-accent) */
+  h1,
+  h2 {
+    font-family: var(--font-accent);
+  }
+
+  /* Мягкое свечение фона — «живой» градиент вместо плоского чёрного */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: -20% -10% auto;
+    height: 70vh;
+    background:
+      radial-gradient(50% 60% at 20% 0%, rgba(31, 123, 255, 0.18), transparent 70%),
+      radial-gradient(45% 55% at 80% 10%, rgba(0, 200, 255, 0.12), transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+    filter: blur(10px);
+  }
+
+  ::selection {
+    background: rgba(31, 123, 255, 0.4);
+    color: #fff;
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #0b0b12;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #26263a;
+    border-radius: 999px;
+    border: 2px solid #0b0b12;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #3a3a55;
+  }
+
+  :focus-visible {
+    outline: 2px solid color-mix(in oklab, var(--color-accent) 80%, white);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+    }
+  }
+}
+
+/* ================================================================== */
+/*  Повторяющиеся паттерны UI                                           */
+/* ================================================================== */
+
+/* Стеклянная поверхность (шапка, панели) */
+.glass {
+  background: color-mix(in oklab, #101018 72%, transparent);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+}
+
+/* Градиентный текст */
+.text-gradient {
+  background: linear-gradient(92deg, #fff 0%, #a9d1ff 45%, #6fe3ff 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.text-gradient-accent {
+  background: linear-gradient(92deg, var(--color-accent), var(--color-accent-2));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Кнопка-призрак с акцентом на hover */
+.btn-ghost {
+  transition:
+    background-color 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+    color 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.22s;
+}
+.btn-ghost:hover {
+  transform: translateY(-1px);
+}
+
+/* Основная кнопка с «утопленной» тенью и свечением при hover */
+.btn-primary {
+  background: linear-gradient(120deg, var(--color-accent), var(--color-accent-2));
+  box-shadow:
+    0 8px 24px -10px rgba(31, 123, 255, 0.8),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  transition:
+    transform 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.25s,
+    filter 0.25s;
+}
+.btn-primary:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.08);
+  box-shadow:
+    0 16px 34px -12px rgba(31, 123, 255, 0.95),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+.btn-primary:active {
+  transform: translateY(0) scale(0.985);
+}
+
+/* Кнопка PREMIUM: полупрозрачное стекло + неоновая голубая обводка */
+.btn-premium {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 0.95rem;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #cfe9ff;
+  background: linear-gradient(135deg, rgba(31, 123, 255, 0.22), rgba(31, 123, 255, 0.06));
+  border: 1px solid rgba(31, 123, 255, 0.55);
+  border-radius: 0.75rem;
+  box-shadow:
+    0 0 0 0 rgba(31, 123, 255, 0),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition:
+    border-color 0.24s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    color 0.24s,
+    transform 0.24s cubic-bezier(0.22, 1, 0.36, 1),
+    background 0.24s;
+}
+.btn-premium:hover {
+  color: #fff;
+  background: linear-gradient(135deg, rgba(31, 123, 255, 0.4), rgba(31, 123, 255, 0.14));
+  border-color: rgba(0, 200, 255, 0.95);
+  transform: translateY(-2px);
+  box-shadow:
+    0 0 18px -2px rgba(31, 123, 255, 0.85),
+    0 8px 26px -14px rgba(31, 123, 255, 0.9),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
+}
+.btn-premium:active {
+  transform: translateY(0) scale(0.985);
+}
+.btn-premium svg {
+  filter: drop-shadow(0 0 6px rgba(255, 176, 32, 0.65));
+}
+
+/* Яркая голубая кнопка «Войти» с плавным свечением */
+.btn-login {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 1.15rem;
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #fff;
+  background: linear-gradient(120deg, var(--color-accent), #00b6ff 55%, var(--color-accent-2));
+  background-size: 160% 160%;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 0.75rem;
+  box-shadow:
+    0 8px 22px -12px rgba(31, 123, 255, 0.9),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  transition:
+    transform 0.24s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.3s,
+    background-position 0.4s;
+}
+.btn-login:hover {
+  transform: translateY(-2px);
+  background-position: 100% 50%;
+  box-shadow:
+    0 0 26px -4px rgba(0, 200, 255, 0.9),
+    0 14px 34px -14px rgba(31, 123, 255, 1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+.btn-login:active {
+  transform: translateY(0) scale(0.985);
+}
+
+/* Полноширинная кнопка отправки формы в модалке авторизации */
+.btn-auth-submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 3rem;
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: #fff;
+  background: linear-gradient(120deg, var(--color-accent), var(--color-accent-2));
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 0.75rem;
+  box-shadow:
+    0 12px 28px -14px rgba(31, 123, 255, 0.95),
+    inset 0 1px 0 rgba(255, 255, 255, 0.28);
+  transition:
+    transform 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.25s,
+    filter 0.25s,
+    opacity 0.2s;
+}
+.btn-auth-submit:hover:not(:disabled) {
+  transform: translateY(-2px);
+  filter: brightness(1.07);
+  box-shadow:
+    0 18px 34px -14px rgba(31, 123, 255, 1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.34);
+}
+.btn-auth-submit:active:not(:disabled) {
+  transform: translateY(0) scale(0.99);
+}
+.btn-auth-submit:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Премиум-плашка с пульсирующим ореолом (для бейджей) */
+.glow-ring {
+  position: relative;
+}
+.glow-ring::after {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  border-radius: inherit;
+  background: radial-gradient(closest-side, rgba(31, 123, 255, 0.5), transparent 75%);
+  opacity: 0;
+  transition: opacity 0.3s;
+  pointer-events: none;
+}
+.glow-ring:hover::after {
+  opacity: 1;
+}
+
+/* Градиентный оверлей поверх фонового видео hero:
+   слева и снизу видео уходит в тёмный фон, текст читается идеально */
+.hero-scrim {
+  background:
+    linear-gradient(to top, var(--color-ink-hero) 0%, rgba(15, 15, 19, 0.72) 34%, rgba(15, 15, 19, 0.1) 68%),
+    linear-gradient(to right, var(--color-ink-hero) 0%, rgba(15, 15, 19, 0.86) 38%, rgba(15, 15, 19, 0.28) 72%, transparent 100%),
+    linear-gradient(to bottom, rgba(7, 7, 12, 0.75) 0%, transparent 22%);
+}
+
+/* Горизонтальная лента без полосы прокрутки */
+.rail {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  scroll-snap-type: x mandatory;
+}
+.rail::-webkit-scrollbar {
+  display: none;
+}
+.rail > * {
+  scroll-snap-align: start;
+}
+
+/* Плавное появление блока при скролле */
+.reveal {
+  opacity: 0;
+  transform: translateY(26px);
+  transition:
+    opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: opacity, transform;
+}
+.reveal.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+/* Скелетон-загрузка */
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background: #161622;
+}
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.06), transparent);
+  animation: shimmer 1.4s infinite;
+}
+
+/* ================================================================== */
+/*  Кейфреймы                                                           */
+/* ================================================================== */
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Блик XP-бара (§12.1): свет проходит по заполненной части и упирается в
+   хвост шкалы. При prefers-reduced-motion выключается общим медиа-правилом. */
+.ah-shine {
+  position: relative;
+  overflow: hidden;
+}
+
+.ah-shine::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  width: 55%;
+  transform: translateX(-110%);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  animation: ah-shine-run 2.8s ease-in-out infinite;
+}
+
+@keyframes ah-shine-run {
+  from {
+    transform: translateX(-110%);
+  }
+  to {
+    transform: translateX(230%);
+  }
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Выезд боковой шторки справа: панель уезжает вместе с рукой, а не
+   проявляется на месте — так меню ощущается физическим объектом. */
+@keyframes drawerIn {
+  from {
+    opacity: 0.4;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes kenBurns {
+  from {
+    transform: scale(1.06) translate3d(0, 0, 0);
+  }
+  to {
+    transform: scale(1.16) translate3d(-1.5%, -1%, 0);
+  }
+}
+
+@keyframes progressRun {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes spinSlow {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Монетка и кот на `/store`: мягкий подъём-парение и пульс свечения.
+   При prefers-reduced-motion выключается общим медиа-правилом выше. */
+@keyframes agFloat {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-7px);
+  }
+}
+
+@keyframes agFloatMini {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+@keyframes agFloatCat {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-13px);
+  }
+}
+
+@keyframes agGlow {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 14px rgba(0, 174, 255, 0.35)) brightness(1);
+  }
+  50% {
+    filter: drop-shadow(0 0 32px rgba(0, 174, 255, 0.7)) brightness(1.14);
+  }
+}
+
+@keyframes agGlowSoft {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 36px rgba(0, 160, 255, 0.3)) brightness(1);
+  }
+  50% {
+    filter: drop-shadow(0 0 58px rgba(0, 160, 255, 0.55)) brightness(1.07);
+  }
+}
+
+.ag-coin-anim {
+  animation:
+    agFloat 3.4s ease-in-out infinite,
+    agGlow 2.8s ease-in-out infinite;
+}
+
+.ag-coin-mini {
+  animation: agFloatMini 3.4s ease-in-out infinite;
+}
+
+.ag-cat-anim {
+  animation:
+    agFloatCat 4.8s ease-in-out infinite,
+    agGlowSoft 3.6s ease-in-out infinite;
+}
+
+/* Голубые блёстки-звёзды вокруг монетки и кота: позиции заданы в разметке
+   (статика — без random, иначе рассинхрон гидратации). */
+.ag-sparkle,
+.ag-rise-star {
+  position: absolute;
+  background: radial-gradient(circle at 35% 30%, #eafcff, #00c8ff 72%);
+  clip-path: polygon(50% 0%, 58% 42%, 100% 50%, 58% 58%, 50% 100%, 42% 58%, 0% 50%, 42% 42%);
+  filter: drop-shadow(0 0 6px rgba(0, 200, 255, 0.9));
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.3);
+}
+
+.ag-sparkle {
+  animation: agTwinkle 2.2s ease-in-out infinite;
+}
+
+.ag-rise-star {
+  animation: agRise 3.6s ease-in infinite;
+}
+
+@keyframes agTwinkle {
+  0%,
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.2) rotate(0deg);
+  }
+  45% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1) rotate(40deg);
+  }
+  70% {
+    opacity: 0.6;
+    transform: translate(-50%, -50%) scale(0.8) rotate(60deg);
+  }
+}
+
+@keyframes agRise {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) translateY(16px) scale(0.4);
+  }
+  30% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) translateY(-48px) scale(1.05);
+  }
+}
+
+/* Пульсирующее кольцо вокруг монетки */
+.ag-ring-pulse {
+  position: absolute;
+  inset: -6%;
+  border-radius: 9999px;
+  border: 2px solid rgba(0, 200, 255, 0.55);
+  opacity: 0;
+  animation: agRingPulse 2.4s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+}
+
+@keyframes agRingPulse {
+  0% {
+    opacity: 0.7;
+    transform: scale(0.86);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.38);
+  }
+}
+
+/* Орбита: светлячки облетают монетку в разные стороны */
+.ag-orbit {
+  position: absolute;
+  inset: -9%;
+  animation: agOrbit 6.5s linear infinite;
+}
+
+.ag-orbit-reverse {
+  animation-duration: 9.5s;
+  animation-direction: reverse;
+}
+
+.ag-orbit-dot {
+  position: absolute;
+  left: 50%;
+  top: -4px;
+  width: 9px;
+  height: 9px;
+  margin-left: -4.5px;
+  border-radius: 9999px;
+  background: radial-gradient(circle at 35% 30%, #eafcff, #00c8ff);
+  box-shadow: 0 0 12px 3px rgba(0, 200, 255, 0.75);
+}
+
+@keyframes agOrbit {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Ореол-дыхание под котом на /donate: мягкий пульс подсветки.
+   При prefers-reduced-motion выключается общим медиа-правилом выше. */
+@keyframes agHaloPulse {
+  0%,
+  100% {
+    opacity: 0.5;
+    transform: scale(0.94);
+  }
+  50% {
+    opacity: 0.95;
+    transform: scale(1.07);
+  }
+}
+
+.ag-halo {
+  animation: agHaloPulse 4.2s ease-in-out infinite;
+}
+
+.animate-fade-up {
+  animation: fadeUp 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.animate-fade-in {
+  animation: fadeIn 0.5s ease both;
+}
+.animate-drawer {
+  animation: drawerIn 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.animate-kenburns {
+  animation: kenBurns 14s ease-out both;
+}
+.animate-progress {
+  transform-origin: left;
+  animation: progressRun linear both;
+}
+.animate-spin-slow {
+  animation: spinSlow 0.9s linear infinite;
+}
+
+/* Горизонтальные ленты (хронология франшизы) — скрываем полосу прокрутки */
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Лёгкий плюс к интервалу у заголовков (вместо tracking-tight -0.025em),
+   чтобы жирная Dela не сливалась: только буквы чуть разведены, без
+   обводок и теней. Вне @layer — важно для приоритета над утилитами. */
+h1,
+.tracking-tight {
+  letter-spacing: 0.01em;
+}

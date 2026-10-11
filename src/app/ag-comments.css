@@ -1,0 +1,96 @@
+/**
+ * Комментарии (`ag-cm`) — блок страницы тайтла и стена профиля
+ * (`components/comments/CommentsBlock.tsx`).
+ *
+ * Всё CSS-only, без JS в кадре:
+ *   .ag-cm         — въезд блока при монтировании
+ *   .ag-cm-item    — въезд карточки: играет на новых элементах,
+ *                    задержка по индексу (стagger) из инлайн-стиля
+ *   .ag-cm-vote    — «поп» голоса при включении (data-on="true")
+ *   .ag-cm-reveal  — раскрытие спойлера (blur → чёткий текст)
+ *   .ag-cm-lvl     — бейдж уровня (градиент по эрам задаётся в разметке)
+ *   select option   — тёмные выпадашки (иначе система рисует светлые)
+ *
+ * Базовые стили элементов не прячут контент: анимации только добавляются,
+ * поэтому выключение ( экономия `html[data-eco="on"]`, режим `.perf-lite`
+ * и системная настройка `prefers-reduced-motion` ) оставляет ленту
+ * полностью видимой — та же схема, что в `ag-tag.css`.
+ */
+
+/* -------------------------------- Ядро ---------------------------------- */
+
+.ag-cm {
+  animation: ag-cm-in 0.45s cubic-bezier(0.2, 0.9, 0.3, 1) both;
+}
+
+.ag-cm-item {
+  animation: ag-cm-in 0.4s cubic-bezier(0.2, 0.9, 0.3, 1) both;
+}
+
+/* Голос: срабатывает при data-on="false" → "true" (переключение обратно
+   убирает класс — следующее включение заново проигрывает «поп») */
+.ag-cm-vote[data-on="true"] {
+  animation: ag-cm-pop 0.32s ease;
+}
+
+/* Раскрытие спойлера: появляется заново монтируемый <p> */
+.ag-cm-reveal {
+  animation: ag-cm-reveal 0.35s ease both;
+}
+
+/* Выпадающие опции сортировки: системная тема светлая, красим сами */
+.ag-cm select option {
+  background: #14141f;
+  color: #fff;
+}
+
+/* ------------------- Экономия / perf-lite / reduced-motion --------------- */
+
+html[data-eco="on"] .ag-cm,
+html[data-eco="on"] .ag-cm *,
+.perf-lite .ag-cm,
+.perf-lite .ag-cm * {
+  animation: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ag-cm,
+  .ag-cm * {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* ------------------------------ Кейфреймы -------------------------------- */
+
+@keyframes ag-cm-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes ag-cm-pop {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  45% {
+    transform: scale(1.28);
+  }
+}
+
+@keyframes ag-cm-reveal {
+  from {
+    opacity: 0;
+    filter: blur(6px);
+  }
+  to {
+    opacity: 1;
+    filter: none;
+  }
+}

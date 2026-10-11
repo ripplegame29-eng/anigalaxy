@@ -1,0 +1,949 @@
+/**
+ * Тег-капсула `ag-tag` — единый переиспользуемый компонент тега (FIX_TAGS §3).
+ *
+ * Эталон — `reference/titles.html`: неоновая капсула с бегущей conic-рамкой,
+ * бликом-проходом, уголками-«прицела», частицами, пульсирующим свечением,
+ * иконкой слева и текстом капсом. Здесь — то же ядро плюс вся библиотека
+ * эффектов `.fx-*` (данные эффектов приходят из конфига тега, `visual.effects`,
+ * пол редкости добавляет слои — см. `lib/progression/visual.ts`, FIX §4).
+ *
+ * Слои (псевдоэлементов у корня ровно два, чтобы эффекты не конфликтовали):
+ *   .ag-tag::before   — бегущая conic-рамка           (fx-border)
+ *   .ag-tag::after    — цветной ореол (у всех; у fx-aura ещё и пульсирует)
+ *   .ag-bg            — базовая цветная волна + фоновые слои backdrop-*
+ *                       (z-index:-1, рендерится у каждой капсулы)
+ *   .ag-soft          — ::before туман/пламя, ::after орбита
+ *   .ag-over          — ::before лезвие, ::after шум
+ *   .ag-runes         — SVG-руны (stroke-dasharray)
+ *   i.bk ×4           — уголки-«прицела»              (fx-brackets)
+ *   svg.ag-ico        — иконка тега из конфига        (fx-icon)
+ *   b                  — текст капсом (data-t для глитча)
+ *   span.sh           — блик-проход                   (fx-shine)
+ *   em.sp ×N          — детерминированные частицы     (fx-sparks)
+ *
+ * Производительность: частицы/анимации гаснут в режиме «экономия»
+ * (`html[data-eco="on"]`, §14) и в `.perf-lite`, невидимые капсулы ставятся
+ * на паузу IntersectionObserver'ом (`data-paused`), системная настройка
+ * `prefers-reduced-motion` выключает всё.
+ */
+
+/* Угол бегущей рамки. Без поддержки @property анимация по кастомному
+   свойству не интерполируется — остаётся статичная (но валидная, thanks
+   фоллбэку `--a: 0deg` ниже) коническая рамка. */
+@property --a {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+/* ================================================================== */
+/*  Ядро                                                               */
+/* ================================================================== */
+
+.ag-tag {
+  --c: #1f7bff;
+  --c2: #00c8ff;
+  --a: 0deg;
+  --spin: 2.4s;
+  --tag-fs: 13px;
+  --tag-ls: 0.14em;
+  /* яркость цветного ореола: база + рост по редкости ([data-r] ниже) */
+  --halo-o: 0.44;
+
+  position: relative;
+  z-index: 0; /* свой контекст наложения: ::after с z-index:-1 не уходит в фон */
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  padding: 0.8em 1.4em;
+  font-family: var(--font-sans), system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: var(--tag-fs);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: var(--tag-ls);
+  text-transform: uppercase;
+  white-space: nowrap;
+  vertical-align: middle;
+  color: #fff;
+  border: 2px solid transparent;
+  border-radius: 999px;
+  /* Фон — формула эталона (reference/titles.html .pill): тёмное поле и
+     цветной подмес 24%/20%, радиальный акцент 24% — при этом белый текст
+     проходит AA (≥4.5) на всех 29 палитрах, включая #fff7ae/#00c8ff. */
+  background:
+    radial-gradient(120% 165% at 22% 12%, color-mix(in srgb, var(--c) 24%, transparent), transparent 62%),
+    linear-gradient(135deg, color-mix(in srgb, var(--c) 24%, #0b0b13), color-mix(in srgb, var(--c2) 20%, #0b0b13));
+  /* цвет живёт по краям: ближняя и дальняя подсветка палитры + глухая
+     аура c2 (всё снаружи текстовой зоны — контраст AA не трогает),
+     тонкая световая грань сверху в зоне паддинга */
+  box-shadow:
+    0 0 12px -4px color-mix(in srgb, var(--c) 75%, transparent),
+    0 0 34px -10px color-mix(in srgb, var(--c) 45%, transparent),
+    0 0 72px -30px color-mix(in srgb, var(--c2) 95%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16),
+    inset 0 0 18px -12px var(--c2);
+  text-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.85),
+    0 0 11px color-mix(in srgb, var(--c) 75%, transparent);
+  transition:
+    transform 0.18s ease,
+    filter 0.18s ease;
+  /* длинные названия не рвут вёрстку узких контейнеров */
+  max-width: 100%;
+}
+
+/* наведение: подъём + «проявление цвета» (ярче и насыщеннее); у невыданного
+   тега фильтр не трогаем — его приглушённый вид держит .ag-tag--locked */
+.ag-tag:not(.ag-tag--locked):hover {
+  transform: translateY(-1px);
+  filter: brightness(1.14) saturate(1.2);
+}
+
+/* размеры: шапка — md, меню/комментарии/тост — sm, магазин/косметика — lg */
+.ag-tag--sm {
+  --tag-fs: 11px;
+  --tag-ls: 0.1em;
+  gap: 0.4em;
+  padding: 0.55em 1em;
+}
+.ag-tag--md {
+  --tag-fs: 13px;
+}
+.ag-tag--lg {
+  --tag-fs: 15px;
+  --tag-ls: 0.16em;
+  gap: 0.55em;
+  padding: 0.85em 1.5em;
+}
+
+/* редкость: ореол ярче по мере роста — цвет остаётся палитрой тега,
+   но «сияние» читается сразу: от COMMON-подложки до MYTHIC-короны */
+.ag-tag[data-r="UNCOMMON"] {
+  --halo-o: 0.52;
+}
+.ag-tag[data-r="RARE"] {
+  --halo-o: 0.6;
+}
+.ag-tag[data-r="EPIC"] {
+  --halo-o: 0.68;
+}
+.ag-tag[data-r="LEGENDARY"] {
+  --halo-o: 0.76;
+}
+.ag-tag[data-r="MYTHIC"] {
+  --halo-o: 0.84;
+}
+.ag-tag[data-r="SECRET"] {
+  --halo-o: 0.7;
+}
+
+/* не получен — приглушённый вид: тусклее выданного, но палитра остаётся
+   ЦВЕТНОЙ (grayscale не ставим — иначе «теги серые какието все») */
+.ag-tag--locked {
+  filter: saturate(0.7) brightness(0.72);
+}
+.ag-tag--locked .sp {
+  opacity: 0.35;
+}
+
+/* слои: позиционируются строго ПОД текстом (z-index:-1 внутри корня) */
+.ag-bg,
+.ag-soft,
+.ag-over {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* дыхание свечения (pulse) — отдельный слой: opacity/transform крутятся
+   на композиторе, сама капсула не перекрашивается каждый кадр */
+.ag-tag .ag-glow {
+  position: absolute;
+  inset: -3px;
+  z-index: -1;
+  border-radius: inherit;
+  box-shadow:
+    0 0 20px -6px var(--c),
+    inset 0 0 16px -8px var(--c2);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* текст и иконка всегда поверх слоёв */
+.ag-tag b,
+.ag-tag .ag-ico,
+.ag-tag .ag-runes {
+  position: relative;
+}
+.ag-tag b {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ag-tag .ag-ico {
+  flex: none;
+  width: 1.35em;
+  height: 1.35em;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  color: var(--c);
+  /* двойной ореол иконки: короткий яркий + дальний мягкий */
+  filter:
+    drop-shadow(0 0 5px color-mix(in srgb, var(--c) 85%, transparent))
+    drop-shadow(0 0 13px color-mix(in srgb, var(--c) 45%, transparent));
+}
+.ag-tag .ag-runes {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  display: none;
+  opacity: 0.55;
+}
+.ag-tag.fx-runes .ag-runes {
+  display: block;
+}
+.ag-tag .ag-runes circle {
+  fill: none;
+  stroke: color-mix(in srgb, var(--c) 70%, #fff);
+  stroke-width: 1.2;
+  stroke-dasharray: 22 176;
+  animation: ag-runedash 7s linear infinite;
+}
+
+/* ================================================================== */
+/*  Эффекты по редкости (FIX §4)                                       */
+/* ================================================================== */
+
+/* ① border — бегущая коническая рамка (константа всех редкостей) */
+.ag-tag.fx-border::before {
+  --a: 0deg;
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1.5px;
+  pointer-events: none;
+  /* бегущий участок с белым «искровым ядром» между c и c2 — рамка не
+     просто ходит по кругу, а переливается и слегка высвечивает контур */
+  background: conic-gradient(
+    from var(--a),
+    transparent 0 50%,
+    color-mix(in srgb, var(--c) 70%, transparent) 66%,
+    color-mix(in srgb, var(--c) 92%, #fff) 75%,
+    #fff 79%,
+    color-mix(in srgb, var(--c2) 70%, #fff) 86%,
+    transparent 96%
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: ag-spin var(--spin) linear infinite;
+}
+
+/* ② pulse — дышащее свечение корня */
+.ag-tag.fx-pulse .ag-glow {
+  animation: ag-pulse 3.2s ease-in-out infinite;
+}
+
+/* ③ shine — блик-проход */
+.ag-tag .sh {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: inherit;
+  pointer-events: none;
+}
+.ag-tag.fx-shine .sh::after {
+  content: "";
+  position: absolute;
+  top: -40%;
+  bottom: -40%;
+  left: -35%;
+  width: 32%;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.55), transparent);
+  transform: skewX(-24deg) translateX(-160%);
+  animation: ag-sweep 2.6s ease-in-out infinite;
+}
+
+/* ④ brackets — уголки-«прицела» */
+.ag-tag .bk {
+  position: absolute;
+  width: 11px;
+  height: 11px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+  color: #fff;
+}
+.ag-tag .bk::before,
+.ag-tag .bk::after {
+  content: "";
+  position: absolute;
+  background: currentColor;
+  box-shadow: 0 0 7px var(--c);
+}
+.ag-tag .bk::before {
+  width: 100%;
+  height: 2px;
+}
+.ag-tag .bk::after {
+  width: 2px;
+  height: 100%;
+}
+.ag-tag .bk.tl {
+  top: 4px;
+  left: 6px;
+}
+.ag-tag .bk.tr {
+  top: 4px;
+  right: 6px;
+}
+.ag-tag .bk.bl {
+  bottom: 4px;
+  left: 6px;
+}
+.ag-tag .bk.br {
+  bottom: 4px;
+  right: 6px;
+}
+.ag-tag .bk.tl::before,
+.ag-tag .bk.tr::before {
+  top: 0;
+}
+.ag-tag .bk.bl::before,
+.ag-tag .bk.br::before {
+  bottom: 0;
+}
+.ag-tag .bk.tl::after,
+.ag-tag .bk.bl::after {
+  left: 0;
+}
+.ag-tag .bk.tr::after,
+.ag-tag .bk.br::after {
+  right: 0;
+}
+.ag-tag.fx-brackets .bk {
+  opacity: 1;
+  animation: ag-bk 1.7s ease-in-out infinite;
+}
+.ag-tag.fx-brackets .bk.tr {
+  animation-delay: 0.35s;
+}
+.ag-tag.fx-brackets .bk.bl {
+  animation-delay: 0.7s;
+}
+.ag-tag.fx-brackets .bk.br {
+  animation-delay: 1.05s;
+}
+
+/* ⑤ icon — иконка в кадре дышит и подсвечивается */
+.ag-tag.fx-icon .ag-ico {
+  animation: ag-ico 3.4s ease-in-out infinite;
+}
+
+/* ⑥ sparks — детерминированные частицы (позиции ставит JS) */
+.ag-tag .sp {
+  position: absolute;
+  /* x/y приходят числами 0..100 из particlesFor() */
+  left: calc(var(--x) * 1%);
+  bottom: calc(6% + var(--y) * 0.4%);
+  width: var(--sz);
+  height: var(--sz);
+  border-radius: 999px;
+  pointer-events: none;
+  background: color-mix(in srgb, var(--c) 62%, #fff);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--c) 85%, transparent);
+}
+.ag-tag.fx-sparks .sp {
+  animation: ag-rise var(--dur) linear var(--delay) infinite;
+}
+
+/* ⑦ aura — цветной ореол вокруг капсулы. Базовый (статичный) ореол есть
+   у КАЖДОЙ капсулы — яркость задаёт --halo-o по редкости ([data-r] выше);
+   у LEGENDARY+ (.fx-aura) он ещё и пульсирует. Без blur: мягкий радиальный
+   градиент дешевле и не требует своего слоя композитинга. */
+.ag-tag::after {
+  content: "";
+  position: absolute;
+  inset: -7px;
+  z-index: -1;
+  border-radius: 999px;
+  pointer-events: none;
+  background: radial-gradient(
+    closest-side,
+    transparent 52%,
+    color-mix(in srgb, var(--c) 62%, transparent) 85%,
+    transparent 100%
+  );
+  opacity: var(--halo-o);
+}
+.ag-tag.fx-aura::after {
+  animation: ag-aura 3s ease-in-out infinite;
+}
+
+/* ⑧ double — двойная рамка через outline (без псевдоэлементов) */
+.ag-tag.fx-double {
+  outline: 1px solid color-mix(in srgb, var(--c) 72%, transparent);
+  outline-offset: 4px;
+}
+
+/* ⑨ enter — «проявление из мглы» со световой вспышкой (у MYTHIC+):
+   blur + пересвет вместо translate/scale — не спорит с hover-подъёмом и не
+   дёргает вёрстку; fill-mode backwards, чтобы после входа hover-фильтр
+   корня снова управлялся обычным CSS-переходом */
+.ag-tag.fx-enter {
+  animation: ag-enter 0.75s cubic-bezier(0.2, 0.9, 0.3, 1) backwards;
+}
+.ag-tag.fx-pulse.fx-enter {
+  animation:
+    ag-enter 0.75s cubic-bezier(0.2, 0.9, 0.3, 1) backwards,
+    ag-pulse 3.2s ease-in-out 0.75s infinite;
+}
+
+/* ⑩ glitch — дубликаты текста + сдвиг (секреты) */
+.ag-tag.fx-glitch b::before,
+.ag-tag.fx-glitch b::after {
+  content: attr(data-t);
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  opacity: 0.75;
+  pointer-events: none;
+}
+.ag-tag.fx-glitch b::before {
+  color: var(--c2);
+  transform: translate(-1.5px, 0);
+  clip-path: inset(0 0 55% 0);
+  animation: ag-glitch-a 2.4s steps(2, end) infinite;
+}
+.ag-tag.fx-glitch b::after {
+  color: var(--c);
+  transform: translate(1.5px, 0);
+  clip-path: inset(55% 0 0 0);
+  animation: ag-glitch-b 2.4s steps(2, end) infinite;
+}
+.ag-tag.fx-glitch b {
+  animation: ag-glitch-jit 2.4s steps(2, end) infinite;
+}
+
+/* ================================================================== */
+/*  Собственные эффекты тегов                                          */
+/* ================================================================== */
+
+/* noise — зерно поверх подложки */
+.ag-tag.fx-noise .ag-over::after {
+  content: "";
+  position: absolute;
+  inset: -20px;
+  background-image: repeating-linear-gradient(
+      0deg,
+      rgba(255, 255, 255, 0.06) 0 1px,
+      transparent 1px 2px
+    ),
+    repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.14) 0 1px, transparent 1px 3px);
+  background-size: 3px 3px, 4px 4px;
+  animation: ag-noise 0.6s steps(3, end) infinite;
+}
+
+/* border-blade — лезвие-подсветка по контуру */
+.ag-tag.fx-border-blade .ag-over::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(
+    100deg,
+    transparent 0 38%,
+    color-mix(in srgb, var(--c) 92%, #fff) 48%,
+    color-mix(in srgb, var(--c2) 92%, #fff) 54%,
+    transparent 66%
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: ag-blade 3.6s linear infinite;
+}
+
+/* mist — туман/дым */
+.ag-tag.fx-mist .ag-soft::before {
+  content: "";
+  position: absolute;
+  inset: -30%;
+  background: radial-gradient(
+      45% 60% at 25% 60%,
+      color-mix(in srgb, var(--c) 42%, transparent),
+      transparent 70%
+    ),
+    radial-gradient(
+      40% 55% at 75% 35%,
+      color-mix(in srgb, var(--c2) 46%, transparent),
+      transparent 72%
+    );
+  filter: blur(6px);
+  animation: ag-mist 7s ease-in-out infinite alternate;
+}
+
+/* flame — пламя снизу вверх */
+.ag-tag.fx-flame .ag-soft::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(60% 70% at 50% 118%, color-mix(in srgb, var(--c) 78%, transparent), transparent 72%),
+    radial-gradient(40% 55% at 30% 110%, color-mix(in srgb, var(--c2) 70%, transparent), transparent 70%);
+  animation: ag-flame 1.6s ease-in-out infinite alternate;
+}
+
+/* orbit — орбитальная искра: слой целиком крутится вокруг центра капсулы,
+   искра нарисована у его верхней кромки (радиус = половина высоты) */
+.ag-tag.fx-orbit .ag-soft::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle 4px at 50% 6%,
+    #fff 55%,
+    color-mix(in srgb, var(--c) 85%, transparent) 72%,
+    transparent 78%
+  );
+  animation: ag-orbit 3.6s linear infinite;
+}
+
+/* tremor — лёгкая дрожь текста */
+.ag-tag.fx-tremor b {
+  animation: ag-tremor 2.2s ease-in-out infinite;
+}
+
+/* фоны-подложки (у тега всегда не больше одного); анимации — на псевдо-слое,
+   чтобы трансформации не вылезали за скругление капсулы */
+.ag-tag .ag-bg {
+  opacity: 0.6;
+}
+.ag-tag .ag-bg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+/* цветная волна: база каждой капсулы (слой .ag-bg рендерится у всех, см.
+   AgTag.tsx). Узкая полоса из палитры тега медленно «дышит» внутри поля —
+   капсула живёт даже без своих эффектов. Тон полосы подобран ≈ по яркости
+   к эталонной подложке (c/c2 × 40-58% на #0b0b13), поэтому контраст AA
+   белого текста не проседает (расчёт по всем 41 палитрам: минимум 5.25);
+   движение — transform/opacity на псевдо-слое, то есть композитор, а не
+   перекраска капсулы каждый кадр */
+.ag-tag:not([class*="fx-backdrop-"]) .ag-bg {
+  opacity: 1;
+}
+.ag-tag:not([class*="fx-backdrop-"]) .ag-bg::before {
+  inset: 0 -45%;
+  background: linear-gradient(
+    112deg,
+    transparent 30%,
+    color-mix(in srgb, var(--c) 40%, #0b0b13) 45%,
+    color-mix(in srgb, var(--c2) 58%, #0b0b13) 55%,
+    transparent 70%
+  );
+  animation: ag-wash 6.5s ease-in-out infinite alternate;
+}
+.ag-tag.fx-backdrop-grid .ag-bg {
+  background:
+    repeating-linear-gradient(
+      0deg,
+      color-mix(in srgb, var(--c) 55%, transparent) 0 1px,
+      transparent 1px 9px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--c2) 55%, transparent) 0 1px,
+      transparent 1px 9px
+    );
+}
+.ag-tag.fx-backdrop-fog .ag-bg {
+  background:
+    radial-gradient(60% 130% at 28% 15%, color-mix(in srgb, var(--c) 45%, transparent), transparent 70%),
+    radial-gradient(52% 110% at 78% 90%, color-mix(in srgb, var(--c2) 50%, transparent), transparent 72%);
+}
+.ag-tag.fx-backdrop-holo .ag-bg::before {
+  inset: -35%;
+  background: conic-gradient(
+    from 180deg at 50% 50%,
+    color-mix(in srgb, var(--c) 42%, transparent),
+    color-mix(in srgb, var(--c2) 42%, transparent),
+    color-mix(in srgb, var(--c) 42%, transparent)
+  );
+  animation: ag-holo 9s linear infinite;
+}
+.ag-tag.fx-backdrop-stars .ag-bg {
+  background-image:
+    radial-gradient(1.3px 1.3px at 16% 32%, rgba(255, 255, 255, 0.95) 45%, transparent 46%),
+    radial-gradient(1.1px 1.1px at 42% 68%, rgba(255, 255, 255, 0.85) 45%, transparent 46%),
+    radial-gradient(1.4px 1.4px at 66% 26%, rgba(255, 255, 255, 0.9) 45%, transparent 46%),
+    radial-gradient(1.1px 1.1px at 84% 62%, rgba(255, 255, 255, 0.8) 45%, transparent 46%),
+    radial-gradient(1.2px 1.2px at 30% 84%, rgba(255, 255, 255, 0.75) 45%, transparent 46%);
+  animation: ag-twinkle 4.2s ease-in-out infinite alternate;
+}
+.ag-tag.fx-backdrop-lava .ag-bg::before {
+  inset: -12%;
+  background:
+    radial-gradient(52% 95% at 18% 115%, color-mix(in srgb, var(--c) 75%, transparent), transparent 70%),
+    radial-gradient(45% 85% at 84% -15%, color-mix(in srgb, var(--c2) 65%, transparent), transparent 70%);
+  animation: ag-lava 5.5s ease-in-out infinite alternate;
+}
+
+/* ================================================================== */
+/*  Стили текста (visual.text)                                         */
+/* ================================================================== */
+
+.ag-tag.txt-neon b {
+  color: #fff;
+  text-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.85),
+    0 0 8px var(--c),
+    0 0 18px color-mix(in srgb, var(--c) 60%, transparent);
+}
+.ag-tag.txt-metal b {
+  color: #fff;
+  text-shadow:
+    0 1px 0 rgba(0, 0, 0, 0.75),
+    0 -1px 0 color-mix(in srgb, var(--c) 55%, transparent),
+    0 0 10px color-mix(in srgb, var(--c) 55%, transparent);
+}
+.ag-tag.txt-glitch b {
+  color: #fff;
+  text-shadow:
+    -2px 0 var(--c2),
+    2px 0 var(--c),
+    0 0 10px color-mix(in srgb, var(--c) 60%, transparent);
+}
+.ag-tag.txt-tremor b {
+  animation: ag-tremor 2.2s ease-in-out infinite;
+}
+
+/* ================================================================== */
+/*  Производительность: perf-lite / экономия / пауза / reduced-motion   */
+/* ================================================================== */
+
+/* IntersectionObserver ставит data-paused, когда капсула не видна */
+.ag-tag[data-paused="true"] *,
+.ag-tag[data-paused="true"] *::before,
+.ag-tag[data-paused="true"] *::after,
+.ag-tag[data-paused="true"]::before,
+.ag-tag[data-paused="true"]::after {
+  animation-play-state: paused !important;
+}
+
+/* режим perf-lite: частицы скрыты, анимации выключены (включая сам корень
+   и псевдоэлементы слоёв: .sh::after, .ag-bg::before, .ag-over::after) */
+.perf-lite .ag-tag,
+.perf-lite .ag-tag *,
+.perf-lite .ag-tag *::before,
+.perf-lite .ag-tag *::after,
+.perf-lite .ag-tag::before,
+.perf-lite .ag-tag::after {
+  animation: none !important;
+}
+.perf-lite .ag-tag .sp {
+  display: none !important;
+}
+
+/* режим «экономия» (§14) — та же логика, что и perf-lite */
+html[data-eco="on"] .ag-tag,
+html[data-eco="on"] .ag-tag *,
+html[data-eco="on"] .ag-tag *::before,
+html[data-eco="on"] .ag-tag *::after,
+html[data-eco="on"] .ag-tag::before,
+html[data-eco="on"] .ag-tag::after {
+  animation: none !important;
+}
+html[data-eco="on"] .ag-tag .sp {
+  display: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ag-tag,
+  .ag-tag *,
+  .ag-tag *::before,
+  .ag-tag *::after,
+  .ag-tag::before,
+  .ag-tag::after {
+    animation: none !important;
+    transition: none !important;
+  }
+  .ag-tag .sp {
+    display: none !important;
+  }
+}
+
+/* ================================================================== */
+/*  Кейфреймы                                                          */
+/* ================================================================== */
+
+@keyframes ag-spin {
+  to {
+    --a: 360deg;
+  }
+}
+@keyframes ag-pulse {
+  /* дыхание свечения делает opacity/transform на отдельном слое:
+     анимация box-shadow на корне перекрашивала капсулу каждый кадр
+     и давала длинные задачи при 30+ капсулах (см. отчёт, §Fix-tags) */
+  0%,
+  100% {
+    opacity: 0.5;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+}
+@keyframes ag-enter {
+  /* проявление из мглы: размытие + пересвет собираются в чёткость.
+     Без translate/scale — вёрстка не дёргается, hover-подъём не спорит */
+  0% {
+    opacity: 0;
+    filter: blur(7px) brightness(1.7) saturate(1.4);
+  }
+  55% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    filter: blur(0) brightness(1) saturate(1);
+  }
+}
+/* цветная волна внутри поля: полоса уезжает влево-вправо и «набирает
+   цвет» — opacity/transform крутятся на композиторе */
+@keyframes ag-wash {
+  0% {
+    opacity: 0.5;
+    transform: translateX(-14%) skewX(-6deg);
+  }
+  100% {
+    opacity: 0.95;
+    transform: translateX(14%) skewX(-6deg);
+  }
+}
+@keyframes ag-aura {
+  0%,
+  100% {
+    opacity: 0.32;
+    transform: scale(0.97);
+  }
+  50% {
+    opacity: 0.68;
+    transform: scale(1.04);
+  }
+}
+@keyframes ag-sweep {
+  0%,
+  15% {
+    transform: skewX(-24deg) translateX(-160%);
+  }
+  60%,
+  100% {
+    transform: skewX(-24deg) translateX(520%);
+  }
+}
+@keyframes ag-bk {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: scale(0.9);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@keyframes ag-ico {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+    filter: drop-shadow(0 0 4px color-mix(in srgb, var(--c) 70%, transparent));
+  }
+  50% {
+    transform: translateY(-1px) scale(1.06);
+    filter: drop-shadow(0 0 10px var(--c));
+  }
+}
+@keyframes ag-rise {
+  0% {
+    opacity: 0;
+    transform: translateY(0) rotate(0deg);
+  }
+  12% {
+    opacity: 0.95;
+  }
+  100% {
+    opacity: 0.1;
+    transform: translateY(var(--dy, -18px)) rotate(var(--rot, 120deg));
+  }
+}
+@keyframes ag-runedash {
+  to {
+    stroke-dashoffset: -198;
+  }
+}
+@keyframes ag-noise {
+  0% {
+    transform: translate(0, 0);
+  }
+  33% {
+    transform: translate(-3px, 2px);
+  }
+  66% {
+    transform: translate(2px, -3px);
+  }
+  100% {
+    transform: translate(0, 0);
+  }
+}
+@keyframes ag-blade {
+  0% {
+    opacity: 0.25;
+  }
+  40% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.25;
+  }
+}
+@keyframes ag-mist {
+  from {
+    transform: translate3d(-4%, -2%, 0) scale(1);
+    opacity: 0.55;
+  }
+  to {
+    transform: translate3d(5%, 3%, 0) scale(1.12);
+    opacity: 0.85;
+  }
+}
+@keyframes ag-flame {
+  from {
+    opacity: 0.6;
+    transform: translateY(2%) scaleY(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(-3%) scaleY(1.06);
+  }
+}
+@keyframes ag-orbit {
+  /* псевдо-слой равен размеру капсулы — проценты translate считаются от него,
+     поэтому искра описывает эллипс по контуру, а не крутится в центре */
+  0% {
+    transform: translate(0, 0);
+  }
+  25% {
+    transform: translate(44%, 44%);
+  }
+  50% {
+    transform: translate(0, 88%);
+  }
+  75% {
+    transform: translate(-44%, 44%);
+  }
+  100% {
+    transform: translate(0, 0);
+  }
+}
+@keyframes ag-tremor {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  25% {
+    transform: translate(-0.6px, 0.4px);
+  }
+  50% {
+    transform: translate(0.5px, -0.5px);
+  }
+  75% {
+    transform: translate(-0.4px, -0.3px);
+  }
+}
+@keyframes ag-glitch-a {
+  0%,
+  86% {
+    transform: translate(-1.5px, 0);
+    opacity: 0.75;
+  }
+  88% {
+    transform: translate(-4px, -1px);
+    opacity: 1;
+  }
+  92% {
+    transform: translate(2px, 1px);
+  }
+  96% {
+    transform: translate(-2px, 0);
+  }
+}
+@keyframes ag-glitch-b {
+  0%,
+  86% {
+    transform: translate(1.5px, 0);
+    opacity: 0.75;
+  }
+  90% {
+    transform: translate(4px, 1px);
+    opacity: 1;
+  }
+  94% {
+    transform: translate(-2px, -1px);
+  }
+  98% {
+    transform: translate(2px, 0);
+  }
+}
+@keyframes ag-glitch-jit {
+  0%,
+  86%,
+  100% {
+    transform: translate(0, 0);
+  }
+  88% {
+    transform: translate(1px, -0.5px);
+  }
+  92% {
+    transform: translate(-1px, 0.5px);
+  }
+}
+@keyframes ag-holo {
+  to {
+    transform: rotate(1turn);
+  }
+}
+@keyframes ag-twinkle {
+  from {
+    opacity: 0.4;
+  }
+  to {
+    opacity: 0.85;
+  }
+}
+@keyframes ag-lava {
+  from {
+    transform: translateY(2%) scale(1.04);
+  }
+  to {
+    transform: translateY(-3%) scale(1.1);
+  }
+}

@@ -1,0 +1,1498 @@
+
+/* ==================================================================
+   Игровой слой: кошелёк, состав, задания, база, сезон.
+
+   Те же стеклянные панели и цвет клана, что и выше, но у этих блоков
+   своя плотность: их много, и они должны читаться списком, а не
+   витриной. Поэтому здесь нет конической бегущей рамки — она
+   съедала бы внимание на каждой карточке сразу.
+   ================================================================== */
+
+  /* Кошелёк -------------------------------------------------------- */
+  .cl-wallet {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.5rem;
+  }
+
+  .cl-wallet-cell {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.55rem 0.6rem;
+    border-radius: 0.8rem;
+    background: linear-gradient(150deg, rgb(255 255 255 / 7%), rgb(255 255 255 / 2%));
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 9%);
+  }
+
+  .cl-wallet-cell > .glyph {
+    font-size: 1.1rem;
+    line-height: 1;
+    filter: drop-shadow(0 0 6px rgb(255 255 255 / 25%));
+  }
+
+  .cl-wallet-cell b {
+    display: block;
+    font-family: var(--font-accent, inherit);
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: #fff;
+  }
+
+  .cl-wallet-cell em {
+    display: block;
+    font-size: 0.62rem;
+    font-style: normal;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--color-text-muted, #8b93a7);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .cl-wallet.compact .cl-wallet-cell {
+    padding: 0.35rem 0.5rem;
+  }
+
+  .cl-wallet.compact .cl-wallet-cell b {
+    font-size: 0.8rem;
+  }
+
+  @media (max-width: 480px) {
+    .cl-wallet { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+
+  /* Чипы сезона ---------------------------------------------------- */
+  .cl-season-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    color: #d7dcea;
+    background: rgb(255 255 255 / 5%);
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 10%);
+  }
+
+  /* Полоса вкладок: на узком экране она едет по горизонтали ---- */
+  .cl-tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1.25rem;
+    padding-bottom: 0.25rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+    /* Свайп не должен утаскивать за собой страницу по горизонтали */
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .cl-tabs::-webkit-scrollbar { display: none; }
+  .cl-tabs > * { flex: 0 0 auto; }
+
+  /* Затемнения по краям ленты. Полосы прокрутки не видно, поэтому без них
+     обрезанная справа вкладка читается как «кнопки нет». Показываются
+     только когда за краем действительно есть что листать: data-edge ставит
+     ClansView по scrollLeft. */
+  .cl-tabs-wrap {
+    position: relative;
+  }
+
+  .cl-tabs-wrap::before,
+  .cl-tabs-wrap::after {
+    content: "";
+    position: absolute;
+    top: 1.25rem;
+    bottom: 0.25rem;
+    width: 2.75rem;
+    z-index: 1;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+
+  .cl-tabs-wrap::after {
+    right: 0;
+    border-radius: 0 0.5rem 0.5rem 0;
+    background: linear-gradient(90deg, rgb(10 12 24 / 0%), rgb(10 12 24 / 92%));
+  }
+
+  .cl-tabs-wrap::before {
+    left: 0;
+    border-radius: 0.5rem 0 0 0.5rem;
+    background: linear-gradient(270deg, rgb(10 12 24 / 0%), rgb(10 12 24 / 92%));
+  }
+
+  .cl-tabs-wrap[data-edge="start"]::after,
+  .cl-tabs-wrap[data-edge="both"]::after,
+  .cl-tabs-wrap[data-edge="end"]::before,
+  .cl-tabs-wrap[data-edge="both"]::before {
+    opacity: 1;
+  }
+
+  /* Состав -------------------------------------------------------- */
+  .cl-member {
+    display: flex;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    border-radius: 1rem;
+    background: rgb(255 255 255 / 3%);
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 8%);
+  }
+
+  .cl-member-avatar {
+    display: grid;
+    place-items: center;
+    flex: 0 0 auto;
+    width: 2.4rem;
+    height: 2.4rem;
+    border-radius: 999px;
+    font-family: var(--font-accent, inherit);
+    font-size: 1rem;
+    font-weight: 800;
+    color: #fff;
+    background: radial-gradient(circle at 34% 28%, color-mix(in oklab, var(--c) 78%, #fff 22%), var(--c));
+    box-shadow:
+      0 0 0 2px rgb(255 255 255 / 12%),
+      0 0 14px color-mix(in oklab, var(--c) 55%, transparent);
+  }
+
+  .cl-role {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.1rem 0.45rem;
+    border-radius: 0.4rem;
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--c);
+    background: color-mix(in oklab, var(--c) 16%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--c) 45%, transparent);
+  }
+
+  .cl-you {
+    padding: 0.1rem 0.4rem;
+    border-radius: 0.4rem;
+    font-size: 0.6rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: #06110c;
+    background: var(--color-mint, #00c2a8);
+  }
+
+  /* Задания ------------------------------------------------------- */
+  .cl-quest {
+    padding: 0.8rem 0.9rem;
+    border-radius: 1rem;
+    background: rgb(255 255 255 / 3%);
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 8%);
+    transition: box-shadow 0.25s ease;
+  }
+
+  .cl-quest.ready {
+    background: linear-gradient(150deg, color-mix(in oklab, var(--c) 16%, transparent), rgb(255 255 255 / 2%));
+    box-shadow:
+      inset 0 0 0 1px color-mix(in oklab, var(--c) 55%, transparent),
+      0 0 22px color-mix(in oklab, var(--c) 22%, transparent);
+  }
+
+  .cl-quest.done { opacity: 0.72; }
+
+  .cl-quest-badge {
+    flex: 0 0 auto;
+    min-width: 3.1rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 0.5rem;
+    text-align: center;
+    font-size: 0.72rem;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    color: #9aa2b8;
+    background: rgb(255 255 255 / 6%);
+  }
+
+  .cl-quest-badge.done {
+    color: #06110c;
+    background: linear-gradient(160deg, #8ef0d8, var(--color-mint, #00c2a8));
+  }
+
+  .cl-quest-over {
+    font-size: 0.62rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--color-gold, #ffb020);
+  }
+
+  /* База и деревья ------------------------------------------------ */
+  .cl-building {
+    display: block;
+    width: 100%;
+    padding: 0.75rem 0.8rem;
+    border-radius: 1rem;
+    text-align: left;
+    color: inherit;
+    background: rgb(255 255 255 / 3%);
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 8%);
+    transition:
+      box-shadow 0.25s ease,
+      transform 0.2s ease;
+  }
+
+  button.cl-building:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--c) 50%, transparent);
+  }
+
+  button.cl-building:disabled { cursor: default; opacity: 0.9; }
+
+  .cl-building.held {
+    background: linear-gradient(150deg, color-mix(in oklab, var(--c) 14%, transparent), rgb(255 255 255 / 2%));
+    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--c) 45%, transparent);
+  }
+
+  .cl-building-glyph {
+    display: grid;
+    place-items: center;
+    flex: 0 0 auto;
+    width: 2.1rem;
+    height: 2.1rem;
+    border-radius: 0.65rem;
+    font-size: 1.05rem;
+    background: rgb(0 0 0 / 28%);
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 10%);
+  }
+
+  /* Лиги ---------------------------------------------------------- */
+  .cl-league {
+    display: grid;
+    justify-items: center;
+    gap: 0.15rem;
+    padding: 0.6rem 0.3rem;
+    border-radius: 0.9rem;
+    background: rgb(255 255 255 / 3%);
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 7%);
+    opacity: 0.55;
+  }
+
+  .cl-league b { font-size: 0.72rem; color: #e6e9f2; }
+  .cl-league em {
+    font-size: 0.62rem;
+    font-style: normal;
+    font-variant-numeric: tabular-nums;
+    color: var(--color-text-muted, #8b93a7);
+  }
+  .cl-league > .glyph { font-size: 1.05rem; }
+
+  .cl-league.now {
+    opacity: 1;
+    background: linear-gradient(160deg, color-mix(in oklab, var(--c) 22%, transparent), rgb(255 255 255 / 2%));
+    box-shadow:
+      inset 0 0 0 1px color-mix(in oklab, var(--c) 60%, transparent),
+      0 0 20px color-mix(in oklab, var(--c) 25%, transparent);
+  }
+
+  .cl-season {
+    background:
+      radial-gradient(120% 90% at 12% 0%, color-mix(in oklab, var(--c2) 22%, transparent), transparent 62%),
+      var(--cl-panel, rgb(255 255 255 / 4%));
+  }
+
+  /* Журнал -------------------------------------------------------- */
+  .cl-log {
+    display: grid;
+    gap: 0.3rem;
+    max-height: 18rem;
+    overflow-y: auto;
+  }
+
+  .cl-log li {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 0.6rem;
+    align-items: baseline;
+    padding: 0.35rem 0.5rem;
+    border-radius: 0.6rem;
+    font-size: 0.78rem;
+    background: rgb(255 255 255 / 2.5%);
+  }
+
+  .cl-log-when {
+    font-size: 0.68rem;
+    font-variant-numeric: tabular-nums;
+    color: var(--color-text-muted, #8b93a7);
+  }
+
+  .cl-log-text { color: #d7dcea; }
+  .cl-log-who { font-size: 0.68rem; color: var(--color-text-muted, #8b93a7); }
+
+
+  /* Текстовый чип выбора -------------------------------------------
+     .cl-chip из clans.css — квадратная кнопка под один глиф (эмблема,
+     цвет). Роли, фракции и специализации подписаны словами, поэтому им
+     нужна своя форма: та же оправа, ноauto-ширина и мелкий кегль.
+     ------------------------------------------------------------------ */
+  .cl-pick {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.3rem 0.65rem;
+    border-radius: 999px;
+    font-size: 0.74rem;
+    font-weight: 600;
+    line-height: 1.2;
+    white-space: nowrap;
+    color: #dfe3ee;
+    background: rgb(255 255 255 / 5%);
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 10%);
+    transition:
+      transform 0.16s cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 0.16s ease,
+      opacity 0.16s ease;
+  }
+
+  .cl-pick:hover:not(:disabled) { transform: translateY(-1px); }
+
+  .cl-pick:disabled {
+    opacity: 0.4;
+    cursor: default;
+  }
+
+  .cl-pick.sm {
+    padding: 0.18rem 0.5rem;
+    font-size: 0.68rem;
+  }
+
+  .cl-pick.ghost {
+    color: #ffb4bf;
+    background: rgb(255 77 109 / 8%);
+    box-shadow: inset 0 0 0 1px rgb(255 77 109 / 30%);
+  }
+
+
+  /* Война ---------------------------------------------------------- */
+  /* Зарево войны живёт в ::after, а не в background: .cl-panel задаёт
+     свой градиент, и прямое перебивание оставляло панель без стекла. */
+  .cl-war::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    background:
+      radial-gradient(120% 90% at 85% 0%, color-mix(in oklab, var(--c2) 30%, transparent), transparent 60%),
+      radial-gradient(110% 80% at 0% 100%, color-mix(in oklab, var(--c) 20%, transparent), transparent 62%);
+  }
+
+  .cl-war.mine {
+    box-shadow:
+      inset 0 0 0 1px color-mix(in oklab, var(--color-mint, #00c2a8) 55%, transparent),
+      0 0 40px -18px color-mix(in oklab, var(--color-mint, #00c2a8) 70%, transparent);
+  }
+
+  .cl-war.theirs {
+    box-shadow:
+      inset 0 0 0 1px color-mix(in oklab, var(--color-red, #ff4d6d) 50%, transparent),
+      0 0 40px -18px color-mix(in oklab, var(--color-red, #ff4d6d) 70%, transparent);
+  }
+
+  .cl-war-result {
+    margin-top: 1rem;
+    padding: 0.6rem 0.8rem;
+    border-radius: 0.8rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #eaf7ff;
+    background: rgb(255 255 255 / 6%);
+  }
+
+  .cl-war-scale {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    gap: 0.75rem;
+    align-items: center;
+    margin-top: 1.25rem;
+  }
+
+  /* Счёт в центре: чем он крупнее, тем ближе развязка */
+  .cl-war-score {
+    display: grid;
+    justify-items: center;
+    padding: 0.4rem 0.75rem;
+    border-radius: 0.9rem;
+    background: rgb(0 0 0 / 30%);
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 10%);
+  }
+
+  .cl-war-score span {
+    font-family: var(--font-accent, inherit);
+    font-size: 1.25rem;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    color: #fff;
+  }
+
+  .cl-war-score span.lead {
+    color: var(--color-red, #ff4d6d);
+    text-shadow: 0 0 14px color-mix(in oklab, var(--color-red, #ff4d6d) 60%, transparent);
+  }
+
+  .cl-war-score em {
+    font-size: 0.6rem;
+    font-style: normal;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--color-text-muted, #8b93a7);
+  }
+
+  /* Шкала соперника идёт справа налево: «его» рубеж не читается как наш */
+  .cl-bar.rival > i {
+    transform-origin: right center;
+  }
+
+  .cl-war-task {
+    padding: 0.7rem 0.8rem;
+    border-radius: 0.9rem;
+    background: rgb(255 255 255 / 3%);
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 8%);
+  }
+
+  /* Режим боя: стороны дуэли ------------------------------------- */
+  .cl-duel-side {
+    display: flex;
+    gap: 0.85rem;
+    align-items: flex-start;
+    margin-top: 1.1rem;
+    padding: 0.85rem;
+    border-radius: 1rem;
+    background: rgb(0 0 0 / 26%);
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 7%);
+  }
+
+  /* Ведищий подсвечивается: без этого «кто впереди» приходится вычислять
+     глазами по двум числам, а это главный вопрос экрана */
+  .cl-duel-side.lead {
+    background: linear-gradient(
+      100deg,
+      color-mix(in oklab, var(--c) 16%, transparent),
+      rgb(0 0 0 / 30%) 60%
+    );
+    box-shadow:
+      inset 0 0 0 1px color-mix(in oklab, var(--c) 45%, transparent),
+      0 0 28px -16px color-mix(in oklab, var(--c) 80%, transparent);
+  }
+
+  /* Соперник зеркалится: его эмблема справа, шкала растёт справа налево */
+  .cl-duel-side.theirs {
+    flex-direction: row-reverse;
+    text-align: right;
+    background: linear-gradient(260deg, color-mix(in oklab, var(--c2) 14%, transparent), rgb(0 0 0 / 26%) 62%);
+  }
+
+  .cl-duel-side.theirs .cl-bar > i {
+    transform-origin: right center;
+    background: linear-gradient(90deg, color-mix(in oklab, var(--c2) 80%, #fff), var(--c2));
+  }
+
+  .cl-duel-side.theirs .cl-bar {
+    background: color-mix(in oklab, var(--c2) 22%, rgb(255 255 255 / 6%));
+  }
+
+  /* Столкновение между сторонами */
+  .cl-war-clash {
+    display: flex;
+    gap: 0.6rem;
+    align-items: center;
+    justify-content: center;
+    margin: 0.55rem 0 0.2rem;
+  }
+
+  .cl-war-clash i {
+    height: 1px;
+    flex: 1;
+    background: linear-gradient(90deg, transparent, rgb(255 255 255 / 22%));
+  }
+
+  .cl-war-clash i:last-child {
+    background: linear-gradient(90deg, rgb(255 255 255 / 22%), transparent);
+  }
+
+  .cl-war-clash b {
+    display: grid;
+    place-items: center;
+    width: 2.4rem;
+    height: 2.4rem;
+    border-radius: 50%;
+    font-size: 1.1rem;
+    color: #fff;
+    background: radial-gradient(circle at 50% 35%, rgb(255 255 255 / 14%), rgb(0 0 0 / 45%));
+    box-shadow:
+      inset 0 0 0 1px rgb(255 255 255 / 16%),
+      0 0 22px -8px color-mix(in oklab, var(--color-red, #ff4d6d) 70%, transparent);
+  }
+
+  /* Шкала времени матча */
+  .cl-war-clock {
+    position: relative;
+    height: 1.6rem;
+    margin-top: 1rem;
+    border-radius: 999px;
+    background: rgb(0 0 0 / 32%);
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 8%);
+    overflow: hidden;
+  }
+
+  .cl-war-clock i {
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: calc(var(--p) * 1%);
+    background: linear-gradient(90deg, color-mix(in oklab, var(--c) 55%, transparent), color-mix(in oklab, var(--c2) 55%, transparent));
+    transition: width 0.4s ease;
+  }
+
+  .cl-war-clock span {
+    position: absolute;
+    top: 50%;
+    translate: 0 -50%;
+    padding: 0 0.6rem;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--color-text-muted, #8b93a7);
+  }
+
+  .cl-war-clock .start { left: 0.4rem; }
+  .cl-war-clock .end { right: 0.4rem; }
+
+  /* Ставки и отставание */
+  .cl-war-stakes {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+    gap: 0.75rem;
+    margin-top: 1.1rem;
+    padding: 0.7rem 0.85rem;
+    border-radius: 0.9rem;
+    background: rgb(255 255 255 / 3%);
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 8%);
+  }
+
+  /* Задачи матча — карточки в три колонки с глифом */
+  .cl-war-task-glyph {
+    display: grid;
+    place-items: center;
+    width: 1.7rem;
+    height: 1.7rem;
+    border-radius: 0.6rem;
+    font-size: 0.9rem;
+    background: rgb(255 255 255 / 6%);
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 10%);
+  }
+
+  .cl-war-task.done {
+    background: linear-gradient(150deg, color-mix(in oklab, var(--color-mint, #00c2a8) 14%, transparent), rgb(255 255 255 / 2%));
+    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--color-mint, #00c2a8) 40%, transparent);
+  }
+
+  /* Лента хода матча */
+  .cl-war-feed {
+    display: grid;
+    gap: 0.35rem;
+    max-height: 12rem;
+    overflow-y: auto;
+  }
+
+  .cl-war-feed li {
+    display: flex;
+    gap: 0.6rem;
+    align-items: baseline;
+    padding: 0.4rem 0.55rem;
+    border-radius: 0.6rem;
+    font-size: 0.78rem;
+    background: rgb(255 255 255 / 3%);
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 6%);
+  }
+
+  /* Поиск соперника ------------------------------------------------ */
+  .cl-war-pick {
+    margin-top: 1rem;
+    padding: 0.9rem;
+    border-radius: 1rem;
+    background: rgb(0 0 0 / 30%);
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 9%);
+  }
+
+  .cl-war-cands {
+    display: grid;
+    gap: 0.5rem;
+    max-height: 22rem;
+    overflow-y: auto;
+  }
+
+  .cl-war-cand {
+    display: flex;
+    gap: 0.7rem;
+    align-items: center;
+    padding: 0.55rem 0.65rem;
+    border-radius: 0.8rem;
+    background: rgb(255 255 255 / 3%);
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 8%);
+  }
+
+  /* Равный по силе соперник стоит первым и подсвечен: чаще всего именно
+     его и выбирают, а отличать его от случайного удобно по рамке */
+  .cl-war-cand.even {
+    background: linear-gradient(
+      100deg,
+      color-mix(in oklab, var(--color-accent, #3d7dff) 14%, transparent),
+      rgb(255 255 255 / 2%) 70%
+    );
+    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--color-accent, #3d7dff) 38%, transparent);
+  }
+
+  .cl-war-gap {
+    display: inline-block;
+    padding: 0.1rem 0.4rem;
+    border-radius: 999px;
+    font-size: 0.65rem;
+    font-weight: 800;
+    letter-spacing: 0.03em;
+    color: #e8eefc;
+    background: rgb(255 255 255 / 8%);
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 12%);
+  }
+
+  .cl-war-gap.even { color: #bfe4ff; background: rgb(61 125 255 / 22%); }
+  .cl-war-gap.easier { color: #b9f2d9; background: rgb(0 194 168 / 18%); }
+  .cl-war-gap.harder { color: #ffc9d6; background: rgb(255 77 109 / 18%); }
+
+  .cl-war-cand .cl-btn {
+    flex: 0 0 auto;
+  }
+
+  /* На телефоне блок «до конца» переносится под заголовок, и
+     прижатие вправо отбрасывает подпись от числа */
+  .cl-war-head > div:last-child {
+    text-align: left;
+  }
+
+  @media (max-width: 560px) {
+    /* Стороны остаются в столбик: эмблема, имя и шкала не влезают в
+       строку на телефоне, а «кто ведёт» всё равно читается по рамке */
+    .cl-duel-side.theirs {
+      flex-direction: row;
+      text-align: left;
+    }
+    .cl-duel-side.theirs .cl-bar > i {
+      transform-origin: left center;
+    }
+  }
+
+  /* Фазы босса ----------------------------------------------------- */
+  .cl-phase {
+    padding: 0.7rem 0.8rem;
+    border-radius: 0.9rem;
+    background: rgb(255 255 255 / 3%);
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 8%);
+  }
+
+  .cl-phase.ready {
+    background: linear-gradient(150deg, rgb(255 77 109 / 16%), rgb(255 255 255 / 2%));
+    box-shadow: inset 0 0 0 1px rgb(255 77 109 / 45%);
+  }
+
+  .cl-phase.done { opacity: 0.72; }
+
+  /* Поход ---------------------------------------------------------- */
+  .cl-exp.won {
+    box-shadow:
+      inset 0 0 0 1px color-mix(in oklab, var(--color-mint, #00c2a8) 55%, transparent),
+      0 0 40px -18px color-mix(in oklab, var(--color-mint, #00c2a8) 70%, transparent);
+  }
+
+  .cl-exp.lost {
+    box-shadow:
+      inset 0 0 0 1px color-mix(in oklab, var(--color-red, #ff4d6d) 45%, transparent),
+      0 0 40px -20px color-mix(in oklab, var(--color-red, #ff4d6d) 60%, transparent);
+  }
+
+  /* Карта маршрута: пройденные узлы связаны линией */
+  .cl-route {
+    display: flex;
+    align-items: flex-start;
+    gap: 0;
+    list-style: none;
+  }
+
+  .cl-node {
+    position: relative;
+    flex: 1 1 0;
+    display: grid;
+    justify-items: center;
+    gap: 0.3rem;
+  }
+
+  /* Соединительная линия между узлами: последний узел её не рисует */
+  .cl-node::before {
+    content: "";
+    position: absolute;
+    top: 0.42rem;
+    left: -50%;
+    width: 100%;
+    height: 2px;
+    background: rgb(255 255 255 / 12%);
+  }
+
+  .cl-node:first-child::before { display: none; }
+  .cl-node.past::before {
+    background: linear-gradient(90deg, var(--c), color-mix(in oklab, var(--c) 40%, transparent));
+  }
+
+  .cl-node .dot {
+    position: relative;
+    width: 0.9rem;
+    height: 0.9rem;
+    border-radius: 999px;
+    background: rgb(255 255 255 / 8%);
+    box-shadow: inset 0 0 0 2px rgb(255 255 255 / 14%);
+  }
+
+  .cl-node.past .dot {
+    background: var(--c);
+    box-shadow:
+      inset 0 0 0 2px color-mix(in oklab, var(--c) 40%, #fff 20%),
+      0 0 12px color-mix(in oklab, var(--c) 60%, transparent);
+  }
+
+  /* Текущий узел пульсирует: он единственный, где что-то ещё можно делать */
+  .cl-node.here .dot {
+    background: var(--c);
+    box-shadow:
+      inset 0 0 0 2px #fff,
+      0 0 0 4px color-mix(in oklab, var(--c) 25%, transparent),
+      0 0 18px color-mix(in oklab, var(--c) 75%, transparent);
+    animation: cl-pulse 1.9s ease-in-out infinite;
+  }
+
+  @keyframes cl-pulse {
+    0%, 100% { box-shadow: inset 0 0 0 2px #fff, 0 0 0 3px color-mix(in oklab, var(--c) 22%, transparent), 0 0 14px color-mix(in oklab, var(--c) 60%, transparent); }
+    50% { box-shadow: inset 0 0 0 2px #fff, 0 0 0 6px color-mix(in oklab, var(--c) 12%, transparent), 0 0 26px color-mix(in oklab, var(--c) 85%, transparent); }
+  }
+
+  .cl-node em {
+    font-size: 0.66rem;
+    font-style: normal;
+    font-variant-numeric: tabular-nums;
+    color: var(--color-text-muted, #8b93a7);
+  }
+
+  .cl-node.here em {
+    color: var(--c);
+    font-weight: 700;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cl-node.here .dot { animation: none; }
+  }
+
+  @media (max-width: 480px) {
+    .cl-war-scale { grid-template-columns: minmax(0, 1fr); }
+    .cl-war-score { grid-auto-flow: column; justify-content: center; }
+  }
+
+  /* Всплывашка действия -------------------------------------------- */
+  .cl-toast {
+    padding: 0.55rem 0.8rem;
+    border-radius: 0.8rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #eaf7ff;
+    background: rgb(255 255 255 / 6%);
+    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--c, var(--color-accent)) 45%, transparent);
+  }
+
+  /* ==================================================================
+     Магазин гильдии, эмблемы и сокровищница.
+
+     Оформление страницы клана задаётся покупкой: фон — многослойный
+     градиент, поверх него идёт затемнение под текст. Покупка меняет
+     активный фон раздела, поэтому veil живёт отдельным слоем, а не
+     зашит в градиент.
+     ================================================================== */
+
+  .cl-page {
+    position: relative;
+    isolation: isolate;
+  }
+
+  .cl-page-veil {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+  }
+
+  /* --- Эмблема ---------------------------------------------------
+     Пропорции взяты из макета: карточка ~270px, сцена 1.2:1, знак
+     занимает её целиком. Если уменьшить знак внутри большой карточки,
+     он теряет именно то, за что его и покупают — детализацию.
+
+     `filter: url(#cl-heat)` ссылается на определение из
+     app/layout.tsx. Пока его не было в документе, Chrome игнорировал
+     правило и часть эмблем выпадала из сетки.
+     ------------------------------------------------------------------ */
+  .cl-st {
+    position: relative;
+    display: block;
+    flex: 0 0 auto;
+    /* Изоляция нужна для mix-blend-mode внутри: без него слои блика и
+       вспышки смешивались бы с фоном страницы, а не со сценой эмблемы */
+    isolation: isolate;
+    container-type: inline-size;
+  }
+
+  /* Подложка: цвет размыт наружу, знак лежит поверх */
+  .cl-st-back {
+    position: absolute;
+    inset: -6%;
+    z-index: 0;
+    border-radius: 999px;
+    background: radial-gradient(
+      closest-side,
+      color-mix(in oklab, var(--c) 62%, transparent),
+      transparent 74%
+    );
+    filter: blur(14px);
+    animation: cl-aura 4s ease-in-out infinite;
+  }
+
+  @keyframes cl-aura {
+    50% {
+      opacity: 0.55;
+      transform: scale(1.1);
+    }
+  }
+
+  /* Орбиты: две, разный темп, как r1/r2 в макете */
+  .cl-st-rings {
+    position: absolute;
+    inset: -4%;
+    z-index: 1;
+    width: 108%;
+    height: 108%;
+    overflow: visible;
+    opacity: 0.5;
+  }
+
+  .cl-st-rings .r1 {
+    stroke-width: 0.45;
+    stroke-dasharray: 0.7 2.4;
+    transform-origin: 50px 50px;
+    animation: cl-spin 60s linear infinite;
+  }
+
+  .cl-st-rings .r2 {
+    stroke-width: 0.35;
+    stroke-dasharray: 6 3 1 3;
+    transform-origin: 50px 50px;
+    animation: cl-spin 90s linear infinite reverse;
+  }
+
+  @keyframes cl-spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  /* Слой знака: параллакс от курсора плюс медленное плавание */
+  .cl-st-par {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    display: grid;
+    place-items: center;
+    animation: cl-float 6s ease-in-out infinite;
+    will-change: transform;
+  }
+
+  @keyframes cl-float {
+    50% {
+      transform: translateY(-2.2%) scale(1.016);
+    }
+  }
+
+  .cl-st-aura {
+    position: absolute;
+    inset: 12%;
+    z-index: 0;
+    border-radius: 999px;
+    background: radial-gradient(closest-side, var(--c), transparent 68%);
+    opacity: 0.4;
+    filter: blur(16px);
+  }
+
+  /* Bloom: размытая световая копия, даёт внутреннее свечение */
+  .cl-st-bloom {
+    position: absolute;
+    inset: 8%;
+    z-index: 1;
+    border-radius: 999px;
+    background: radial-gradient(closest-side, var(--c), transparent 66%);
+    filter: blur(16px) brightness(1.7) saturate(1.2);
+    mix-blend-mode: screen;
+    opacity: 0.22;
+    animation: cl-bloom 3.6s ease-in-out infinite;
+  }
+
+  @keyframes cl-bloom {
+    50% {
+      opacity: 0.6;
+    }
+  }
+
+  /* Контейнер картинки со слоями блика и вспышки по маске знака */
+  .cl-st-pic {
+    position: relative;
+    z-index: 2;
+    display: grid;
+    place-items: center;
+    width: 100%;
+    height: 100%;
+  }
+
+  .cl-st-pic img {
+    grid-area: 1 / 1;
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    user-select: none;
+  }
+
+  .cl-st:hover .cl-st-pic img {
+    filter: drop-shadow(0 0 16px var(--c));
+  }
+
+  .cl-st-pic img.heat {
+    filter: url(#cl-heat);
+  }
+
+  /* Блик: маской вырезан по самому знаку, поэтому бежит по нему,
+     а не по квадрату сцены */
+  .cl-st-shine {
+    grid-area: 1 / 1;
+    z-index: 3;
+    align-self: stretch;
+    justify-self: stretch;
+    pointer-events: none;
+    mix-blend-mode: screen;
+    -webkit-mask: var(--img) center / 100% 100% no-repeat;
+    mask: var(--img) center / 100% 100% no-repeat;
+    background: linear-gradient(
+      105deg,
+      transparent 42%,
+      rgb(255 255 255 / 0.85) 50%,
+      transparent 58%
+    ) 100% 0 / 250% 100%;
+    animation: cl-shine 5.5s ease-in-out infinite;
+  }
+
+  @keyframes cl-shine {
+    0%, 50% {
+      background-position: 100% 0;
+    }
+    100% {
+      background-position: 0 0;
+    }
+  }
+
+  .cl-st-flash {
+    grid-area: 1 / 1;
+    z-index: 4;
+    pointer-events: none;
+    mix-blend-mode: screen;
+    border-radius: 999px;
+    background: radial-gradient(circle, var(--c), transparent 66%);
+    opacity: 0;
+    animation: cl-flash 7s infinite;
+  }
+
+  @keyframes cl-flash {
+    0%, 58%, 72%, 100% { opacity: 0; }
+    60% { opacity: 0.8; }
+    62% { opacity: 0.1; }
+    64% { opacity: 0.9; }
+    67% { opacity: 0.2; }
+    69% { opacity: 0.55; }
+  }
+
+  .cl-emblem-chip {
+    display: grid;
+    place-items: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: 999px;
+    overflow: hidden;
+    background: rgb(0 0 0 / 0.35);
+    box-shadow: 0 0 0 1px color-mix(in oklab, var(--c) 55%, transparent);
+  }
+
+  .cl-emblem-chip img {
+    display: block;
+    object-fit: contain;
+  }
+
+  /* --- Шапка магазина ------------------------------------------ */
+  .cl-shop-head {
+    background:
+      radial-gradient(120% 90% at 15% 0%, color-mix(in oklab, var(--c) 22%, transparent), transparent 62%),
+      var(--cl-panel, rgb(255 255 255 / 4%));
+  }
+
+  .cl-shop-purse {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.4rem;
+    min-width: 15rem;
+  }
+
+  .cl-shop-coin {
+    padding: 0.35rem 0.5rem;
+    border-radius: 0.65rem;
+    text-align: right;
+    background: rgb(255 255 255 / 5%);
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 9%);
+  }
+
+  .cl-shop-coin b {
+    display: block;
+    font-family: var(--font-accent, inherit);
+    font-size: 0.9rem;
+    color: #fff;
+  }
+
+  .cl-shop-coin em {
+    font-size: 0.58rem;
+    font-style: normal;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--color-text-muted, #8b93a7);
+  }
+
+  @media (max-width: 520px) {
+    .cl-shop-card[data-cat="emblem"] .cl-shop-art {
+      height: 13rem;
+    }
+
+    .cl-shop-purse {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      min-width: 0;
+    }
+  }
+
+  /* --- Сетка предметов ---------------------------------------- */
+  .cl-shop-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 0.85rem;
+  }
+
+  .cl-shop-card {
+    display: grid;
+    grid-template-rows: auto 1fr;
+    border-radius: 1rem;
+    overflow: hidden;
+    background: linear-gradient(160deg, rgb(255 255 255 / 5%), rgb(255 255 255 / 2%));
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 9%);
+    transition: box-shadow 0.25s ease, transform 0.2s ease;
+  }
+
+  .cl-shop-card:hover {
+    transform: translateY(-2px);
+    box-shadow:
+      inset 0 0 0 1px rgb(255 255 255 / 16%),
+      0 14px 34px -20px rgb(0 0 0 / 0.9);
+  }
+
+  .cl-shop-card.rar-legendary {
+    background: linear-gradient(160deg, rgb(255 210 106 / 12%), rgb(255 255 255 / 2%));
+    box-shadow: inset 0 0 0 1px rgb(255 210 106 / 32%);
+  }
+
+  .cl-shop-card.rar-epic {
+    background: linear-gradient(160deg, rgb(179 140 255 / 10%), rgb(255 255 255 / 2%));
+    box-shadow: inset 0 0 0 1px rgb(179 140 255 / 26%);
+  }
+
+  .cl-shop-art {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 100%;
+    height: 8.5rem;
+    overflow: hidden;
+    background: rgb(0 0 0 / 0.35);
+  }
+
+  /* Эмблема — витрина магазина, ей нужна площадь: в макете сцена
+     занимает почти всю карточку, иначе детализация знака теряется */
+  .cl-shop-card[data-cat="emblem"] .cl-shop-art {
+    height: 15.5rem;
+    background: radial-gradient(
+        120% 100% at 50% 40%,
+        color-mix(in oklab, var(--c) 9%, transparent),
+        transparent 70%
+      ),
+      rgb(0 0 0 / 0.3);
+  }
+
+  /* С раритетом рамка плотнее: цвет предмета должен читаться с карточки */
+  .cl-shop-card.rar-legendary .cl-shop-art {
+    box-shadow: inset 0 0 0 1px rgb(255 210 106 / 22%);
+  }
+
+  .cl-shop-card.rar-epic .cl-shop-art {
+    box-shadow: inset 0 0 0 1px rgb(179 140 255 / 18%);
+  }
+
+  .cl-shop-veil {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  .cl-shop-art .cl-emblem-art {
+    z-index: 2;
+  }
+
+  .cl-shop-art-label {
+    z-index: 2;
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #dfe3ee;
+    background: rgb(0 0 0 / 0.55);
+  }
+
+  .cl-shop-flag {
+    position: absolute;
+    z-index: 3;
+    top: 0.45rem;
+    right: 0.45rem;
+    padding: 0.12rem 0.45rem;
+    border-radius: 999px;
+    font-size: 0.58rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: #06110c;
+    background: linear-gradient(160deg, #8ef0d8, var(--color-mint, #00c2a8));
+  }
+
+  .cl-shop-body {
+    padding: 0.7rem 0.75rem 0.8rem;
+  }
+
+  .cl-rarity {
+    flex: 0 0 auto;
+    padding: 0.1rem 0.4rem;
+    border-radius: 0.4rem;
+    font-size: 0.58rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: #cfd5e4;
+    background: rgb(255 255 255 / 8%);
+  }
+
+  .cl-rarity.rar-rare {
+    color: #7dd3fc;
+    background: rgb(125 211 252 / 14%);
+  }
+
+  .cl-rarity.rar-epic {
+    color: #c4b5fd;
+    background: rgb(196 181 253 / 14%);
+  }
+
+  .cl-rarity.rar-legendary {
+    color: #fde68a;
+    background: rgb(253 230 138 / 14%);
+  }
+
+  .cl-pill {
+    padding: 0.18rem 0.55rem;
+    border-radius: 999px;
+    font-size: 0.68rem;
+    color: #cfd5e4;
+    background: rgb(255 255 255 / 5%);
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 9%);
+  }
+
+  .cl-empty {
+    padding: 2.5rem 1.25rem;
+    border-radius: 1rem;
+    text-align: center;
+    font-size: 0.875rem;
+    color: var(--color-text-muted, #8b93a7);
+    border: 1px dashed rgb(255 255 255 / 12%);
+  }
+
+  .cl-fact {
+    padding: 0.45rem 0.55rem;
+    border-radius: 0.6rem;
+    background: rgb(255 255 255 / 4%);
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 8%);
+  }
+
+  .cl-fact dt {
+    font-size: 0.6rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--color-text-muted, #8b93a7);
+  }
+
+  .cl-fact dd {
+    margin: 0.15rem 0 0;
+    font-size: 0.78rem;
+    color: #e6e9f2;
+  }
+
+  /* Состояние «уже включено» на текстовом чипе */
+  .cl-pick.is-on {
+    color: #06110c;
+    background: linear-gradient(160deg, #8ef0d8, var(--color-mint, #00c2a8));
+  }
+
+  /* --- Превью декораций --------------------------------------- */
+  .cl-deco-preview {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 5.5rem;
+    height: 5.5rem;
+    border-radius: 0.8rem;
+    background: rgb(0 0 0 / 0.4);
+    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--c) 40%, transparent);
+  }
+
+  .cl-deco-preview > span {
+    width: 4rem;
+    height: 4rem;
+    background: radial-gradient(circle, var(--c), transparent 68%);
+    opacity: 0.75;
+  }
+
+  .cl-deco-preview em {
+    position: absolute;
+    bottom: 0.3rem;
+    font-size: 0.55rem;
+    font-style: normal;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-text-muted, #8b93a7);
+  }
+
+  .deco-gilded-frame { box-shadow: inset 0 0 0 2px #fde68a; border-radius: 0.5rem; }
+  .deco-runic-frame { box-shadow: inset 0 0 0 2px #c084fc; border-radius: 999px; }
+  .deco-emblem-halo { box-shadow: 0 0 22px 8px color-mix(in oklab, var(--c) 55%, transparent); border-radius: 999px; }
+  .deco-emblem-trail { background: linear-gradient(100deg, transparent, var(--c), transparent); border-radius: 0.5rem; }
+  .deco-rune-divider { height: 0.4rem; width: 5rem; border-radius: 999px; background: repeating-linear-gradient(90deg, var(--c) 0 6px, transparent 6px 12px); }
+  .deco-header-glow { box-shadow: 0 -14px 26px -10px var(--c); border-radius: 0.5rem; }
+  .deco-spark-drift { background: radial-gradient(circle at 30% 70%, var(--c), transparent 60%), radial-gradient(circle at 70% 40%, var(--c), transparent 60%); border-radius: 999px; }
+  .deco-corner-ornament { border-radius: 0.5rem; box-shadow: inset 0 0 0 1px var(--c); }
+
+  /* --- Сокровищница ------------------------------------------- */
+  .cl-vault {
+    position: relative;
+    overflow: hidden;
+    background:
+      radial-gradient(120% 80% at 50% 0%, rgb(255 176 32 / 14%), transparent 60%),
+      var(--cl-panel, rgb(255 255 255 / 4%));
+  }
+
+  /* Сцена сундука: картинка из макета плюс его же анимация.
+     Плотность ауры и искр приходит переменными из выгрузки. */
+  .cl-vault-stage {
+    position: relative;
+    display: grid;
+    place-items: center;
+    min-height: 17rem;
+    isolation: isolate;
+  }
+
+  .cl-vault-aura {
+    position: absolute;
+    z-index: 0;
+    width: 19rem;
+    height: 19rem;
+    border-radius: 999px;
+    background: radial-gradient(
+      circle,
+      color-mix(in oklab, var(--c) calc(var(--aura, 0.4) * 100%), transparent),
+      transparent 64%
+    );
+    filter: blur(24px);
+    animation: cl-aura 5s ease-in-out infinite;
+  }
+
+  /* Лучи из центра: тон прозрачности задаёт уровень сундука */
+  .cl-vault-rays {
+    position: absolute;
+    z-index: 0;
+    width: 19rem;
+    height: 19rem;
+    border-radius: 999px;
+    opacity: var(--ray, 0.15);
+    background: conic-gradient(
+      from 0deg,
+      transparent 0deg,
+      var(--c) 8deg,
+      transparent 16deg,
+      transparent 40deg
+    );
+    filter: blur(6px);
+    animation: cl-spin 70s linear infinite;
+  }
+
+  .cl-vault-spark {
+    position: absolute;
+    z-index: 1;
+    border-radius: 999px;
+    background: #fff;
+    box-shadow: 0 0 6px var(--c);
+    opacity: 0;
+    animation: cl-spark 3.4s ease-in-out infinite;
+  }
+
+  @keyframes cl-spark {
+    0%, 100% { opacity: 0; transform: translateY(4px) scale(0.7); }
+    45% { opacity: 0.9; transform: translateY(-10px) scale(1); }
+  }
+
+  .cl-vault-chest {
+    position: relative;
+    z-index: 2;
+    display: grid;
+    place-items: center;
+    width: 15rem;
+    height: 15rem;
+  }
+
+  .cl-vault-pic {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    filter: drop-shadow(0 16px 30px rgb(0 0 0 / 0.65));
+    animation: cl-float 6s ease-in-out infinite;
+    transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.45s ease;
+  }
+
+  /* Открытый сундук приподнимается и вспыхивает */
+  .cl-vault-chest[data-open="yes"] .cl-vault-pic {
+    transform: translateY(-10%) scale(1.06);
+    filter: drop-shadow(0 0 26px var(--c));
+  }
+
+  /* Блик по маске сундука: задержка приходит из макета */
+  .cl-vault-glint {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    mix-blend-mode: screen;
+    -webkit-mask: var(--vault-img) center / 100% 100% no-repeat;
+    mask: var(--vault-img) center / 100% 100% no-repeat;
+    background: linear-gradient(
+      105deg,
+      transparent 40%,
+      rgb(255 255 255 / 0.9) 50%,
+      transparent 60%
+    ) 100% 0 / 260% 100%;
+    opacity: 0;
+    animation: cl-glint 6s ease-in-out infinite;
+  }
+
+  @keyframes cl-glint {
+    0%, 52%, 100% { opacity: 0; background-position: 100% 0; }
+    58% { opacity: 0.9; background-position: 0 0; }
+  }
+
+  .cl-chest-pic {
+    display: block;
+    width: 3.25rem;
+    height: 3.25rem;
+    object-fit: contain;
+    flex: 0 0 auto;
+    filter: drop-shadow(0 4px 10px rgb(0 0 0 / 0.6));
+  }
+
+  .cl-chest {
+    padding: 0.8rem;
+    border-radius: 1rem;
+    background: rgb(255 255 255 / 3%);
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 8%);
+  }
+
+  .cl-chest.now {
+    background: linear-gradient(160deg, color-mix(in oklab, var(--c) 16%, transparent), rgb(255 255 255 / 2%));
+    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--c) 45%, transparent);
+  }
+
+  .cl-chest.locked {
+    opacity: 0.55;
+  }
+
+  .cl-chest-glyph {
+    display: grid;
+    place-items: center;
+    width: 2.4rem;
+    height: 2.4rem;
+    border-radius: 0.7rem;
+    font-size: 1.3rem;
+    background: rgb(0 0 0 / 0.3);
+    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--c) 40%, transparent);
+  }
+
+  .cl-loot-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding: 0.2rem 0.45rem;
+    border-radius: 0.45rem;
+    font-size: 0.72rem;
+    color: #c9cfdd;
+    background: rgb(255 255 255 / 2.5%);
+  }
+
+  .cl-loot-row b {
+    color: #fff;
+    font-variant-numeric: tabular-nums;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cl-vault-aura,
+    .cl-vault-rays,
+    .cl-vault-spark,
+    .cl-vault-glint,
+    .cl-vault-pic,
+    .cl-vault-drop,
+    .cl-emblem-aura,
+    .cl-emblem-par,
+    .cl-emblem-shine,
+    .cl-emblem-flash,
+    .cl-emblem-rings .r1,
+    .cl-emblem-rings .r2 {
+      animation: none !important;
+    }
+    .cl-vault-chest[data-open="yes"] .glyph { animation: none; }
+    .cl-vault-drop { animation: none; }
+  }

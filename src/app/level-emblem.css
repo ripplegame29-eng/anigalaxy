@@ -1,0 +1,74 @@
+/* ================= ЭМБЛЕМА ================= */
+.le{--s:96px;position:relative;width:var(--s);height:var(--s);flex:none;display:grid;place-items:center;isolation:isolate}
+.le>*{position:absolute}
+.le svg{inset:0;width:100%;height:100%;overflow:visible}
+.le .gl{inset:-24%;border-radius:50%;z-index:-1;filter:blur(10px);animation:gl 3s ease-in-out infinite;background:radial-gradient(circle,color-mix(in srgb,var(--c) 60%,transparent),transparent 64%)}
+.le.fire .gl{animation-duration:.9s;background:radial-gradient(circle,color-mix(in srgb,var(--c2) 65%,transparent),color-mix(in srgb,var(--c) 25%,transparent) 45%,transparent 68%)}
+.le .rays{inset:-48%;border-radius:50%;z-index:-1;opacity:.55;animation:sp 26s linear infinite;
+ background:repeating-conic-gradient(color-mix(in srgb,var(--c) 75%,transparent) 0 2.2deg,transparent 2.2deg 11deg);-webkit-mask:radial-gradient(circle,#000 22%,transparent 62%);mask:radial-gradient(circle,#000 22%,transparent 62%)}
+.le .rays.b{inset:-40%;animation-duration:38s;animation-direction:reverse;background:repeating-conic-gradient(color-mix(in srgb,var(--c2) 70%,transparent) 0 1.4deg,transparent 1.4deg 18deg)}
+.le .core{inset:13%;border-radius:50%;overflow:hidden;background:radial-gradient(circle at 50% 38%,color-mix(in srgb,var(--c) 40%,#12090f),#09060c 74%)}
+.le .core::before{content:"";position:absolute;inset:-30%;opacity:var(--neb,0);filter:blur(8px);animation:sp 9s linear infinite;
+ background:conic-gradient(transparent,color-mix(in srgb,var(--c2) 50%,transparent),transparent 40%,color-mix(in srgb,var(--c) 50%,transparent),transparent 80%)}
+.le .core::after{content:"";position:absolute;top:-10%;bottom:-10%;width:30%;left:0;transform:translateX(-220%) skewX(-18deg);animation:sw 3.6s ease-in-out infinite;animation-delay:var(--d0,0s);
+ background:linear-gradient(90deg,transparent,rgba(255,255,255,.55),transparent)}
+.le .beam{inset:13%;border-radius:50%;opacity:.8;mix-blend-mode:screen;animation:sp 3s linear infinite;background:conic-gradient(color-mix(in srgb,var(--c) 65%,transparent),transparent 26%)}
+.le .rp{inset:6%;border-radius:50%;border:1.5px solid var(--c);opacity:0;animation:rp var(--t,3s) ease-out infinite;animation-delay:var(--d)}
+.le .cmt{inset:var(--i,3%);border-radius:50%;filter:drop-shadow(0 0 4px var(--cc,var(--c)));animation:sp var(--t) linear infinite;animation-delay:var(--d);
+ background:conic-gradient(transparent 0 68%,var(--cc,var(--c)));-webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 3px),#000 calc(100% - 2px));mask:radial-gradient(farthest-side,transparent calc(100% - 3px),#000 calc(100% - 2px))}
+.le .orb{inset:0;animation:sp var(--t) linear infinite;animation-delay:var(--d)}
+.le .orb::after{content:"";position:absolute;left:50%;top:1%;width:calc(var(--s)*.06);height:calc(var(--s)*.06);margin-left:calc(var(--s)*-.03);border-radius:50%;background:#fff;box-shadow:0 0 8px #fff,0 0 14px var(--c),0 0 22px var(--c2)}
+.le .st{width:calc(var(--s)*.035);height:calc(var(--s)*.035);border-radius:50%;background:#fff;box-shadow:0 0 6px #fff,0 0 12px var(--c);animation:tw var(--t) ease-in-out infinite;animation-delay:var(--d)}
+.le .em{left:var(--x);bottom:12%;width:calc(var(--s)*.03);height:calc(var(--s)*.03);border-radius:50%;opacity:0;background:var(--c2);box-shadow:0 0 6px var(--c),0 0 10px var(--c2);animation:em var(--t) ease-out var(--d) infinite}
+.le .pt{left:var(--x);top:-6%;width:calc(var(--s)*.07);height:calc(var(--s)*.05);border-radius:50% 0 50% 0;opacity:0;background:linear-gradient(135deg,#ffd6e8,var(--c));animation:pt var(--t) linear var(--d) infinite}
+.le b{position:relative;z-index:5;font-weight:900;line-height:1;font-size:calc(var(--s)*var(--fs,.3));animation:ng 2.4s ease-in-out infinite;
+ background:linear-gradient(180deg,#fff 8%,var(--c) 88%);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 8px color-mix(in srgb,var(--c) 80%,transparent))}
+.le.holo{animation:holo 8s linear infinite}
+/* svg-анимации */
+.le .r{transform-origin:50px 50px;animation:sp var(--t,20s) linear infinite}
+.le .rv{animation-direction:reverse}
+.le .br{transform-origin:50px 50px;animation:br 4s ease-in-out infinite}
+.le .pu{transform-origin:50px 50px;animation:pu 2.4s ease-in-out infinite}
+.le .dm{animation:dm 3s linear infinite}
+.le .arc{filter:drop-shadow(0 0 3px var(--c))}
+.le .bolt{fill:none;stroke:#fff;stroke-width:1.1;stroke-linejoin:round;filter:drop-shadow(0 0 3px var(--c));opacity:0;animation:bolt var(--t) steps(1) infinite;animation-delay:var(--d)}
+.le .wg{transform-origin:14px 40px;animation:wg 2.2s ease-in-out infinite alternate}
+.le .bob{animation:bob 2s ease-in-out infinite}
+.le .fl{transform-origin:50px 22px;animation:fl var(--t) ease-in-out infinite alternate;animation-delay:var(--d)}
+@keyframes sp{to{transform:rotate(360deg)}}
+@keyframes gl{50%{opacity:.55;transform:scale(1.14)}}
+@keyframes sw{0%,55%{transform:translateX(-220%) skewX(-18deg)}100%{transform:translateX(450%) skewX(-18deg)}}
+@keyframes rp{0%{opacity:.7;transform:scale(.7)}100%{opacity:0;transform:scale(1.6)}}
+@keyframes tw{0%,100%{opacity:.1;transform:scale(.5)}50%{opacity:1;transform:scale(1.5)}}
+@keyframes em{0%{opacity:0;transform:translate(0,0) scale(1)}15%{opacity:1}100%{opacity:0;transform:translate(var(--dx),calc(var(--s)*-.7)) scale(.3)}}
+@keyframes pt{0%{opacity:0;transform:translate(0,0) rotate(0)}10%{opacity:.9}100%{opacity:0;transform:translate(var(--dx),calc(var(--s)*.8)) rotate(360deg)}}
+@keyframes ng{50%{filter:drop-shadow(0 0 15px var(--c))}}
+@keyframes holo{to{filter:hue-rotate(360deg)}}
+@keyframes br{50%{transform:scale(1.045)}}
+@keyframes pu{50%{transform:scale(.95)}}
+@keyframes dm{to{stroke-dashoffset:-20}}
+@keyframes bolt{0%,86%,100%{opacity:0}88%,94%{opacity:1}91%{opacity:.25}}
+@keyframes wg{from{transform:rotate(-8deg)}to{transform:rotate(7deg)}}
+@keyframes bob{50%{transform:translateY(-1.6px)}}
+@keyframes fl{from{transform:scale(1,.82)}to{transform:scale(.88,1.18)}}
+/* пауза вне экрана, закрытый уровень, вспышка нового уровня */
+.le.pz,.le.pz *,.le.pz *::before,.le.pz *::after{animation-play-state:paused!important}
+.le.lk{filter:grayscale(1) brightness(.55);animation:none}
+.le.lk .gl,.le.lk .rays,.le.lk .beam{display:none}
+.le.lk::after{content:"";position:absolute;z-index:6;width:28%;height:28%;right:4%;bottom:4%;border-radius:50%;border:1px solid #555;background:#12121c url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ddd' stroke-width='2.4' stroke-linecap='round'%3E%3Crect x='5' y='11' width='14' height='9' rx='2'/%3E%3Cpath d='M8 11V8a4 4 0 018 0v3'/%3E%3C/svg%3E") center/62% no-repeat}
+.le .lu{inset:6%;z-index:6;border-radius:50%;border:2px solid var(--c2);opacity:0;pointer-events:none;animation:lu .9s ease-out 1}
+@keyframes lu{from{opacity:.9;transform:scale(.6)}to{opacity:0;transform:scale(1.9)}}
+/* XP-бар из демо-блока оригинала (цвета эры через --c/--c2) */
+.bar{height:12px;border-radius:99px;background:rgba(255,255,255,.08);margin:12px 0 8px;overflow:hidden}
+.bar i{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--c),var(--c2));box-shadow:0 0 14px var(--c);transition:width .4s}
+/* карточка уровня из демо-блока (см. level-emblem.html) */
+.card{--mut:#8b90a8;display:flex;gap:24px;align-items:center;border:1px solid color-mix(in srgb,var(--c) 35%,transparent);border-radius:22px;padding:26px;transition:.4s;
+ background:radial-gradient(560px 240px at 6% 50%,color-mix(in srgb,var(--c) 28%,transparent),transparent 70%),#0d0a14;box-shadow:0 0 40px color-mix(in srgb,var(--c) 14%,transparent)}
+.card .b{flex:1;min-width:0}
+.card h1{margin:0;font-size:clamp(24px,3.4vw,38px);font-weight:900;letter-spacing:.02em;display:flex;gap:12px;align-items:baseline;flex-wrap:wrap;background:linear-gradient(90deg,#fff,var(--c) 50%,var(--c2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.card h1 small{font-size:14px;color:var(--mut);-webkit-text-fill-color:var(--mut);font-weight:600}
+.card h1 em{margin-left:auto;font-style:normal;font-size:22px;-webkit-text-fill-color:var(--c2)}
+/* Строка уровня — служебный статус-бар, не заголовок: остаётся на основном шрифте */
+.card h1{font-family:var(--font-sans)}
+.era{font-size:13px;color:var(--mut)}
+@media(prefers-reduced-motion:reduce){.le,.le *,.le *::before,.le *::after{animation:none!important}}

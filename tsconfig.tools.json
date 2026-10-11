@@ -1,0 +1,34 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "module": "commonjs",
+    "moduleResolution": "node10",
+    "jsx": "react-jsx",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "types": ["node"],
+    "rootDir": "src",
+    "outDir": ".tsc-tests",
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+    "noEmit": false,
+    "declaration": false,
+    "sourceMap": false,
+    "incremental": false
+  },
+  "include": [
+    "src/lib/progression/**/*.ts",
+    "src/lib/battlepass/**/*.ts",
+    "src/lib/mangadex.ts",
+    "src/lib/clans.ts",
+    "src/lib/store.ts",
+    "src/lib/cosmetics.ts",
+    "src/lib/backup.ts",
+    "src/lib/auth.ts",
+    "src/lib/comments.ts"
+  ]
+}
