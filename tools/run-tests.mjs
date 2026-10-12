@@ -29,18 +29,35 @@ if (tsc.status !== 0) {
   process.exit(tsc.status ?? 1);
 }
 
-const testDir = path.join(root, "tests", "progression");
-const files = readdirSync(testDir).filter((f) => f.endsWith(".test.mjs"));
+// Тесты лежат в подкаталогах по доменам (progression, clans). Список
+// собирается рекурсивно, чтобы новый домен подхватывался без правки раннера.
+const testRoot = path.join(root, "tests");
+const files = [];
+
+(function collect(dir) {
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      // .tsc-tests лежит рядом, а не внутри tests, так что рекурсия
+      // за пределы tests/ не уходит.
+      collect(full);
+    } else if (entry.name.endsWith(".test.mjs")) {
+      files.push(path.relative(root, full));
+    }
+  }
+})(testRoot);
+
 if (files.length === 0) {
-  console.error("[tests] нет файлов tests/progression/*.test.mjs");
+  console.error("[tests] нет файлов tests/**\/*.test.mjs");
   process.exit(1);
 }
 
-const run = spawnSync(
-  process.execPath,
-  ["--test", ...files.map((f) => path.join("tests", "progression", f))],
-  { cwd: root, stdio: "inherit" },
-);
+files.sort();
+
+const run = spawnSync(process.execPath, ["--test", ...files], {
+  cwd: root,
+  stdio: "inherit",
+});
 
 // сборочные артефакты храним только на время прогона
 try {
