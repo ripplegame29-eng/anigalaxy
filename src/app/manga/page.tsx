@@ -177,7 +177,7 @@ export default async function MangaCatalogPage({ searchParams }: PageProps) {
 
       {cards.length > 0 ? (
         <Reveal>
-          <AnimeGrid cards={cards} />
+          <AnimeGrid cards={cards} priorityCount={4} />
         </Reveal>
       ) : query ? (
         <div className="rounded-2xl bg-white/4 px-4 py-12 text-center ring-1 ring-white/10">

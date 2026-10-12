@@ -131,16 +131,27 @@ async function RowSection({
   params,
   href,
   accent = false,
+  priorityCount = 0,
 }: {
   title: string;
   params: Record<string, string | number | undefined>;
   href?: string;
   accent?: boolean;
+  /** Сколько первых карточек грузить сразу — см. AnimeRow.priorityCount. */
+  priorityCount?: number;
 }) {
   // Ошибка Kodik не должна ронять главную: гасим её до конструирования JSX
   const cards = await row(title, params).catch(() => null);
   if (!cards) return null;
-  return <AnimeRow title={title} cards={cards} href={href} accent={accent} />;
+  return (
+    <AnimeRow
+      title={title}
+      cards={cards}
+      href={href}
+      accent={accent}
+      priorityCount={priorityCount}
+    />
+  );
 }
 
 function RowSkeleton({ title }: { title: string }) {
@@ -213,6 +224,11 @@ export default function HomePage() {
             title="Онгоинги"
             accent
             href="/catalog?status=ongoing"
+            // Первый ряд — единственный, чьи постеры попадают в первый
+            // экран. Остальные пять рядов грузятся лениво: раньше все шесть
+            // тянули по четыре картинки с fetchpriority=high, и браузер
+            // упирался в 24 загрузки вместо того, чтобы показать видимое.
+            priorityCount={2}
             params={{
               types: "anime,anime-serial",
               anime_status: "ongoing",

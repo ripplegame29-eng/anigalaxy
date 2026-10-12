@@ -30,42 +30,15 @@ const USER_AGENT =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 " +
   "(KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36";
 
-/* ------------------------------------------------------------------ */
-/* Маленький TTL-кэш в памяти процесса                                  */
-/* ------------------------------------------------------------------ */
+// Кэш с stale-while-revalidate живёт в отдельном модуле: им пользуется и
+// shikimori.ts, а проверять поведение удобно, когда оно не спрятано рядом
+// с сетевыми запросами и настройками окружения.
 
-interface CacheEntry {
-  expires: number;
-  value: unknown;
-}
+// withCache импортируется и реэкспортируется: Shikimori берёт его отсюда,
+// чтобы не тянуть весь модуль Kodik только ради кэша.
+import { withCache } from "@/lib/ttlcache";
 
-const memoryCache = new Map<string, CacheEntry>();
-
-/** Чтение из кэша (undefined — промах) */
-function cacheGet<T>(key: string): T | undefined {
-  const hit = memoryCache.get(key);
-  if (!hit) return undefined;
-  if (hit.expires < Date.now()) {
-    memoryCache.delete(key);
-    return undefined;
-  }
-  return hit.value as T;
-}
-
-function cacheSet(key: string, value: unknown, ttlMs: number): void {
-  // Не даём кэшу разрастись без ограничений
-  if (memoryCache.size > 500) memoryCache.clear();
-  memoryCache.set(key, { expires: Date.now() + ttlMs, value });
-}
-
-/** Обёртка над любым запросом с кэшированием (её же использует shikimori.ts) */
-export async function withCache<T>(key: string, ttlMs: number, producer: () => Promise<T>): Promise<T> {
-  const hit = cacheGet<T>(key);
-  if (hit !== undefined) return hit;
-  const value = await producer();
-  cacheSet(key, value, ttlMs);
-  return value;
-}
+export { withCache };
 
 /* ------------------------------------------------------------------ */
 /* Базовый запрос                                                       */
