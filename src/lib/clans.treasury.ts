@@ -298,6 +298,11 @@ export function openChest(
 
       const entry = rollLoot(chest);
       const purse = { ...state.purse };
+      // Списание цены. Раньше его здесь не было: стоимость проверялась, но не
+      // вычиталась, поэтому открытие было бесплатным — проверка выглядела как
+      // «хватает денег», остаток казны не менялся, а в журнал уходила запись
+      // о потраченном. Нашлось тестом tests/clans/clan-treasury.test.mjs.
+      purse[chest.currency] -= chest.price;
       let duplicate = false;
       let rewardText = entry.label;
 

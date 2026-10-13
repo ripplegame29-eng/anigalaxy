@@ -12,7 +12,7 @@
  */
 
 import { spawnSync } from "node:child_process";
-import { readdirSync, rmSync } from "node:fs";
+import { readdirSync, rmSync, statSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -29,18 +29,39 @@ if (tsc.status !== 0) {
   process.exit(tsc.status ?? 1);
 }
 
-const testDir = path.join(root, "tests", "progression");
-const files = readdirSync(testDir).filter((f) => f.endsWith(".test.mjs"));
+/**
+ * Все `*.test.mjs` под tests/, а не только tests/progression.
+ *
+ * Каталоги по домену (`tests/clans/`, `tests/progression/`) полезнее плоского
+ * списка: рядом лежат тесты одного модуля. Рекурсия на любую глубину — но
+ * структуру глубже двух уровней заводить незачем.
+ */
+function collectTests(dir) {
+  if (!statSync(dir, { throwIfNoEntry: false })?.isDirectory()) return [];
+  const found = [];
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      found.push(...collectTests(full));
+    } else if (entry.name.endsWith(".test.mjs")) {
+      found.push(full);
+    }
+  }
+  return found;
+}
+
+const files = collectTests(path.join(root, "tests")).map((f) =>
+  path.relative(root, f),
+);
 if (files.length === 0) {
-  console.error("[tests] нет файлов tests/progression/*.test.mjs");
+  console.error("[tests] не найдено ни одного tests/**/\\*.test.mjs");
   process.exit(1);
 }
 
-const run = spawnSync(
-  process.execPath,
-  ["--test", ...files.map((f) => path.join("tests", "progression", f))],
-  { cwd: root, stdio: "inherit" },
-);
+const run = spawnSync(process.execPath, ["--test", ...files], {
+  cwd: root,
+  stdio: "inherit",
+});
 
 // сборочные артефакты храним только на время прогона
 try {
