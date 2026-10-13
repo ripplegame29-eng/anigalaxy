@@ -2,6 +2,8 @@
 
 import { useSyncExternalStore } from "react";
 
+import { dayKeyOf, systemTz } from "./progression/time";
+
 /**
  * Фабрика локального стора поверх localStorage.
  *
@@ -95,9 +97,22 @@ export function createLocalStore<T>(
   return { key, subscribe, get, getServer, set, update, useStore };
 }
 
-/** Сегодняшняя дата в формате `YYYY-MM-DD` (ключ дневных квестов) */
-export function dayKey(date = new Date()): string {
-  return date.toISOString().slice(0, 10);
+/**
+ * «YYYY-MM-DD» для момента времени — ключ дневных счётчиков и квестов.
+ *
+ * Считается в часовом поясе пользователя, а не в UTC. Это не косметика:
+ * `toISOString()` всегда отдаёт UTC, поэтому у игрока в UTC+3 между 00:00 и
+ * 03:00 по местному «сегодня» ещё было вчера по UTC. Движок прогрессии при
+ * этом считал сутки правильно (по `ctx.tz`), и в эти три часа он и профиль
+ * с кланами считали разные дни: дневной квест обнулялся не там, где
+ * показывала панель, а «серия» могла сдвинуться на сутки назад.
+ *
+ * Принимает и `Date`, и миллисекунды: вызывающие места зовут функцию по-разному
+ * (store-овские — `new Date()`, клановые — `Date.now()`), и менять их все
+ * разом — лишний риск в момент правки бага.
+ */
+export function dayKey(when: Date | number = Date.now(), tz: string = systemTz()): string {
+  return dayKeyOf(when instanceof Date ? when.getTime() : when, tz);
 }
 
 /** Короткий id для локальных записей */

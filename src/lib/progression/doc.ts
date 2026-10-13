@@ -6,18 +6,16 @@
 
 import { BATTLEPASS } from "../battlepass/config";
 import { PROGRESSION_CONFIG } from "./progression.config";
+import { systemTz } from "./time";
 import type { ProgressDoc } from "./types";
 
 export const PROGRESS_KEY = "animehub:progress:v1";
 export const PROGRESS_SCHEMA = 1;
 
-export function systemTz(): string {
-  try {
-    return Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
-  } catch {
-    return "UTC";
-  }
-}
+// Живёт в progression/time.ts: модуль без единой зависимости, чтобы оттуда
+// можно было тянуть `systemTz` из низкоуровневого lib/store.ts, не затягивая
+// в него конфиг на 1700 строк.
+export { systemTz };
 
 /** Пустой документ — стабильная ссылка для SSR-фолбэка */
 export const EMPTY_DOC: ProgressDoc = Object.freeze({

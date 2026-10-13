@@ -7,6 +7,15 @@
  * зафиксировано в docs/progression/ASSUMPTIONS.md.
  */
 
+/** Пояс браузера; UTC, если определить не удалось */
+export function systemTz(): string {
+  try {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
+  } catch {
+    return "UTC";
+  }
+}
+
 const dateFormatters = new Map<string, Intl.DateTimeFormat>();
 const timeFormatters = new Map<string, Intl.DateTimeFormat>();
 

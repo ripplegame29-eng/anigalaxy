@@ -1,7 +1,7 @@
 "use client";
 
-import { createLocalStore } from "./store";
-import { dayIndex, dayKeyOf, weekIndexOf } from "./progression/time";
+import { createLocalStore, dayKey } from "./store";
+import { dayIndex, weekIndexOf } from "./progression/time";
 import {
   BUILDINGS,
   EMPTY_PURSE,
@@ -444,10 +444,17 @@ const EMPTY_GAME: ClanGameState = {
 /* Периоды                                                              */
 /* ------------------------------------------------------------------ */
 
-/** Ключ дня: смена в полночь по часовому поясу игрока */
-export function dayKey(now = Date.now(), tz = "UTC"): string {
-  return dayKeyOf(now, tz);
-}
+/**
+ * Ключ дня: смена в полночь по часовому поясу игрока.
+ *
+ * Раньше здесь была вторая реализация с дефолтом «UTC» — из-за неё кланы и
+ * профиль считали сутки иначе, чем движок прогрессии, и в первые три часа
+ * после полуночи по UTC+3 игрок получал «разные дни» в двух местах
+ * интерфейса. Теперь это единственный `dayKey` из `./store`, пере-экспортированный
+ * для внешних вызывающих (clans.events.ts), — чтобы правка в одном месте
+ * меняла поведение везде.
+ */
+export { dayKey };
 
 /**
  * Ключ недели.
