@@ -22,12 +22,26 @@ export function AnimeRow({
   href = "/catalog",
   viewAllLabel = "Смотреть все",
   accent = false,
+  priorityCount = 0,
 }: {
   title: string;
   cards: Card[];
   href?: string;
   viewAllLabel?: string;
   accent?: boolean;
+  /**
+   * Сколько первых карточек грузить сразу, без ленивой загрузки.
+   *
+   * Раньше здесь стояло `i < 4` для каждой строки безусловно. На главной
+   * шесть строк — и 24 постера уезжали в загрузку одновременно с
+   * fetchpriority=high, конкурируя с первым экраном. Браузер отдавал приоритет
+   * картинкам, которых через два экрана, и главная открывалась медленнее,
+   * а не быстрее.
+   *
+   * Теперь решает вызывающая сторона: приоритет — только тому, что реально
+   * видно сразу. По умолчанию ноль.
+   */
+  priorityCount?: number;
 }) {
   const railRef = useRef<HTMLDivElement>(null);
 
@@ -145,7 +159,7 @@ export function AnimeRow({
             key={card.id}
             className="w-[160px] shrink-0 sm:w-[184px] md:w-[200px] lg:w-[216px] xl:w-[224px]"
           >
-            <AnimeCard card={card} priority={i < 4} />
+            <AnimeCard card={card} priority={i < priorityCount} />
           </div>
         ))}
       </div>
@@ -157,16 +171,19 @@ export function AnimeRow({
 export function AnimeGrid({
   cards,
   className = "",
+  priorityCount = 0,
 }: {
   cards: Card[];
   className?: string;
+  /** См. AnimeRow.priorityCount: по умолчанию всё грузится лениво. */
+  priorityCount?: number;
 }) {
   return (
     <div
       className={`grid grid-cols-2 gap-x-3 gap-y-6 sm:grid-cols-3 sm:gap-x-4 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 ${className}`}
     >
       {cards.map((card, i) => (
-        <AnimeCard key={card.id} card={card} priority={i < 6} />
+        <AnimeCard key={card.id} card={card} priority={i < priorityCount} />
       ))}
     </div>
   );

@@ -347,10 +347,19 @@ export default async function TitlePage({ params }: PageParams) {
         <CommentsBlock scope={{ kind: "title", titleId: card.id }} />
       </div>
 
-      {/* JSON-LD для поисковиков */}
+      {/* JSON-LD для поисковиков.
+          Данные приходят от Kodik, а JSON.stringify не экранирует `<`.
+          Если в названии тайтла встретится «</script>», разметка выйдет из тега
+          и страница отдаст наружу произвольный HTML вместе с JSON-LD. Поэтому
+          `<` заменяем на его escape-последовательность: для JSON это тот же
+          символ, а внутри <script> уже не закрывает тег. */}
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(jsonLd)
+            .replace(/</g, "\\u003c")
+            .replace(/>/g, "\\u003e"),
+        }}
       />
     </>
   );

@@ -89,7 +89,7 @@ export function CatalogResults({
 
   return (
     <div>
-      <AnimeGrid cards={items} />
+      <AnimeGrid cards={items} priorityCount={4} />
 
       {/* Кнопка догрузки */}
       <div className="mt-10 flex flex-col items-center gap-3">

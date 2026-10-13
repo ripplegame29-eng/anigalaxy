@@ -3,7 +3,7 @@
 import { useCallback, useMemo, useState } from "react";
 import { AuthTrigger } from "./AuthDialog";
 import { activatePremium, formatPremiumUntil, isPremiumActive } from "@/lib/auth";
-import { applyPromo } from "@/lib/premium-perks";
+import { redeemPromo } from "@/lib/promo-client";
 import { openAuthDialog } from "@/lib/auth-dialog";
 import { useAccount } from "@/lib/use-account";
 
@@ -233,29 +233,39 @@ export function PremiumLoginNote() {
   );
 }
 
-/** Дни подписки за промокод живут в PROMO_DAYS (lib/premium-perks) */
+/** Дни подписки за промокод живут в промокодах панели; словарь PROMO_DAYS
+ *  (lib/premium-perks) остался запасным путём для гостя без аккаунта. */
 
-/** Блок «Есть промокод?» — как на референсе, но проверка локальная */
+/** Блок «Есть промокод?» — проверка на сервере, локальный путь как запасной */
 export function PromoCode() {
   const account = useAccount();
   const [code, setCode] = useState("");
+  const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
 
+  // Асинхронный обработчик: redeemPromo ходит в сеть, и на время запроса
+  // кнопку надо гасить — иначе двойной клик активирует код дважды.
   const onApply = useCallback(
-    (event: React.FormEvent) => {
+    async (event: React.FormEvent) => {
       event.preventDefault();
       if (!account) {
         openAuthDialog("login");
         return;
       }
-      const result = applyPromo(code, (days) => {
-        const next = activatePremium(days);
-        return next ? next.premiumUntil ?? 0 : null;
-      });
-      setMessage({ ok: result.ok, text: result.message });
-      if (result.ok) setCode("");
+      if (busy) return;
+
+      setBusy(true);
+      setMessage(null);
+
+      try {
+        const result = await redeemPromo(code);
+        setMessage({ ok: result.ok, text: result.message });
+        if (result.ok) setCode("");
+      } finally {
+        setBusy(false);
+      }
     },
-    [account, code],
+    [account, busy, code],
   );
 
   return (
@@ -287,10 +297,10 @@ export function PromoCode() {
           />
           <button
             type="submit"
-            disabled={!code.trim()}
+            disabled={!code.trim() || busy}
             className="btn-primary h-11 shrink-0 rounded-xl px-5 text-sm font-extrabold text-white disabled:cursor-not-allowed disabled:opacity-40"
           >
-            Применить
+            {busy ? "Проверяем…" : "Применить"}
           </button>
         </form>
       </div>

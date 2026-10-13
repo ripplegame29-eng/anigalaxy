@@ -15,6 +15,8 @@ import { ChatWidget } from "@/components/ChatWidget";
 import { DailyBonusHost } from "@/components/DailyBonusHost";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
+import { getFeatures } from "@/lib/features";
+import { getSiteConfig } from "@/lib/site-config";
 import { ProgressionBoot } from "@/components/ProgressionBoot";
 import { DevPanel } from "@/components/progression/DevPanel";
 import { EcoBoot } from "@/components/progression/EcoBoot";
@@ -30,7 +32,13 @@ const unbounded = Unbounded({
   display: "swap",
 });
 
-export const metadata: Metadata = {
+/**
+ * Базовая часть метаданных. Не экспортируется: Next не принимает `metadata`
+ * и `generateMetadata` в одном файле, а база всё равно нужна внутри
+ * generateMetadata — как запасной вариант и как общий источник полей,
+ * которые не зависят от настроек.
+ */
+const BASE_METADATA: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
   title: {
     default: "AniGalaxy — смотреть аниме онлайн в HD",
@@ -49,13 +57,51 @@ export const metadata: Metadata = {
   robots: { index: true, follow: true },
 };
 
+/**
+ * Метаданные сайта с учётом настроек из панели.
+ *
+ * Именно generateMetadata, а не константа: заголовок вкладки должен подхватывать
+ * «Название сайта» из раздела «Настройки», а константа читается один раз при
+ * сборке и проигнорировала бы правку.
+ *
+ * Падение при чтении базы не должно ронять сайт: без настроек остаются
+ * зашитые значения. Администратор увидит, что настройка не применилась, по
+ * журналу ошибок, но страница останется доступной.
+ */
+export async function generateMetadata(): Promise<Metadata> {
+  const config = await getSiteConfig().catch(() => null);
+
+  if (!config) return BASE_METADATA;
+
+  const title = `${config.title} — смотреть аниме онлайн в HD`;
+
+  return {
+    ...BASE_METADATA,
+    title: {
+      default: title,
+      template: `%s · ${config.title}`,
+    },
+    description: config.tagline,
+    openGraph: {
+      ...BASE_METADATA.openGraph,
+      siteName: config.title,
+      title,
+      description: config.tagline,
+    },
+  };
+}
+
 export const viewport: Viewport = {
   themeColor: "#07070c",
   width: "device-width",
   initialScale: 1,
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  // Флаги читаются здесь, а не в Header: тот — клиентский компонент и сам
+  // базу открыть не может. Снимок на запрос кэшируется внутри getFeatures,
+  // поэтому шапка и подвал не делают по два одинаковых запроса.
+  const features = await getFeatures().catch(() => undefined);
   return (
     <html
       lang="ru"
@@ -111,7 +157,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         >
           Перейти к содержимому
         </a>
-        <Header />
+        <Header features={features} />
         {/* min-w-0 обязателен: main — флекс-элемент колоночного body, а у
             флекс-элементов min-width:auto. Без него любой широкий потомок
             (лента разделов магазина, карусели) растягивал всю страницу, и
@@ -119,7 +165,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <main id="main" className="relative z-[1] min-w-0 flex-1 pt-16">
           {children}
         </main>
-        <Footer />
+        <Footer features={features} />
         {/* Модалка авторизации живёт в layout, а не в шапке: у <header> есть
           backdrop-blur, а элементы с backdrop-filter/filter становятся
           containing block для position:fixed — панель тогда центрируется по
@@ -152,7 +198,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <AchievementEmblemIO />
 
         {/* Общий чат: плавающая кнопка + боковая панель (локальная симуляция) */}
-        <ChatWidget />
+        <ChatWidget showChat={features?.chat !== false} showClans={features?.clans !== false} />
 
         {/*
           Апскейл плеера живёт в самом WatchBox: кадры чужого iframe Kodik

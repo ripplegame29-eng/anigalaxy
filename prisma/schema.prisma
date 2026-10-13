@@ -1,0 +1,409 @@
+// Схема базы AniGalaxy — серверная часть, которой раньше не было.
+//
+// SQLite: нужен локальный запуск без инфраструктуры. Переезд на Postgres —
+// смена одной строки `provider` (Prisma сам подскажет, что поправить).
+//
+// Два решения, которые стоит знать, прежде чем добавлять поля:
+//
+// 1. Энумов нет — SQLite их не поддерживает. «Перечисления» храним строками,
+//    а допустимые значения лежат в `src/lib/roles.ts`. Строковое поле без
+//    внешней проверки — источник опечаток, поэтому см. `asRole()`: любое
+//    значение из базы проходит через неё при чтении.
+//
+// 2. Имена полей — camelCase, как их отдаёт Prisma. Раньше часть полей была
+//    помечена `@map(..., "snake_case")`, часть — нет, и в таблице получилось
+//    вперемешку `passwordHash` и `created_at`. Единый стиль важнее красоты:
+//    поле, забытое без `@map`, теперь невозможно случайно назвать иначе.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// Начиная с Prisma 7 адрес подключения не хранится в схеме: миграции берут его
+// из prisma.config.ts, а сам клиент получает через драйвер-адаптер
+// (`src/lib/db.ts`). Так один и тот же DATABASE_URL не дублируется в трёх местах.
+datasource db {
+  provider = "sqlite"
+}
+
+/* ------------------------------- Аккаунты ------------------------------- */
+
+/// Пользователь сайта. Заменяет клиентский «аккаунт» из `src/lib/auth.ts`,
+/// где пароль лежал в base64 и «входом» считалось наличие ключа в localStorage.
+model User {
+  id   String @id @default(cuid())
+  /// Логин: латиница, кириллица, цифры, _ и - (правила — NICKNAME_RE в lib/auth.ts)
+  nickname String @unique
+  email    String @unique
+  /// argon2id-хэш. Никогда не отдаётся клиенту и не попадает в аудит-лог.
+  passwordHash String
+
+  /// Роль: user | moderator | admin. Проверяется в `requireAdmin` на сервере,
+  /// клиенту не доверяем: роль приходит из сессии в httpOnly-cookie, а не из localStorage.
+  role String @default("user")
+
+  /// Статус: active | banned
+  status String @default("active")
+  /// До какого момента заблокирован (мс). null — бан навсегда или бана нет.
+  bannedUntil BigInt?
+  banReason   String?
+  /// Кто забанил — для аудита и отображения в панели
+  bannedById  String?
+  bannedAt    BigInt?
+
+  /// Premium активен до (мс); 0 — подписки нет
+  premiumUntil BigInt @default(0)
+
+  displayName String?
+  /// Аватар и обои хранятся как data-URL в браузере игрока; на сервере — только путь,
+  /// если позже появится файловое хранилище.
+  avatarUrl String?
+  bio       String?
+  signature String?
+
+  createdAt  BigInt  @default(0)
+  updatedAt  BigInt  @default(0)
+  lastSeenAt BigInt?
+
+  sessions  Session[]
+  auditLogs AuditLog[] @relation("AuditActor")
+  reports   Report[]   @relation("ReportAuthor")
+  resolved  Report[]   @relation("ReportResolver")
+  progress  PlayerProgress?
+  promoUses PromoRedemption[]
+
+  @@index([status])
+  @@index([role])
+  @@map("users")
+}
+
+/// Серверная сессия. Токен — случайная строка в httpOnly-cookie; пароль в cookie
+/// не хранится, поэтому кража XSS-куки не даёт доступ к сессии из JS.
+/// `expiresAt` — абсолютный срок; протухшие удаляет сборщик (`cleanupSessions`).
+model Session {
+  id        String @id @default(cuid())
+  /// sha256 от токена. Сам токен живёт только в cookie: утечка дампа таблицы
+  /// не даёт войти ни в один аккаунт.
+  tokenHash String @unique
+  userId    String
+  user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /// IP и User-Agent — чтобы в панели было видно, откуда и с чего зашли
+  ip        String?
+  userAgent String?
+
+  createdAt   BigInt
+  expiresAt   BigInt
+  lastUsedAt  BigInt @default(0)
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("sessions")
+}
+
+/* ------------------------------- Аудит ---------------------------------- */
+
+/// Журнал действий админов. Смысл — по любому спорному изменению можно понять,
+/// кто, когда и что поменял. Append-only: обновление и удаление записей
+/// намеренно не предусмотрены.
+/// `before`/`after` — JSON-строки; секреты (хеши паролей) в них не пишутся.
+model AuditLog {
+  id String @id @default(cuid())
+  /// Идентификатор админа; null — системное действие (крон, миграция, seed)
+  actorId String?
+  actor   User?   @relation("AuditActor", fields: [actorId], references: [id], onDelete: SetNull)
+
+  /// Глагол: user.ban, user.unban, user.role, content.update, promo.create …
+  action String
+  /// Что меняли: user | content | promo | season | setting | flag …
+  targetType String
+  targetId   String?
+  /// Человекочитаемое описание — показывается в панели списком
+  summary    String?
+
+  before String?
+  after  String?
+
+  ip        String?
+  createdAt BigInt @default(0)
+
+  @@index([createdAt])
+  @@index([actorId])
+  @@index([targetType, targetId])
+  @@map("audit_logs")
+}
+
+/* ------------------------------ Модерация ------------------------------- */
+
+/// Жалоба на контент: комментарий, сообщение чата, профиль или тайтл.
+model Report {
+  id String @id @default(cuid())
+  /// Кто пожаловался (может быть null — жалобу могла отправить система)
+  authorId String?
+  author   User?   @relation("ReportAuthor", fields: [authorId], references: [id], onDelete: SetNull)
+
+  /// Что именно: comment | chat | profile | title
+  targetType String
+  /// Идентификатор цели. Для клиентских комментариев это ключ localStorage,
+  /// поэтому до переноса данных в БД жалобы живут только на стороне клиента.
+  targetId    String
+  reason      String
+  details     String?
+
+  /// open | resolved | rejected
+  status       String   @default("open")
+  resolvedById String?
+  resolvedBy   User?    @relation("ReportResolver", fields: [resolvedById], references: [id], onDelete: SetNull)
+  resolution   String?
+  resolvedAt   BigInt?
+
+  createdAt BigInt @default(0)
+
+  @@index([status])
+  @@index([targetType, targetId])
+  @@map("reports")
+}
+
+/* ------------------------------- Контент -------------------------------- */
+
+/// Управляемый контент сайта: баннеры, слайды главной, блоки на страницах.
+/// `kind` определяет форму (hero_slide, banner, …), `payload` — JSON с полями.
+/// Так дизайнер правит главную, не трогая код и не ожидая деплоя.
+model ContentBlock {
+  id    String @id @default(cuid())
+  /// Тип блока — см. CONTENT_KINDS в src/lib/admin/content.ts
+  kind  String
+  title String?
+  /// JSON-строка с полями блока
+  payload String
+
+  enabled   Boolean @default(true)
+  /// Порядок вывода; меньше — выше
+  sortOrder Int      @default(0)
+  /// С какой даты показывать и до какой (мс; null — бессрочно). Позволяет
+  /// планировать баннер на праздник без ручного включения в день икс.
+  startsAt BigInt?
+  endsAt   BigInt?
+
+  createdAt BigInt @default(0)
+  updatedAt BigInt @default(0)
+
+  @@index([kind, enabled])
+  @@map("content_blocks")
+}
+
+/* ------------------------------- Экономика ------------------------------ */
+
+/// Прогресс игрока — зеркало документа `ProgressDoc`.
+///
+/// Пока `storageMode: "local"`, документ живёт в браузере, а сюда копируется:
+/// это даёт админке возможность его читать и править, но не ломает сайт для
+/// гостей без серверного аккаунта. Когда игровой вход переедет на сервер,
+/// модель станет основным хранилищем, а `src/lib/progression/store.ts`
+/// переключится на `storageMode: "server"` — контракт `load/save` там
+/// асинхронный и для этого уже написан.
+///
+/// `revision` растёт на каждую запись: он же служит признаком того, чей
+/// документ свежее. Дальше по нему разрулится конфликт двух вкладок, когда
+/// хранилище станет серверным.
+model PlayerProgress {
+  userId    String @id
+  user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// JSON строкой: Prisma не умеет json в SQLite, а документ глубоко
+  /// вложенный (см. ProgressDoc в src/lib/progression/types.ts)
+  doc String
+  /// Схема документа на момент записи — нужна миграция при смене версии
+  schemaVersion Int @default(1)
+
+  /// Ниже для отчётов по выдаче: сколько раз админ правил прогресс
+  touchedByAdmin Boolean @default(false) @map("touched_by_admin")
+
+  createdAt BigInt @default(0)
+  updatedAt BigInt @default(0) @map("updated_at")
+  revision  Int    @default(1)
+
+  @@index([updatedAt])
+  @@map("player_progress")
+}
+
+/// Сезон боевого пропуска. Сейчас сезоны считаются из даты в конфиге на клиенте;
+/// серверная модель нужна, чтобы админ мог открыть/закрыть сезон и начислить награды.
+model Season {
+  id   String @id @default(cuid())
+  /// Идентификатор сезона в формате клиентского конфига, напр. "s1"
+  slug String @unique
+  name String
+
+  startsAt BigInt
+  endsAt   BigInt
+  /// scheduled | active | finished — вычисляется по датам, но хранится явно,
+  /// чтобы можно было остановить сезон досрочно.
+  status         String  @default("scheduled")
+  /// Принудительный сброс прогресса у всех при закрытии сезона
+  resetOnClose   Boolean @default(false)
+
+  createdAt BigInt @default(0)
+  updatedAt BigInt @default(0)
+
+  @@map("seasons")
+}
+
+/// Промокод. Действующие коды сейчас лежат в хардкод-словаре `premium-perks.ts`
+/// и обходятся удалением ключа из localStorage — здесь они становятся серверными.
+model PromoCode {
+  id   String @id @default(cuid())
+  code String @unique
+
+  /// premium_days | balance_ac | frames | tags
+  kind  String
+  /// Сколько единиц выдаёт (дней подписки, AC, штук предметов)
+  value    Int     @default(0)
+  /// Сколько раз можно активировать; null — без ограничения
+  maxUses  Int?    @map("maxUses")
+  usedCount Int    @default(0)
+  /// Ограничение на один аккаунт
+  perUserLimit Int @default(1) @map("perUserLimit")
+
+  description String?
+  active      Boolean @default(true)
+  startsAt    BigInt?
+  endsAt      BigInt?
+
+  createdAt BigInt @default(0)
+  updatedAt BigInt @default(0)
+
+  /// Активации. Связь нужна, чтобы посчитать «код уже использовали» и чтобы
+  /// панель могла запретить удалять код с историей применений.
+  redemptions PromoRedemption[]
+
+  @@index([active])
+  @@map("promo_codes")
+}
+
+/// Кто и когда активировал промокод — без этого нельзя посчитать usedCount
+/// честно и нельзя ограничить «по одному на аккаунт».
+model PromoRedemption {
+  id         String    @id @default(cuid())
+  promoId    String
+  promo      PromoCode @relation(fields: [promoId], references: [id], onDelete: Cascade)
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  redeemedAt BigInt    @default(0)
+
+  @@unique([promoId, userId])
+  @@index([userId])
+  @@map("promo_redemptions")
+}
+
+/* --------------------------- Конфигурация ------------------------------- */
+
+/// Произвольные настройки сайта: промпт главной, ссылки в подвале, лимиты.
+model Setting {
+  key   String @id
+  value String
+  /// Человекочитаемое описание — чтобы в панели не гадать, что это за ключ
+  description String?
+  updatedAt   BigInt @default(0)
+
+  @@map("settings")
+}
+
+/// Feature flags. Нужны, чтобы выключить сломанную механику (например, боевой
+/// пропуск) немедленно, без правки кода и деплоя.
+model FeatureFlag {
+  key         String  @id
+  enabled     Boolean @default(false)
+  description String?
+  updatedAt   BigInt  @default(0)
+  updatedById String?
+
+  @@map("feature_flags")
+}
+
+/* --------------------------- Наблюдаемость ----------------------------- */
+
+/// Журнал ошибок.
+///
+/// Зачем: сейчас ошибки внешних источников глушатся через `.catch(() => [])`,
+/// и падение Shikimori или смена вёрстки Kodik выглядят снаружи как «просто
+/// пропал трейлер». С сервером такие случаи попадают сюда.
+///
+/// `fingerprint` — хэш (сообщение + верхушка стека + источник). Одинаковые
+/// ошибки схлопываются в одну запись со счётчиком, поэтому залитый логами
+/// внешний API не превратит таблицу в кашу из миллиона строк.
+model ErrorLog {
+  id    String @id @default(cuid())
+  /// error | warn | info
+  level String @default("error")
+  /// kodik | shikimori | mangadex | anilibria | parser | client | auth | admin | db | job
+  source String
+  /// Что именно сломалось — короткое имя операции: kodik.list, parser.dubs, client.react
+  operation String?
+
+  message String
+  stack   String?
+
+  /// JSON со входными данными операции. Секреты (токены, пароли) сюда не пишутся —
+  /// см. redact() в src/lib/logger.ts.
+  context String?
+
+  /// Группировка одинаковых ошибок. Уникальный индекс держит правило
+  /// «одна строка на один отпечаток» на уровне базы, а не только в коде.
+  fingerprint String    @unique
+  count       Int       @default(1)
+
+  /// Кто и с какого устройства столкнулся — для ошибок с клиента
+  userId    String?
+  ip        String?
+  userAgent String?
+
+  firstSeenAt  BigInt @default(0)
+  lastSeenAt   BigInt @default(0)
+  /// Помечена ли как разобранная
+  resolved     Boolean @default(false)
+  resolvedById String?
+
+  @@index([resolved, lastSeenAt])
+  @@index([fingerprint])
+  @@index([source, level])
+  @@map("error_logs")
+}
+
+/// Здоровье внешних источников. У сайта три зависимости с каскадом фоллбэков
+/// (Kodik → Shikimori → MangaDex); если они лягут, страницы молча потеряют
+/// кадры, трейлеры и серии. Панель показывает состояние до того, как пойдут жалобы.
+model ApiHealth {
+  /// kodik | shikimori | mangadex | anilibria
+  service   String   @id
+  ok        Boolean  @default(false)
+  latencyMs Int?
+  error     String?
+  checkedAt BigInt   @default(0)
+
+  @@map("api_health")
+}
+
+/* ------------------------------ Рассылки -------------------------------- */
+
+/// Объявление, показываемое пользователям (баннер на сайте, всплывающее окно).
+/// Рассылка без отдельной таблицы получателей: пока у нас нет серверных
+/// push-токенов, аудитория выбирается фильтром при отправке.
+model Announcement {
+  id    String @id @default(cuid())
+  title String
+  body  String
+  /// banner | modal | chat — где показывать
+  placement String @default("banner")
+  /// Показывать только пользователям с Premium
+  premiumOnly Boolean @default(false)
+
+  active      Boolean @default(true)
+  startsAt    BigInt?
+  endsAt      BigInt?
+  publishedAt BigInt   @default(0)
+
+  createdAt BigInt @default(0)
+  updatedAt BigInt @default(0)
+
+  @@map("announcements")
+}

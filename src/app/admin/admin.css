@@ -1,0 +1,1274 @@
+/* ==========================================================================
+   Панель управления — оформление по макету anigalaxy-admin.html
+   ==========================================================================
+
+   Правила и переменные перенесены из макета почти дословно, с одним
+   изменением: все селекторы получили префикс `ag-`.
+
+   Зачем префикс. Стили глобальные — App Router не умеет ограничивать CSS
+   областью layout'а. В проекте уже есть `.btn-primary`, `.link`, `.top`,
+   `.head`, `.mark`, и без префикса админские правила начали бы перекрашивать
+   сайт. Префикс ничего не меняет во внешнем виде, зато класс перестаёт быть
+   глобальным.
+
+   Переменные объявлены на .ag-app, а не на :root: тема панели не должна
+   влиять на страницы сайта, даже если правило :root когда-то появится.
+   ========================================================================== */
+
+.ag-app {
+  --ag-bg: #ece9e1;
+  --ag-side: #e4e1d7;
+  --ag-card: #f6f4ee;
+  --ag-line: #cfcbbf;
+  --ag-text: #14130f;
+  --ag-mut: #5e5b52;
+  --ag-dim: #6b675c;
+  --ag-acc: #5b3fe0;
+  --ag-accbg: #e1dcf5;
+  --ag-amb: #8a5a00;
+  --ag-ambbg: #f3e6c4;
+  --ag-ambline: #c9a24a;
+  --ag-red: #b3261e;
+  --ag-crbg: #f5d9d6;
+  --ag-grn: #1e7a4d;
+  --ag-okbg: #d6ebdd;
+  --ag-ink: #14130f;
+  --ag-onink: #f6f4ee;
+  --ag-hov: #e6e3da;
+  --ag-bd2: #a9a598;
+  --ag-chipbg: #ddd9cd;
+  --ag-wt: #6b5320;
+  --ag-rul: #9a9689;
+  --ag-herobg: rgba(246, 244, 238, 0.72);
+  --ag-streak: #ece9e1;
+  --ag-bgink: #14130f;
+  --ag-ease: cubic-bezier(0.22, 0.8, 0.3, 1);
+  color-scheme: light;
+}
+
+.ag-app[data-theme="space"] {
+  --ag-bg: #07080f;
+  --ag-side: #0a0c14;
+  --ag-card: #0e1018;
+  --ag-line: #1e2230;
+  --ag-text: #eef0f7;
+  --ag-mut: #9aa1b5;
+  --ag-dim: #7c849a;
+  --ag-acc: #1fb6ff;
+  --ag-accbg: #0f2230;
+  --ag-amb: #f5b942;
+  --ag-ambbg: #1c1608;
+  --ag-ambline: #5a4513;
+  --ag-red: #ff7a7a;
+  --ag-crbg: #2a1214;
+  --ag-grn: #4ade9a;
+  --ag-okbg: #12261b;
+  --ag-ink: #1fb6ff;
+  --ag-onink: #04121c;
+  --ag-hov: #12151f;
+  --ag-bd2: #2a3042;
+  --ag-chipbg: #1a1e2c;
+  --ag-wt: #c9b27a;
+  --ag-rul: #3a3f55;
+  --ag-herobg: rgba(14, 16, 24, 0.7);
+  --ag-streak: #07080f;
+  --ag-bgink: #ede9dd;
+  color-scheme: dark;
+}
+
+/* ---------------------------------- Каркас --------------------------------- */
+
+.ag-app {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  min-height: 100dvh;
+  background: var(--ag-bg);
+  color: var(--ag-text);
+  font-family: var(--font-ag-admin, "Manrope", system-ui, sans-serif);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.ag-app button,
+.ag-app input,
+.ag-app select,
+.ag-app textarea {
+  font: inherit;
+  color: inherit;
+}
+
+.ag-app button,
+.ag-app a[role="button"] {
+  cursor: pointer;
+}
+
+.ag-app a {
+  color: var(--ag-mut);
+  text-decoration: none;
+}
+
+.ag-app :focus-visible {
+  outline: 2px solid var(--ag-acc);
+  outline-offset: 2px;
+}
+
+/* Фоновая графика: лучи и зерно, как в макете. Чисто декоративная —
+   pointer-events выключены, чтобы не мешала кликам. */
+.ag-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  color: var(--ag-bgink);
+  pointer-events: none;
+}
+
+.ag-bg svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.ag-bg .rays {
+  animation: ag-fade 2.2s 0.1s backwards;
+}
+
+.ag-bg .acct {
+  stroke: var(--ag-acc);
+}
+
+.ag-app[data-theme="space"] .ag-bg rect {
+  opacity: 0.06;
+  mix-blend-mode: overlay;
+}
+
+.ag-app[data-theme="space"] .ag-bg .rays {
+  opacity: 1;
+}
+
+@keyframes ag-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+/* --------------------------------- Боковая --------------------------------- */
+
+.ag-side {
+  position: sticky;
+  top: 0;
+  display: flex;
+  flex: 0 0 280px;
+  flex-direction: column;
+  gap: 20px;
+  height: 100dvh;
+  padding: 24px 16px;
+  background: var(--ag-side);
+  border-right: 1px solid var(--ag-line);
+}
+
+.ag-logo {
+  padding: 0 14px;
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.ag-logo b {
+  color: var(--ag-acc);
+}
+
+.ag-logo small {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ag-mut);
+}
+
+/* Знак: точка с эллипсом. При наведении эллипс доворачивается — как в макете. */
+.ag-mark {
+  width: 28px;
+  height: 28px;
+  margin-right: 10px;
+  vertical-align: -7px;
+  overflow: visible;
+}
+
+.ag-mark circle {
+  fill: var(--ag-acc);
+}
+
+.ag-mark ellipse {
+  stroke: var(--ag-text);
+  transform-origin: 16px 16px;
+  transform: rotate(-25deg);
+  transition: transform 0.9s var(--ag-ease);
+}
+
+.ag-logo:hover .ag-mark ellipse {
+  transform: rotate(155deg);
+}
+
+.ag-nav {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  overflow-y: auto;
+}
+
+.ag-grp {
+  padding: 14px 14px 4px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ag-dim);
+}
+
+.ag-navlink {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 10px;
+  background: none;
+  color: var(--ag-mut);
+  font-weight: 500;
+  text-align: left;
+  white-space: nowrap;
+  transition:
+    background 0.2s,
+    color 0.2s;
+}
+
+.ag-navlink:hover {
+  background: var(--ag-hov);
+  color: var(--ag-text);
+}
+
+.ag-navlink[aria-current="page"] {
+  background: var(--ag-ink);
+  color: var(--ag-onink);
+}
+
+.ag-navlink[aria-current="page"]:hover {
+  filter: brightness(1.1);
+}
+
+.ag-navlink[aria-current="page"] svg,
+.ag-navlink[aria-current="page"] .ag-badge {
+  color: var(--ag-onink);
+}
+
+.ag-navlink[aria-current="page"] .ag-badge {
+  background: var(--ag-onink);
+  color: var(--ag-ink);
+}
+
+.ag-navlink svg,
+.ag-ic {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.ag-badge {
+  margin-left: auto;
+  min-width: 24px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--ag-ink);
+  color: var(--ag-onink);
+  font-size: 12px;
+  font-weight: 800;
+  text-align: center;
+}
+
+.ag-badge.zero {
+  background: var(--ag-chipbg);
+  color: var(--ag-mut);
+}
+
+/* Карточка администратора внизу меню */
+.ag-me {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: auto;
+  padding: 16px;
+  border: 1px solid var(--ag-line);
+  border-radius: 14px;
+  background: var(--ag-card);
+}
+
+.ag-me > div {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ag-av {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--ag-accbg);
+  color: var(--ag-acc);
+  font-weight: 800;
+}
+
+.ag-me b {
+  display: block;
+  font-weight: 600;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ag-me small {
+  display: block;
+  color: var(--ag-mut);
+  font-size: 12px;
+}
+
+/* ---------------------------------- Кнопки --------------------------------- */
+
+.ag-btn {
+  min-height: 44px;
+  padding: 0 20px;
+  border: 1px solid var(--ag-bd2);
+  border-radius: 10px;
+  background: transparent;
+  font-size: 14px;
+  font-weight: 700;
+  transition:
+    filter 0.15s,
+    transform 0.15s,
+    opacity 0.15s;
+}
+
+.ag-btn:hover:not(:disabled) {
+  filter: brightness(1.2);
+}
+
+.ag-btn:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.ag-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.ag-btn.pri {
+  background: var(--ag-ink);
+  border-color: var(--ag-ink);
+  color: var(--ag-onink);
+  font-weight: 800;
+}
+
+.ag-btn.danger {
+  border-color: var(--ag-red);
+  color: var(--ag-red);
+}
+
+.ag-btn.sm {
+  min-height: 36px;
+  padding: 0 14px;
+  font-size: 13px;
+}
+
+.ag-btn.link {
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  color: var(--ag-acc);
+}
+
+/* ---------------------------------- Верх ----------------------------------- */
+
+.ag-main {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 28px;
+  min-width: 0;
+  padding: 24px 40px 56px;
+}
+
+.ag-top {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: -12px 0 0;
+  padding: 12px 0;
+  transition: background 0.3s;
+}
+
+/* После первого скролла шапка получает подложку — иначе текст под ней
+   просвечивает, как в макете. */
+.ag-top.s {
+  background: linear-gradient(var(--ag-bg) 70%, transparent);
+}
+
+.ag-top input {
+  flex: 1 1 320px;
+  max-width: 560px;
+  min-height: 44px;
+  padding: 0 16px;
+  border: 1px solid var(--ag-line);
+  border-radius: 12px;
+  background: var(--ag-card);
+  font-size: 14px;
+  transition: border-color 0.2s;
+}
+
+.ag-top input:focus {
+  border-color: var(--ag-acc);
+  outline: none;
+}
+
+.ag-top > a,
+.ag-top > form {
+  margin-left: 0;
+}
+
+.ag-top > a,
+.ag-top > form > button {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 16px;
+  border: 1px solid var(--ag-line);
+  border-radius: 12px;
+  background: var(--ag-card);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* Переключатель темы прижат вправо и не наследует кнопочную рамку .ag-top —
+   у него своя сегментная группа. */
+.ag-theme {
+  margin-left: auto;
+}
+
+.ag-theme .ag-seg {
+  min-height: 44px;
+}
+
+/* --------------------------------- Поиск ---------------------------------- */
+
+.ag-search {
+  position: relative;
+  flex: 1 1 320px;
+  max-width: 560px;
+}
+
+.ag-search input {
+  width: 100%;
+}
+
+.ag-search-list {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  left: 0;
+  z-index: 10;
+  overflow: hidden;
+  margin: 0;
+  padding: 4px;
+  border: 1px solid var(--ag-line);
+  border-radius: 12px;
+  background: var(--ag-card);
+  list-style: none;
+  box-shadow: 0 18px 40px -16px rgba(0, 0, 0, 0.45);
+  animation: ag-rise 0.18s var(--ag-ease);
+}
+
+.ag-search-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+  padding: 10px 12px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  text-align: left;
+}
+
+.ag-search-item.on {
+  background: var(--ag-hov);
+}
+
+.ag-search-item b {
+  font-weight: 600;
+}
+
+.ag-search-item small {
+  color: var(--ag-mut);
+  font-size: 13px;
+}
+
+/* -------------------------------- Заголовки -------------------------------- */
+
+.ag-h1 {
+  margin: 0;
+  font-size: 36px;
+  font-weight: 800;
+  line-height: 1.15;
+}
+
+.ag-h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.ag-sub {
+  margin: 6px 0 0;
+  color: var(--ag-mut);
+}
+
+.ag-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.ag-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+.ag-cols {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  align-items: flex-start;
+}
+
+/* ------------------------------ Сегменты, чипы ----------------------------- */
+
+.ag-seg {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid var(--ag-line);
+  border-radius: 12px;
+  background: var(--ag-card);
+}
+
+.ag-seg button,
+.ag-chip {
+  min-height: 36px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: var(--ag-mut);
+  font-size: 14px;
+  font-weight: 600;
+  transition:
+    background 0.2s,
+    color 0.2s;
+}
+
+.ag-seg button.on {
+  background: var(--ag-ink);
+  color: var(--ag-onink);
+  font-weight: 700;
+}
+
+.ag-chip {
+  border: 1px solid var(--ag-line);
+  border-radius: 999px;
+  padding: 0 14px;
+  font-size: 13px;
+}
+
+.ag-chip.on {
+  background: var(--ag-ink);
+  border-color: var(--ag-ink);
+  color: var(--ag-onink);
+  font-weight: 800;
+}
+
+.ag-chip i {
+  margin-left: 6px;
+  font-style: normal;
+  opacity: 0.7;
+}
+
+.ag-chip:hover {
+  border-color: var(--ag-bd2);
+}
+
+/* ---------------------------------- Блоки --------------------------------- */
+
+.ag-box {
+  overflow: hidden;
+  border: 1px solid var(--ag-line);
+  border-radius: 14px;
+  background: var(--ag-card);
+}
+
+.ag-box.pad {
+  padding: 20px;
+}
+
+.ag-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--ag-line);
+}
+
+.ag-row:last-child {
+  border-bottom: 0;
+}
+
+.ag-row > .ag-m {
+  flex: 1;
+  min-width: 0;
+}
+
+.ag-row > .ag-m b {
+  font-weight: 600;
+}
+
+.ag-row > .ag-m small {
+  display: block;
+  margin-top: 2px;
+  color: var(--ag-mut);
+  font-size: 13px;
+}
+
+.ag-row time,
+.ag-row > .ag-n {
+  flex: none;
+  color: var(--ag-mut);
+  font-size: 13px;
+}
+
+.ag-row > .ag-n {
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: var(--ag-chipbg);
+  color: var(--ag-text);
+  font-weight: 700;
+}
+
+.ag-row .ag-ico {
+  width: 36px;
+  height: 36px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: var(--ag-accbg);
+  color: var(--ag-acc);
+}
+
+.ag-row .ag-ico.ok {
+  background: var(--ag-okbg);
+  color: var(--ag-grn);
+}
+
+.ag-row .ag-ico.off {
+  background: var(--ag-chipbg);
+  color: var(--ag-mut);
+}
+
+.ag-row .ag-act {
+  display: flex;
+  flex: none;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* ---------------------------------- KPI ----------------------------------- */
+
+.ag-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 16px;
+}
+
+.ag-kpi {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 20px;
+  border: 1px solid var(--ag-line);
+  border-radius: 14px;
+  background: var(--ag-card);
+  animation: ag-rise 0.7s var(--ag-ease) backwards;
+  transition:
+    transform 0.25s var(--ag-ease),
+    border-color 0.25s;
+}
+
+.ag-kpi:nth-child(2) {
+  animation-delay: 0.08s;
+}
+.ag-kpi:nth-child(3) {
+  animation-delay: 0.16s;
+}
+.ag-kpi:nth-child(4) {
+  animation-delay: 0.24s;
+}
+
+.ag-kpi:hover {
+  transform: translateY(-3px);
+  border-color: var(--ag-bd2);
+}
+
+.ag-kpi span {
+  color: var(--ag-mut);
+  font-size: 14px;
+}
+
+.ag-kpi strong {
+  font-size: 36px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.ag-kpi em {
+  font-style: normal;
+  color: var(--ag-mut);
+  font-size: 13px;
+}
+
+.ag-kpi.up em {
+  color: var(--ag-grn);
+}
+
+.ag-kpi.warn {
+  border-color: var(--ag-ambline);
+}
+
+.ag-kpi.warn strong,
+.ag-kpi.warn em {
+  color: var(--ag-amb);
+}
+
+.ag-kpi.warn:hover {
+  border-color: var(--ag-amb);
+}
+
+@keyframes ag-rise {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+}
+
+/* ---------------------------------- Hero ----------------------------------- */
+
+.ag-hero {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px 28px;
+  overflow: hidden;
+  padding: 24px 28px;
+  border: 1px solid var(--ag-line);
+  border-radius: 16px;
+  background: var(--ag-herobg);
+}
+
+.ag-hl {
+  display: flex;
+  flex: 1 1 440px;
+  flex-direction: column;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.ag-hr {
+  display: flex;
+  flex: 0 0 260px;
+  flex-direction: column;
+  gap: 10px;
+  justify-content: center;
+  padding-left: 28px;
+  border-left: 1px solid var(--ag-line);
+}
+
+.ag-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border: 1px solid var(--ag-line);
+  border-radius: 999px;
+  background: var(--ag-card);
+  color: var(--ag-mut);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.ag-pill i {
+  display: inline-block;
+  padding: 0 6px;
+  border-radius: 4px;
+  background: var(--ag-ink);
+  color: var(--ag-onink);
+  font-style: normal;
+  font-weight: 800;
+}
+
+.ag-ht {
+  margin: 0;
+  font-size: 32px;
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.ag-hl p {
+  max-width: 60ch;
+  margin: 0;
+  color: var(--ag-mut);
+}
+
+/* Подчёркивание-помазок: маска SVG, проезжает слева направо при появлении. */
+.ag-u {
+  position: relative;
+  white-space: nowrap;
+}
+
+.ag-u::after {
+  content: "";
+  position: absolute;
+  left: -2%;
+  right: -2%;
+  bottom: -9px;
+  height: 9px;
+  background: var(--ag-acc);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 10' preserveAspectRatio='none'%3E%3Cpath d='M1 6C20 1 38 9 60 4S100 3 119 6' fill='none' stroke='%23000' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E") center / 100% 100% no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 10' preserveAspectRatio='none'%3E%3Cpath d='M1 6C20 1 38 9 60 4S100 3 119 6' fill='none' stroke='%23000' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E") center / 100% 100% no-repeat;
+  animation: ag-underline 1s var(--ag-ease) 0.9s backwards;
+}
+
+@keyframes ag-underline {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+}
+
+/* Прогресс: «кисть» обрезает график слева направо, деления — линейка внизу. */
+.ag-prog {
+  display: flex;
+  flex: 1 1 100%;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ag-pn {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  color: var(--ag-mut);
+  font-size: 13px;
+}
+
+.ag-pn strong {
+  display: block;
+  color: var(--ag-text);
+  font-size: 40px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.ag-track {
+  position: relative;
+  height: 64px;
+}
+
+.ag-ghost {
+  position: absolute;
+  inset: 0;
+  opacity: 0.07;
+  color: var(--ag-ink);
+}
+
+.ag-ghost svg,
+.ag-brush svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.ag-brush {
+  position: absolute;
+  inset: 0;
+  color: var(--ag-ink);
+  clip-path: inset(0 calc(100% - var(--w, 5%)) 0 0);
+  transition: clip-path 1s var(--ag-ease);
+}
+
+.ag-mk {
+  position: absolute;
+  top: 14px;
+  left: var(--w, 5%);
+  width: 4px;
+  height: 36px;
+  margin-left: -2px;
+  border-radius: 2px;
+  background: var(--ag-acc);
+  transition: left 1s var(--ag-ease);
+}
+
+.ag-ruler {
+  height: 8px;
+  border-top: 1px solid var(--ag-rul);
+  background: repeating-linear-gradient(90deg, var(--ag-rul) 0 1px, transparent 1px 10%);
+}
+
+.ag-prog small {
+  color: var(--ag-dim);
+  font-size: 12px;
+}
+
+/* ------------------------------ Журнал ошибок ------------------------------ */
+
+.ag-err {
+  border-bottom: 1px solid var(--ag-line);
+}
+
+.ag-err:last-child {
+  border-bottom: 0;
+}
+
+.ag-err > button {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  padding: 16px 20px;
+  border: 0;
+  background: none;
+  text-align: left;
+  transition: background 0.2s;
+}
+
+.ag-err > button:hover {
+  background: var(--ag-hov);
+}
+
+.ag-dot {
+  width: 10px;
+  height: 10px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--ag-amb);
+}
+
+.ag-err.crit .ag-dot {
+  background: var(--ag-red);
+}
+
+.ag-err.read .ag-dot {
+  background: var(--ag-bd2);
+}
+
+.ag-err.read .ag-m b {
+  color: var(--ag-mut);
+}
+
+/* Стрелка разворачивается при раскрытии подробностей. */
+.ag-chev {
+  width: 18px;
+  height: 18px;
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  color: var(--ag-dim);
+  transition: transform 0.3s var(--ag-ease);
+}
+
+.ag-err.open .ag-chev {
+  transform: rotate(90deg);
+}
+
+/* Раскрытие через grid-template-rows: в отличие от max-height не требует
+   угадывать высоту содержимого и анимируется ровно. */
+.ag-det {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.35s var(--ag-ease);
+}
+
+.ag-err.open .ag-det {
+  grid-template-rows: 1fr;
+}
+
+.ag-det > div {
+  overflow: hidden;
+}
+
+.ag-det > div > * {
+  margin: 0;
+  padding: 0 20px 16px 46px;
+  color: var(--ag-mut);
+  font-size: 14px;
+}
+
+.ag-det pre {
+  margin: 0 20px 16px 46px;
+  padding: 12px 14px;
+  overflow-x: auto;
+  border-radius: 10px;
+  background: color-mix(in oklab, var(--ag-text) 6%, transparent);
+  font-size: 12px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.ag-lvl {
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: var(--ag-ambbg);
+  color: var(--ag-amb);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.ag-err.crit .ag-lvl {
+  background: var(--ag-crbg);
+  color: var(--ag-red);
+}
+
+.ag-err.info .ag-lvl {
+  background: var(--ag-accbg);
+  color: var(--ag-acc);
+}
+
+/* ------------------------- Прочее: формы и пустое -------------------------- */
+
+.ag-empty {
+  padding: 40px 20px;
+  color: var(--ag-mut);
+  text-align: center;
+}
+
+.ag-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ag-field > span {
+  color: var(--ag-dim);
+  font-size: 12px;
+}
+
+.ag-input,
+.ag-select {
+  width: 100%;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid var(--ag-line);
+  border-radius: 10px;
+  background: var(--ag-bg);
+  transition: border-color 0.2s;
+}
+
+.ag-input:focus,
+.ag-select:focus {
+  border-color: var(--ag-acc);
+  outline: none;
+}
+
+.ag-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-end;
+}
+
+.ag-note {
+  color: var(--ag-mut);
+  font-size: 13px;
+}
+
+.ag-ok {
+  color: var(--ag-grn);
+  font-size: 13px;
+}
+
+.ag-bad {
+  color: var(--ag-red);
+  font-size: 13px;
+}
+
+.ag-code {
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: var(--ag-chipbg);
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 12px;
+}
+
+.ag-qa {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 52px;
+  padding: 0 16px;
+  border: 1px solid var(--ag-line);
+  border-radius: 12px;
+  background: var(--ag-card);
+  font-weight: 600;
+  text-align: left;
+  transition:
+    border-color 0.2s,
+    transform 0.2s var(--ag-ease);
+}
+
+.ag-qa:hover {
+  border-color: var(--ag-acc);
+  transform: translateX(4px);
+}
+
+.ag-qa span {
+  color: var(--ag-acc);
+}
+
+/* --------------------------------- Тост ------------------------------------ */
+
+.ag-toast {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 60;
+  padding: 14px 20px;
+  border-radius: 12px;
+  background: var(--ag-ink);
+  color: var(--ag-onink);
+  font-size: 14px;
+  font-weight: 600;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(24px);
+  transition:
+    transform 0.35s var(--ag-ease),
+    opacity 0.3s;
+}
+
+.ag-toast.show {
+  opacity: 1;
+  transform: none;
+}
+
+/* ------------------------------ Узкие экраны ------------------------------ */
+
+@media (max-width: 900px) {
+  .ag-app {
+    flex-direction: column;
+  }
+
+  .ag-side {
+    position: static;
+    flex: none;
+    height: auto;
+    padding: 16px;
+  }
+
+  /* Меню превращается в горизонтальную ленту: вертикальный список на
+     телефоне съедал бы весь первый экран. */
+  .ag-nav {
+    flex-direction: row;
+    overflow-x: auto;
+  }
+
+  .ag-top {
+    position: static;
+    background: none;
+  }
+
+  .ag-top.s {
+    background: none;
+  }
+
+  .ag-row {
+    flex-wrap: wrap;
+    gap: 8px 12px;
+  }
+
+  .ag-row > .ag-m {
+    flex: 1 1 55%;
+  }
+
+  .ag-hr {
+    flex-basis: 100%;
+    padding-left: 0;
+    border-left: 0;
+  }
+
+  .ag-ht {
+    font-size: 26px;
+  }
+
+  .ag-grp,
+  .ag-me {
+    display: none;
+  }
+
+  .ag-navlink {
+    width: auto;
+  }
+
+  .ag-main {
+    padding: 20px 16px 48px;
+  }
+
+  .ag-h1 {
+    font-size: 30px;
+  }
+
+  .ag-toast {
+    right: 16px;
+    bottom: 16px;
+    left: 16px;
+    text-align: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ag-app *,
+  .ag-app *::before,
+  .ag-app *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}

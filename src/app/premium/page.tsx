@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { requireFeature } from "@/lib/features";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { PremiumLoginNote, PremiumPlans, PromoCode } from "@/components/PremiumPlans";
 
@@ -32,7 +33,9 @@ const FAQ = [
   },
 ];
 
-export default function PremiumPage() {
+export default async function PremiumPage() {
+  // Тумблер «premium» в панели «Настройки». Выключенная механика — 404.
+  await requireFeature("premium");
   return (
     <div className="relative overflow-hidden">
       {/* Фоновое свечение */}

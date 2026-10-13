@@ -29,6 +29,14 @@
     "src/lib/cosmetics.ts",
     "src/lib/backup.ts",
     "src/lib/auth.ts",
-    "src/lib/comments.ts"
+    "src/lib/comments.ts",
+    "src/lib/ttlcache.ts",
+    "src/lib/clans.ts",
+    "src/lib/clans.runtime.ts",
+    "src/lib/clans.treasury.ts",
+    "src/lib/clans.events.ts",
+    "src/lib/clans.shop.ts",
+    "src/lib/clans.social.ts",
+    "src/lib/clans.game.ts"
   ]
 }

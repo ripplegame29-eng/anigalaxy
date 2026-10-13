@@ -69,7 +69,13 @@ function tagOf(id?: string) {
   return id ? PROGRESSION_CONFIG.tags.find((item) => item.id === id) : undefined;
 }
 
-export function ChatWidget() {
+export function ChatWidget({
+  showClans = true,
+  showChat = true,
+}: {
+  showClans?: boolean;
+  showChat?: boolean;
+}) {
   const account = useAccount();
   const chat = useChat();
   const doc = useProgress();
@@ -118,8 +124,8 @@ export function ChatWidget() {
       {/* Плавающие кнопки: кланы слева от чата, чат справа у края.
           Кланы — раздел с вкладом и топом, он логично живёт рядом с
           общением, а не в основной навигации шапки. */}
-      {!open && <ClanFab />}
-      {!open && (
+      {!open && showClans && <ClanFab />}
+      {!open && showChat && (
         <button
           type="button"
           onClick={() => setOpen(true)}

@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import { AnimeRow } from "@/components/AnimeRow";
 import { HeroSlider } from "@/components/HeroSlider";
 import { Reveal } from "@/components/Reveal";
+import { getActiveBlocks } from "@/lib/admin/content";
 import { getTitleDetail, row } from "@/lib/kodik";
 import { mangaRow, type MangaSort } from "@/lib/mangadex";
 import { DonateWidget } from "@/components/DonateWidget";
@@ -40,19 +41,89 @@ const HERO_SLIDES = [
 ];
 
 async function Hero() {
+  // Блоки из панели «Контент» добавляются к зашитым слайдам. Раньше слайды
+  // жили только в коде, а `getActiveBlocks` просто не был вызван нигде —
+  // редактор в панели менял флаг в базе, а на сайте ничего не менялось.
+  const extra = await getActiveBlocks("hero_slide")
+    .then((blocks) =>
+      blocks.flatMap((block) => {
+        // Ссылка админа вида «/title/serial-56366» → id тайтла для Kodik
+        const match = /^(\/(?:title|manga)\/[^/]+)/.exec(block.payload.link ?? "");
+        const id = match ? (match[1].split("/").pop() ?? "") : "";
+        return id ? [{ id, video: block.payload.video ?? "" }] : [];
+      }),
+    )
+    .catch(() => []);
+
+  const slides = [...HERO_SLIDES, ...extra];
+
   // Ошибка Kodik не должна ронять главную — гасим её до конструирования JSX
-  const details = await Promise.all(HERO_SLIDES.map((s) => getTitleDetail(s.id))).catch(
+  const details = await Promise.all(slides.map((s) => getTitleDetail(s.id))).catch(
     () => null,
   );
   if (!details) return null;
 
-  // Порядок сохраняется: details[i] <-> HERO_SLIDES[i]
+  // Порядок сохраняется: details[i] <-> slides[i]
   const items = details.flatMap((d, i) =>
-    d ? [{ ...d.card, heroVideo: HERO_SLIDES[i].video }] : [],
+    d ? [{ ...d.card, heroVideo: slides[i].video }] : [],
   );
   if (!items.length) return null;
 
   return <HeroSlider items={items} />;
+}
+
+/**
+ * Объявления и баннеры из панели «Контент».
+ *
+ * Если ничего не пришло — не рендерим ничего: пустые отступы от отсутствия
+ * блоков на главной выглядят как поломка вёрстки.
+ */
+async function SiteBanners() {
+  const [notices, banners] = await Promise.all([
+    getActiveBlocks("notice").catch(() => []),
+    getActiveBlocks("banner").catch(() => []),
+  ]);
+
+  if (!notices.length && !banners.length) return null;
+
+  return (
+    <>
+      {notices.map((block) => (
+        <div key={block.id} className="mx-auto w-full max-w-7xl px-4 pt-6 sm:px-6">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-xl border border-gold/30 bg-gold/10 px-4 py-3 text-sm text-gold">
+            <span className="font-extrabold">{block.payload.title}</span>
+            {block.payload.text ? (
+              <span className="text-gold/80">{block.payload.text}</span>
+            ) : null}
+            {block.payload.link ? (
+              <a href={block.payload.link} className="ml-auto underline hover:opacity-80">
+                Подробнее
+              </a>
+            ) : null}
+          </div>
+        </div>
+      ))}
+
+      {banners.map((block) => (
+        <div key={block.id} className="mx-auto w-full max-w-7xl px-4 pt-8 sm:px-6">
+          <a
+            href={block.payload.link}
+            className="flex items-center justify-between gap-4 rounded-2xl border border-accent/30 bg-accent/10 px-5 py-4 transition hover:border-accent/60"
+          >
+            <span>
+              <span className="block font-bold">{block.payload.title}</span>
+              {block.payload.description ? (
+                <span className="mt-0.5 block text-sm text-white/60">
+                  {block.payload.description}
+                </span>
+              ) : null}
+            </span>
+            <span className="shrink-0 text-sm text-accent-2">→</span>
+          </a>
+        </div>
+      ))}
+    </>
+  );
 }
 
 async function RowSection({
@@ -60,16 +131,27 @@ async function RowSection({
   params,
   href,
   accent = false,
+  priorityCount = 0,
 }: {
   title: string;
   params: Record<string, string | number | undefined>;
   href?: string;
   accent?: boolean;
+  /** Сколько первых карточек грузить сразу — см. AnimeRow.priorityCount. */
+  priorityCount?: number;
 }) {
   // Ошибка Kodik не должна ронять главную: гасим её до конструирования JSX
   const cards = await row(title, params).catch(() => null);
   if (!cards) return null;
-  return <AnimeRow title={title} cards={cards} href={href} accent={accent} />;
+  return (
+    <AnimeRow
+      title={title}
+      cards={cards}
+      href={href}
+      accent={accent}
+      priorityCount={priorityCount}
+    />
+  );
 }
 
 function RowSkeleton({ title }: { title: string }) {
@@ -118,6 +200,12 @@ export default function HomePage() {
         <Hero />
       </Suspense>
 
+      {/* Объявления и баннеры из панели «Контент». Ошибка чтения не должна
+          ронять главную, поэтому компонент гасит её сам и возвращает null. */}
+      <Suspense fallback={null}>
+        <SiteBanners />
+      </Suspense>
+
       <div className="mx-auto max-w-7xl space-y-14 px-4 pb-6 pt-12 sm:px-6 sm:pt-16">
         {/* Два виджета под плеером (донат + «Боевой пропуск») — iframe с
             копией HTML-файла; прозрачный фон + container-type, чтобы рамки
@@ -136,6 +224,11 @@ export default function HomePage() {
             title="Онгоинги"
             accent
             href="/catalog?status=ongoing"
+            // Первый ряд — единственный, чьи постеры попадают в первый
+            // экран. Остальные пять рядов грузятся лениво: раньше все шесть
+            // тянули по четыре картинки с fetchpriority=high, и браузер
+            // упирался в 24 загрузки вместо того, чтобы показать видимое.
+            priorityCount={2}
             params={{
               types: "anime,anime-serial",
               anime_status: "ongoing",

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { requireFeature } from "@/lib/features";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { BattlePassView } from "@/components/BattlePassView";
 import { BATTLEPASS } from "@/lib/battlepass/config";
@@ -46,7 +47,9 @@ const FAQ = [
 
 /* ------------------------------- Страница ------------------------------- */
 
-export default function BattlePassPage() {
+export default async function BattlePassPage() {
+  // Тумблер «battlePass» в панели «Настройки». Выключенная механика — 404.
+  await requireFeature("battlePass");
   return (
     <div className="relative overflow-hidden">
       {/* Фоновое свечение — как на /premium и /donate */}

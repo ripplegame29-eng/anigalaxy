@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { openBonusDialog } from "@/lib/bonus-dialog";
+import type { FeatureKey } from "@/lib/features";
 import { AccountCard, AccountMenu, MenuItem, useAccountItems } from "./AccountMenu";
 import { useAccount } from "@/lib/use-account";
 import { HeaderIconButton } from "./HeaderIconButton";
@@ -14,15 +15,28 @@ import { SearchBox } from "./SearchBox";
 interface NavItem {
   href: string;
   label: string;
+  /** Пункт скрывается, если выключен соответствующий флаг в панели */
+  feature?: FeatureKey;
 }
 
 const NAV: NavItem[] = [
   { href: "/", label: "Главная" },
   { href: "/catalog", label: "Каталог" },
   { href: "/catalog?status=ongoing", label: "Онгоинги" },
-  { href: "/manga", label: "Манга" },
+  { href: "/manga", label: "Манга", feature: "manga" },
   { href: "/catalog?sort=rating", label: "Топ" },
 ];
+
+/**
+ * Флаги приходят из layout (серверный компонент): читать базу из клиентского
+ * кода нельзя. Если проп не передан — показываем всё: лишний пункт меня
+ * лучше, чем навигация, молча потерявшая разделы.
+ */
+export type FeatureFlags = Partial<Record<FeatureKey, boolean>>;
+
+function visible(items: NavItem[], features?: FeatureFlags): NavItem[] {
+  return items.filter((item) => !item.feature || features?.[item.feature] !== false);
+}
 
 /** Иконка короны для кнопки PREMIUM */
 function CrownIcon({ className = "h-4 w-4" }: { className?: string }) {
@@ -103,7 +117,7 @@ function GiftIcon({ className = "h-[18px] w-[18px]" }: { className?: string }) {
  * Пока пользователь вверху страницы — фон почти прозрачный (видео слайдера
  * видно сквозь стекло), после прокрутки стекло уплотняется.
  */
-export function Header() {
+export function Header({ features }: { features?: FeatureFlags }) {
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -177,7 +191,7 @@ export function Header() {
 
         {/* Десктопная навигация */}
         <nav className="hidden items-center gap-1 md:flex" aria-label="Основная навигация">
-          {NAV.map((item) => (
+          {visible(NAV, features).map((item) => (
             <Link
               key={item.href}
               href={item.href}
@@ -204,23 +218,27 @@ export function Header() {
               с клавиатуры) — маленькое окошко с описанием. Начиная с lg,
               чтобы на md не сжимать поиск до нуля */}
           <div className="hidden items-center gap-2 lg:flex">
-            <HeaderIconButton
-              href="/battlepass"
-              label="Боевой пропуск"
-              hint="Сезонные награды, задания и уровни"
-              ariaLabel="Боевой пропуск"
-            >
-              <ShieldIcon />
-            </HeaderIconButton>
+            {features?.battlePass !== false ? (
+              <HeaderIconButton
+                href="/battlepass"
+                label="Боевой пропуск"
+                hint="Сезонные награды, задания и уровни"
+                ariaLabel="Боевой пропуск"
+              >
+                <ShieldIcon />
+              </HeaderIconButton>
+            ) : null}
 
-            <HeaderIconButton
-              href="/watch-together"
-              label="Совместный просмотр"
-              hint="Смотрите аниме вместе с друзьями в реальном времени"
-              ariaLabel="Совместный просмотр"
-            >
-              <TogetherIcon />
-            </HeaderIconButton>
+            {features?.watchTogether !== false ? (
+              <HeaderIconButton
+                href="/watch-together"
+                label="Совместный просмотр"
+                hint="Смотрите аниме вместе с друзьями в реальном времени"
+                ariaLabel="Совместный просмотр"
+              >
+                <TogetherIcon />
+              </HeaderIconButton>
+            ) : null}
 
             <HeaderIconButton
               label="Ежедневный бонус"
@@ -232,15 +250,17 @@ export function Header() {
             </HeaderIconButton>
           </div>
 
-          <Link
-            href="/premium"
-            aria-label="Premium-подписка"
-            className="btn-premium glow-ring"
-            aria-current={isActive("/premium") ? "page" : undefined}
-          >
-            <CrownIcon />
-            Premium
-          </Link>
+          {features?.premium !== false ? (
+            <Link
+              href="/premium"
+              aria-label="Premium-подписка"
+              className="btn-premium glow-ring"
+              aria-current={isActive("/premium") ? "page" : undefined}
+            >
+              <CrownIcon />
+              Premium
+            </Link>
+          ) : null}
           <AccountMenu />
         </div>
 
@@ -338,7 +358,7 @@ export function Header() {
                 Разделы
               </p>
               <nav className="grid gap-0.5 px-2" aria-label="Разделы сайта">
-                {NAV.map((item) => (
+                {visible(NAV, features).map((item) => (
                   <Link
                     key={item.href}
                     href={item.href}
@@ -356,25 +376,29 @@ export function Header() {
                 {/* Кланы — раздел первого класса, но в шапке его нет:
                     кнопка живёт рядом с чатом. В меню он нужен, иначе
                     с телефона до него не дойти */}
-                <Link
-                  href="/clans"
-                  onClick={closeMenu}
-                  aria-current={isActive("/clans") ? "page" : undefined}
-                  className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors ${
-                    isActive("/clans")
-                      ? "bg-accent/15 text-white ring-1 ring-accent/30"
-                      : "text-[#c6c6cb] hover:bg-white/6 hover:text-white"
-                  }`}
-                >
-                  Кланы
-                </Link>
-                <Link
-                  href="/battlepass"
-                  onClick={closeMenu}
-                  className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-[#c6c6cb] transition-colors hover:bg-white/6 hover:text-white"
-                >
-                  Боевой пропуск
-                </Link>
+                {features?.clans !== false ? (
+                  <Link
+                    href="/clans"
+                    onClick={closeMenu}
+                    aria-current={isActive("/clans") ? "page" : undefined}
+                    className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors ${
+                      isActive("/clans")
+                        ? "bg-accent/15 text-white ring-1 ring-accent/30"
+                        : "text-[#c6c6cb] hover:bg-white/6 hover:text-white"
+                    }`}
+                  >
+                    Кланы
+                  </Link>
+                ) : null}
+                {features?.battlePass !== false ? (
+                  <Link
+                    href="/battlepass"
+                    onClick={closeMenu}
+                    className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-[#c6c6cb] transition-colors hover:bg-white/6 hover:text-white"
+                  >
+                    Боевой пропуск
+                  </Link>
+                ) : null}
                 <Link
                   href="/watch-together"
                   onClick={closeMenu}

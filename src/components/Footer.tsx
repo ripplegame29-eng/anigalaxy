@@ -1,4 +1,7 @@
 import Link from "next/link";
+
+import { AdminFooterLink } from "./AdminFooterLink";
+import type { FeatureKey } from "@/lib/features";
 import { Logo } from "./Logo";
 
 const GENRES = [
@@ -16,14 +19,14 @@ const NAV = [
   { href: "/", label: "Главная" },
   { href: "/catalog", label: "Каталог аниме" },
   { href: "/catalog?status=ongoing", label: "Онгоинги" },
-  { href: "/manga", label: "Каталог манги" },
-  { href: "/clans", label: "Кланы" },
+  { href: "/manga", label: "Каталог манги", feature: "manga" as const },
+  { href: "/clans", label: "Кланы", feature: "clans" as const },
   { href: "/catalog?sort=rating", label: "Топ рейтинга" },
   { href: "/catalog?type=movie", label: "Аниме-фильмы" },
-  { href: "/premium", label: "Premium-подписка" },
+  { href: "/premium", label: "Premium-подписка", feature: "premium" as const },
 ];
 
-export function Footer() {
+export function Footer({ features }: { features?: Partial<Record<FeatureKey, boolean>> }) {
   return (
     <footer className="relative z-[1] mt-20 border-t border-line bg-ink-soft/80">
       <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6">
@@ -52,7 +55,7 @@ export function Footer() {
               Навигация
             </h3>
             <ul className="space-y-2.5">
-              {NAV.map((item) => (
+              {NAV.filter((item) => !item.feature || features?.[item.feature] !== false).map((item) => (
                 <li key={item.href}>
                   <Link
                     href={item.href}
@@ -85,8 +88,13 @@ export function Footer() {
         </div>
 
         <div className="mt-12 flex flex-col gap-3 border-t border-line pt-6 text-xs text-muted/85 sm:flex-row sm:items-center sm:justify-between">
-          <p>© {new Date().getFullYear()} AniGalaxy. Все права на контент принадлежат правообладателям.</p>
-          <p>Видео предоставляется сторонними сервисами хранения.</p>
+          <div className="space-y-2">
+            <p>© {new Date().getFullYear()} AniGalaxy. Все права на контент принадлежат правообладателям.</p>
+            <p>Видео предоставляется сторонними сервисами хранения.</p>
+          </div>
+          {/* Ссылка рендерится только для тех, у кого есть серверная сессия
+              с правом `panel`. Неавторизованным — пусто. */}
+          <AdminFooterLink />
         </div>
       </div>
     </footer>

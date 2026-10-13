@@ -4,6 +4,7 @@ import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { AnimeGrid } from "@/components/AnimeRow";
 import { Reveal } from "@/components/Reveal";
 import { mangaCatalogPage, type MangaSort } from "@/lib/mangadex";
+import { requireFeature } from "@/lib/features";
 
 export const metadata: Metadata = {
   title: "Каталог манги",
@@ -37,6 +38,10 @@ function plural(n: number, one: string, few: string, many: string): string {
 }
 
 export default async function MangaCatalogPage({ searchParams }: PageProps) {
+  // Тумблер «manga» в панели «Настройки»: раздел можно снять целиком, если
+  // MangaDex ляжет или контент временно не нужен.
+  await requireFeature("manga");
+
   const sp = await searchParams;
   const sort: MangaSort = sp.sort === "best" ? "best" : "hot";
   // Запрос держим в URL: ссылку с поиском можно переслать, кнопка «назад»
@@ -172,7 +177,7 @@ export default async function MangaCatalogPage({ searchParams }: PageProps) {
 
       {cards.length > 0 ? (
         <Reveal>
-          <AnimeGrid cards={cards} />
+          <AnimeGrid cards={cards} priorityCount={4} />
         </Reveal>
       ) : query ? (
         <div className="rounded-2xl bg-white/4 px-4 py-12 text-center ring-1 ring-white/10">
