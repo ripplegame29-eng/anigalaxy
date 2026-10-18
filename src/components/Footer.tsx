@@ -21,6 +21,7 @@ const NAV = [
   { href: "/catalog?status=ongoing", label: "Онгоинги" },
   { href: "/manga", label: "Каталог манги", feature: "manga" as const },
   { href: "/clans", label: "Кланы", feature: "clans" as const },
+  { href: "/releases", label: "Календарь релизов", feature: "releases" as const },
   { href: "/catalog?sort=rating", label: "Топ рейтинга" },
   { href: "/catalog?type=movie", label: "Аниме-фильмы" },
   { href: "/premium", label: "Premium-подписка", feature: "premium" as const },

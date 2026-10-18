@@ -26,6 +26,8 @@ export const FEATURE_KEYS = [
   "premium",
   "chat",
   "manga",
+  /** Календарь релизов */
+  "releases",
   "adminPanel",
 ] as const;
 

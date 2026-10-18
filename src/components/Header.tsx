@@ -25,6 +25,7 @@ const NAV: NavItem[] = [
   { href: "/catalog?status=ongoing", label: "Онгоинги" },
   { href: "/manga", label: "Манга", feature: "manga" },
   { href: "/catalog?sort=rating", label: "Топ" },
+  { href: "/releases", label: "Релизы", feature: "releases" as const },
 ];
 
 /**

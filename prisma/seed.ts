@@ -13,6 +13,7 @@ import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
 import { PrismaClient } from "@prisma/client";
 import { hash } from "@node-rs/argon2";
 import { isAbsolute, join } from "node:path";
+import { seedReleases } from "../src/lib/admin/releases-data";
 
 const adapter = new PrismaBetterSqlite3({
   url: resolveDatabaseUrl(process.env.DATABASE_URL ?? "file:./dev.db"),
@@ -46,6 +47,11 @@ const DEFAULT_FLAGS = [
   { key: "premium", enabled: true, description: "Платная подписка" },
   { key: "chat", enabled: true, description: "Виджет чата" },
   { key: "manga", enabled: true, description: "Раздел манги" },
+  {
+    key: "releases",
+    enabled: true,
+    description: "Календарь предстоящих релизов (/releases)",
+  },
   { key: "adminPanel", enabled: true, description: "Админ-панель" },
 ];
 
@@ -137,6 +143,10 @@ async function main() {
       update: {}, // настройки редактируются в панели — seed их не затирает
     });
   }
+
+
+  // Расписание релизов для /releases. Не перетирает правки панели.
+  const addedReleases = await seedReleases(db);
 
   const counts = {
     пользователей: await db.user.count(),

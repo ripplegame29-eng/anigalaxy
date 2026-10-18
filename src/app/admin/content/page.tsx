@@ -3,19 +3,24 @@ import { db } from "@/lib/db";
 import { requirePermission } from "@/lib/require-admin";
 
 import { BlockRow, CreateBlockForm } from "./content-controls";
+import { CreateReleaseForm, ReleaseRow } from "./release-controls";
 
 export const metadata = { title: "Контент — панель AniGalaxy" };
 
 async function loadBlocks() {
-  return {
-    blocks: await db.contentBlock.findMany({ orderBy: [{ kind: "asc" }, { sortOrder: "asc" }] }),
-    count: await db.contentBlock.count(),
-  };
+  const [blocks, releases] = await Promise.all([
+    db.contentBlock.findMany({ orderBy: [{ kind: "asc" }, { sortOrder: "asc" }] }),
+    // Расписание календаря релизов живёт в том же разделе по смыслу: это
+    // контент, который видно на витрине.
+    db.release.findMany({ orderBy: [{ day: "asc" }, { time: "asc" }] }),
+  ]);
+
+  return { blocks, releases, count: blocks.length };
 }
 
 export default async function AdminContentPage() {
   await requirePermission("content", "/admin/content");
-  const { blocks, count } = await loadBlocks();
+  const { blocks, releases, count } = await loadBlocks();
 
   const live = blocks.filter((b) => b.enabled).length;
 
@@ -98,6 +103,53 @@ export default async function AdminContentPage() {
         Подсказка по полям берётся из того же описания, что проверяет сервер при
         сохранении: {Object.values(CONTENT_KINDS).length} типа блока.
       </p>
+
+      {/* --------------------------- Релизы ------------------------------ */}
+      <section className="ag-section" style={{ marginTop: 40 }}>
+        <div>
+          <h2 className="ag-h2">Календарь релизов</h2>
+          <p className="ag-sub">
+            Расписание для страницы <span className="ag-code">/releases</span>. Всего в
+            расписании {releases.length}, из них в публикации{" "}
+            {releases.filter((r) => r.enabled).length}. Выход повторяется каждую
+            неделю, поэтому у серии есть день и время, а не конкретная дата.
+          </p>
+        </div>
+
+        <CreateReleaseForm />
+
+        {releases.length === 0 ? (
+          <div className="ag-box">
+            <div className="ag-empty">
+              Расписание пустое. Добавьте первую серию формой выше — страница
+              покажет заглушку, пока в базе нет ни одной записи.
+            </div>
+          </div>
+        ) : (
+          <ul
+            className="ag-section"
+            style={{ listStyle: "none", margin: 0, padding: 0, gap: 12 }}
+          >
+            {releases.map((r) => (
+              <ReleaseRow
+                key={r.id}
+                id={r.id}
+                title={r.title}
+                studio={r.studio}
+                day={r.day}
+                time={r.time}
+                episodes={r.episodes}
+                rating={r.rating}
+                isNew={r.isNew}
+                genres={r.genres}
+                poster={r.poster}
+                banner={r.banner}
+                enabled={r.enabled}
+              />
+            ))}
+          </ul>
+        )}
+      </section>
     </div>
   );
 }
