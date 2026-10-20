@@ -3,6 +3,22 @@ import crypto from "node:crypto";
 
 export const runtime = "nodejs";
 
+const RATE_LIMIT_WINDOW_MS = 60_000;
+const RATE_LIMIT_MAX = 10;
+const attempts = new Map<string, { count: number; resetAt: number }>();
+
+function rateLimit(ip: string): boolean {
+  const now = Date.now();
+  const entry = attempts.get(ip);
+  if (!entry || entry.resetAt <= now) {
+    attempts.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
+    return true;
+  }
+  if (entry.count >= RATE_LIMIT_MAX) return false;
+  entry.count += 1;
+  return true;
+}
+
 interface TelegramUser {
   id: number;
   first_name?: string;
@@ -13,11 +29,23 @@ interface TelegramUser {
   hash: string;
 }
 
+function isTelegramUser(value: unknown): value is TelegramUser {
+  if (!value || typeof value !== "object") return false;
+  const user = value as Record<string, unknown>;
+  return (
+    typeof user.id === "number" &&
+    Number.isFinite(user.id) &&
+    typeof user.auth_date === "number" &&
+    Number.isFinite(user.auth_date) &&
+    typeof user.hash === "string" &&
+    user.hash.length > 0
+  );
+}
+
 function verifyTelegramUser(user: TelegramUser, botToken: string): boolean {
   const { hash, ...rest } = user;
   if (!hash || !rest.auth_date) return false;
 
-  // Защита от старых/поддельных ответов: не старше суток
   const now = Math.floor(Date.now() / 1000);
   if (Math.abs(now - rest.auth_date) > 86400) return false;
 
@@ -37,35 +65,40 @@ function verifyTelegramUser(user: TelegramUser, botToken: string): boolean {
 }
 
 export async function POST(request: NextRequest) {
+  const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+  if (!rateLimit(ip)) {
+    return NextResponse.json({ ok: false, error: "Too many requests" }, { status: 429 });
+  }
+
   const botToken = process.env.TELEGRAM_BOT_TOKEN;
   if (!botToken) {
     return NextResponse.json({ ok: false, error: "Telegram bot token is not configured" }, { status: 500 });
   }
 
-  let user: TelegramUser;
+  let body: unknown;
   try {
-    user = (await request.json()) as TelegramUser;
+    body = await request.json();
   } catch {
     return NextResponse.json({ ok: false, error: "Invalid request body" }, { status: 400 });
   }
 
-  if (!user?.id || !user?.hash || !user?.auth_date) {
+  if (!isTelegramUser(body)) {
     return NextResponse.json({ ok: false, error: "Incomplete Telegram data" }, { status: 400 });
   }
 
-  if (!verifyTelegramUser(user, botToken)) {
+  if (!verifyTelegramUser(body, botToken)) {
     return NextResponse.json({ ok: false, error: "Invalid Telegram signature" }, { status: 403 });
   }
 
-  const nickname = (user.username || user.first_name || `tg_${user.id}`).trim();
+  const nickname = (body.username || body.first_name || `tg_${body.id}`).trim();
   return NextResponse.json({
     ok: true,
     telegram: {
-      id: user.id,
-      username: user.username ?? null,
-      firstName: user.first_name ?? null,
-      lastName: user.last_name ?? null,
-      photoUrl: user.photo_url ?? null,
+      id: body.id,
+      username: body.username ?? null,
+      firstName: body.first_name ?? null,
+      lastName: body.last_name ?? null,
+      photoUrl: body.photo_url ?? null,
     },
     nickname,
   });
