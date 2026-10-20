@@ -73,7 +73,7 @@
     defsAdded = true;
     var d = document.createElement('div');
     d.className = 'pm-root';
-    d.innerHTML = '<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><linearGradient id="pm-xg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#38c8ff"/><stop offset="1" stop-color="#8a5cff"/></linearGradient></defs></svg>';
+    d.innerHTML = '<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><linearGradient id="pm-xg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#38c8ff"/><stop offset="1" stop-color="#2b7fff"/></linearGradient></defs></svg>';
     document.body.appendChild(d);
   }
 
