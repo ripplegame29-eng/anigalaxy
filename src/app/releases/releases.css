@@ -351,8 +351,8 @@
   .rl .shn:hover{background-position:-30% 0}
   /* стрелки недели «подталкивают» символ */
   .rl .ar{display:inline-block}
-  .rl #prev:hover .ar{animation:nudgeL .55s ease-in-out infinite alternate}
-  .rl #next:hover .ar{animation:nudgeR .55s ease-in-out infinite alternate}
+  .rl .nav-prev:hover .ar{animation:nudgeL .55s ease-in-out infinite alternate}
+  .rl .nav-next:hover .ar{animation:nudgeR .55s ease-in-out infinite alternate}
   @keyframes nudgeL{to{transform:translateX(-4px)}}
   @keyframes nudgeR{to{transform:translateX(4px)}}
   /* RGB-глитч текста при наведении (один раз за заход) */

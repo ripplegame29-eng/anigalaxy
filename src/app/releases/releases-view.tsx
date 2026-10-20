@@ -146,6 +146,7 @@ function subscribeFavs(onChange: () => void): () => void {
 }
 
 export function ReleasesView({ items }: { items: ReleaseItem[] }) {
+  const rootRef = useRef<HTMLDivElement | null>(null);
   const [weekOffset, setWeekOffset] = useState(0);
   const [day, setDay] = useState(() => (new Date().getDay() + 6) % 7);
   const [filter, setFilter] = useState<Filter>("all");
@@ -160,10 +161,40 @@ export function ReleasesView({ items }: { items: ReleaseItem[] }) {
   // при гидрации не расходится.
   const favs = useSyncExternalStore(subscribeFavs, readFavs, () => EMPTY);
 
-  const toggleFav = useCallback((id: string) => {
-    const prev = readFavs();
-    writeFavs(prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]);
+  /* Искры из макета: сноп звёздочек из места клика по «в избранное».
+   * Элементы фиксированы относительно окна, поэтому позиция родителя
+   * не важна — важно, чтобы они жили под скоупом .rl для CSS. */
+  const burst = useCallback((x: number, y: number) => {
+    const root = rootRef.current;
+    if (!root) return;
+    const colors = ["#ff2bd6", "#22d3ee", "#a78bfa"];
+    for (let k = 0; k < 10; k += 1) {
+      const s = document.createElement("span");
+      s.className = "spark";
+      s.textContent = k % 2 ? "✦" : "✧";
+      s.style.color = colors[k % 3];
+      const angle = Math.random() * Math.PI * 2;
+      const radius = 30 + Math.random() * 40;
+      s.style.left = `${x}px`;
+      s.style.top = `${y}px`;
+      s.style.setProperty("--dx", `${Math.cos(angle) * radius}px`);
+      s.style.setProperty("--dy", `${Math.sin(angle) * radius}px`);
+      root.appendChild(s);
+      setTimeout(() => s.remove(), 800);
+    }
   }, []);
+
+  const toggleFav = useCallback(
+    (id: string, at?: { x: number; y: number }) => {
+      const prev = readFavs();
+      const added = !prev.includes(id);
+      // Искры — только при добавлении: при снятии сообщения не несут.
+      if (added && at) burst(at.x, at.y);
+      writeFavs(added ? [...prev, id] : prev.filter((x) => x !== id));
+    },
+    [burst],
+  );
+
 
   // Сейчас считается один раз на монтирование: Date.now() в теле рендера —
   // impure-вызов, из-за которого значения прыгали бы между рендерами.
@@ -271,6 +302,78 @@ export function ReleasesView({ items }: { items: ReleaseItem[] }) {
     if (navTimer.current) clearTimeout(navTimer.current);
   }, []);
 
+  /* --------------------- поведение из макета (DOM) ----------------------
+   * Три фишки макета — магнитные кнопки, волна от нажатия и редкие «сбои»
+   * случайной карточки — это мимолётные классы-эффекты, а не настоящая
+   * разметка. Правим их напрямую в DOM: React не обязан перерисовывать
+   * страницу каждые 3.5 секунды из-за магнита или волны.
+   */
+  useEffect(() => {
+    const root = rootRef.current;
+    if (!root) return;
+    const reduced = Boolean(
+      window.matchMedia?.("(prefers-reduced-motion: reduce)").matches,
+    );
+
+    /* Магнитное притяжение кнопок (.fx.mag) к курсору. */
+    const onMove = (e: MouseEvent) => {
+      const el = (e.target as Element | null)?.closest?.(".mag") as HTMLElement | null;
+      if (!el || !root.contains(el)) return;
+      const r = el.getBoundingClientRect();
+      el.style.setProperty("--bx", `${((e.clientX - r.left - r.width / 2) * 0.18).toFixed(1)}px`);
+      el.style.setProperty("--by", `${((e.clientY - r.top - r.height / 2) * 0.28).toFixed(1)}px`);
+    };
+    const onLeave = (e: MouseEvent) => {
+      const el = (e.target as Element | null)?.closest?.(".mag") as HTMLElement | null;
+      if (!el || !root.contains(el) || el.contains(e.relatedTarget as Node)) return;
+      el.style.setProperty("--bx", "0px");
+      el.style.setProperty("--by", "0px");
+    };
+
+    /* Волна от места нажатия: на кнопках, днях и сегментах. */
+    const onClick = (e: MouseEvent) => {
+      const el = (e.target as Element | null)?.closest?.(".fx, .day, .seg button");
+      if (!el || !root.contains(el)) return;
+      const r = el.getBoundingClientRect();
+      const size = Math.max(r.width, r.height) * 2;
+      const x = e.detail === 0 ? r.width / 2 : e.clientX - r.left;
+      const y = e.detail === 0 ? r.height / 2 : e.clientY - r.top;
+      const wave = document.createElement("span");
+      wave.className = "ripple";
+      wave.style.width = `${size}px`;
+      wave.style.height = `${size}px`;
+      wave.style.left = `${x - size / 2}px`;
+      wave.style.top = `${y - size / 2}px`;
+      el.appendChild(wave);
+      setTimeout(() => wave.remove(), 700);
+    };
+
+    document.addEventListener("mousemove", onMove);
+    document.addEventListener("mouseout", onLeave);
+    root.addEventListener("click", onClick);
+
+    /* Редкий «сбой» картинки у случайной карточки — короткий RGB-срез. */
+    let glitch: ReturnType<typeof setInterval> | null = null;
+    if (!reduced) {
+      glitch = setInterval(() => {
+        if (document.hidden) return;
+        const cards = root.querySelectorAll<HTMLElement>(".grid .card");
+        if (!cards.length) return;
+        const card = cards[Math.floor(Math.random() * cards.length)];
+        card.classList.add("glitching");
+        setTimeout(() => card.classList.remove("glitching"), 600);
+      }, 3500);
+    }
+
+    return () => {
+      document.removeEventListener("mousemove", onMove);
+      document.removeEventListener("mouseout", onLeave);
+      root.removeEventListener("click", onClick);
+      if (glitch) clearInterval(glitch);
+    };
+  }, []);
+
+
   const changeDay = (next: number) => {
     setDay(next);
     setView("day");
@@ -310,7 +413,9 @@ export function ReleasesView({ items }: { items: ReleaseItem[] }) {
   ];
 
   return (
-    <>
+    // Единая обёртка-«якорь» для DOM-эффектов наведения и случайного сбоя:
+    // все события ниже крутятся вокруг одного корневого узла.
+    <div ref={rootRef}>
       <div className="crumbs">Главная / <b>Календарь релизов</b></div>
 
       {/* ------------------------- верхняя сцена ------------------------ */}
@@ -392,7 +497,7 @@ export function ReleasesView({ items }: { items: ReleaseItem[] }) {
               <button
                 type="button"
                 className={`btn ghost fx nb${favOf(current.item.id) ? " on" : ""}`}
-                onClick={() => toggleFav(current.item.id)}
+                onClick={(e) => toggleFav(current.item.id, { x: e.clientX, y: e.clientY })}
               >
                 {favOf(current.item.id) ? "♥ В избранном" : "♡ В избранное"}
               </button>
@@ -445,24 +550,24 @@ export function ReleasesView({ items }: { items: ReleaseItem[] }) {
         <div className="weeknav">
           <button
             type="button"
-            className="btn ghost"
+            className="btn ghost fx nb shn mag nav-prev"
             onClick={() => setWeekOffset((w) => w - 1)}
             aria-label="Предыдущая неделя"
           >
-            ‹
+            <span className="ar">‹</span>
           </button>
           <span className="weeklabel">{weekLabel}</span>
           <button
             type="button"
-            className="btn ghost"
+            className="btn ghost fx nb shn mag nav-next"
             onClick={() => setWeekOffset((w) => w + 1)}
             aria-label="Следующая неделя"
           >
-            ›
+            <span className="ar">›</span>
           </button>
           {weekOffset !== 0 ? (
-            <button type="button" className="btn ghost" onClick={() => setWeekOffset(0)}>
-              Сегодня
+            <button type="button" className="btn ghost fx nb shn mag gl" onClick={() => setWeekOffset(0)}>
+              <span className="gt" data-text="Сегодня">Сегодня</span>
             </button>
           ) : null}
         </div>
@@ -473,10 +578,10 @@ export function ReleasesView({ items }: { items: ReleaseItem[] }) {
               <button
                 key={f.key}
                 type="button"
-                className={filter === f.key ? "on" : ""}
+                className={`gl${filter === f.key ? " on" : ""}`}
                 onClick={() => setFilter(f.key)}
               >
-                {f.label}
+                <span className="gt" data-text={f.label}>{f.label}</span>
               </button>
             ))}
           </div>
@@ -486,10 +591,10 @@ export function ReleasesView({ items }: { items: ReleaseItem[] }) {
               <button
                 key={v.key}
                 type="button"
-                className={view === v.key ? "on" : ""}
+                className={`gl${view === v.key ? " on" : ""}`}
                 onClick={() => setView(v.key)}
               >
-                {v.label}
+                <span className="gt" data-text={v.label}>{v.label}</span>
               </button>
             ))}
           </div>
@@ -625,7 +730,7 @@ export function ReleasesView({ items }: { items: ReleaseItem[] }) {
         Расписание повторяется каждую неделю: день и время выхода, а не конкретные
         даты. Обновляется из панели управления, раздел «Контент».
       </p>
-    </>
+    </div>
   );
 }
 
@@ -640,7 +745,7 @@ function Card({
   item: ReleaseItem;
   weekStart: Date;
   fav: boolean;
-  onFav: (id: string) => void;
+  onFav: (id: string, at?: { x: number; y: number }) => void;
 }) {
   const st = statusOf(item, weekStart);
   const hot = isHot(item, weekStart);
@@ -664,7 +769,7 @@ function Card({
         <button
           type="button"
           className={`fav${fav ? " on" : ""}`}
-          onClick={() => onFav(item.id)}
+          onClick={(e) => onFav(item.id, { x: e.clientX, y: e.clientY })}
           aria-label={fav ? "Убрать из избранного" : "В избранное"}
         >
           {fav ? "♥" : "♡"}
@@ -696,7 +801,7 @@ function Row({
   item: ReleaseItem;
   weekStart: Date;
   fav: boolean;
-  onFav: (id: string) => void;
+  onFav: (id: string, at?: { x: number; y: number }) => void;
 }) {
   const st = statusOf(item, weekStart);
 
@@ -718,7 +823,7 @@ function Row({
       <button
         type="button"
         className={`row-fav${fav ? " on" : ""}`}
-        onClick={() => onFav(item.id)}
+        onClick={(e) => onFav(item.id, { x: e.clientX, y: e.clientY })}
         aria-label={fav ? "Убрать из избранного" : "В избранное"}
       >
         {fav ? "♥" : "♡"}
