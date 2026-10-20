@@ -123,7 +123,13 @@ function toCard(item: SenkuManga): AnimeCard {
     rating: item.average_rating ?? item.score ?? undefined,
     kind: undefined,
     status: statusOf(item.status),
-    genres: (item.genres ?? item.tags ?? []).map((g: any) => (typeof g === "string" ? g : g.russian || g.text || g.slug)).filter(Boolean),
+    genres: (item.genres ?? item.tags ?? [])
+      .map((g: unknown) => {
+        if (typeof g === "string") return g;
+        const obj = g as { russian?: string; text?: string; slug?: string } | null;
+        return obj?.russian || obj?.text || obj?.slug || "";
+      })
+      .filter(Boolean),
     manga: true,
     description: item.description,
   };
