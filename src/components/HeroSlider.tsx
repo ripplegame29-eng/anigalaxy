@@ -7,6 +7,7 @@ import { SHADER_CONTRAST, SHADER_STRENGTH, useQuality } from "@/lib/quality";
 import { attachSharpen } from "@/lib/video-shader";
 import type { AnimeCard } from "@/lib/types";
 import { Poster } from "./Poster";
+import { Starfield } from "./Starfield";
 
 const SLIDE_MS = 7000;
 
@@ -140,6 +141,15 @@ export function HeroSlider({ items }: { items: AnimeCard[] }) {
           </div>
         );
       })}
+
+      {/* Звёздная пыль из наброска галактики: тонкий слой поверх кадра.
+       * screen-blend и низкая непрозрачность не спорят с видео и текстом,
+       * а редкие кометы дают намёк на космос без отдельной страницы. */}
+      <Starfield
+        className="absolute inset-0 z-[5] h-full w-full opacity-40 mix-blend-screen"
+        density={0.45}
+        comets
+      />
 
       {/* Контент активного слайда */}
       <div className="relative z-10 mx-auto flex h-full max-w-7xl items-end px-4 pb-24 sm:pb-28 lg:items-center lg:pb-16">

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { requireFeature } from "@/lib/features";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { PremiumLoginNote, PremiumPlans, PromoCode } from "@/components/PremiumPlans";
+import { WarpFlash } from "@/components/WarpFlash";
 
 export const metadata: Metadata = {
   title: "Premium-подписка",
@@ -38,6 +39,8 @@ export default async function PremiumPage() {
   await requireFeature("premium");
   return (
     <div className="relative overflow-hidden">
+      <WarpFlash />
+
       {/* Фоновое свечение */}
       <div
         className="pointer-events-none absolute inset-x-0 top-0 h-[520px] bg-gradient-to-b from-accent/18 via-accent-2/8 to-transparent"
