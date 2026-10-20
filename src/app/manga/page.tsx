@@ -95,7 +95,7 @@ export default async function MangaCatalogPage({ searchParams }: PageProps) {
           ) : cards.length > 0 ? (
             <>
               {page > 1 && <span>{shownFrom}–{shownTo} · </span>}
-              {cards.length} тайтлов с русским переводом — читается прямо на сайте
+              {cards.length} тайтлов с русским переводом — читается прямо на сайте{hasMore && <> · ≈ всего {total}</>}
             </>
           ) : (
             "Каталог временно недоступен — попробуйте позже"

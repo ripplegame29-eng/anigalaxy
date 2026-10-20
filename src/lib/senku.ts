@@ -124,6 +124,7 @@ function toCard(item: SenkuManga): AnimeCard {
     kind: undefined,
     status: statusOf(item.status),
     genres: (item.genres ?? item.tags ?? []).map((g: any) => (typeof g === "string" ? g : g.russian || g.text || g.slug)).filter(Boolean),
+    manga: true,
     description: item.description,
   };
 }
@@ -204,7 +205,14 @@ export async function mangaDetail(id: string): Promise<MangaDetail | null> {
   if (!poster) return null;
 
   const refs = Array.isArray(item.chapters) ? item.chapters : item.chapters?.list ?? [];
-  const chapters: MangaChapter[] = refs.map((chapter) => ({
+  const seenChapters = new Set<string>();
+  const uniqueRefs = refs.filter((chapter) => {
+    const key = chapter.ch || chapter.id;
+    if (seenChapters.has(key)) return false;
+    seenChapters.add(key);
+    return true;
+  });
+  const chapters: MangaChapter[] = uniqueRefs.map((chapter) => ({
     id: chapter.id,
     chapter: chapter.ch || chapter.vol || "",
     volume: chapter.vol,
@@ -226,7 +234,7 @@ export async function mangaDetail(id: string): Promise<MangaDetail | null> {
     id: item.slug || item.id,
     follows: item.bookmarks_count,
     chapters,
-    chaptersTotal: item.chapters_count ?? item.chaptersCount ?? chapters.length,
+    chaptersTotal: uniqueRefs.length,
     chaptersLoaded: chapters.length,
     readable: true,
   };
