@@ -1,0 +1,67 @@
+/* Магазин: премиальный слой. Префикс sp- (не пересекается с ag-/ags-) */
+
+.sp-root { position: relative; isolation: isolate; }
+
+/* ------------------------------ Фон ------------------------------------ */
+.sp-bg { position: fixed; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; }
+.sp-blob { position: absolute; border-radius: 50%; filter: blur(110px); opacity: 0.5; will-change: transform; }
+.sp-b1 { width: 46vw; height: 46vw; max-width: 760px; max-height: 760px; left: -8vw; top: -6vh; background: rgba(var(--accent-rgb), 0.42); animation: sp-drift 18s ease-in-out infinite alternate; }
+.sp-b2 { width: 40vw; height: 40vw; max-width: 680px; max-height: 680px; right: -6vw; top: 18vh; background: rgba(130, 90, 255, 0.3); animation: sp-drift 22s ease-in-out -6s infinite alternate-reverse; }
+.sp-b3 { width: 36vw; height: 36vw; max-width: 600px; max-height: 600px; left: 32vw; bottom: -14vh; background: rgba(0, 200, 255, 0.2); animation: sp-drift 26s ease-in-out -12s infinite alternate; }
+.sp-grid { position: absolute; inset: 0; background-image: linear-gradient(rgba(255,255,255,.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.03) 1px, transparent 1px); background-size: 64px 64px; -webkit-mask-image: radial-gradient(ellipse at 50% 25%, #000, transparent 72%); mask-image: radial-gradient(ellipse at 50% 25%, #000, transparent 72%); }
+.sp-beam { position: absolute; left: 50%; top: -30vh; width: 140vw; height: 90vh; translate: -50% 0; background: conic-gradient(from 180deg at 50% 0%, transparent 35%, rgba(var(--accent-rgb), .16) 46%, transparent 50%, rgba(140,110,255,.12) 55%, transparent 65%); -webkit-mask-image: linear-gradient(#000, transparent 85%); mask-image: linear-gradient(#000, transparent 85%); animation: sp-sway 14s ease-in-out infinite alternate; }
+.sp-sparks { position: absolute; inset: 0; }
+.sp-sparks b { position: absolute; bottom: -10px; left: calc(var(--x) * 1%); width: var(--s); height: var(--s); border-radius: 50%; background: radial-gradient(#fff, rgba(var(--accent-rgb), .8) 40%, transparent 70%); opacity: 0; animation: sp-spark var(--d) linear infinite; animation-delay: var(--w); }
+.sp-stars { position: absolute; inset: 0; background-image:
+  radial-gradient(1.5px 1.5px at 12% 20%, #fff, transparent), radial-gradient(1px 1px at 28% 60%, #9cd4ff, transparent),
+  radial-gradient(1.5px 1.5px at 46% 12%, #fff, transparent), radial-gradient(1px 1px at 63% 44%, #c7b6ff, transparent),
+  radial-gradient(1.5px 1.5px at 80% 26%, #fff, transparent), radial-gradient(1px 1px at 91% 70%, #9cd4ff, transparent),
+  radial-gradient(1px 1px at 36% 86%, #fff, transparent), radial-gradient(1.5px 1.5px at 72% 90%, #fff, transparent);
+  animation: sp-twinkle 5s ease-in-out infinite alternate; }
+
+/* ------------------------------ Герой ---------------------------------- */
+.sp-hero { border-color: transparent !important; background-clip: padding-box; }
+.sp-hero::before { content: ""; position: absolute; inset: 0; border-radius: inherit; padding: 1px; background: conic-gradient(from var(--sp-a, 0deg), transparent 0 55%, rgba(var(--accent-rgb), 0.9) 72%, #7be0ff 86%, #9a7bff 94%, transparent); -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude; animation: sp-border 6s linear infinite; pointer-events: none; }
+.sp-hero::after { content: ""; position: absolute; top: 0; bottom: 0; width: 40%; left: -50%; background: linear-gradient(100deg, transparent, rgba(255,255,255,.07), transparent); transform: skewX(-18deg); animation: sp-sheen 7s ease-in-out infinite; pointer-events: none; }
+.sp-h1 { background: linear-gradient(95deg, #fff 30%, #9cd4ff 60%, #fff 85%); background-size: 220% 100%; -webkit-background-clip: text; background-clip: text; color: transparent !important; animation: sp-text 7s linear infinite; }
+@property --sp-a { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
+
+/* --------------------------- Карточки-секции --------------------------- */
+.sp-card { --mx: 50%; --my: 0%; position: relative; transition: border-color .3s, box-shadow .3s; }
+.sp-card::after { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; background: radial-gradient(380px circle at var(--mx) var(--my), rgba(var(--accent-rgb), 0.14), transparent 65%); opacity: 0; transition: opacity .3s; }
+.sp-card:hover { border-color: rgba(var(--accent-rgb), 0.4); box-shadow: 0 20px 60px -30px rgba(var(--accent-rgb), 0.55); }
+.sp-card:hover::after { opacity: 1; }
+.sp-balance { filter: drop-shadow(0 0 18px rgba(var(--accent-rgb), 0.4)); }
+
+/* ------------------------------ Пакеты AC ------------------------------ */
+.sp-pack { --mx: 50%; --my: 0%; position: relative; overflow: hidden; animation: sp-rise .6s cubic-bezier(.2,.8,.2,1) both; animation-delay: calc(var(--i) * 70ms); transition: transform .35s cubic-bezier(.2,.8,.2,1), border-color .3s, box-shadow .3s; }
+.sp-pack::before { content: ""; position: absolute; inset: 0; pointer-events: none; background: radial-gradient(240px circle at var(--mx) var(--my), rgba(var(--accent-rgb), 0.22), transparent 70%); opacity: 0; transition: opacity .3s; }
+.sp-pack:hover { transform: translateY(-6px); border-color: rgba(var(--accent-rgb), 0.55); box-shadow: 0 24px 50px -24px rgba(var(--accent-rgb), 0.6); }
+.sp-pack:hover::before { opacity: 1; }
+.sp-pack--gold:hover { border-color: rgba(240,190,80,.6); box-shadow: 0 24px 50px -24px rgba(240,190,80,.5); }
+.sp-ribbon { position: absolute; top: 12px; left: -30px; z-index: 11; width: 110px; padding: 3px 0; text-align: center; transform: rotate(-38deg); font-size: 9px; font-weight: 900; letter-spacing: .1em; text-transform: uppercase; color: #14110a; background: linear-gradient(90deg, #f0be50, #ffe08a, #f0be50); background-size: 200% 100%; animation: sp-text 3s linear infinite; box-shadow: 0 4px 12px -4px rgba(240,190,80,.8); }
+
+/* Цена и кнопка: друг под другом, цена не ломается по строкам */
+.sp-price { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; margin: 0 0 10px; white-space: nowrap; }
+.sp-price-now { font-size: 20px; font-weight: 900; line-height: 1; color: #fff; }
+.sp-price-old { font-size: 11px; font-weight: 700; color: rgba(255,255,255,.4); }
+.sp-buy { position: relative; overflow: hidden; width: 100%; display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 10px 12px; border-radius: 12px; border: 1px solid rgba(var(--accent-rgb), .45); background: linear-gradient(135deg, rgba(var(--accent-rgb), .28), rgba(var(--accent-rgb), .1)); color: #bfe3ff; font-size: 12px; font-weight: 800; white-space: nowrap; cursor: pointer; transition: transform .2s, color .2s, box-shadow .2s; }
+.sp-buy::after { content: ""; position: absolute; top: 0; bottom: 0; width: 40%; left: -60%; background: linear-gradient(100deg, transparent, rgba(255,255,255,.35), transparent); transform: skewX(-20deg); }
+.sp-buy:hover { color: #fff; box-shadow: 0 10px 28px -10px rgba(var(--accent-rgb), .9); transform: translateY(-1px); }
+.sp-buy:hover::after { animation: sp-sheen-fast .7s ease; }
+.sp-buy span { transition: transform .2s; }
+.sp-buy:hover span { transform: translateX(3px); }
+
+@keyframes sp-sway { from { rotate: -5deg; } to { rotate: 5deg; } }
+@keyframes sp-spark { 0% { transform: translateY(0) scale(.6); opacity: 0; } 12% { opacity: .9; } 100% { transform: translateY(-105vh) scale(1.2); opacity: 0; } }
+@keyframes sp-drift { to { transform: translate(60px, 40px) scale(1.15); } }
+@keyframes sp-twinkle { from { opacity: .35; } to { opacity: 1; } }
+@keyframes sp-border { to { --sp-a: 360deg; } }
+@keyframes sp-sheen { 0%, 60% { left: -50%; } 100% { left: 130%; } }
+@keyframes sp-sheen-fast { to { left: 130%; } }
+@keyframes sp-text { to { background-position: -220% 0; } }
+@keyframes sp-rise { from { opacity: 0; transform: translateY(20px) scale(.97); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .sp-blob, .sp-beam, .sp-sparks b, .sp-stars, .sp-hero::before, .sp-hero::after, .sp-h1, .sp-pack, .sp-ribbon { animation: none; }
+}

@@ -71,6 +71,7 @@ import { WidgetsPanel } from "./WidgetsPanel";
 import { WidgetShowcase } from "@/components/WidgetShowcase";
 import { WidgetIcon } from "./WidgetIcon";
 import { AchievementsWidget } from "./Widgets";
+import { PremiumChip } from "@/components/profile/PremiumChip";
 
 export type SectionId =
   | "main"
@@ -342,7 +343,6 @@ function PremiumCard({ account }: { account: Account | null }) {
 
   return (
     <Panel className="relative overflow-hidden">
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-accent-2/14 via-transparent to-transparent" />
       <div className="relative flex flex-wrap items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2.5">
@@ -2407,7 +2407,7 @@ export function ShopSection(_props: { title?: string } = {}) {
           <div className="pbody">
             <div className="pname">
               <NickName name={displayNameOf(account)} style={profile.nickStyle} />
-              {premium && <span className="prem">PREMIUM</span>}
+              {premium && <PremiumChip />}
             </div>
             <div className="phandle">@{account?.nickname?.toLowerCase() ?? "гость"}</div>
 

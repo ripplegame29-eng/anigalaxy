@@ -17,6 +17,7 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "anilibria.top" },
       { protocol: "https", hostname: "cdn.anilibria.top" },
       // Обложки манги из раздела «Манга» (MangaDex)
+      { protocol: "https", hostname: "static.inuko.me" },
       { protocol: "https", hostname: "uploads.mangadex.org" },
       // Превью трейлеров с YouTube (фоллбэк, если Shikimori не ответил)
       { protocol: "https", hostname: "i.ytimg.com" },

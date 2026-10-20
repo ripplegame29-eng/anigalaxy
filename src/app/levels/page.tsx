@@ -20,7 +20,7 @@ export default function LevelsPage() {
         aria-hidden
       />
       <div
-        className="pointer-events-none absolute -right-40 top-48 h-[520px] w-[520px] rounded-full bg-accent-2/8 blur-3xl"
+        className="pointer-events-none absolute -right-40 top-48 h-[520px] w-[520px] rounded-full bg-gold/8 blur-3xl"
         aria-hidden
       />
       <div
@@ -35,11 +35,11 @@ export default function LevelsPage() {
         </div>
 
         <div className="mx-auto mt-6 max-w-5xl animate-bp-hero-in text-center">
-          <span className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-accent-2 via-accent to-accent-2 px-4 py-1.5 text-[11px] font-black uppercase tracking-[0.18em] text-white shadow-[0_12px_28px_-14px_rgba(32,191,255,0.7)] sm:text-xs">
+          <span className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-gold via-accent to-accent-2 px-4 py-1.5 text-[11px] font-black uppercase tracking-[0.18em] text-white shadow-[0_12px_28px_-14px_rgba(255,176,32,0.7)] sm:text-xs">
             Путь к пределу
           </span>
 
-          <h1 className="mt-5 bg-gradient-to-r from-white via-accent-2 to-accent-2 bg-clip-text text-3xl font-black leading-tight text-transparent sm:text-5xl">
+          <h1 className="mt-5 bg-gradient-to-r from-white via-gold to-accent-2 bg-clip-text text-3xl font-black leading-tight text-transparent sm:text-5xl">
             Уровни
           </h1>
 

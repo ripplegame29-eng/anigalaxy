@@ -131,7 +131,7 @@
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: #24affb;
+  background: #fbbf24;
   box-shadow: 0 0 0 2px #0a0c18;
   animation: sc-ping 1.6s infinite;
 }
@@ -140,12 +140,12 @@
   0% {
     box-shadow:
       0 0 0 2px #0a0c18,
-      0 0 0 2px rgba(36, 175, 251, 0.7);
+      0 0 0 2px rgba(251, 191, 36, 0.7);
   }
   100% {
     box-shadow:
       0 0 0 2px #0a0c18,
-      0 0 0 9px rgba(36, 175, 251, 0);
+      0 0 0 9px rgba(251, 191, 36, 0);
   }
 }
 
@@ -236,7 +236,7 @@
 }
 
 .sc-t1 {
-  --c1: #24affb;
+  --c1: #fbbf24;
   --c2: #f97316;
 }
 
@@ -419,7 +419,7 @@
 }
 
 .sc-rw svg {
-  color: #24affb;
+  color: #fbbf24;
 }
 
 .sc-row {
@@ -465,8 +465,8 @@
 }
 
 .sc-state.risk {
-  background: rgba(36, 175, 251, 0.1);
-  color: #4db8fc;
+  background: rgba(251, 191, 36, 0.1);
+  color: #fcd34d;
 }
 
 .sc-state time {

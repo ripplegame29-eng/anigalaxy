@@ -19,7 +19,7 @@
  * реальной кривой XP и строка «Твоё место» — она целиком из твоего профиля.
  */
 
-import { Fragment, useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { AvatarFrame } from "@/components/profile/AvatarFrame";
 import { AgTag } from "@/components/progression/AgTag";
@@ -34,6 +34,8 @@ import { useAccount } from "@/lib/use-account";
 import { useProfile } from "@/lib/profile";
 import { watchStats, watchStore } from "@/lib/history";
 import "./leaderboard.css";
+import "./leaderboard-premium.css";
+import { PremiumChip } from "@/components/profile/PremiumChip";
 
 /* ------------------------------- Данные -------------------------------- */
 
@@ -76,6 +78,8 @@ interface Entry {
   points: number;
   level: number;
   series: number;
+  /** Прочитано глав манги (демо; у тебя пока 0 — учёта чтения нет) */
+  chapters: number;
   hours: number;
   minutes: number;
   premium: boolean;
@@ -127,6 +131,7 @@ function buildRoster(period: number): Entry[] {
       points: TOP_POINTS * PERIOD_SCALE[period] * Math.pow(0.982, i) * (1 - noise(i, period) * 0.01),
       level: 12 + Math.floor(noise(i + 9, period) * 70),
       series: Math.round((240 - i * 2) * PERIOD_SCALE[period] * 0.9),
+      chapters: Math.round((420 - i * 3.2) * PERIOD_SCALE[period] * (0.7 + noise(i + 5, period) * 0.6)),
       hours: Math.floor(totalMinutes / 60),
       minutes: totalMinutes % 60,
       premium: noise(i + 13, period) > 0.45,
@@ -138,6 +143,26 @@ function buildRoster(period: number): Entry[] {
   return entries;
 }
 
+type SortKey = "hours" | "series" | "manga" | "level";
+const SORTS: { key: SortKey; label: string; unit: string }[] = [
+  { key: "hours", label: "По часам", unit: "минут" },
+  { key: "series", label: "По сериям", unit: "серий" },
+  { key: "manga", label: "По манге", unit: "глав" },
+  { key: "level", label: "По уровню", unit: "уровень" },
+];
+
+function metricOf(e: Entry, sort: SortKey): number {
+  if (sort === "hours") return e.hours * 60 + e.minutes;
+  if (sort === "series") return e.series;
+  if (sort === "manga") return e.chapters;
+  return e.level;
+}
+
+function metricText(e: Entry, sort: SortKey): string {
+  if (sort === "hours") return `${fmt(e.hours)} ч`;
+  return fmt(metricOf(e, sort));
+}
+
 function fmt(n: number): string {
   return Math.round(n).toLocaleString("ru-RU");
 }
@@ -145,39 +170,93 @@ function fmt(n: number): string {
 /* ------------------------------ Подиум --------------------------------- */
 
 const CROWN = (
-  <svg className="lb-crown" width="36" height="28" viewBox="0 0 34 26" fill="currentColor" aria-hidden>
+  <svg className="lb2-crown" viewBox="0 0 34 26" fill="currentColor" aria-hidden>
     <path d="M2 8l7 6 8-11 8 11 7-6-3 16H5z" />
   </svg>
 );
 
-function Podium({ entries }: { entries: Entry[] }) {
-  // Порядок отрисовки: 2, 1, 3 — иначе первое место окажется не по центру
-  const order = [1, 0, 2];
+/** Плавный набор числа: очки «разгоняются» при появлении карточки */
+function useCountUp(target: number, ms = 1100): number {
+  const [value, setValue] = useState(0);
+  const from = useRef(0);
+  useEffect(() => {
+    const start = performance.now();
+    const base = from.current;
+    let raf = 0;
+    const step = (now: number) => {
+      const t = Math.min(1, (now - start) / ms);
+      const eased = 1 - Math.pow(1 - t, 3);
+      setValue(base + (target - base) * eased);
+      if (t < 1) raf = requestAnimationFrame(step);
+      else from.current = target;
+    };
+    raf = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(raf);
+  }, [target, ms]);
+  return value;
+}
+
+/** Подсветка под курсором: свет следует за мышью по карточке */
+function spotlight(event: React.PointerEvent<HTMLElement>) {
+  const el = event.currentTarget;
+  const rect = el.getBoundingClientRect();
+  el.style.setProperty("--mx", `${event.clientX - rect.left}px`);
+  el.style.setProperty("--my", `${event.clientY - rect.top}px`);
+}
+
+function Stat({ label, value }: { label: string; value: string }) {
   return (
-    <section className="lb-podium">
+    <div>
+      <small>{label}</small>
+      <b>{value}</b>
+    </div>
+  );
+}
+
+function PodiumCard({ entry, place, sort, onDuel }: { entry: Entry; place: 1 | 2 | 3; sort: SortKey; onDuel: (e: Entry) => void }) {
+  const points = useCountUp(sort === "hours" ? entry.hours : metricOf(entry, sort));
+  return (
+    <article className={`lb2-pod p${place}`} onPointerMove={spotlight}>
+      <span className="lb2-aura" aria-hidden />
+      {place === 1 && CROWN}
+      <span className="lb2-medal" aria-hidden>{place}</span>
+      <div className="lb2-av">
+        <AvatarFrame nickname={entry.name} frame={entry.frame} size="md" />
+      </div>
+      <h3 className="lb2-name">{entry.name}</h3>
+      <div className="lb2-badges">
+        <span className="lb2-lv"><LevelEmblem level={entry.level} size={34} /></span>
+        {entry.titles[0] && <LbBadge tag={titleTag(entry.titles[0])} />}
+        {entry.premium && <PremiumChip />}
+      </div>
+      <div className="lb2-big">
+        <b>{fmt(points)}{sort === "hours" ? " ч" : ""}</b>
+        <small>{sort === "hours" ? "просмотра" : SORTS.find((x) => x.key === sort)?.unit}</small>
+      </div>
+      <div className="lb2-stats">
+        <Stat label="Серий" value={fmt(entry.series)} />
+        <Stat label="Часов" value={`${entry.hours}`} />
+        <Stat label="Уровень" value={`${entry.level}`} />
+      </div>
+      <button type="button" className="lb2-duel-btn" onClick={() => onDuel(entry)}>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+          <path d="m14 4 6 6M4 20l7-7M9 15l-4 4M20 4l-6 6M9 9 4 4" />
+        </svg>
+        Бросить вызов
+      </button>
+    </article>
+  );
+}
+
+function Podium({ entries, sort, onDuel }: { entries: Entry[]; sort: SortKey; onDuel: (e: Entry) => void }) {
+  // Порядок отрисовки: 2, 1, 3 — иначе первое место окажется не по центру
+  const order = [1, 0, 2] as const;
+  return (
+    <section className="lb2-podium">
       {order.map((i) => {
-        const p = entries[i];
-        if (!p) return null;
-        const place = i + 1;
-        return (
-          <div key={p.name} className={`lb-pod lb-p${place}`}>
-            {place === 1 && CROWN}
-            <div className="lb-orb">
-              <AvatarFrame
-  nickname={p.name}
-  frame={p.frame}
-  size="xs"
-/>
-            </div>
-            <div className="lb-pod-n">{p.name}</div>
-            {p.titles[0] && <div className="lb-pod-tt">{p.titles[0].name}</div>}
-            <div className="lb-pod-p">{fmt(p.points)}</div>
-            <div className="lb-pod-s">
-              Ур. {p.level} · серия {Math.round(24 - i * 2)} дн.
-            </div>
-            <div className="lb-ped">{place}</div>
-          </div>
-        );
+        const entry = entries[i];
+        if (!entry) return null;
+        return <PodiumCard key={`${sort}-${entry.name}`} entry={entry} place={(i + 1) as 1 | 2 | 3} sort={sort} onDuel={onDuel} />;
       })}
     </section>
   );
@@ -202,76 +281,108 @@ function LbBadge({ tag }: { tag: TagDef }) {
   return <AgTag tag={tag} size="sm" className="lb-tag" />;
 }
 
-function Row({ entry, max }: { entry: Entry; max: number }) {
+function RankCard({ entry, max, index, sort, onDuel }: { entry: Entry; max: number; index: number; sort: SortKey; onDuel: (e: Entry) => void }) {
+  const top = entry.rank <= 10;
   return (
     <li
-      className={`lb-row${entry.me ? " me" : ""}`}
-      style={
-        {
-          "--w": `${((entry.points / max) * 100).toFixed(1)}%`,
-          "--d": "0s",
-        } as React.CSSProperties
-      }
+      className={`lb2-card${entry.me ? " me" : ""}${top ? " top" : ""}`}
+      style={{ "--n": index, "--w": `${((metricOf(entry, sort) / Math.max(1, max)) * 100).toFixed(1)}%` } as React.CSSProperties}
+      onPointerMove={spotlight}
     >
-      <span className="lb-rk">{entry.rank}</span>
-
-      {/* Настоящая рамка проекта вместо круга с инициалами */}
-      <AvatarFrame
-  nickname={entry.name}
-  frame={entry.frame}
-  size="xs"
-/>
-
-      <div className="lb-nm">
-        <div className="lb-l1">
-          <b>{entry.name}</b>
-          {/* Один тег и один титул — тем же AgTag, что и в профиле */}
-          {entry.tags.map((tag, i) => (
-            <LbBadge key={`${entry.name}-tag-${i}`} tag={tag} />
-          ))}
-          {entry.titles.map((title, i) => (
-            <LbBadge key={`${entry.name}-title-${i}`} tag={titleTag(title)} />
-          ))}
-          {entry.premium && <span className="lb-chip pr">PREMIUM</span>}
-        </div>
-
-        {/* Статистика: иконка + значение, через «+» и вертикальную черту */}
-        <div className="lb-sub">
-          <span className="lb-stat" title="Серий просмотрено">
-            <svg viewBox="0 0 24 24" aria-hidden>
-              <path d="M13 2 4 14h7l-1 8 9-12h-7z" />
-            </svg>
-            {entry.series}
-          </span>
-          <i className="lb-plus">+</i>
-          <span className="lb-stat" title="Время просмотра">
-            <svg viewBox="0 0 24 24" aria-hidden>
-              <circle cx="12" cy="12" r="9" />
-              <path d="M12 7v5l3 2" />
-            </svg>
-            {entry.hours}ч {entry.minutes}м
-          </span>
-          <i className="lb-plus">+</i>
-          <span className="lb-stat" title="Очки">
-            <svg viewBox="0 0 24 24" aria-hidden>
-              <circle cx="12" cy="12" r="9" />
-              <circle cx="12" cy="12" r="3.2" />
-            </svg>
-            {fmt(entry.points)}
-          </span>
-        </div>
+      <span className="lb2-rank">{entry.me ? "ТЫ" : `#${entry.rank}`}</span>
+      <div className="lb2-av lb2-s">
+        <AvatarFrame nickname={entry.name} frame={entry.frame} size="xs" />
       </div>
-
-      {/* Настоящая эмблема уровня проекта вместо шестиугольника с числом */}
-      <div className="lb-lv">
-        <LevelEmblem level={entry.level} size={46} />
+      <h4 className="lb2-name lb2-s">{entry.name}</h4>
+      <div className="lb2-badges lb2-s">
+        <span className="lb2-lv"><LevelEmblem level={entry.level} size={28} /></span>
+        {entry.tags.slice(0, 1).map((tag, i) => (
+          <LbBadge key={`${entry.name}-tag-${i}`} tag={tag} />
+        ))}
+        {entry.premium && <PremiumChip />}
       </div>
-
-      <div className="lb-pt">
-        <b>{fmt(entry.points)}</b>
-        <small>очков</small>
+      <div className="lb2-big lb2-s">
+        <b>{metricText(entry, sort)}</b>
+        <small>{sort === "hours" ? "просмотра" : SORTS.find((x) => x.key === sort)?.unit}</small>
       </div>
+      <div className="lb2-meter"><i /></div>
+      <div className="lb2-stats lb2-s">
+        <Stat label="Серий" value={fmt(entry.series)} />
+        <Stat label={sort === "manga" ? "Часов" : "Глав"} value={sort === "manga" ? `${entry.hours}ч` : fmt(entry.chapters)} />
+      </div>
+      {!entry.me && (
+        <button type="button" className="lb2-duel-btn lb2-s" onClick={() => onDuel(entry)} aria-label={`Сравнить себя с ${entry.name}`}>
+          Сравнить
+        </button>
+      )}
     </li>
+  );
+}
+
+/** Дуэль: ты против выбранного игрока. Твои цифры настоящие, соперник — демо. */
+function Duel({ me, rival, onClose }: { me: Entry; rival: Entry; onClose: () => void }) {
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => event.key === "Escape" && onClose();
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  const rows: { label: string; a: number; b: number; fmtv: (n: number) => string }[] = [
+    { label: "Очки", a: me.points, b: rival.points, fmtv: fmt },
+    { label: "Серий просмотрено", a: me.series, b: rival.series, fmtv: fmt },
+    { label: "Время просмотра", a: me.hours * 60 + me.minutes, b: rival.hours * 60 + rival.minutes, fmtv: (n) => `${Math.floor(n / 60)}ч ${n % 60}м` },
+    { label: "Уровень", a: me.level, b: rival.level, fmtv: fmt },
+  ];
+  const wins = rows.filter((row) => row.a >= row.b).length;
+  const gap = Math.max(0, Math.round(rival.points - me.points));
+
+  return (
+    <div className="lb2-duel" role="dialog" aria-modal="true" aria-label={`Дуэль с ${rival.name}`} onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
+      <div className="lb2-duel-box">
+        <button type="button" className="lb2-x" onClick={onClose} aria-label="Закрыть">×</button>
+        <div className="lb2-vs">
+          <div>
+            <AvatarFrame nickname={me.name} frame={me.frame} size="md" />
+            <b>{me.name}</b>
+            <small>Ты</small>
+          </div>
+          <span className="lb2-vs-mark">VS</span>
+          <div>
+            <AvatarFrame nickname={rival.name} frame={rival.frame} size="md" />
+            <b>{rival.name}</b>
+            <small>Место #{rival.rank}</small>
+          </div>
+        </div>
+
+        <ul className="lb2-cmp">
+          {rows.map((row, i) => {
+            const total = Math.max(1, row.a + row.b);
+            return (
+              <li key={row.label} style={{ "--i": i } as React.CSSProperties}>
+                <div className="lb2-cmp-h">
+                  <b className={row.a >= row.b ? "win" : undefined}>{row.fmtv(row.a)}</b>
+                  <span>{row.label}</span>
+                  <b className={row.b > row.a ? "win" : undefined}>{row.fmtv(row.b)}</b>
+                </div>
+                <div className="lb2-cmp-bar">
+                  <i className="a" style={{ width: `${(row.a / total) * 100}%` }} />
+                  <i className="b" style={{ width: `${(row.b / total) * 100}%` }} />
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+
+        <p className="lb2-verdict">
+          {wins === rows.length
+            ? "Ты впереди по всем показателям."
+            : gap > 0
+              ? `Побед в сравнении: ${wins} из ${rows.length}. До очков соперника не хватает ${fmt(gap)}.`
+              : `Побед в сравнении: ${wins} из ${rows.length}. По очкам ты уже впереди.`}
+        </p>
+        <p className="lb2-demo">Соперник — демо-профиль: у проекта нет сервера игроков. Твои цифры настоящие.</p>
+      </div>
+    </div>
   );
 }
 
@@ -288,6 +399,9 @@ export function LeaderboardView() {
   const [period, setPeriod] = useState(0);
   const [filter, setFilter] = useState<0 | 1 | 2>(0);
   const [expanded, setExpanded] = useState(false);
+  const [duel, setDuel] = useState<Entry | null>(null);
+  const [sort, setSort] = useState<SortKey>("hours");
+  const [sortOpen, setSortOpen] = useState(false);
 
   const account = useAccount();
   const profile = useProfile();
@@ -298,9 +412,15 @@ export function LeaderboardView() {
   const watch = watchStore.useStore();
   const stats = watchStats(watch);
 
-  const entries = useMemo(() => buildRoster(period), [period]);
+  const entries = useMemo(
+    () =>
+      buildRoster(period)
+        .sort((a, b) => metricOf(b, sort) - metricOf(a, sort) || a.rank - b.rank)
+        .map((e, i) => ({ ...e, rank: i + 1 })),
+    [period, sort],
+  );
 
-  const top = entries[0]?.points ?? 1;
+  const top = Math.max(1, metricOf(entries[0] ?? ({} as Entry), sort) || 1);
 
   /* Строка «Твоё место» — единственная по-настоящему: имя, очки, уровень,
    * серии и часы берутся из твоего профиля. Если тебя нет в первых 50, строка
@@ -312,6 +432,7 @@ export function LeaderboardView() {
       points: progress.progress.xpTotal,
       level: levelInfo.level,
       series: stats.episodes,
+      chapters: 0,
       hours: Math.floor(stats.minutes / 60),
       minutes: stats.minutes % 60,
       premium: isPremiumActive(account),
@@ -449,6 +570,22 @@ export function LeaderboardView() {
             </button>
           ))}
         </div>
+        <div className="lb2-sort">
+          <span>Топ пользователей</span>
+          <button type="button" className="lb2-sort-btn" aria-haspopup="listbox" aria-expanded={sortOpen} onClick={() => setSortOpen((v) => !v)} onBlur={() => setTimeout(() => setSortOpen(false), 120)}>
+            {SORTS.find((x) => x.key === sort)?.label}
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="m6 9 6 6 6-6" /></svg>
+          </button>
+          {sortOpen && (
+            <ul className="lb2-sort-menu" role="listbox">
+              {SORTS.map((x) => (
+                <li key={x.key} role="option" aria-selected={sort === x.key} className={sort === x.key ? "on" : ""} onMouseDown={() => { setSort(x.key); setSortOpen(false); setExpanded(false); }}>
+                  {x.label}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
         <div className="lb-chips">
           {(["Все", "Premium", "Free"] as const).map((label, i) => (
             <button
@@ -464,7 +601,7 @@ export function LeaderboardView() {
       </div>
 
       {/* ---------------------------- Подиум ------------------------------ */}
-      <Podium entries={entries} />
+      <Podium entries={entries} sort={sort} onDuel={setDuel} />
 
       {/* ---------------------------- Награды ----------------------------- */}
       {period === 0 && (
@@ -501,15 +638,14 @@ export function LeaderboardView() {
       )}
 
       {/* ----------------------------- Список ----------------------------- */}
-      <ol className="lb-rows">
+      <ol className="lb2-grid">
         {rows.length === 0 && <li className="lb-empty">Здесь пока никого нет.</li>}
         {rows.map((entry, i) => (
           // Fragment, а не div: внутри <ol> могут лежать только <li>
           <Fragment key={`${entry.name}-${entry.rank}-${i}`}>
-            {filter === 0 && entry.rank === 5 && <Zone kind={1} />}
             {filter === 0 && entry.rank === 11 && <Zone kind={2} />}
             {filter === 0 && entry.rank === 26 && <Zone kind={3} />}
-            <Row entry={entry} max={top} />
+            <RankCard entry={entry} max={top} index={i} sort={sort} onDuel={setDuel} />
           </Fragment>
         ))}
       </ol>
@@ -519,6 +655,8 @@ export function LeaderboardView() {
           Показать места 26–50
         </button>
       )}
+
+      {duel && <Duel me={{ ...meEntry, rank: 0 }} rival={duel} onClose={() => setDuel(null)} />}
 
       {/* -------------------------- Твоё место --------------------------- */}
       <div className="lb-dock">

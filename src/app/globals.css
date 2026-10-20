@@ -27,7 +27,7 @@
      такие заливки берут затемнённую производную. Сам бренд (градиенты,
      свечения, текст-акцент на тёмном) остаётся на исходных токенах. */
   --color-accent-deep: color-mix(in oklab, var(--color-accent) 86%, black);
-  --color-gold: #20bfff;
+  --color-gold: #ffb020;
   --color-mint: #3ddc97;
 
   /* Шрифты: Montserrat — акцентный (--font-display), Onest — основной
@@ -54,6 +54,33 @@
 
 @utility font-body {
   font-family: var(--font-body);
+}
+
+/* ================================================================== */
+/*  Единая палитра «Galaxy Glass» для панелей: каталог, поиск, меню     */
+/*  профиля. Источник — шапка (header.css): синий #2b7fff + циан        */
+/*  #22d3ee на тёмно-синем стекле. Менять цвета панелей — только здесь. */
+/* ================================================================== */
+:root {
+  --ag-text: #eef2fb;
+  --ag-text-2: #c5cde3;
+  --ag-muted: #8d98b4;
+  --ag-line: rgba(96, 150, 255, 0.16);
+  --ag-line-strong: rgba(96, 150, 255, 0.3);
+  --ag-accent: #2b7fff;
+  --ag-accent-deep: #2468d6;
+  --ag-cyan: #22d3ee;
+  --ag-accent-ink: #6fa8ff;
+  --ag-accent-bg: rgba(43, 127, 255, 0.18);
+  --ag-accent-bd: rgba(43, 127, 255, 0.6);
+  --ag-ring: rgba(43, 127, 255, 0.28);
+  --ag-ctl: rgba(96, 150, 255, 0.07);
+  --ag-ctl-hover: rgba(96, 150, 255, 0.13);
+  --ag-card: #0a0f1f;
+  --ag-pop: #0b1122;
+  --ag-glass: linear-gradient(180deg, rgba(14, 22, 44, 0.94), rgba(7, 11, 24, 0.97));
+  --ag-scrim: rgba(5, 8, 16, 0.78);
+  --ag-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
 }
 
 /* ================================================================== */
@@ -360,6 +387,9 @@
   scrollbar-width: none;
   -ms-overflow-style: none;
   scroll-snap-type: x mandatory;
+  /* Лента сдвинута на -8px (-mx-2 px-2). Без отступа snap прижимал первую
+     карточку к самому краю ленты, и её скругление с тенью обрезались. */
+  scroll-padding-inline: 8px;
 }
 .rail::-webkit-scrollbar {
   display: none;

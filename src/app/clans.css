@@ -15,7 +15,7 @@
 @layer components {
   .cl-page {
     --cl-cy: var(--color-accent-2);
-    --cl-go: var(--color-accent-2);
+    --cl-go: var(--color-gold);
     --cl-ok: var(--color-mint);
     /* Цвет клана — переопределяется на карточке через --c */
     --c: var(--color-accent);
@@ -498,9 +498,9 @@
   }
 
   .cl-rank.top {
-    color: #06151a;
-    background: linear-gradient(160deg, #6bcbff, #20bfff);
-    box-shadow: 0 8px 20px -10px #20bfff;
+    color: #1a1206;
+    background: linear-gradient(160deg, #ffd66b, #ffb020);
+    box-shadow: 0 8px 20px -10px #ffb020;
   }
 
   /* ------------------------------------------------------------------
@@ -731,8 +731,8 @@
   }
 
   .cl-ladder-row.on > .lv {
-    color: #06151a;
-    background: linear-gradient(160deg, #6bcbff, #20bfff);
+    color: #1a1206;
+    background: linear-gradient(160deg, #ffd66b, #ffb020);
   }
 
   /* Появление секций — тот же приём, что .bp-revealed */

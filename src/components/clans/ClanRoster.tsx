@@ -36,7 +36,7 @@ const ROLE_ORDER: ClanRole[] = ["owner", "admin", "moderator", "member"];
 
 /** Цвет роли — тот же язык, что у рангов в топе */
 const ROLE_COLOR: Record<ClanRole, string> = {
-  owner: "#20bfff",
+  owner: "#ffb020",
   admin: "#ff4d6d",
   moderator: "#3d7dff",
   member: "#8b93a7",

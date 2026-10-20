@@ -138,7 +138,7 @@ export function ClanHall({ clan, ac }: { clan: Clan; ac: number }) {
               {next ? (
                 <span className="ml-2 text-sm font-normal text-muted">→ {next.level} на {num(next.goal)} AC</span>
               ) : (
-                <span className="ml-2 text-sm font-normal text-accent-2">максимум</span>
+                <span className="ml-2 text-sm font-normal text-gold">максимум</span>
               )}
             </h2>
           </div>
@@ -255,7 +255,7 @@ export function ClanHall({ clan, ac }: { clan: Clan; ac: number }) {
               type="button"
               onClick={onClaim}
               className="cl-btn mt-3 w-full"
-              style={{ ["--c" as string]: "#20bfff" }}
+              style={{ ["--c" as string]: "#ffb020" }}
             >
               Забрать награду за уровень {level}
             </button>

@@ -448,6 +448,8 @@ export function WatchBox({
                 kodikId={detail.card.id}
                 season={activeSeason?.number ?? season}
                 onBack={() => switchSource("kodik")}
+                malId={detail.card.shikimoriId}
+                hasNext={(activeSeason?.episodes.findIndex((e) => e.number === episode) ?? -1) + 1 > 0 && (activeSeason?.episodes.findIndex((e) => e.number === episode) ?? -1) + 1 < (activeSeason?.episodes.length ?? 0)}
                 onNextEpisode={() => {
                   const eps = activeSeason?.episodes ?? [];
                   const i = eps.findIndex((e) => e.number === episode);

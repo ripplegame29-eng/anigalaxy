@@ -1,27 +1,36 @@
-import Link from "next/link";
+import { GenreStrip } from "@/components/GenreStrip";
+import { RecommendRow } from "@/components/RecommendRow";
 import { Suspense } from "react";
-import { AnimeRow } from "@/components/AnimeRow";
 import { ContinueRow } from "@/components/ContinueRow";
+import { HomeTabsRow } from "@/components/HomeTabsRow";
+import { TopTenRow } from "@/components/TopTenRow";
+import { WideFilmRow } from "@/components/WideFilmRow";
 import { HeroSlider } from "@/components/HeroSlider";
-import { Reveal } from "@/components/Reveal";
 import { getTitleDetail, row } from "@/lib/kodik";
-import { mangaRow, type MangaSort } from "@/lib/mangadex";
+import { mangaRow } from "@/lib/senku";
 import { DonateWidget } from "@/components/DonateWidget";
 
 /** Страница кэшируется на 5 минут — Kodik обновляет данные нечасто */
 export const revalidate = 300;
 
+/* Аниме-жанры (Shikimori), а не киношные: названия как в фильтре каталога */
 const GENRES = [
-  { title: "Фэнтези", count: 16769 },
-  { title: "Экшен", count: 19868 },
-  { title: "Драма", count: 23691 },
-  { title: "Комедия", count: 20839 },
-  { title: "Романтика", count: 18834 },
-  { title: "Приключения", count: 8726 },
-  { title: "Фантастика", count: 7681 },
-  { title: "Детектив", count: 5756 },
-  { title: "Ужасы", count: 3558 },
-  { title: "Спорт", count: 1571 },
+  { title: "Сёнен" },
+  { title: "Исэкай" },
+  { title: "Экшен" },
+  { title: "Фэнтези" },
+  { title: "Романтика" },
+  { title: "Комедия" },
+  { title: "Сверхъестественное" },
+  { title: "Повседневность" },
+  { title: "Школа" },
+  { title: "Меха" },
+  { title: "Психологическое" },
+  { title: "Сэйнэн" },
+  { title: "Сёдзё" },
+  { title: "Реинкарнация" },
+  { title: "Драма" },
+  { title: "Приключения" },
 ];
 
 /* ------------------------------------------------------------------ */
@@ -56,28 +65,11 @@ async function Hero() {
   return <HeroSlider items={items} />;
 }
 
-async function RowSection({
-  title,
-  params,
-  href,
-  accent = false,
-}: {
-  title: string;
-  params: Record<string, string | number | undefined>;
-  href?: string;
-  accent?: boolean;
-}) {
-  // Ошибка Kodik не должна ронять главную: гасим её до конструирования JSX
-  const cards = await row(title, params).catch(() => null);
-  if (!cards) return null;
-  return <AnimeRow title={title} cards={cards} href={href} accent={accent} />;
-}
-
 function RowSkeleton({ title }: { title: string }) {
   return (
     <section>
       <div className="mb-5 flex items-center gap-3">
-        <span className="h-7 w-1.5 rounded-full bg-white/15" />
+        <span className="skeleton h-8 w-8 rounded-[10px]" />
         <div className="skeleton h-5 w-44 rounded-md" />
       </div>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
@@ -90,26 +82,90 @@ function RowSkeleton({ title }: { title: string }) {
   );
 }
 
+/* ------------------------------------------------------------------ */
+
 /**
- * Ряд манги. Kodik мангу не отдаёт, поэтому источник отдельный — MangaDex
- * (`lib/mangadex`): ошибка сети гасится внутри, и страница живёт дальше.
- * Карточки ведут в собственный раздел `/manga`, где читается глава.
+ * «Сейчас выходит»: онгоинги и новинки сезона — два среза одного и того же,
+ * поэтому это одна лента с вкладками, а тайтлы из «Новинок» не повторяют
+ * уже показанные в «Онгоингах».
  */
-async function MangaRowSection({
-  title,
-  sort,
-  accent = false,
-}: {
-  title: string;
-  sort: MangaSort;
-  accent?: boolean;
-}) {
-  const cards = await mangaRow(sort, 30).catch(() => null);
-  if (!cards?.length) return null;
-  return <AnimeRow title={title} cards={cards} accent={accent} href="/manga" />;
+async function AiringSection() {
+  const [ongoing, fresh] = await Promise.all([
+    row("Онгоинги", {
+      types: "anime,anime-serial",
+      anime_status: "ongoing",
+      sort: "updated_at",
+      order: "desc",
+      limit: 20,
+    }).catch(() => []),
+    row("Новинки сезона", {
+      types: "anime,anime-serial",
+      sort: "created_at",
+      order: "desc",
+      year: "2025,2026",
+      limit: 24,
+    }).catch(() => []),
+  ]);
+  const seen = new Set(ongoing.map((card) => card.id));
+  const freshOnly = fresh.filter((card) => !seen.has(card.id));
+  return (
+    <HomeTabsRow
+      title="Сейчас выходит"
+      mark="flame"
+      tabs={[
+        { id: "ongoing", label: "Онгоинги", cards: ongoing, href: "/catalog?status=ongoing" },
+        { id: "fresh", label: "Новинки сезона", cards: freshOnly, href: "/catalog?sort=fresh" },
+      ]}
+    />
+  );
 }
 
-/* ------------------------------------------------------------------ */
+/** Топ-10 (с цифрами) и фильмы (широкие карточки), без повторов между ними */
+async function TopAndFilmsSection() {
+  const [top, films] = await Promise.all([
+    row("Топ рейтинга", {
+      types: "anime,anime-serial",
+      sort: "shikimori_rating",
+      order: "desc",
+      limit: 20,
+    }).catch(() => []),
+    row("Аниме-фильмы", {
+      types: "anime",
+      sort: "kinopoisk_rating",
+      order: "desc",
+      limit: 20,
+    }).catch(() => []),
+  ]);
+  const topIds = new Set(top.slice(0, 10).map((card) => card.id));
+  return (
+    <>
+      <TopTenRow title="Топ-10 по рейтингу" cards={top} href="/catalog?sort=rating" />
+      <WideFilmRow
+        title="Аниме-фильмы"
+        cards={films.filter((card) => !topIds.has(card.id))}
+        href="/catalog?type=movie"
+      />
+    </>
+  );
+}
+
+/** Манга: «Горячие новинки» и «Лучшее» — одна лента с вкладками */
+async function MangaSection() {
+  const [hot, best] = await Promise.all([
+    mangaRow("hot", 30).catch(() => null),
+    mangaRow("best", 30).catch(() => null),
+  ]);
+  return (
+    <HomeTabsRow
+      title="Манга"
+      mark="book"
+      tabs={[
+        { id: "hot", label: "Горячие новинки", cards: hot ?? [], href: "/manga" },
+        { id: "best", label: "Лучшее", cards: best ?? [], href: "/manga" },
+      ]}
+    />
+  );
+}
 
 export default function HomePage() {
   return (
@@ -137,92 +193,22 @@ export default function HomePage() {
             не рисует. */}
         <ContinueRow />
 
-        <Suspense fallback={<RowSkeleton title="Онгоинги" />}>
-          <RowSection
-            title="Онгоинги"
-            accent
-            href="/catalog?status=ongoing"
-            params={{
-              types: "anime,anime-serial",
-              anime_status: "ongoing",
-              sort: "updated_at",
-              order: "desc",
-              limit: 20,
-            }}
-          />
+        {/* Быстрый переход по жанрам — компактной полосой, без отдельной секции */}
+        <GenreStrip genres={GENRES.map((g) => g.title)} />
+
+        <Suspense fallback={<RowSkeleton title="Сейчас выходит" />}>
+          <AiringSection />
         </Suspense>
 
-        <Suspense fallback={<RowSkeleton title="Новинки сезона" />}>
-          <RowSection
-            title="Новинки сезона"
-            href="/catalog?sort=fresh"
-            params={{
-              types: "anime,anime-serial",
-              sort: "created_at",
-              order: "desc",
-              year: "2025,2026",
-              limit: 20,
-            }}
-          />
+        <RecommendRow />
+
+        <Suspense fallback={<RowSkeleton title="Топ-10" />}>
+          <TopAndFilmsSection />
         </Suspense>
 
-        <Suspense fallback={<RowSkeleton title="Топ рейтинга" />}>
-          <RowSection
-            title="Топ рейтинга"
-            href="/catalog?sort=rating"
-            params={{
-              types: "anime,anime-serial",
-              sort: "shikimori_rating",
-              order: "desc",
-              limit: 20,
-            }}
-          />
+        <Suspense fallback={<RowSkeleton title="Манга" />}>
+          <MangaSection />
         </Suspense>
-
-        <Suspense fallback={<RowSkeleton title="Аниме-фильмы" />}>
-          <RowSection
-            title="Аниме-фильмы"
-            href="/catalog?type=movie"
-            params={{
-              types: "anime",
-              sort: "kinopoisk_rating",
-              order: "desc",
-              limit: 20,
-            }}
-          />
-        </Suspense>
-
-        {/* ------------------------------- Манга ---------------------------- */}
-        {/* Внизу, под аниме-фильмами: два среза как в манга-референсе —
-            свежие тайтлы каталога и топ по рейтингу сообщества. */}
-        <Suspense fallback={<RowSkeleton title="Манга · Горячие новинки" />}>
-          <MangaRowSection title="Манга · Горячие новинки" sort="hot" accent />
-        </Suspense>
-
-        <Suspense fallback={<RowSkeleton title="Манга · Лучшее" />}>
-          <MangaRowSection title="Манга · Лучшее" sort="best" />
-        </Suspense>
-
-        {/* Быстрый переход по жанрам */}
-        <Reveal as="section">
-          <div className="mb-5 flex items-center gap-3">
-            <span className="h-7 w-1.5 rounded-full bg-accent" />
-            <h2 className="text-lg font-extrabold tracking-tight sm:text-xl">Популярные жанры</h2>
-          </div>
-          <div className="flex flex-wrap gap-2.5">
-            {GENRES.map((g, i) => (
-              <Link
-                key={g.title}
-                href={`/catalog?genre=${encodeURIComponent(g.title)}`}
-                style={{ animationDelay: `${i * 35}ms` }}
-                className="btn-ghost animate-fade-up rounded-xl bg-white/6 px-4 py-2.5 text-sm font-semibold text-white/80 ring-1 ring-white/10 hover:bg-accent/15 hover:text-white hover:ring-accent/40"
-              >
-                {g.title}
-                <span className="ml-2 text-xs text-muted">{g.count.toLocaleString("ru-RU")}</span>
-              </Link>
-            ))}
-          </div>
-        </Reveal>
       </div>
     </>
   );

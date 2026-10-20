@@ -485,13 +485,24 @@ export interface MetaData {
 
 /** Жанры и годы для фильтров каталога */
 export function getMeta(): Promise<MetaData> {
-  return withCache("meta", 6 * 60 * MINUTE, async () => {
+  return withCache("meta-anime", 6 * 60 * MINUTE, async () => {
     const [genres, years] = await Promise.all([
-      kodikPost<{ results: { title: string; count: number }[] }>("genres"),
+      // Без genres_type Kodik отдаёт киношные жанры Кинопоиска (вестерн,
+      // фильм-нуар, ток-шоу…). Нужны аниме-жанры Shikimori: сёнэн, исэкай, меха…
+      kodikPost<{ results: { title: string; count: number }[] }>("genres", {
+        genres_type: "shikimori",
+        types: "anime,anime-serial",
+      }),
       kodikPost<{ results: { year: number; count: number }[] }>("years"),
     ]);
+    // Взрослые жанры в публичный фильтр не выносим; остальные — от самых
+    // частых к редким, чтобы сёнен и экшен были сверху, а не «cgdct»
+    const adult = new Set(["хентай", "эротика", "этти", "яой", "юри", "сёдзё-ай", "сёнен-ай"]);
+    const list = (genres.results ?? [])
+      .filter((genre) => !adult.has(genre.title.toLowerCase()))
+      .sort((a, b) => b.count - a.count);
     return {
-      genres: genres.results ?? [],
+      genres: list,
       years: (years.results ?? []).map((y) => y.year),
     };
   });

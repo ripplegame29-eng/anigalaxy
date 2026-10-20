@@ -43,6 +43,7 @@ import {
 import type { AnimeCard } from "@/lib/types";
 import { parseList, useLocalSnapshot } from "@/lib/use-local-storage";
 import "./collections.css";
+import { PremiumChip } from "@/components/profile/PremiumChip";
 
 /* ------------------------------- Хранилище ------------------------------- */
 
@@ -842,7 +843,7 @@ export function CollectionsView({ posters, initialId }: CollectionsViewProps) {
                     <div className="col-auth">
                       {avatar(c.author)}
                       <span>{c.author}</span>
-                      {c.pm && <span className="col-pm">♛ PREMIUM</span>}
+                      {c.pm && <PremiumChip />}
                       <span className="col-when">{ago(c.age)}</span>
                     </div>
                   </div>

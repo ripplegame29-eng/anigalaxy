@@ -168,7 +168,7 @@ export function TierListWidget({ readOnly = false }: Props) {
   );
 
   return (
-    <div className={`tl${mounted ? "" : " boot"}`} ref={rootRef}>
+    <div className={`tl-root${mounted ? "" : " boot"}`} ref={rootRef}>
       <div className="tl-glow" aria-hidden="true" />
       <header className="tl-head">
         <div className="tl-headtxt">

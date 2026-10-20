@@ -14,26 +14,26 @@
   position: relative;
   display: inline-flex;
   align-items: center;
-  gap: 0.5em;
+  gap: 0.55em;
   overflow: hidden;
   vertical-align: middle;
-  font: 800 10px/1 var(--font-body);
-  letter-spacing: 0.09em;
+  flex: none;
+  font: 800 10px/1 var(--font-display), var(--font-body), sans-serif;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
   white-space: nowrap;
-  padding: 0.3em 0.95em 0.3em 0.65em;
-  border: 1px solid transparent;
-  border-radius: 0.8em;
-  color: #e3f7ff;
-  text-shadow: 0 0 0.9em rgba(34, 211, 238, 0.6);
-  /* Рамка рисуется вторым слоем градиента по border-box и течёт по anim. */
+  padding: 0.55em 1em 0.55em 0.75em;
+  border: 1.5px solid transparent;
+  border-radius: 1.1em;
+  /* Как кнопка PREMIUM в шапке: тёмно-синее стекло, градиентная рамка
+     синий → циан, градиентный текст и мягкое свечение. */
+  color: #a9d8ff;
   background:
-    linear-gradient(135deg, #0c2150, #071030) padding-box,
-    linear-gradient(120deg, #22d3ee, #60a5fa, #2563eb, #22d3ee) border-box;
-  background-size: 100% 100%, 300% 100%;
-  animation: ag-flow 5s linear infinite;
+    linear-gradient(135deg, #08101f, #0a1428) padding-box,
+    linear-gradient(135deg, rgba(43, 127, 255, 0.9), rgba(34, 211, 238, 0.55) 55%, rgba(43, 127, 255, 0.35)) border-box;
   box-shadow:
-    0 0 1.6em -0.4em rgba(56, 189, 248, 0.8),
-    inset 0 1px 0 rgba(255, 255, 255, 0.22);
+    0 0 1.8em -0.3em rgba(43, 127, 255, 0.35),
+    inset 0 0 1.4em rgba(43, 127, 255, 0.14);
 }
 
 /* Блик, пробегающий по тегу. */
@@ -57,11 +57,11 @@
   height: 1.2em;
   flex: none;
   fill: none;
-  stroke: #7dd3fc;
+  stroke: #7cc8ff;
   stroke-width: 2;
   stroke-linecap: round;
   stroke-linejoin: round;
-  filter: drop-shadow(0 0 0.4em rgba(56, 189, 248, 0.95));
+  filter: drop-shadow(0 0 0.35em rgba(43, 127, 255, 0.7));
 }
 
 @keyframes ag-flow {

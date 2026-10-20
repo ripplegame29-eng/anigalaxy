@@ -15,7 +15,7 @@ export function WatchButton({ id }: { id: string }) {
   return (
     <a
       href="#watch"
-      className="btn-primary inline-flex items-center gap-2 rounded-xl px-6 py-3 text-sm font-bold text-white"
+      className="btn-primary flex h-14 w-full items-center justify-center gap-2.5 whitespace-nowrap rounded-2xl px-6 text-[15px] font-extrabold text-white"
     >
       <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor" aria-hidden>
         <path d="M8 5.14v13.72c0 .8.87 1.3 1.56.88l10.9-6.86a1.04 1.04 0 0 0 0-1.76L9.56 4.26A1.04 1.04 0 0 0 8 5.14Z" />

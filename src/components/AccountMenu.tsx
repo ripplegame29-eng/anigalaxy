@@ -19,6 +19,7 @@ import { useProfile } from "@/lib/profile";
 import { readyQuestCount, useProgress } from "@/lib/progression/events";
 import { FRAMES } from "@/lib/cosmetics";
 import { AvatarFrame } from "./profile/AvatarFrame";
+import { PremiumChip } from "@/components/profile/PremiumChip";
 
 /** Пункты меню: разделы профиля открываем ссылкой, модалки — через стор */
 export type Item =
@@ -166,7 +167,7 @@ export function useAccountItems(onNavigate?: () => void): Item[] {
       { kind: "link", href: "/list", label: "Мой список", icon: ICONS.list },
       { kind: "link", href: "/referrals", label: "Пригласить друзей", icon: ICONS.users },
       { kind: "link", href: "/store", label: "Магазин", icon: ICONS.store },
-      { kind: "link", href: "/profile?tab=quests", label: "Квесты", icon: ICONS.quest, badge: questBadge },
+      { kind: "link", href: "/quests", label: "Квесты", icon: ICONS.quest, badge: questBadge },
       { kind: "link", href: "/profile?tab=achievements", label: "Достижения", icon: ICONS.trophy },
       { kind: "link", href: "/cosmetics", label: "Косметика", icon: ICONS.palette },
       { kind: "link", href: "/profile?tab=referrals", label: "Пригласи друзей", icon: ICONS.users },
@@ -240,11 +241,7 @@ export function AccountCard({ onNavigate }: { onNavigate?: () => void }) {
       <span className="min-w-0 flex-1">
         <span className="flex items-center gap-1.5">
           <span className="truncate text-sm font-extrabold text-white">{account.nickname}</span>
-          {premium && (
-            <span className="shrink-0 rounded bg-accent-2/20 px-1.5 py-0.5 text-[9px] font-black tracking-wide text-accent-2">
-              PREMIUM
-            </span>
-          )}
+          {premium && <PremiumChip />}
         </span>
         <span className="block text-xs text-[#8e8e93]">Открыть профиль</span>
       </span>

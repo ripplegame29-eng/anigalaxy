@@ -34,6 +34,7 @@
  *     `quickSearch` кэширует результаты на 5 минут.
  */
 
+import { clockOf, findFrame, percent } from "@/lib/frame-client";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -115,6 +116,7 @@ export function CommandPalette({ open, onOpenChange, onPick }: CommandPalettePro
   const [loading, setLoading] = useState(false);
   const [failed, setFailed] = useState(false);
   const [frameNote, setFrameNote] = useState<string | null>(null);
+  const [frameHit, setFrameHit] = useState<{ title: string; href: string; line: string } | null>(null);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
@@ -246,10 +248,30 @@ export function CommandPalette({ open, onOpenChange, onPick }: CommandPalettePro
     return () => document.removeEventListener("keydown", onGlobal);
   }, [open, onOpenChange]);
 
-  /* Ctrl+V — скриншот в буфере. Сам поиск по кадру — TODO. */
+  /* Ctrl+V — скриншот в буфере: ищем аниме, серию и момент по кадру */
   const onPaste = (event: React.ClipboardEvent) => {
     const file = Array.from(event.clipboardData.files).find((f) => f.type.startsWith("image/"));
-    if (file) setFrameNote(`Ищем по кадру… ${file.name}`);
+    if (!file) return;
+    event.preventDefault();
+    setFrameHit(null);
+    setFrameNote("Ищем по кадру…");
+    findFrame(file)
+      .then(({ matches }) => {
+        const best = matches[0];
+        if (!best) {
+          setFrameNote("Ничего похожего не нашли — попробуйте кадр без субтитров.");
+          return;
+        }
+        const title = best.card?.title ?? best.names.english ?? best.names.romaji ?? best.names.native ?? "Тайтл";
+        const ep = best.episode != null ? `серия ${best.episode}, ` : "";
+        setFrameNote(null);
+        setFrameHit({
+          title,
+          href: best.card ? `/title/${best.card.id}` : "/frame",
+          line: `${ep}${clockOf(best.at)} · ${percent(best.similarity)}`,
+        });
+      })
+      .catch((error: unknown) => setFrameNote(error instanceof Error ? error.message : "Не удалось выполнить поиск."));
   };
 
   if (!open) return null;
@@ -452,10 +474,22 @@ export function CommandPalette({ open, onOpenChange, onPick }: CommandPalettePro
               <circle cx="12" cy="12" r="3" />
             </svg>
             <span>
-              {frameNote ??
-                "Есть скриншот? Вставьте его сюда Ctrl+V — найдём аниме, серию и момент"}
+              {frameHit ? (
+                <>
+                  Найдено:{" "}
+                  <Link href={frameHit.href} onClick={() => onOpenChange(false)} className="framelink">
+                    {frameHit.title}
+                  </Link>{" "}
+                  · {frameHit.line}
+                </>
+              ) : (
+                (frameNote ?? "Есть скриншот? Вставьте его сюда Ctrl+V — найдём аниме, серию и момент")
+              )}
             </span>
           </span>
+          <Link className="framelink" href="/frame" onClick={() => onOpenChange(false)}>
+            Поиск по кадру
+          </Link>
           <Link className="framelink" href="/catalog" onClick={() => onOpenChange(false)}>
             В каталог →
           </Link>

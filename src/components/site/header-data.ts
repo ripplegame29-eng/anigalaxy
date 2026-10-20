@@ -39,6 +39,7 @@ export const NAV_LINKS: NavLink[] = [
   // «Топ» из шапки убраны: это фильтры каталога, а не самостоятельные
   // страницы, и они остаются доступны внутри каталога.
   { label: "AniSwipe", href: "/aniswipe", path: "/aniswipe" },
+  { label: "Расписание", href: "/schedule", path: "/schedule" },
   { label: "Манга", href: "/manga", path: "/manga" },
 ];
 
@@ -76,9 +77,6 @@ export const CATALOG_LINKS: CatalogLink[] = [
   // `collections.html`. Числа пока нет: сервера у проекта нет, а выдуманный
   // «64» в меню врёт (как и счётчик каталога выше — см. `countHint`).
   { icon: "layers", label: "Подборки", hint: "Тематические коллекции аниме", color: "#4a9dff", href: "/collections" },
-  // TODO: страницы «Расписание» (/schedule) в проекте нет,
-  // показан ближайший раздел с тем же смыслом — онгоинги
-  { icon: "cal", label: "Расписание", hint: "Что выходит на этой неделе", color: "#22d3ee", href: "/catalog?status=ongoing", countHint: "сегодня" },
   { icon: "trophy", label: "Лидерборд", hint: "Топ самых активных зрителей", color: "#4a9dff", href: "/leaderboard" },
   // Публичный роадмап проекта: что готово, что в работе и что в планах
   { icon: "spark", label: "Обновления", hint: "Что нового в AniGalaxy", color: "#22d3ee", href: "/updates", badge: "new" },
@@ -96,7 +94,6 @@ export const QUICK_GENRES = [
   "Экшен",
   "Романтика",
   "Исекай",
-  "Триллер",
   "Спорт",
 ] as const;
 
@@ -173,7 +170,7 @@ export const MENU_LINKS: MenuLink[] = [
   // Прототип: /profile?tab=favourites, в проекте раздел называется favorites
   { icon: "heart", label: "Любимое", href: "/profile?tab=favorites" },
   // Прототип вёл на отдельную /quests, у проекта это вкладка профиля
-  { icon: "target", label: "Квесты", href: "/profile?tab=quests", badge: "quests" },
+  { icon: "target", label: "Квесты", href: "/quests", badge: "quests" },
   { icon: "store", label: "Магазин", href: "/store" },
   { icon: "users", label: "Пригласи друзей", href: "/referrals" },
   { icon: "gear", label: "Настройки", href: "/settings" },

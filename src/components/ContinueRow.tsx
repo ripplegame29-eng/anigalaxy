@@ -20,6 +20,7 @@ import { timeAgo, watchStore } from "@/lib/history";
 import { useTitles } from "@/lib/titles";
 import { Poster } from "./Poster";
 import { Reveal } from "./Reveal";
+import { SectionMark } from "./SectionMark";
 
 /** Сколько серий показываем в ленте */
 const LIMIT = 10;
@@ -102,9 +103,9 @@ export function ContinueRow() {
 
   return (
     <Reveal as="section" className="group/rail">
-      <div className="mb-5 flex items-end justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <span className="h-7 w-1.5 rounded-full bg-violet-400" aria-hidden />
+      <div className="mb-5 flex flex-wrap items-end justify-between gap-x-4 gap-y-3">
+        <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-2">
+          <SectionMark kind="play" />
           <h2 className="text-lg font-extrabold tracking-tight sm:text-xl">Продолжить просмотр</h2>
         </div>
 
@@ -156,7 +157,7 @@ export function ContinueRow() {
             <Link
               key={`${item.id}-${item.season}-${item.episode}`}
               href={`/title/${item.id}?s=${item.season}&ep=${item.episode}`}
-              className="group/cont relative flex w-[240px] shrink-0 flex-col overflow-hidden rounded-2xl border border-line bg-card transition duration-300 hover:-translate-y-1 hover:border-accent/50 sm:w-[268px]"
+              className="cr-card group/cont flex w-[240px] shrink-0 flex-col overflow-hidden rounded-2xl sm:w-[268px]"
             >
               <div className="relative aspect-video overflow-hidden">
                 {item.poster ? (
@@ -170,10 +171,15 @@ export function ContinueRow() {
                   <div className="grid h-full w-full place-items-center bg-gradient-to-br from-[#16203f] to-card" />
                 )}
                 <span className="absolute inset-0 bg-gradient-to-t from-card via-card/60 to-transparent" aria-hidden />
-                <span className="absolute left-3 top-3 rounded-lg bg-black/70 px-2 py-1 text-[11px] font-extrabold text-white backdrop-blur-sm">
+                <span className="cr-play" aria-hidden>
+                  <i>
+                    <svg viewBox="0 0 24 24"><path d="M7 4.6v14.8L19 12z" /></svg>
+                  </i>
+                </span>
+                <span className="cr-chip absolute left-3 top-3 rounded-lg px-2 py-1 text-[11px] font-extrabold text-white">
                   Серия {item.episode}
                 </span>
-                <span className="absolute right-3 top-3 rounded-lg bg-accent/90 px-2 py-1 text-[11px] font-extrabold tabular-nums text-white">
+                <span className="cr-chip absolute right-3 top-3 rounded-lg px-2 py-1 text-[11px] font-extrabold tabular-nums text-white">
                   {timeAgo(item.at)}
                 </span>
               </div>
@@ -197,11 +203,8 @@ export function ContinueRow() {
                     {item.total > 0 && <span className="shrink-0 tabular-nums">{progress.toFixed(0)}%</span>}
                   </div>
                   {item.total > 0 && (
-                    <span className="mt-2 block h-1 overflow-hidden rounded-full bg-white/10">
-                      <span
-                        className="block h-full rounded-full bg-gradient-to-r from-accent to-accent-2"
-                        style={{ width: `${progress}%` }}
-                      />
+                    <span className="cr-bar mt-2">
+                      <span style={{ width: `${progress}%` }} />
                     </span>
                   )}
                 </div>

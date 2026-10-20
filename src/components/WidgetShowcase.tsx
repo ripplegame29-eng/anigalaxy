@@ -20,6 +20,7 @@ import { useEffect, useState } from "react";
 import {
   MAX_WIDGETS,
   WIDGET_BY_ID,
+  accentVars,
   readWidgetLayout,
   type WidgetSlot,
 } from "@/lib/widgets";
@@ -49,6 +50,8 @@ export function WidgetShowcase({ readOnly = false }: { readOnly?: boolean }) {
             <article
               key={slot.id}
               className={`ag-wv-card ${slot.w === "l" ? "ag-wv-wide" : ""}`}
+              data-accent={slot.c || undefined}
+              style={accentVars(slot.c) as React.CSSProperties | undefined}
             >
               <header className="ag-wv-card-head">
                 <span>{def.title}</span>

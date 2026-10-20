@@ -177,7 +177,7 @@ export function SearchBox({ mobile = false }: { mobile?: boolean }) {
                         </span>
                       </span>
                       {item.rating != null && (
-                        <span className="shrink-0 rounded-md bg-white/8 px-1.5 py-0.5 text-[11px] font-bold text-accent-2">
+                        <span className="shrink-0 rounded-md bg-white/8 px-1.5 py-0.5 text-[11px] font-bold text-gold">
                           {item.rating}
                         </span>
                       )}

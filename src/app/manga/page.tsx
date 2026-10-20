@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { AnimeGrid } from "@/components/AnimeRow";
 import { Reveal } from "@/components/Reveal";
-import { mangaCatalogPage, type MangaSort } from "@/lib/mangadex";
+import { mangaCatalogPage, type MangaSort } from "@/lib/senku";
 
 export const metadata: Metadata = {
   title: "Каталог манги",

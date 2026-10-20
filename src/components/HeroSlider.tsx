@@ -156,7 +156,7 @@ export function HeroSlider({ items }: { items: AnimeCard[] }) {
               {active.status === "ongoing" ? "Выходит сейчас" : "Рекомендуем"}
             </span>
             {active.rating != null && (
-              <span className="flex items-center gap-1 rounded-full bg-white/8 px-3 py-1 text-xs font-bold text-accent-2 ring-1 ring-white/10 backdrop-blur">
+              <span className="flex items-center gap-1 rounded-full bg-white/8 px-3 py-1 text-xs font-bold text-gold ring-1 ring-white/10 backdrop-blur">
                 <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="currentColor">
                   <path d="m12 17.3-6.16 3.7 1.64-7.03L2 9.24l7.19-.61L12 2l2.81 6.63 7.19.61-5.48 4.73L18.16 21z" />
                 </svg>

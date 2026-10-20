@@ -41,7 +41,7 @@ const NAV: Record<string, string> = {
   profile: "/profile",
   list: "/list",
   shop: "/store",
-  quests: "/profile?tab=quests",
+  quests: "/quests",
   achievements: "/profile?tab=achievements",
   cosmetics: "/cosmetics",
   invite: "/referrals",

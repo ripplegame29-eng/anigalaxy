@@ -1,0 +1,13 @@
+/* Оценки (★ 8.25) — золотые везде: карточки, поиск, «Аниме дня», каталог.
+   Выделено в отдельный файл, потому что header.css генерируется. */
+.agh-feat-rate {
+  color: var(--color-gold, #ffb020);
+}
+.as-card-rating {
+  color: var(--color-gold, #ffb020);
+}
+.al-b.tr u,
+.al-lr u {
+  color: var(--color-gold, #ffb020);
+  text-decoration: none;
+}

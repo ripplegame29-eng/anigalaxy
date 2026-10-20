@@ -12,6 +12,29 @@ import { sourceLabel } from "@/lib/progression/labels";
 import type { ProgressDoc } from "@/lib/progression/types";
 import { timeAgo } from "@/lib/history";
 import { ShopSection } from "@/components/profile/ProfileSections";
+import { PremiumChip } from "@/components/profile/PremiumChip";
+
+/** Свет под курсором для карточек `.sp-card` / `.sp-pack`: одна подписка на всю витрину */
+function spotlight(event: React.PointerEvent<HTMLElement>) {
+  const card = (event.target as HTMLElement).closest<HTMLElement>(".sp-card, .sp-pack");
+  if (!card) return;
+  const rect = card.getBoundingClientRect();
+  card.style.setProperty("--mx", `${event.clientX - rect.left}px`);
+  card.style.setProperty("--my", `${event.clientY - rect.top}px`);
+}
+
+/** Искры, плывущие вверх по фону (значения фиксированы — без random, иначе гидратация) */
+const SPARKS = [
+  { "--x": 6, "--s": "5px", "--d": "14s", "--w": "0s" },
+  { "--x": 17, "--s": "3px", "--d": "11s", "--w": "-4s" },
+  { "--x": 29, "--s": "6px", "--d": "17s", "--w": "-9s" },
+  { "--x": 41, "--s": "4px", "--d": "12s", "--w": "-2s" },
+  { "--x": 53, "--s": "5px", "--d": "15s", "--w": "-7s" },
+  { "--x": 64, "--s": "3px", "--d": "10s", "--w": "-5s" },
+  { "--x": 75, "--s": "6px", "--d": "18s", "--w": "-11s" },
+  { "--x": 86, "--s": "4px", "--d": "13s", "--w": "-1s" },
+  { "--x": 94, "--s": "5px", "--d": "16s", "--w": "-8s" },
+];
 
 const CHIP =
   "inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-[11px] font-black uppercase tracking-wide ring-1";
@@ -25,14 +48,27 @@ export function StoreView() {
   const progress = useProgress();
 
   return (
-    <div className="ag-root space-y-6">
+    <div className="ag-root sp-root space-y-6" onPointerMove={spotlight}>
+      <div className="sp-bg" aria-hidden>
+        <i className="sp-blob sp-b1" />
+        <i className="sp-blob sp-b2" />
+        <i className="sp-blob sp-b3" />
+        <i className="sp-grid" />
+        <i className="sp-stars" />
+        <i className="sp-beam" />
+        <span className="sp-sparks">
+          {SPARKS.map((sp, i) => (
+            <b key={i} style={sp as React.CSSProperties} />
+          ))}
+        </span>
+      </div>
       {/* --------------------------- Герой витрины --------------------------- */}
       {/* Ник, Premium, уровень и полосу XP показывает каталог ниже — здесь
           только то, чего в нём нет: название витрины и пояснение. Держать
           одно и то же дважды на странице незачем. */}
-      <section className="ag-card relative overflow-hidden">
+      <section className="ag-card sp-hero relative overflow-hidden">
         <div
-          className="pointer-events-none absolute inset-0 bg-gradient-to-r from-accent/18 via-accent-2/8 to-accent-2/10"
+          className="pointer-events-none absolute inset-0 bg-gradient-to-r from-accent/20 via-accent-2/10 to-violet-500/12"
           aria-hidden
         />
         <div
@@ -46,8 +82,8 @@ export function StoreView() {
               <span className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-accent-2 to-accent px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-white shadow-[0_12px_28px_-14px_rgba(31,123,255,1)]">
                 Витрина AniGalaxy
               </span>
-              <h1 className="ag-shop-h1 mt-3 text-3xl font-black tracking-tight text-white sm:text-4xl">
-                Косметика
+              <h1 className="ag-shop-h1 sp-h1 mt-3 text-3xl font-black tracking-tight text-white sm:text-4xl">
+                Магазин
               </h1>
               <p className="mt-1.5 max-w-xl text-sm leading-relaxed text-muted">
                 Теги, титулы, фоны, рамки и эффекты за AC. AC копятся за вход, квесты и
@@ -62,11 +98,11 @@ export function StoreView() {
                   <Link href="/profile" className={`${CHIP} bg-white/8 text-muted ring-white/15 hover:text-white`}>
                     Мой профиль
                   </Link>
-                  <Link href="/profile?tab=quests" className={`${CHIP} bg-mint/12 text-mint ring-mint/35 hover:bg-mint/20`}>
+                  <Link href="/quests" className={`${CHIP} bg-mint/12 text-mint ring-mint/35 hover:bg-mint/20`}>
                     Квесты дня
                   </Link>
-                  <Link href="/premium" className={`${CHIP} border-accent-2/40 bg-accent-2/10 text-accent-2 hover:bg-accent-2/18`}>
-                    Premium
+                  <Link href="/premium" aria-label="Premium" className="transition hover:brightness-125">
+                    <PremiumChip />
                   </Link>
                 </div>
               ) : (
@@ -183,8 +219,8 @@ function AcOverviewBar({ progress }: { progress: ProgressDoc }) {
   const entryLabel = (source: string) => (source.startsWith("LEVEL_") ? "Уровень" : sourceLabel(source));
 
   return (
-    <section className="rounded-3xl border border-line bg-card/60 p-5 sm:p-6">
-      <div className="grid gap-5 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.5fr)_minmax(0,1.2fr)]">
+    <section className="sp-card rounded-3xl border border-line bg-card/60 p-5 sm:p-6">
+      <div className="grid gap-5 lg:grid-cols-[auto_minmax(0,1.5fr)_minmax(0,1.2fr)]">
         {/* ------------------------------ Баланс ----------------------------- */}
         <div className="lg:pr-5">
           <BarLabel dot="bg-accent-2">Баланс</BarLabel>
@@ -207,8 +243,8 @@ function AcOverviewBar({ progress }: { progress: ProgressDoc }) {
               />
               <SparkleField spots={COIN_SPARKLES} />
             </span>
-            <span className="min-w-0">
-              <span className="block bg-gradient-to-r from-accent-2 to-accent bg-clip-text text-4xl font-black leading-none text-transparent sm:text-5xl">
+            <span className="shrink-0">
+              <span className="sp-balance block whitespace-nowrap bg-gradient-to-r from-accent-2 to-accent bg-clip-text pr-1 text-4xl font-black leading-none text-transparent sm:text-5xl">
                 {balance}
               </span>
               <span className="mt-1.5 block text-[11px] font-black uppercase tracking-[0.18em] text-muted">
@@ -223,7 +259,7 @@ function AcOverviewBar({ progress }: { progress: ProgressDoc }) {
           <BarLabel dot="bg-accent">Заработать</BarLabel>
           <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
             <EarnCard
-              href="/profile?tab=quests"
+              href="/quests"
               title="Квесты"
               sub={`до ${questAcMax} в сутки`}
               icon={
@@ -435,7 +471,7 @@ function CoinPackBanner() {
       </div>
 
       {/* ------------------------------ Карточка ----------------------------- */}
-      <div className="relative overflow-hidden rounded-3xl border border-line bg-gradient-to-r from-accent/14 via-card to-accent-2/10">
+      <div className="sp-card relative overflow-hidden rounded-3xl border border-line bg-gradient-to-r from-accent/14 via-card to-accent-2/10">
         <div
           className="pointer-events-none absolute -right-16 -top-20 h-64 w-64 rounded-full bg-accent/18 blur-3xl"
           aria-hidden
@@ -494,7 +530,7 @@ function CoinPackBanner() {
             {/* CTA и факты — как нижний ряд эталона */}
             <div className="flex flex-wrap items-center gap-x-5 gap-y-3">
               <Link
-                href="/profile?tab=quests"
+                href="/quests"
                 className="btn-primary rounded-xl px-5 py-3 text-sm font-bold text-white"
               >
                 Квесты дня →
@@ -559,16 +595,20 @@ type CoinPack = {
   oldPrice?: number;
   gift?: string;
   tone?: "gold" | "accent";
+  badge?: string;
 };
 
 const COIN_PACKS: CoinPack[] = [
   { id: "stack", name: "Стопка", img: "/pack-2.png", w: 325, h: 340, amount: 2400, bonus: "+20%", price: 179 },
-  { id: "bag", name: "Мешок", img: "/pack-3.png", w: 340, h: 334, amount: 5600, bonus: "+40%", price: 349, gift: "+5 600 AC подарком за первую покупку" },
+  { id: "bag", name: "Мешок", img: "/pack-3.png", w: 340, h: 334, amount: 5600, bonus: "+40%", price: 349, badge: "Хит", gift: "+5 600 AC подарком за первую покупку" },
   { id: "small-chest", name: "Маленький сундук", img: "/pack-1.png", w: 296, h: 340, amount: 640, bonus: "Стартовый", price: 69, tone: "gold" },
   { id: "chest", name: "Сундук", img: "/pack-4.png", w: 340, h: 305, amount: 14400, bonus: "+50%", price: 749 },
-  { id: "vault", name: "Хранилище", img: "/pack-5.png", w: 325, h: 340, amount: 32000, bonus: "+60%", price: 1490, oldPrice: 1790 },
+  { id: "vault", name: "Хранилище", img: "/pack-5.png", w: 325, h: 340, amount: 32000, bonus: "+60%", price: 1490, oldPrice: 1790, badge: "Выгодно" },
   { id: "treasury", name: "Сокровищница", img: "/pack-6.png", w: 340, h: 305, amount: 54400, bonus: "+70%", price: 2290 },
 ];
+
+/** Ряд идёт по возрастанию цены: от стартового пакета к сокровищнице */
+COIN_PACKS.sort((x, y) => x.price - y.price);
 
 /** Блёстки вокруг артов пакетов (позиции статичны — без random, иначе гидратация) */
 const PACK_SPARKLES: SparkleSpot[] = [
@@ -590,7 +630,7 @@ function CoinPacks() {
       {/* ---------------------------- Шапка секции --------------------------- */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="flex items-center gap-2.5 text-lg font-black uppercase tracking-tight text-white">
-          <span className="grid h-9 w-9 place-items-center rounded-xl bg-accent-2/15 text-accent-2 ring-1 ring-accent-2/35">
+          <span className="grid h-9 w-9 place-items-center rounded-xl bg-gold/15 text-gold ring-1 ring-gold/35">
             <svg
               viewBox="0 0 24 24"
               className="h-5 w-5"
@@ -617,8 +657,10 @@ function CoinPacks() {
         {COIN_PACKS.map((pack, idx) => (
           <article
             key={pack.id}
-            className="flex flex-col rounded-2xl border border-line bg-card/70 p-3 transition hover:-translate-y-0.5 hover:border-accent/40 hover:bg-card"
+            className={`sp-pack sp-pack--${pack.tone ?? "base"} flex flex-col rounded-2xl border border-line bg-card/70 p-3`}
+            style={{ "--i": idx } as React.CSSProperties}
           >
+            {pack.badge && <span className="sp-ribbon">{pack.badge}</span>}
             {/* Иллюстрация на свечении: парение + пульс свечения, как у монетки */}
             <div className="relative flex h-28 items-center justify-center">
               <span
@@ -628,7 +670,7 @@ function CoinPacks() {
               <span
                 className={`absolute right-0 top-0 z-10 rounded-md px-1.5 py-0.5 text-[10px] font-black ring-1 ${
                   pack.tone === "gold"
-                    ? "bg-accent-2/15 text-accent-2 ring-accent-2/40"
+                    ? "bg-gold/15 text-gold ring-gold/40"
                     : "bg-accent/18 text-accent-2 ring-accent/40"
                 }`}
               >
@@ -661,19 +703,14 @@ function CoinPacks() {
               </p>
             )}
 
-            <div className="mt-auto flex items-center justify-between gap-2 pt-3">
-              <span className="min-w-0">
-                {pack.oldPrice && (
-                  <s className="block text-[10px] font-bold leading-none text-muted/70">{fmt(pack.oldPrice)} ₽</s>
-                )}
-                <span className="text-sm font-black text-white">{fmt(pack.price)} ₽</span>
-              </span>
-              <button
-                type="button"
-                onClick={() => setPicked(pack)}
-                className="shrink-0 rounded-lg bg-accent/15 px-2.5 py-1.5 text-[11px] font-black text-accent-2 ring-1 ring-accent/35 transition hover:bg-accent/25 hover:text-white"
-              >
-                Купить (демо) →
+            <div className="mt-auto pt-3">
+              <p className="sp-price">
+                <span className="sp-price-now">{fmt(pack.price)}&nbsp;₽</span>
+                {pack.oldPrice && <s className="sp-price-old">{fmt(pack.oldPrice)}&nbsp;₽</s>}
+              </p>
+              <button type="button" onClick={() => setPicked(pack)} className="sp-buy">
+                Купить (демо)
+                <span aria-hidden>→</span>
               </button>
             </div>
           </article>

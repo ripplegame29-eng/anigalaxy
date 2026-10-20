@@ -20,6 +20,8 @@ import {
   DEFAULT_LAYOUT,
   MAX_WIDGETS,
   WIDGETS,
+  WIDGET_ACCENTS,
+  accentVars,
   WIDGET_BY_ID,
   isWidgetUnlocked,
   readWidgetLayout,
@@ -41,7 +43,7 @@ function priceOf(service: string | undefined): number {
 }
 
 function sameLayout(a: WidgetSlot[], b: WidgetSlot[]): boolean {
-  return a.length === b.length && a.every((slot, i) => slot.id === b[i]?.id && slot.w === b[i]?.w);
+  return a.length === b.length && a.every((slot, i) => slot.id === b[i]?.id && slot.w === b[i]?.w && slot.c === b[i]?.c);
 }
 
 export function WidgetsPanel({
@@ -59,6 +61,10 @@ export function WidgetsPanel({
   const [draft, setDraft] = useState<WidgetSlot[]>(saved);
   const [opts, setOpts] = useState<WidgetOptions>(readWidgetOptions);
   const [dragId, setDragId] = useState<WidgetId | null>(null);
+  const [overId, setOverId] = useState<WidgetId | null>(null);
+  /** Блок, у которого открыт выбор цвета, и выбранный в окне цвет */
+  const [custom, setCustom] = useState<WidgetId | null>(null);
+  const [pick, setPick] = useState<string | undefined>(undefined);
 
   // Раскладка в хранилище может прийти из другой вкладки браузера
   useEffect(() => {
@@ -113,22 +119,44 @@ export function WidgetsPanel({
 
   const onDrop = useCallback(
     (targetId: WidgetId) => {
-      setDragId((from) => {
-        if (!from || from === targetId) return null;
-        mutate((prev) => {
-          const fromI = prev.findIndex((slot) => slot.id === from);
-          const toI = prev.findIndex((slot) => slot.id === targetId);
-          if (fromI < 0 || toI < 0) return prev;
-          const next = [...prev];
-          const [moved] = next.splice(fromI, 1);
-          next.splice(toI, 0, moved);
-          return next;
-        });
-        return null;
+      // Раньше перестановка шла внутри setDragId(updater): в dev React вызывает
+      // updater дважды, блок переставлялся и тут же возвращался на место.
+      const from = dragId;
+      setDragId(null);
+      if (!from || from === targetId) return;
+      mutate((prev) => {
+        const fromI = prev.findIndex((slot) => slot.id === from);
+        const toI = prev.findIndex((slot) => slot.id === targetId);
+        if (fromI < 0 || toI < 0) return prev;
+        const next = [...prev];
+        const [moved] = next.splice(fromI, 1);
+        next.splice(toI, 0, moved);
+        return next;
       });
     },
-    [mutate],
+    [dragId, mutate],
   );
+
+  const openCustom = useCallback(
+    (id: WidgetId) => {
+      setPick(draft.find((slot) => slot.id === id)?.c);
+      setCustom(id);
+    },
+    [draft],
+  );
+
+  const applyCustom = useCallback(() => {
+    if (!custom) return;
+    mutate((prev) =>
+      prev.map((slot) => {
+        if (slot.id !== custom) return slot;
+        const { c: _old, ...rest } = slot;
+        void _old;
+        return pick ? { ...rest, c: pick } : rest;
+      }),
+    );
+    setCustom(null);
+  }, [custom, pick, mutate]);
 
   const save = useCallback(() => {
     // Неоплаченный блок в раскладке оставить нельзя: сохранив, пользователь
@@ -168,7 +196,7 @@ export function WidgetsPanel({
         Виджеты
       </h2>
       <p className="ag-sub">
-        Блоки, которые видят гости. Перетаскивайте за ручку ⋮⋮, меняйте размер и убирайте лишнее.
+        Блоки, которые видят гости. Зажмите блок мышью и перетащите, меняйте размер и цвет, убирайте лишнее.
       </p>
 
       {/* --------------------------- Панель действий --------------------------- */}
@@ -178,6 +206,9 @@ export function WidgetsPanel({
             <Toggle label="Кольцо списков" on={opts.rings} onChange={(v) => setOpts({ ...opts, rings: v })} />
             <Toggle label="Разделители" on={opts.sep} onChange={(v) => setOpts({ ...opts, sep: v })} />
             <span className="ag-wp-sp" />
+            <span className={`ag-wp-state${dirty ? " is-dirty" : ""}`}>
+              {dirty ? "Есть несохранённые изменения" : "Сохранено"}
+            </span>
             <button type="button" className="btn g" onClick={undo} disabled={!dirty}>
               <WidgetIcon name="undo" />
               Отменить
@@ -225,16 +256,41 @@ export function WidgetsPanel({
               key={slot.id}
               className={`ag-card ag-w ${slot.w === "l" ? "is-wide" : ""} ${
                 dragId === slot.id ? "is-drag" : ""
-              }`}
+              } ${overId === slot.id && dragId && dragId !== slot.id ? "is-over" : ""}`}
               data-widget-id={slot.id}
+              data-accent={slot.c || undefined}
+              style={accentVars(slot.c) as React.CSSProperties | undefined}
+              /* Блок берётся мышью за любое место: зажал — потянул. Кнопки в
+                 панели управления остаются кнопками (клик не начинает drag). */
+              draggable={editing}
+              onDragStart={(event) => {
+                if (!editing) return;
+                setDragId(slot.id);
+                event.dataTransfer.effectAllowed = "move";
+                event.dataTransfer.setData("text/plain", slot.id);
+                // Подпись у курсора: «Достижения 2×1», как на референсе
+                const ghost = document.createElement("div");
+                ghost.textContent = `${def.title} ${slot.w === "l" ? "2×1" : "1×1"}`;
+                ghost.style.cssText =
+                  "position:fixed;top:-100px;left:-100px;padding:10px 16px;border-radius:12px;background:#0d0d14;border:1px solid rgba(255,255,255,.18);color:#fff;font:700 14px system-ui,sans-serif;box-shadow:0 12px 30px rgba(0,0,0,.6)";
+                document.body.appendChild(ghost);
+                event.dataTransfer.setDragImage(ghost, 14, 14);
+                setTimeout(() => ghost.remove(), 0);
+              }}
               onDragOver={(event) => {
-                if (dragId) event.preventDefault();
+                if (!dragId) return;
+                event.preventDefault();
+                if (overId !== slot.id) setOverId(slot.id);
               }}
               onDrop={(event) => {
                 event.preventDefault();
+                setOverId(null);
                 onDrop(slot.id);
               }}
-              onDragEnd={() => setDragId(null)}
+              onDragEnd={() => {
+                setDragId(null);
+                setOverId(null);
+              }}
             >
               <header className="ag-w-head">
                 <WidgetIcon name={def.icon} className="ag-w-ico" />
@@ -246,18 +302,7 @@ export function WidgetsPanel({
                         стоял на карточке, а dragstart и так приходит на неё —
                         проверка «начали ли за ручку» всегда была ложной, и
                         мышь не тянула блок вовсе. */}
-                    <span
-                      className="ag-w-handle"
-                      title="Перетащить"
-                      aria-hidden
-                      draggable={editing}
-                      onDragStart={(event) => {
-                        event.stopPropagation();
-                        setDragId(slot.id);
-                        event.dataTransfer.effectAllowed = "move";
-                        event.dataTransfer.setData("text/plain", slot.id);
-                      }}
-                    >
+                    <span className="ag-w-handle" title="Потяните блок мышью" aria-hidden>
                       <WidgetIcon name="drag" />
                     </span>
                     <button type="button" onClick={() => move(slot.id, -1)} title="Влево" aria-label={`Сдвинуть «${def.title}» влево`}>
@@ -284,6 +329,15 @@ export function WidgetsPanel({
                     >
                       2×1
                     </button>
+                    <button
+                      type="button"
+                      onClick={() => openCustom(slot.id)}
+                      title="Цвет блока"
+                      aria-label={`Цвет блока «${def.title}»`}
+                    >
+                      <WidgetIcon name="pal" />
+                      <span className="ag-w-tl">Настроить</span>
+                    </button>
                     <button type="button" className="ag-w-del" onClick={() => remove(slot.id)} title="Убрать" aria-label={`Убрать «${def.title}»`}>
                       <WidgetIcon name="x" />
                     </button>
@@ -296,6 +350,58 @@ export function WidgetsPanel({
           );
         })}
       </div>
+
+      {/* ------------------------- Выбор цвета блока ------------------------- */}
+      {custom && (
+        <div className="ag-wp-modal" role="presentation" onClick={() => setCustom(null)}>
+          <div
+            className="ag-wp-dlg"
+            role="dialog"
+            aria-modal="true"
+            aria-label={`Блок «${WIDGET_BY_ID[custom].title}»`}
+            onClick={(event) => event.stopPropagation()}
+            onKeyDown={(event) => {
+              if (event.key === "Escape") setCustom(null);
+            }}
+          >
+            <div className="ag-wp-dlg-h">
+              <WidgetIcon name="gear" />
+              <h4>Блок «{WIDGET_BY_ID[custom].title}»</h4>
+              <button type="button" className="ag-wp-x" onClick={() => setCustom(null)} aria-label="Закрыть">
+                <WidgetIcon name="x" />
+              </button>
+            </div>
+            <p className="ag-wp-dlg-t">Акцентный цвет</p>
+            <p className="ag-wp-dlg-s">Красит градиент фона блока, его кромку и значок.</p>
+            <div className="ag-wp-sw-row" role="group" aria-label="Акцентный цвет">
+              {WIDGET_ACCENTS.map((accent) => (
+                <button
+                  key={accent.id}
+                  type="button"
+                  className={`ag-wp-dot${pick === accent.id ? " is-on" : ""}`}
+                  style={{ "--wa": accent.rgb } as React.CSSProperties}
+                  aria-pressed={pick === accent.id}
+                  aria-label={accent.name}
+                  title={accent.name}
+                  onClick={() => setPick(accent.id)}
+                />
+              ))}
+            </div>
+            <div className="ag-wp-dlg-f">
+              <button type="button" className="ag-wp-link" onClick={() => setPick(undefined)}>
+                Сбросить
+              </button>
+              <span className="ag-wp-sp" />
+              <button type="button" className="ag-wp-link" onClick={() => setCustom(null)}>
+                Отмена
+              </button>
+              <button type="button" className="btn" onClick={applyCustom}>
+                Готово
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ------------------------------ Палитра ------------------------------ */}
       {editing && (

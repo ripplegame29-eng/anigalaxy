@@ -6,6 +6,15 @@ import "./effects.css";
 import "./ag-tag.css";
 import "./ag-tag-premium.css";
 import "./premium-chip.css";
+import "../components/section-mark.css";
+import "./rating-gold.css";
+import "./next-episode.css";
+import "./schedule.css";
+import "./settings-premium.css";
+import "./wardrobe-premium.css";
+import "./store-premium.css";
+import "./quests.css";
+import "./frame-search.css";
 import "./streak-capsule.css";
 import "./nickname.css";
 import "./ag-comments.css";
@@ -13,6 +22,7 @@ import "./catalog.css";
 import "./watch-together.css";
 import "./aniswipe.css";
 import "./cosmetics-shop.css";
+import "./ags-premium.css";
 import "./avatar-frame.css";
 import "./level-emblem.css";
 import "./achievement-emblem.css";
@@ -26,6 +36,7 @@ import "./profile-fx.css";
 import "./battle-pass.css";
 import "./clans.css";
 import "./clans-game.css";
+import "./profile-premium.css";
 import { AuthDialogHost } from "@/components/AuthDialogHost";
 import { ChatWidget } from "@/components/ChatWidget";
 import { DailyBonusHost } from "@/components/DailyBonusHost";
@@ -36,6 +47,7 @@ import "@/components/site/header-promo.css";
 import "@/components/site/search.css";
 import "@/components/row-highlight.css";
 import { ProgressionBoot } from "@/components/ProgressionBoot";
+import { EpisodeNotifier } from "@/components/EpisodeNotifier";
 import { DevPanel } from "@/components/progression/DevPanel";
 import { EcoBoot } from "@/components/progression/EcoBoot";
 import { LevelEmblemIO } from "@/components/progression/LevelEmblemIO";
@@ -217,6 +229,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
 
         {/* Ежедневный вход прогрессии: событие шлётся только в браузере (useEffect) */}
         <ProgressionBoot />
+
+        {/* Уведомления о выходе серий: расписание → тост, колокольчик, браузер */}
+        <EpisodeNotifier />
 
         {/* Dev-панель прогрессии (§15 этап 7): рендерится только в dev-сборке
             и только с ?dev=1 — в production условие вырезается на этапе сборки */}

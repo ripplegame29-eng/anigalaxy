@@ -222,8 +222,7 @@ export function ProfileView({ mode = "owner" }: { mode?: "owner" | "guest" }) {
     : [
         { id: "share", label: "Поделиться", icon: "share", run: () => openProfileDialog("share") },
         { id: "preview", label: "Как видят другие", icon: "eye", run: () => openProfileDialog("preview") },
-        { id: "appearance", label: "Внешний вид", icon: "pal", run: () => openProfileDialog("appearance") },
-        { id: "settings", label: "Настройки", icon: "gear", run: () => openProfileDialog("settings"), primary: true },
+        { id: "appearance", label: "Внешний вид", icon: "pal", run: () => openProfileDialog("appearance"), primary: true },
       ];
 
   const badge = (item: SectionMeta) =>

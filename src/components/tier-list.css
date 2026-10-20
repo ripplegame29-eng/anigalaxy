@@ -2,15 +2,15 @@
  * Классы макета уже с префиксом tl-, поэтому перенесены без правок: размеры,
  * начертания и анимации — как в макете. Подменены только гарнитуры (Manrope →
  * шрифты проекта). Виджет лежит внутри карточки профиля, поэтому рамку,
- * скругление и фон корня .tl убираем — их уже нарисовала карточка блока.
+ * скругление и фон корня .tl-root убираем — их уже нарисовала карточка блока.
  */
 
-.tl{--ink:#f4f2ee;--mut:#9a98a6;--line:rgba(255,255,255,.07);--acc:#ffb26b;
+.tl-root{--ink:#f4f2ee;--mut:#9a98a6;--line:rgba(255,255,255,.07);--acc:#ffb26b;
   position:relative;isolation:isolate;overflow:hidden;max-width:1040px;margin:0 auto;padding:26px;border-radius:26px;
   font-family:var(--font-body);color:var(--ink);
   background:linear-gradient(160deg,#17161d 0%,#0e0e13 60%);border:1px solid var(--line);
   box-shadow:0 40px 80px -30px rgba(0,0,0,.8),inset 0 1px 0 rgba(255,255,255,.05)}
-.tl *{box-sizing:border-box}
+.tl-root *{box-sizing:border-box}
 .tl-glow{position:absolute;inset:-30% -10% auto;height:360px;z-index:-1;pointer-events:none;filter:blur(60px);opacity:.5;
   background:radial-gradient(40% 60% at 20% 40%,#ff6b57 0,transparent 70%),radial-gradient(40% 60% at 55% 30%,#7fd8ff 0,transparent 70%),radial-gradient(40% 60% at 85% 50%,#ff80ff 0,transparent 70%);
   animation:tlDrift 18s ease-in-out infinite alternate}
@@ -26,7 +26,7 @@
 .tl-btn:hover{background:rgba(255,255,255,.12);transform:translateY(-1px)}
 .tl-primary{background:linear-gradient(135deg,#ffb26b,#ff6b57);color:#1a1210;border:0;box-shadow:0 8px 24px -8px #ff6b57}
 .tl-primary:hover{background:linear-gradient(135deg,#ffc088,#ff7d6b);box-shadow:0 12px 30px -8px #ff6b57}
-.tl :focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.tl-root :focus-visible{outline:2px solid var(--acc);outline-offset:2px}
 
 .tl-tiers{display:flex;flex-direction:column;gap:10px}
 .tl-tier{--c:#fff;display:flex;min-height:108px;border-radius:16px;overflow:hidden;background:rgba(255,255,255,.035);
@@ -70,7 +70,7 @@
 .tl-trash{position:absolute;left:50%;bottom:16px;transform:translate(-50%,30px);opacity:0;pointer-events:none;padding:12px 22px;border-radius:999px;
   background:rgba(255,77,77,.16);border:1.5px dashed #ff6b6b;color:#ffb3b3;font-weight:700;font-size:13px;backdrop-filter:blur(8px);
   transition:opacity .25s,transform .25s,background .2s;z-index:5}
-.tl.dragging .tl-trash{opacity:1;pointer-events:auto;transform:translate(-50%,0)}
+.tl-root.dragging .tl-trash{opacity:1;pointer-events:auto;transform:translate(-50%,0)}
 .tl-trash.over{background:rgba(255,77,77,.4);color:#fff}
 
 .tl-modal{position:fixed;inset:0;z-index:9999;display:grid;place-items:center;padding:16px;visibility:hidden}
@@ -103,14 +103,14 @@
 .tl-hint{color:var(--mut);font-size:13px}
 .tl-modal.open .tl-grid .tl-card{animation:tlPop .45s cubic-bezier(.3,1.4,.5,1) both;animation-delay:calc(var(--k,0)*22ms)}
 
-@media (max-width:560px){.tl{padding:14px;border-radius:18px}.tl-title{font-size:24px}.tl-label{flex-basis:56px;font-size:22px}
+@media (max-width:560px){.tl-root{padding:14px;border-radius:18px}.tl-title{font-size:24px}.tl-label{flex-basis:56px;font-size:22px}
   .tl-card{width:62px;height:86px}.tl-add{width:46px;height:62px}.tl-panel{padding:16px;border-radius:20px}.tl-grid{grid-template-columns:repeat(auto-fill,minmax(92px,1fr))}}
-@media (prefers-reduced-motion:reduce){.tl *,.tl *::before,.tl *::after{animation:none!important;transition:none!important}}
+@media (prefers-reduced-motion:reduce){.tl-root *,.tl-root *::before,.tl-root *::after{animation:none!important;transition:none!important}}
 
 /* ═══ правки под профиль ═══ */
 /* Блок виджета уже в рамке карточки .ag-w / .ag-wv-card: вторая рамка внутри
    выглядела бы коробкой в коробке. Оставляем только внутренние отступы. */
-.ag-w .tl, .ag-wv-card .tl {
+.ag-w .tl-root, .ag-wv-card .tl-root {
   max-width: none;
   margin: 0;
   padding: 0;
@@ -120,4 +120,4 @@
   box-shadow: none;
 }
 /* Заголовок тир-листа — он же подпись блока, поэтому не давим на него рамкой */
-.ag-w .tl .tl-title, .ag-wv-card .tl .tl-title { font-size: 26px; }
+.ag-w .tl-root .tl-title, .ag-wv-card .tl-root .tl-title { font-size: 26px; }

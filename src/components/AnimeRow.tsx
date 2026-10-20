@@ -6,6 +6,7 @@ import type { AnimeCard as Card } from "@/lib/types";
 import { AnimeCard } from "./AnimeCard";
 import { RowHighlight } from "./RowHighlight";
 import { Reveal } from "./Reveal";
+import { SectionMark, markFor, type MarkKind } from "./SectionMark";
 
 /**
  * Горизонтальная лента тайтлов со стрелками-прокруткой.
@@ -22,13 +23,18 @@ export function AnimeRow({
   cards,
   href = "/catalog",
   viewAllLabel = "Смотреть все",
-  accent = false,
+  mark,
+  headerExtra,
 }: {
   title: string;
   cards: Card[];
   href?: string;
   viewAllLabel?: string;
   accent?: boolean;
+  /** Иконка секции; по умолчанию подбирается по заголовку */
+  mark?: MarkKind;
+  /** Переключатель вкладок рядом с заголовком */
+  headerExtra?: React.ReactNode;
 }) {
   const railRef = useRef<HTMLDivElement>(null);
 
@@ -87,13 +93,11 @@ export function AnimeRow({
   return (
     <Reveal as="section" className="group/rail">
       {/* Заголовок секции */}
-      <div className="mb-5 flex items-end justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <span
-            className={`h-7 w-1.5 rounded-full ${accent ? "bg-accent-2" : "bg-accent"}`}
-            aria-hidden
-          />
+      <div className="mb-5 flex flex-wrap items-end justify-between gap-x-4 gap-y-3">
+        <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-2">
+          <SectionMark kind={mark ?? markFor(title)} />
           <h2 className="text-lg font-extrabold tracking-tight sm:text-xl">{title}</h2>
+          {headerExtra}
         </div>
 
         <div className="flex items-center gap-2">

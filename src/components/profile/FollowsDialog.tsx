@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { PremiumChip } from "@/components/profile/PremiumChip";
 
 /**
  * Окно «Подписчики / Подписки / Друзья» — по макету «AniGalaxy — профиль и
@@ -179,7 +180,7 @@ export function FollowsDialog({ tab, className, label, compact }: FollowsDialogP
                   <div className="fn">
                     <strong>
                       <span className="nm">{u.nick}</span>
-                      {u.premium && <span className="pb">PREMIUM</span>}
+                      {u.premium && <PremiumChip />}
                     </strong>
                     <small className={u.online ? "o" : undefined}>
                       {u.online ? "В сети" : `Был(а) ${u.lastSeen}`}

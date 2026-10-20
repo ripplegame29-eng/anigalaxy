@@ -191,7 +191,7 @@ export function Track({ statusCtx, currentLevel, fraction, nickname, onOpen }: T
             FREE
           </span>
           <span>
-            <i style={{ background: "var(--color-accent-2)" }} />
+            <i style={{ background: "var(--color-gold)" }} />
             PREMIUM
           </span>
           <span>

@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { Poster } from "@/components/Poster";
 import { Reveal } from "@/components/Reveal";
-import { mangaDetail } from "@/lib/mangadex";
+import { mangaDetail } from "@/lib/senku";
 
 /** Данные тайтла кэшируются на 15 минут */
 export const revalidate = 900;
@@ -114,7 +114,7 @@ export default async function MangaTitlePage({ params }: PageProps) {
 
           {detail.rating ? (
             <div className="mt-5 inline-flex items-center gap-3 rounded-2xl bg-white/6 px-4 py-3 ring-1 ring-white/10">
-              <span className="text-3xl font-extrabold tabular-nums text-accent-2">
+              <span className="text-3xl font-extrabold tabular-nums text-gold">
                 {detail.rating.toFixed(2)}
               </span>
               <span className="text-xs leading-tight text-muted">

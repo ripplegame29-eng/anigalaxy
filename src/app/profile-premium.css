@@ -1,0 +1,402 @@
+/**
+ * Профиль — «тихая роскошь». Слой поверх ag-theme.css и блоков профиля.
+ *
+ * Идея: меньше цвета в самих поверхностях, больше воздуха и аккуратной
+ * типографики. Карточки — плоские нейтрально-тёмные с тонкой рамкой (как блок
+ * комментариев), без цветных градиентов и свечений; цвет остаётся только там,
+ * где он несёт смысл: рамка аватара, теги, ранги, уровень и XP, тир-лист,
+ * виджеты и сам фон профиля. Разметка и функционал не меняются.
+ *
+ * Подключается последним в layout.tsx, все селекторы под `.ag-root`.
+ */
+
+.ag-root {
+  /* Линии профиля — нейтрально-белые, а не сине-стальные */
+  --line: rgba(255, 255, 255, 0.08);
+  --pf-surface: #0d0d14;
+  --pf-surface-2: #11111a;
+  --pf-line: rgba(255, 255, 255, 0.07);
+  --pf-line-hi: rgba(255, 255, 255, 0.15);
+}
+
+/* ------------------------------ Карточки ------------------------------- */
+
+.ag-root .ag-card {
+  border-radius: 20px;
+  border: 1px solid var(--pf-line);
+  background: var(--pf-surface);
+  box-shadow: none;
+}
+
+.ag-root .ag-w {
+  transition:
+    border-color 0.25s,
+    background 0.25s;
+}
+.ag-root .ag-w:hover {
+  border-color: var(--pf-line-hi);
+  background: var(--pf-surface-2);
+}
+.ag-root .ag-w-head h3 {
+  letter-spacing: 0.02em;
+}
+
+/* ------------------------------- Баннер -------------------------------- */
+
+/* Свечение убираем, затемнение к низу — мягче и в цвет страницы */
+.ag-root .ag-pf-ban-glow {
+  display: none;
+}
+.ag-root .ag-pf-ban-fade {
+  background: linear-gradient(
+    180deg,
+    rgba(5, 8, 16, 0.4) 0%,
+    rgba(5, 8, 16, 0) 28%,
+    rgba(5, 8, 16, 0.72) 78%,
+    var(--bg) 100%
+  );
+}
+
+/* ----------------------------- Боковое меню ---------------------------- */
+
+.ag-root .ag-nav {
+  padding: 10px;
+  gap: 2px;
+}
+.ag-root .ag-nav > button {
+  padding: 11px 14px;
+  border-radius: 12px;
+  font: 600 14.5px var(--font-body);
+  color: #98a1ba;
+}
+/* Без «наезда» и поворота иконок: спокойный ховер */
+.ag-root .ag-nav > button:hover {
+  padding-left: 14px;
+  color: #fff;
+}
+.ag-root .ag-nav > button:hover > svg {
+  transform: none;
+  color: #fff;
+}
+.ag-root .ag-nav > button[aria-current="true"] > svg {
+  color: var(--cyan);
+}
+.ag-root .ag-nav .hl {
+  background: rgba(255, 255, 255, 0.04);
+  border: 0;
+  border-radius: 12px;
+}
+/* Активный пункт — ровная плашка и тонкая акцентная кромка слева */
+.ag-root .ag-nav .act {
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.07);
+  box-shadow: inset 3px 0 0 var(--cyan);
+}
+.ag-root .ag-nav > button > i {
+  background: rgba(255, 255, 255, 0.07);
+  color: #b8c0d6;
+}
+
+/* -------------------------------- Кнопки ------------------------------- */
+
+.ag-root .btn {
+  box-shadow: 0 8px 22px -10px color-mix(in srgb, var(--blue) 70%, transparent);
+}
+.ag-root .btn.g {
+  background: var(--pf-surface);
+  border: 1px solid var(--pf-line);
+  box-shadow: none;
+}
+.ag-root .btn.g:hover {
+  background: var(--pf-surface-2);
+  border-color: var(--pf-line-hi);
+}
+
+/* ---------------------- Уровень и XP (оставлены) ----------------------- */
+
+/* Эмблема, полоса и цвет эры — как были; убираем только цветной «ореол»
+   карточки и заливку, чтобы блок лежал в одном ряду с остальными. */
+.ag-root .card {
+  background: var(--pf-surface);
+  border-color: var(--pf-line);
+  box-shadow: none;
+}
+
+/* ------------------------------- Тир-лист ------------------------------ */
+
+.ag-root .tl-root {
+  background: var(--pf-surface);
+  border-color: var(--pf-line);
+  box-shadow: none;
+}
+.ag-root .tl-glow {
+  display: none;
+}
+.ag-root .tl-tier {
+  background: rgba(255, 255, 255, 0.025);
+}
+
+/* ------------------------------- Сводка -------------------------------- */
+
+.ag-root .ag-pf-sum-grid > div {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--pf-line);
+  border-radius: 12px;
+  padding: 10px 4px;
+}
+
+/* ============================ Виджеты профиля ============================ */
+/* Блок красится одной переменной --wa (rgb через пробел): мягкий градиент
+   в углу, цветная кромка и значок. Без своего цвета — фирменный синий. */
+
+.ag-root .ag-w,
+.ag-root .ag-wv-card {
+  --wa: 43 127 255;
+  background:
+    radial-gradient(130% 100% at 0% 0%, rgb(var(--wa) / 0.13), transparent 62%),
+    var(--pf-surface);
+  border: 1px solid rgb(var(--wa) / 0.2);
+  border-radius: 20px;
+}
+.ag-root .ag-w[data-accent],
+.ag-root .ag-wv-card[data-accent] {
+  background:
+    radial-gradient(130% 100% at 0% 0%, rgb(var(--wa) / 0.2), transparent 62%),
+    var(--pf-surface);
+  border-color: rgb(var(--wa) / 0.4);
+}
+.ag-root .ag-w:hover {
+  background:
+    radial-gradient(130% 100% at 0% 0%, rgb(var(--wa) / 0.17), transparent 62%),
+    var(--pf-surface-2);
+  border-color: rgb(var(--wa) / 0.38);
+}
+.ag-root .ag-w .ag-w-ico {
+  color: rgb(var(--wa));
+}
+
+/* Редактор: блок берётся целиком, при перетаскивании видно, куда он ляжет */
+.ag-root .ag-w-grid.is-edit .ag-w {
+  cursor: grab;
+  border-style: dashed;
+  border-color: rgb(var(--wa) / 0.5);
+}
+.ag-root .ag-w-grid.is-edit .ag-w:active {
+  cursor: grabbing;
+}
+.ag-root .ag-w.is-over {
+  box-shadow:
+    0 0 0 2px rgb(var(--wa) / 0.85),
+    0 18px 40px -18px rgb(var(--wa) / 0.6);
+}
+.ag-root .ag-w-tools .ag-w-tl {
+  margin-left: 6px;
+}
+.ag-root .ag-w-tools button:has(.ag-w-tl) {
+  display: inline-flex;
+  align-items: center;
+}
+
+/* Статус сохранения рядом с кнопками */
+.ag-root .ag-wp-state {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--muted);
+}
+.ag-root .ag-wp-state.is-dirty {
+  color: #ffc96b;
+}
+
+/* Окно выбора цвета */
+.ag-root .ag-wp-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgba(3, 5, 12, 0.66);
+  backdrop-filter: blur(6px);
+}
+.ag-root .ag-wp-dlg {
+  width: min(400px, 100%);
+  padding: 20px;
+  border-radius: 20px;
+  background: var(--pf-surface);
+  border: 1px solid var(--pf-line-hi);
+  box-shadow: 0 40px 100px rgba(0, 0, 0, 0.7);
+}
+.ag-root .ag-wp-dlg-h {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.ag-root .ag-wp-dlg-h svg {
+  width: 18px;
+  height: 18px;
+  color: var(--cyan);
+}
+.ag-root .ag-wp-dlg-h h4 {
+  margin: 0;
+  flex: 1;
+  font: 800 17px var(--font-display);
+}
+.ag-root .ag-wp-x {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border: 0;
+  border-radius: 9px;
+  background: none;
+  color: var(--muted);
+}
+.ag-root .ag-wp-x:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+.ag-root .ag-wp-dlg-t {
+  margin: 0 0 2px;
+  font-weight: 800;
+  font-size: 14px;
+}
+.ag-root .ag-wp-dlg-s {
+  margin: 0 0 14px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.ag-root .ag-wp-sw-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.ag-root .ag-wp-dot {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  background: rgb(var(--wa));
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.ag-root .ag-wp-dot:hover {
+  transform: scale(1.12);
+}
+.ag-root .ag-wp-dot.is-on {
+  box-shadow: 0 0 0 2px var(--pf-surface), 0 0 0 4px rgb(var(--wa));
+}
+.ag-root .ag-wp-dlg-f {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 22px;
+}
+.ag-root .ag-wp-link {
+  border: 0;
+  background: none;
+  color: var(--muted);
+  font-weight: 700;
+  font-size: 14px;
+}
+.ag-root .ag-wp-link:hover {
+  color: #fff;
+}
+
+/* Боковое меню: отклик мгновенный. Без сдвига текста и пружинных плашек */
+.ag-root .ag-nav > button {
+  transition: color 0.12s;
+}
+.ag-root .ag-nav > button:hover {
+  padding-left: 14px;
+}
+.ag-root .ag-nav > button > svg,
+.ag-root .ag-nav > button:hover > svg {
+  transition: color 0.12s;
+  transform: none;
+}
+.ag-root .ag-nav.rdy .hl,
+.ag-root .ag-nav.rdy .act {
+  transition:
+    transform 0.14s ease-out,
+    width 0.14s ease-out,
+    height 0.14s ease-out,
+    opacity 0.1s;
+}
+.ag-root .ag-nav .act {
+  background: rgb(43 127 255 / 0.16);
+  box-shadow: inset 0 0 0 1px rgb(43 127 255 / 0.4);
+}
+
+/* Витрина: блок «Достижения» уже карточка с собственной шапкой — внешняя
+   рамка и подпись дублировали её (рамка в рамке). Снимаем обёртку, остаётся
+   одна карточка; цвет акцента переходит на неё. */
+.ag-root .ag-wv-card:has(> .ag-aw) {
+  padding: 0;
+  background: none;
+  border: 0;
+  box-shadow: none;
+}
+.ag-root .ag-wv-card:has(> .ag-aw) > .ag-wv-card-head {
+  display: none;
+}
+.ag-root .ag-wv-card:has(> .ag-aw) > .ag-aw {
+  background:
+    radial-gradient(130% 100% at 0% 0%, rgb(var(--wa) / 0.14), transparent 62%),
+    var(--pf-surface);
+  border: 1px solid rgb(var(--wa) / 0.22);
+  border-radius: 20px;
+}
+.ag-root .ag-wv-card[data-accent]:has(> .ag-aw) > .ag-aw {
+  background:
+    radial-gradient(130% 100% at 0% 0%, rgb(var(--wa) / 0.22), transparent 62%),
+    var(--pf-surface);
+  border-color: rgb(var(--wa) / 0.4);
+}
+
+/* Витрина: тир-лист — тоже готовая карточка со своим заголовком; внешняя
+   рамка и подпись «ТИР-ЛИСТ» давали рамку в рамке. Оставляем одну карточку. */
+.ag-root .ag-wv-card:has(> .tl-root) {
+  padding: 0;
+  background: none;
+  border: 0;
+  box-shadow: none;
+}
+.ag-root .ag-wv-card:has(> .tl-root) > .ag-wv-card-head {
+  display: none;
+}
+.ag-root .ag-wv-card:has(> .tl-root) > .tl-root {
+  max-width: none;
+  border: 1px solid rgb(var(--wa, 43 127 255) / 0.22);
+  border-radius: 20px;
+  background:
+    radial-gradient(130% 100% at 0% 0%, rgb(var(--wa, 43 127 255) / 0.14), transparent 62%),
+    var(--pf-surface);
+}
+.ag-root .ag-wv-card[data-accent]:has(> .tl-root) > .tl-root {
+  border-color: rgb(var(--wa) / 0.4);
+}
+
+/* Тир-лист в единой карточке: возвращаем внутренние отступы (tier-list.css
+   обнулял их, пока рамку рисовала обёртка) и выравниваем ряды по сетке. */
+.ag-root .ag-wv-card:has(> .tl-root) > .tl-root {
+  padding: 24px;
+}
+.ag-root .ag-wv-card:has(> .tl-root) .tl-head {
+  margin-bottom: 18px;
+}
+.ag-root .ag-wv-card:has(> .tl-root) .tl-tiers {
+  gap: 10px;
+}
+.ag-root .ag-wv-card:has(> .tl-root) .tl-tier {
+  border-radius: 16px;
+  overflow: hidden;
+}
+.ag-root .ag-wv-card:has(> .tl-root) .tl-label {
+  flex-basis: 76px;
+  font-size: 26px;
+}
+@media (max-width: 560px) {
+  .ag-root .ag-wv-card:has(> .tl-root) > .tl-root { padding: 16px; }
+  .ag-root .ag-wv-card:has(> .tl-root) .tl-label { flex-basis: 52px; font-size: 20px; }
+}

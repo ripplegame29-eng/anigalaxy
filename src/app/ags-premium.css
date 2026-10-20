@@ -1,0 +1,199 @@
+/* Каталог косметики — премиальный слой поверх cosmetics-shop.css.
+ * Подключается после него; селекторы те же `.ags …`, поэтому побеждает порядок. */
+
+/* --------------------------- Сводка ------------------------------------ */
+.ags .sum {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(160deg, rgba(var(--accent-rgb), 0.1), rgba(255, 255, 255, 0.02) 55%);
+  border-color: rgba(var(--accent-rgb), 0.22);
+  box-shadow: 0 24px 60px -36px rgba(var(--accent-rgb), 0.6);
+}
+.ags .sum::after {
+  content: "";
+  position: absolute;
+  top: 0; bottom: 0; left: -45%; width: 38%;
+  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.06), transparent);
+  transform: skewX(-18deg);
+  animation: agsp-sheen 8s ease-in-out infinite;
+  pointer-events: none;
+}
+.ags .bar { height: 8px; background: rgba(255, 255, 255, 0.07); }
+.ags .bar i {
+  position: relative;
+  background: linear-gradient(90deg, #2f8bff, #8a6bff 55%, #5ee0ff);
+  box-shadow: 0 0 16px rgba(var(--accent-rgb), 0.7);
+}
+.ags .bar i::after {
+  content: "";
+  position: absolute; inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.55), transparent);
+  background-size: 40% 100%;
+  background-repeat: no-repeat;
+  animation: agsp-bar 2.6s linear infinite;
+}
+
+/* -------------------------- Предмет дня -------------------------------- */
+.ags .hero {
+  border-color: transparent;
+  background:
+    radial-gradient(70% 120% at 12% 50%, rgba(255, 90, 130, 0.24), transparent 62%),
+    radial-gradient(60% 100% at 95% 0%, rgba(var(--accent-rgb), 0.2), transparent 60%),
+    linear-gradient(160deg, #130e24, #07060f);
+}
+.ags .hero::after {
+  content: "";
+  position: absolute; inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  pointer-events: none;
+  background: conic-gradient(from var(--agsp-a, 0deg), transparent 0 50%, rgba(255, 120, 160, 0.85) 70%, rgba(var(--accent-rgb), 0.9) 85%, transparent);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: agsp-border 7s linear infinite;
+}
+.ags .hero .hstage { position: relative; }
+.ags .hero .hstage::before {
+  content: "";
+  position: absolute;
+  width: 300px; height: 300px;
+  border-radius: 50%;
+  border: 1px dashed rgba(255, 255, 255, 0.14);
+  box-shadow: 0 0 60px -10px rgba(255, 100, 150, 0.35), inset 0 0 50px -20px rgba(var(--accent-rgb), 0.5);
+  animation: agsp-spin 40s linear infinite;
+}
+.ags .hero .hstage::after {
+  content: "";
+  position: absolute;
+  width: 220px; height: 220px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 120, 170, 0.28), transparent 70%);
+  animation: agsp-breathe 4s ease-in-out infinite;
+}
+.ags .hero .hstage > * { position: relative; z-index: 1; }
+.ags .hero h2 {
+  background: linear-gradient(95deg, #fff 30%, #ffc2d4 60%, #fff);
+  background-size: 220% 100%;
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  animation: agsp-text 8s linear infinite;
+}
+.ags .timer div {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.03));
+  backdrop-filter: blur(6px);
+}
+
+/* ------------------------------ Кнопки --------------------------------- */
+.ags .btn { position: relative; overflow: hidden; }
+.ags .btn.pri::after,
+.ags .btn.gold::after {
+  content: "";
+  position: absolute; top: 0; bottom: 0; left: -60%; width: 40%;
+  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  transform: skewX(-20deg);
+  pointer-events: none;
+}
+.ags .btn.pri:hover::after,
+.ags .btn.gold:hover::after { animation: agsp-sheen-fast 0.7s ease; }
+.ags .btn.pri { background: linear-gradient(135deg, #3b95ff, #6a5cff); box-shadow: 0 12px 30px -12px rgba(var(--accent-rgb), 0.95); }
+
+/* ------------------------------ Фильтры -------------------------------- */
+.ags .filters {
+  position: sticky;
+  top: 68px;
+  z-index: 20;
+  padding: 10px 12px;
+  margin-inline: -12px;
+  border-radius: 18px;
+  background: rgba(8, 10, 20, 0.72);
+  backdrop-filter: blur(16px) saturate(1.3);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+.ags .chip { position: relative; }
+.ags .chip:hover { transform: translateY(-1px); }
+.ags .chip.on {
+  box-shadow: 0 0 0 1px rgba(var(--rc, 80, 150, 255), 0.35), 0 8px 24px -10px rgba(var(--rc, 80, 150, 255), 0.8);
+}
+.ags .inp:focus { box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.18); }
+
+/* ------------------------------ Карточки ------------------------------- */
+.ags .card { animation: agsp-rise 0.55s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+.ags .grid > .card:nth-child(1) { animation-delay: 0ms; }
+.ags .grid > .card:nth-child(2) { animation-delay: 50ms; }
+.ags .grid > .card:nth-child(3) { animation-delay: 100ms; }
+.ags .grid > .card:nth-child(4) { animation-delay: 150ms; }
+.ags .grid > .card:nth-child(5) { animation-delay: 200ms; }
+.ags .grid > .card:nth-child(6) { animation-delay: 250ms; }
+.ags .grid > .card:nth-child(n + 7) { animation-delay: 300ms; }
+.ags .card::after {
+  content: "";
+  position: absolute; top: 0; bottom: 0; left: -70%; width: 40%;
+  z-index: 2; pointer-events: none;
+  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.09), transparent);
+  transform: skewX(-18deg);
+}
+.ags .card:hover::after { animation: agsp-sheen-fast 0.9s ease; }
+.ags .card:hover { transform: translateY(-7px) scale(1.012); }
+.ags .card.sel { animation: agsp-rise 0.55s both, agsp-pulse 2.8s ease-in-out 0.6s infinite; }
+.ags .price { letter-spacing: 0.01em; }
+.ags .price.sale { text-shadow: 0 0 14px rgba(255, 90, 110, 0.5); }
+
+/* ------------------------- Панель предпросмотра ------------------------ */
+.ags .panel {
+  background: linear-gradient(170deg, rgba(var(--accent-rgb), 0.1), rgba(255, 255, 255, 0.02) 50%);
+  border-color: rgba(var(--accent-rgb), 0.2);
+  backdrop-filter: blur(14px);
+  box-shadow: 0 30px 70px -40px rgba(var(--accent-rgb), 0.7);
+}
+
+@property --agsp-a { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
+@keyframes agsp-border { to { --agsp-a: 360deg; } }
+@keyframes agsp-sheen { 0%, 55% { left: -45%; } 100% { left: 130%; } }
+@keyframes agsp-sheen-fast { to { left: 140%; } }
+@keyframes agsp-bar { from { background-position: -50% 0; } to { background-position: 160% 0; } }
+@keyframes agsp-spin { to { rotate: 360deg; } }
+@keyframes agsp-breathe { 50% { transform: scale(1.18); opacity: 0.7; } }
+@keyframes agsp-text { to { background-position: -220% 0; } }
+@keyframes agsp-rise { from { opacity: 0; transform: translateY(22px) scale(0.97); } }
+@keyframes agsp-pulse { 50% { box-shadow: 0 0 0 1px rgba(var(--rc), 0.7), 0 22px 50px -14px rgba(var(--rc), 0.95); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .ags .sum::after, .ags .bar i::after, .ags .hero::after, .ags .hstage::before, .ags .hstage::after,
+  .ags .hero h2, .ags .card, .ags .card.sel { animation: none; }
+}
+
+/* ------------------------------ Телефон -------------------------------- */
+@media (max-width: 767px) {
+  .ags { padding-bottom: 36px; }
+  .ags .sum { grid-template-columns: 1fr; gap: 14px; padding: 16px; }
+  .ags .sum .bal { grid-column: auto; text-align: left; }
+  .ags .bal-row { justify-content: flex-start; }
+  .ags .prog-h { flex-wrap: wrap; gap: 2px 12px; }
+
+  .ags .hero { padding: 18px 16px 20px; gap: 6px; border-radius: 22px; }
+  .ags .hero .hstage { min-height: 210px; }
+  .ags .hero .hstage::before { width: 220px; height: 220px; }
+  .ags .hero .hstage::after { width: 160px; height: 160px; }
+  .ags .timer div { min-width: 0; flex: 1; }
+  .ags .buyrow .btn { flex: 1 1 130px; text-align: center; }
+
+  /* Фильтры: одна строка, листается пальцем; липкими не делаем — их две */
+  .ags .filters {
+    position: static;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    margin-inline: -4px;
+    padding: 8px;
+    gap: 8px;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .ags .filters::-webkit-scrollbar { display: none; }
+  .ags .filters .chip { flex: none; }
+  .ags .filters .sp { display: none; }
+  .ags .filters .inp { flex: 1 0 150px; min-width: 150px; }
+
+  .ags .grid { gap: 10px; }
+  .ags .card { border-radius: 16px; }
+  .ags .card:hover { transform: none; }
+}

@@ -92,6 +92,7 @@ function DialogShell({
   onClose,
   wide = false,
   full = false,
+  className = "",
   children,
 }: {
   title: string;
@@ -105,6 +106,8 @@ function DialogShell({
    * выглядели заметно крупнее, чем их копии на странице.
    */
   full?: boolean;
+  /** Доп. класс панели — для темизации отдельных окон */
+  className?: string;
   children: React.ReactNode;
 }) {
   const panelRef = useModalBehaviour(true, onClose);
@@ -129,7 +132,7 @@ function DialogShell({
           // прокручивается только содержимое. Иначе панель растёт выше
           // вьюпорта, шапка с крестиком уезжает за край и закрыть её нечем.
           full ? "flex max-h-[90vh] flex-col" : ""
-        } overflow-hidden rounded-2xl border border-line bg-surface/95 p-5 shadow-[0_40px_100px_-30px_rgba(0,0,0,1)] ring-1 ring-white/10 outline-none animate-fade-in`}
+        } ${className} overflow-hidden rounded-2xl border border-line bg-surface/95 p-5 shadow-[0_40px_100px_-30px_rgba(0,0,0,1)] ring-1 ring-white/10 outline-none animate-fade-in`}
       >
         <div className="mb-4 flex shrink-0 items-start justify-between gap-3">
           <div className="min-w-0">
@@ -750,9 +753,13 @@ function AppearanceDialog() {
       subtitle="Примерочная: так профиль выглядит для гостей"
       onClose={closeProfileDialog}
       wide
+      className="ag-wardrobe"
     >
-      {/* Примерочная */}
-      <div className="rounded-2xl border border-line bg-gradient-to-b from-accent/12 to-transparent p-4">
+      {/* Примерочная: фон сцены — выбранный фон профиля, как на странице */}
+      <div
+        className="aw-stage rounded-2xl border border-line bg-gradient-to-b from-accent/12 to-transparent p-4"
+        style={{ ["--aw-bg" as string]: BACKGROUNDS.find((item) => item.id === profile.backgroundId)?.css ?? "none" }}
+      >
         <div className="flex items-center gap-3">
           <AvatarFrame
   nickname={nickname}
@@ -805,8 +812,8 @@ function AppearanceDialog() {
       </div>
 
       {/* Категории */}
-      <div className="mt-4 flex flex-wrap items-center gap-2">
-        <div className="flex flex-wrap gap-1 rounded-xl bg-white/6 p-1 ring-1 ring-white/10">
+      <div className="aw-bar mt-4 flex flex-wrap items-center gap-2">
+        <div className="aw-tabs flex flex-wrap gap-1 rounded-xl bg-white/6 p-1 ring-1 ring-white/10">
           {WARDROBE_TABS.map((item) => (
             <button
               key={item.id}
@@ -822,7 +829,7 @@ function AppearanceDialog() {
         </div>
 
         {tab !== "avatar" && tab !== "tag" && (
-          <div className="ml-auto flex gap-1 rounded-xl bg-white/6 p-1 ring-1 ring-white/10">
+          <div className="aw-rar ml-auto flex gap-1 rounded-xl bg-white/6 p-1 ring-1 ring-white/10">
             {RARITIES.map((item) => (
               <button
                 key={item.id}
@@ -842,7 +849,7 @@ function AppearanceDialog() {
       {message && <Note tone="ok">{message}</Note>}
 
       {/* Сетка предметов */}
-      <div className="mt-3 max-h-[46vh] overflow-y-auto pr-1">
+      <div className="aw-scroll mt-3 max-h-[46vh] overflow-y-auto pr-1">
         {tab === "avatar" && (
           <div className="space-y-3">
             <div className="flex flex-wrap items-center gap-2">
@@ -966,7 +973,7 @@ function AppearanceDialog() {
         )}
 
         {tab === "background" && (
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+          <div className="aw-grid grid grid-cols-2 gap-2 sm:grid-cols-3">
             {BACKGROUNDS.filter((item) => passRarity(item.rarity)).map((item) => {
               const owned = isUnlocked(item.unlock, ctx);
               const active = profile.backgroundId === item.id;
@@ -976,11 +983,12 @@ function AppearanceDialog() {
                   type="button"
                   disabled={!owned}
                   onClick={() => updateProfile({ backgroundId: item.id, backgroundCustom: "" })}
-                  className={`overflow-hidden rounded-xl text-left ring-1 transition disabled:cursor-not-allowed disabled:opacity-45 ${
-                    active ? "ring-2 ring-accent-2" : "ring-white/12 hover:ring-white/35"
+                  data-rarity={item.rarity}
+                  className={`aw-card overflow-hidden rounded-xl text-left ring-1 transition disabled:cursor-not-allowed disabled:opacity-45 ${
+                    active ? "is-on ring-2 ring-accent-2" : "ring-white/12 hover:ring-white/35"
                   }`}
                 >
-                  <span className="block h-20 w-full" style={{ background: item.css }} />
+                  <span className="aw-thumb block h-20 w-full" style={{ background: item.css }} />
                   <span className="flex items-center justify-between gap-2 px-2 py-2">
                     <span className="min-w-0">
                       <span className="block truncate text-xs font-bold text-white">{item.name}</span>
@@ -1076,7 +1084,7 @@ function AppearanceDialog() {
         {tab === "effects" && <EffectsPanel />}
 
         {tab === "frame" && (
-          <div className="grid grid-cols-3 gap-2">
+          <div className="aw-grid aw-frames grid grid-cols-3 gap-2">
             {FRAMES.filter((item) => passRarity(item.rarity)).map((item) => {
               const owned = isUnlocked(item.unlock, ctx);
               const active = profile.frameId === item.id;
@@ -1086,8 +1094,8 @@ function AppearanceDialog() {
                   type="button"
                   disabled={!owned}
                   onClick={() => updateProfile({ frameId: item.id })}
-                  className={`flex flex-col items-center gap-2 rounded-xl bg-white/[0.04] px-2 py-3 ring-1 transition disabled:cursor-not-allowed disabled:opacity-45 ${
-                    active ? "ring-2 ring-accent-2" : "ring-white/10 hover:ring-white/30"
+                  className={`aw-card flex flex-col items-center gap-2 rounded-xl bg-white/[0.04] px-2 py-3 ring-1 transition disabled:cursor-not-allowed disabled:opacity-45 ${
+                    active ? "is-on ring-2 ring-accent-2" : "ring-white/10 hover:ring-white/30"
                   }`}
                 >
                   <AvatarFrame
@@ -1104,7 +1112,7 @@ function AppearanceDialog() {
         )}
       </div>
 
-      <div className="mt-4 flex items-center justify-between gap-3 border-t border-line pt-3">
+      <div className="aw-foot mt-4 flex items-center justify-between gap-3 border-t border-line pt-3">
         <span className="text-xs text-muted">
           Открыто предметов:{" "}
           {ownedTags +

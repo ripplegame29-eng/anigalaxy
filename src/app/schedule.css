@@ -1,0 +1,757 @@
+/* Расписание: тёмные поверхности, синий→циан, золото только у оценки */
+
+.sch-page {
+  position: relative;
+  min-height: 100vh;
+  overflow: clip;
+  isolation: isolate;
+  background:
+    radial-gradient(900px 520px at 10% -6%, rgb(43 127 255 / 0.13), transparent 62%),
+    radial-gradient(700px 460px at 105% 8%, rgb(34 211 238 / 0.07), transparent 60%);
+}
+.sch-wrap {
+  max-width: 940px;
+  margin: 0 auto;
+  padding: 36px 16px 72px;
+}
+
+/* ---------------------------------- Шапка ---------------------------------- */
+
+.sch-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 18px;
+  margin-bottom: 24px;
+}
+.sch-eyebrow {
+  margin: 0 0 8px;
+  color: #6fa8ff;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+.sch-head h1 {
+  margin: 0;
+  font: 800 clamp(32px, 5vw, 46px) / 1 var(--font-display, var(--font-body)), sans-serif;
+  letter-spacing: -0.03em;
+  background: linear-gradient(100deg, #fff 30%, #9fc4ff 70%, #22d3ee);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.sch-lead {
+  max-width: 46ch;
+  margin: 10px 0 0;
+  color: #8f9ab4;
+  line-height: 1.5;
+}
+.sch-tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.sch-search {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  height: 42px;
+  padding: 0 14px;
+  border-radius: 13px;
+  background: rgb(255 255 255 / 0.05);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.1);
+  transition: box-shadow 0.2s;
+}
+.sch-search:focus-within {
+  box-shadow: inset 0 0 0 1px rgb(43 127 255 / 0.75), 0 0 0 4px rgb(43 127 255 / 0.12);
+}
+.sch-search svg,
+.sch-fav svg,
+.sch-btn svg,
+.sch-acts svg {
+  width: 17px;
+  height: 17px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.sch-search svg {
+  color: #7f8aa6;
+}
+.sch-search input {
+  width: 170px;
+  border: 0;
+  outline: 0;
+  background: none;
+  color: #fff;
+  font-size: 14px;
+}
+.sch-fav {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 42px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 13px;
+  background: rgb(255 255 255 / 0.05);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.1);
+  color: #b9c3da;
+  font-size: 13.5px;
+  font-weight: 800;
+  transition: color 0.15s, background 0.2s, box-shadow 0.2s;
+}
+.sch-fav:hover {
+  color: #fff;
+}
+.sch-fav.on {
+  color: #fff;
+  background: linear-gradient(135deg, rgb(43 127 255 / 0.5), rgb(34 211 238 / 0.18));
+  box-shadow: inset 0 0 0 1px rgb(120 170 255 / 0.5);
+}
+.sch-fav.on svg {
+  fill: currentColor;
+}
+
+/* ----------------------------------- Герой ---------------------------------- */
+
+.sch-hero {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  grid-template-columns: 170px minmax(0, 1fr);
+  gap: 26px;
+  overflow: hidden;
+  margin-bottom: 28px;
+  padding: 24px;
+  border-radius: 28px;
+  background: linear-gradient(165deg, #12151f, #0a0c14);
+  box-shadow:
+    inset 0 0 0 1px rgb(120 170 255 / 0.22),
+    0 40px 90px -50px rgb(43 127 255 / 0.7);
+  animation: sch-rise 0.55s cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+.sch-hero::after {
+  /* бегущий по кромке блик */
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  padding: 1px;
+  background: conic-gradient(from var(--sch-a, 0deg), transparent 0 72%, rgb(34 211 238 / 0.9) 84%, transparent 94%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: sch-spin 7s linear infinite;
+}
+@property --sch-a {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+@keyframes sch-spin {
+  to {
+    --sch-a: 360deg;
+  }
+}
+.sch-hero-bg {
+  position: absolute;
+  inset: -20%;
+  z-index: -2;
+  opacity: 0.32;
+  filter: blur(60px) saturate(1.5);
+}
+.sch-hero-bg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to right, rgb(10 12 20 / 0.55), rgb(10 12 20 / 0.9));
+}
+.sch-hero-poster {
+  position: relative;
+  align-self: center;
+  aspect-ratio: 2 / 3;
+  overflow: hidden;
+  border-radius: 18px;
+  box-shadow:
+    0 0 0 1px rgb(255 255 255 / 0.14),
+    0 30px 60px -24px #000;
+  transform: rotate(-2deg);
+  transition: transform 0.4s cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+.sch-hero:hover .sch-hero-poster {
+  transform: rotate(0) scale(1.03);
+}
+.sch-hero-body {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+}
+.sch-kicker {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: 9px;
+  color: #a9c8ff;
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.sch-kicker i {
+  position: relative;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #22d3ee;
+  box-shadow: 0 0 10px #22d3ee;
+}
+.sch-kicker i::after {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 1.5px solid #22d3ee;
+  animation: sch-ping 1.8s ease-out infinite;
+}
+@keyframes sch-ping {
+  from {
+    transform: scale(0.6);
+    opacity: 0.9;
+  }
+  to {
+    transform: scale(1.8);
+    opacity: 0;
+  }
+}
+.sch-hero h2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin: 10px 0 6px;
+  font: 800 clamp(24px, 3.4vw, 34px) / 1.1 var(--font-display, var(--font-body)), sans-serif;
+  letter-spacing: -0.02em;
+}
+.sch-hero-sub {
+  margin: 0 0 18px;
+  color: #a9b4cd;
+  font-weight: 600;
+}
+.sch-timer {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 76px));
+  gap: 10px;
+}
+.sch-timer div {
+  display: grid;
+  justify-items: center;
+  gap: 5px;
+  padding: 12px 0 9px;
+  border-radius: 15px;
+  background: rgb(255 255 255 / 0.055);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.09);
+  backdrop-filter: blur(8px);
+}
+.sch-timer b {
+  display: block;
+  font: 800 28px/1 var(--font-display, var(--font-body)), sans-serif;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 0 20px rgb(43 127 255 / 0.8);
+  animation: sch-flip 0.35s cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+.sch-timer div:nth-child(n + 2) b {
+  color: #c5cde3;
+  text-shadow: none;
+}
+.sch-timer span {
+  color: #6f7a96;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+@keyframes sch-flip {
+  from {
+    transform: translateY(-40%) scale(0.9);
+    opacity: 0;
+  }
+}
+.sch-hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 20px;
+}
+.sch-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 44px;
+  padding: 0 20px;
+  border: 0;
+  border-radius: 13px;
+  background: rgb(255 255 255 / 0.07);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.12);
+  color: #e6ecfa;
+  font-size: 14px;
+  font-weight: 800;
+  transition: transform 0.18s, background 0.2s;
+}
+.sch-btn:hover {
+  transform: translateY(-2px);
+  background: rgb(255 255 255 / 0.12);
+}
+.sch-btn.is-primary {
+  background: linear-gradient(135deg, #2b7fff, #2468d6);
+  box-shadow: 0 14px 30px -12px rgb(43 127 255 / 0.95);
+  color: #fff;
+}
+.sch-btn.is-primary svg {
+  fill: currentColor;
+  stroke: none;
+}
+
+/* -------------------------------- Дни недели -------------------------------- */
+
+.sch-days {
+  --i: 0;
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 0;
+  margin-bottom: 26px;
+  padding: 5px;
+  border-radius: 20px;
+  background: rgb(255 255 255 / 0.04);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.08);
+  backdrop-filter: blur(10px);
+}
+.sch-ind {
+  position: absolute;
+  top: 5px;
+  bottom: 5px;
+  left: 5px;
+  width: calc((100% - 10px) / 7);
+  border-radius: 15px;
+  background: linear-gradient(160deg, rgb(43 127 255 / 0.5), rgb(34 211 238 / 0.18));
+  box-shadow:
+    inset 0 0 0 1px rgb(120 170 255 / 0.5),
+    0 10px 26px -10px rgb(43 127 255 / 0.9);
+  transform: translateX(calc(var(--i) * 100%));
+  transition: transform 0.4s cubic-bezier(0.3, 1.2, 0.4, 1);
+}
+.sch-days button {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 3px;
+  padding: 11px 0 10px;
+  border: 0;
+  border-radius: 15px;
+  background: none;
+  color: #8f9ab4;
+  transition: color 0.2s;
+}
+.sch-days button:hover,
+.sch-days button.on {
+  color: #fff;
+}
+.sch-dow {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.sch-days b {
+  font: 800 22px/1.1 var(--font-display, var(--font-body)), sans-serif;
+}
+.sch-days em {
+  min-width: 20px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.06);
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 800;
+}
+.sch-days em.has {
+  background: rgb(34 211 238 / 0.18);
+  color: #8be8f8;
+}
+
+/* ----------------------------------- Лента ---------------------------------- */
+
+.sch-day {
+  animation: sch-rise 0.4s cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+.sch-day-title {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin: 0 0 16px;
+  font: 800 20px var(--font-display, var(--font-body)), sans-serif;
+}
+.sch-day-title::first-letter {
+  text-transform: uppercase;
+}
+.sch-day-title span {
+  color: #6fa8ff;
+  font-size: 13px;
+  font-weight: 800;
+  text-transform: none;
+}
+.sch-list {
+  position: relative;
+  margin: 0;
+  padding: 0 0 0 0;
+  list-style: none;
+  display: grid;
+  gap: 12px;
+}
+.sch-list > li {
+  animation: sch-rise 0.45s cubic-bezier(0.2, 0.9, 0.3, 1) backwards;
+  animation-delay: calc(var(--n, 0) * 55ms);
+}
+
+.sch-now {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 4px 0 14px;
+  color: #22d3ee;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.sch-now i {
+  flex: none;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #22d3ee;
+  box-shadow: 0 0 12px #22d3ee;
+  animation: sch-pulse 1.6s ease-in-out infinite;
+}
+.sch-now::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, rgb(34 211 238 / 0.7), transparent);
+}
+@keyframes sch-pulse {
+  50% {
+    transform: scale(1.5);
+    opacity: 0.6;
+  }
+}
+
+.sch-card {
+  position: relative;
+  display: grid;
+  grid-template-columns: 66px 70px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 16px 14px 14px;
+  border-radius: 20px;
+  background: linear-gradient(165deg, rgb(18 21 31 / 0.92), rgb(11 13 21 / 0.92));
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.07);
+  backdrop-filter: blur(8px);
+  transition:
+    transform 0.25s cubic-bezier(0.2, 0.9, 0.3, 1),
+    box-shadow 0.25s;
+}
+.sch-card::before {
+  /* акцентная полоска слева */
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 18px;
+  bottom: 18px;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: linear-gradient(to bottom, #2b7fff, #22d3ee);
+  opacity: 0.55;
+  transition: opacity 0.2s, top 0.25s, bottom 0.25s;
+}
+.sch-card:hover {
+  transform: translateY(-3px);
+  box-shadow:
+    inset 0 0 0 1px rgb(43 127 255 / 0.5),
+    0 24px 44px -26px rgb(43 127 255 / 0.75);
+}
+.sch-card:hover::before {
+  opacity: 1;
+  top: 10px;
+  bottom: 10px;
+}
+.sch-card.is-soon {
+  box-shadow:
+    inset 0 0 0 1px rgb(34 211 238 / 0.45),
+    0 0 36px -16px rgb(34 211 238 / 0.8);
+}
+.sch-card.is-out {
+  opacity: 0.55;
+}
+.sch-card.is-out::before {
+  background: #5d6784;
+}
+
+.sch-time {
+  font: 800 22px/1 var(--font-display, var(--font-body)), sans-serif;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  text-align: center;
+}
+.sch-poster {
+  position: relative;
+  display: block;
+  aspect-ratio: 2 / 3;
+  overflow: hidden;
+  border-radius: 12px;
+  background: #0d0f18;
+  box-shadow: 0 0 0 1px rgb(255 255 255 / 0.1);
+}
+.sch-poster img {
+  transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.sch-card:hover .sch-poster img {
+  transform: scale(1.08);
+}
+.sch-info {
+  min-width: 0;
+}
+.sch-name {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1.25;
+  color: #fff;
+}
+.sch-name:hover {
+  color: #9fc4ff;
+}
+.sch-ep {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 5px 0 8px;
+  color: #a9b4cd;
+  font-size: 13px;
+  font-weight: 700;
+}
+.sch-ep span {
+  color: #7f8aa6;
+}
+.sch-rate {
+  color: var(--color-gold, #ffb020);
+  font-weight: 800;
+}
+.sch-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.sch-tags span {
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.06);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.09);
+  color: #b9c3da;
+  font-size: 11.5px;
+  font-weight: 700;
+}
+.sch-side {
+  display: grid;
+  justify-items: end;
+  gap: 10px;
+}
+.sch-rel {
+  color: #6fa8ff;
+  font-size: 12.5px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+.is-out .sch-rel {
+  color: #7f8aa6;
+}
+.sch-acts {
+  display: flex;
+  gap: 8px;
+}
+.sch-acts button,
+.sch-go {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 0;
+  border-radius: 11px;
+  background: rgb(255 255 255 / 0.06);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.1);
+  color: #cdd6ea;
+  transition: background 0.2s, color 0.2s, transform 0.18s;
+}
+.sch-acts button:hover,
+.sch-go:hover {
+  color: #fff;
+  background: rgb(43 127 255 / 0.3);
+  transform: translateY(-1px);
+}
+.sch-go {
+  background: linear-gradient(135deg, rgb(43 127 255 / 0.45), rgb(34 211 238 / 0.18));
+  box-shadow: inset 0 0 0 1px rgb(120 170 255 / 0.4);
+  color: #fff;
+}
+
+/* ---------------------------- Пусто / загрузка ---------------------------- */
+
+.sch-empty {
+  padding: 56px 20px;
+  border-radius: 24px;
+  background: rgb(255 255 255 / 0.03);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.07);
+  text-align: center;
+  color: #8f9ab4;
+}
+.sch-empty svg {
+  display: block;
+  margin: 0 auto;
+  width: 90px;
+  height: 90px;
+  fill: none;
+  stroke: #22d3ee;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 14px rgb(34 211 238 / 0.5));
+}
+.sch-empty h4 {
+  margin: 8px 0 6px;
+  color: #fff;
+  font: 800 19px var(--font-display, var(--font-body)), sans-serif;
+}
+.sch-empty p {
+  margin: 0;
+}
+.sch-skel {
+  height: 520px;
+  border-radius: 28px;
+  background: linear-gradient(110deg, #0f1220 30%, #171b2c 50%, #0f1220 70%) 0 0 / 220% 100%;
+  animation: sch-shimmer 1.4s linear infinite;
+}
+
+@keyframes sch-rise {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+}
+@keyframes sch-shimmer {
+  to {
+    background-position: -220% 0;
+  }
+}
+
+/* ---------------------------------- Адаптив --------------------------------- */
+
+@media (max-width: 760px) {
+  .sch-wrap {
+    padding: 24px 14px 56px;
+  }
+  .sch-hero {
+    grid-template-columns: 1fr;
+    padding: 20px;
+  }
+  .sch-hero-poster {
+    width: 100px;
+    margin: 0 auto;
+  }
+  .sch-hero-body {
+    align-items: center;
+    text-align: center;
+  }
+  .sch-kicker {
+    align-self: center;
+  }
+  .sch-hero-actions {
+    justify-content: center;
+  }
+  .sch-timer {
+    grid-template-columns: repeat(4, 1fr);
+    width: 100%;
+  }
+  .sch-search input {
+    width: 130px;
+  }
+  .sch-card {
+    grid-template-columns: 58px minmax(0, 1fr) auto;
+    gap: 12px;
+  }
+  .sch-poster {
+    display: none;
+  }
+  .sch-time {
+    font-size: 18px;
+  }
+  .sch-dow {
+    font-size: 9.5px;
+    letter-spacing: 0.02em;
+  }
+  .sch-days b {
+    font-size: 18px;
+  }
+}
+@media (max-width: 480px) {
+  .sch-card {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+  .sch-time {
+    grid-column: 1 / -1;
+    text-align: left;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sch-page *,
+  .sch-page *::before,
+  .sch-page *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* напоминания */
+.sch-fav svg.is-on,
+.sch-acts svg.is-on,
+.sch-remind svg.is-on {
+  fill: currentColor;
+}
+.sch-remind.on,
+.sch-acts button.on {
+  color: #fff;
+  background: linear-gradient(135deg, rgb(43 127 255 / 0.55), rgb(34 211 238 / 0.25));
+  box-shadow: inset 0 0 0 1px rgb(120 170 255 / 0.55);
+}
+.sch-remind.on svg,
+.sch-acts button.on svg {
+  animation: sch-ring 0.7s ease;
+  transform-origin: 50% 10%;
+}
+@keyframes sch-ring {
+  20% { transform: rotate(16deg); }
+  40% { transform: rotate(-14deg); }
+  60% { transform: rotate(9deg); }
+  80% { transform: rotate(-5deg); }
+}

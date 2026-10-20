@@ -133,55 +133,62 @@ export function TitleActions({ anime }: Props) {
     bump();
   }, [meta, bump]);
 
+  const BTN =
+    "inline-flex h-12 min-w-0 items-center justify-center gap-2 whitespace-nowrap rounded-2xl px-3 text-[13px] font-bold ring-1 transition";
+  const scores = Array.from({ length: MAX_SCORE - MIN_SCORE + 1 }, (_, i) => MIN_SCORE + i);
+
   return (
-    <>
-      {/* --------------------------- Избранное --------------------------- */}
-      <button
-        type="button"
-        onClick={onFavorite}
-        aria-pressed={favorite}
-        className={`btn-ghost inline-flex items-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold ring-1 transition ${
-          favorite
-            ? "bg-accent-2/18 text-accent-2 ring-accent-2/45 hover:bg-accent-2/26"
-            : "bg-white/8 text-white ring-white/12 hover:bg-white/14"
-        }`}
-      >
-        <svg viewBox="0 0 24 24" className="h-4 w-4" fill={favorite ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2">
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M20.8 5.6a5.2 5.2 0 0 0-7.4 0L12 7l-1.4-1.4a5.2 5.2 0 1 0-7.4 7.4l8.4 8.4 8.4-8.4a5.2 5.2 0 0 0 0-7.4Z"
-          />
-        </svg>
-        {favorite ? "В избранном" : "В избранное"}
-      </button>
+    <div className="space-y-3">
+      {/* ------------------ Избранное и подборки: две равные кнопки ------------------ */}
+      <div className="grid grid-cols-2 gap-2.5">
+        <button
+          type="button"
+          onClick={onFavorite}
+          aria-pressed={favorite}
+          className={`${BTN} ${
+            favorite
+              ? "bg-accent/15 text-accent-2 ring-accent/45 hover:bg-accent/22"
+              : "bg-[#0d0d14] text-white/90 ring-white/[0.09] hover:bg-[#121220] hover:ring-white/20"
+          }`}
+        >
+          <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0" fill={favorite ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2">
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M20.8 5.6a5.2 5.2 0 0 0-7.4 0L12 7l-1.4-1.4a5.2 5.2 0 1 0-7.4 7.4l8.4 8.4 8.4-8.4a5.2 5.2 0 0 0 0-7.4Z"
+            />
+          </svg>
+          <span className="truncate">{favorite ? "В избранном" : "Избранное"}</span>
+        </button>
 
-      {/* --------------------------- В подборку -------------------------- */}
-      {/* Кнопка и окно — из макета `collection-picker`: класс `.cp-btn` с
-          счётчиком подборок, в которые уже добавлен тайтл. */}
-      <button
-        type="button"
-        className={`cp-btn${addedTo > 0 ? " cp-has" : ""}`}
-        onClick={() => setOpen(true)}
-        aria-haspopup="dialog"
-        aria-expanded={open}
-      >
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M12 5v14M5 12h14" />
-        </svg>
-        В подборки
-        <em>{addedTo}</em>
-      </button>
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          aria-haspopup="dialog"
+          aria-expanded={open}
+          className={`${BTN} ${
+            addedTo > 0
+              ? "bg-accent/15 text-accent-2 ring-accent/45 hover:bg-accent/22"
+              : "bg-[#0d0d14] text-white/90 ring-white/[0.09] hover:bg-[#121220] hover:ring-white/20"
+          }`}
+        >
+          <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden>
+            <path d="M12 5v14M5 12h14" />
+          </svg>
+          <span className="truncate">Подборки</span>
+          {addedTo > 0 && (
+            <span className="grid h-5 min-w-5 place-items-center rounded-full bg-accent px-1.5 text-[11px] font-extrabold text-white">
+              {addedTo}
+            </span>
+          )}
+        </button>
+      </div>
 
-      {/* ----------------- Статус списка и пользовательская оценка ---------- */}
-      {/* Статус и оценка — двумя строками: раньше оценка прижималась
-          `ml-auto` в один ряд со статусом и на узких экранах слетала. */}
-      <div className="flex w-full flex-col gap-5 border-t border-line/70 pt-3">
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-          <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-muted">
-            Статус
-          </span>
-          <div className="flex flex-wrap gap-1.5" role="group" aria-label="Статус тайтла">
+      {/* ------------------ Мой список: статус и оценка одной карточкой ------------------ */}
+      <div className="space-y-4 rounded-2xl bg-[#0d0d14] p-4 ring-1 ring-white/[0.07]">
+        <div>
+          <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.14em] text-muted">Статус</p>
+          <div className="grid grid-cols-2 gap-1.5" role="group" aria-label="Статус тайтла">
             {STATUS_ORDER.map((item) => {
               const active = status === item;
               return (
@@ -190,10 +197,10 @@ export function TitleActions({ anime }: Props) {
                   type="button"
                   aria-pressed={active}
                   onClick={() => onStatus(item)}
-                  className={`rounded-lg px-2.5 py-1.5 text-[11px] font-bold ring-1 transition ${
+                  className={`h-9 rounded-xl px-2 text-xs font-bold ring-1 transition ${
                     active
-                      ? "bg-accent-deep text-white ring-accent/50"
-                      : "bg-white/8 text-muted ring-white/12 hover:bg-white/14 hover:text-white"
+                      ? "bg-accent text-white ring-accent shadow-[0_8px_22px_-10px_rgba(43,127,255,0.9)]"
+                      : "bg-white/[0.04] text-white/65 ring-white/[0.08] hover:bg-white/[0.09] hover:text-white"
                   }`}
                 >
                   {STATUS_LABEL[item]}
@@ -203,36 +210,32 @@ export function TitleActions({ anime }: Props) {
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-          <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-muted">
-            Оценка
-          </span>
+        <div>
+          <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.14em] text-muted">Моя оценка</p>
           <div
-            className="flex flex-wrap gap-1"
+            className="grid grid-cols-5 gap-1.5"
             role="group"
             aria-label={`Оценка от ${MIN_SCORE} до ${MAX_SCORE}`}
           >
-            {Array.from({ length: MAX_SCORE - MIN_SCORE + 1 }, (_, i) => MIN_SCORE + i).map(
-              (score) => {
-                const active = rating === score;
-                return (
-                  <button
-                    key={score}
-                    type="button"
-                    aria-pressed={active}
-                    aria-label={`Оценка ${score}`}
-                    onClick={() => onRate(score)}
-                    className={`grid h-7 w-7 place-items-center rounded-lg text-[11px] font-bold ring-1 transition ${
-                      active
-                        ? "bg-accent-2 text-ink ring-accent-2/60"
-                        : "bg-white/8 text-muted ring-white/12 hover:bg-white/14 hover:text-white"
-                    }`}
-                  >
-                    {score}
-                  </button>
-                );
-              },
-            )}
+            {scores.map((score) => {
+              const active = rating === score;
+              return (
+                <button
+                  key={score}
+                  type="button"
+                  aria-pressed={active}
+                  aria-label={`Оценка ${score}`}
+                  onClick={() => onRate(score)}
+                  className={`grid h-9 place-items-center rounded-xl text-[13px] font-extrabold tabular-nums ring-1 transition ${
+                    active
+                      ? "bg-accent-2 text-ink ring-accent-2 shadow-[0_8px_22px_-10px_rgba(34,211,238,0.9)]"
+                      : "bg-white/[0.04] text-white/65 ring-white/[0.08] hover:bg-white/[0.09] hover:text-white"
+                  }`}
+                >
+                  {score}
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>
@@ -245,6 +248,6 @@ export function TitleActions({ anime }: Props) {
         onToggle={onCollectionChange}
         onCreate={onCollectionChange}
       />
-    </>
+    </div>
   );
 }

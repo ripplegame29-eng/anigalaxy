@@ -249,3 +249,95 @@ export async function trailer(
     return null;
   }
 }
+
+/* ------------------------ Следующая серия ------------------------ */
+
+interface AnimeDto {
+  status?: string;
+  episodes?: number;
+  episodes_aired?: number;
+  next_episode_at?: string | null;
+}
+
+export interface NextEpisode {
+  /** Момент выхода, ISO-строка */
+  at: string;
+  /** Номер ближайшей серии */
+  episode: number;
+  /** Всего серий, если число известно */
+  total?: number;
+}
+
+/**
+ * Когда выйдет следующая серия. Shikimori отдаёт `next_episode_at` только
+ * для идущих тайтлов; у завершённых и анонсов поля нет — тогда null и плашка
+ * на странице не показывается. Дата в прошлом тоже отбрасывается: серия уже
+ * вышла, а Shikimori ещё не обновил расписание.
+ */
+export async function nextEpisode(shikimoriId?: number): Promise<NextEpisode | null> {
+  if (!shikimoriId) return null;
+  try {
+    return await memo(`shikimori:next:${shikimoriId}`, 15 * MINUTE, async () => {
+      const anime = await api<AnimeDto>(`/api/animes/${shikimoriId}`);
+      if (!anime.next_episode_at) return null;
+      if (new Date(anime.next_episode_at).getTime() < Date.now() - 6 * 60 * 60 * 1000) return null;
+      return {
+        at: anime.next_episode_at,
+        episode: (anime.episodes_aired ?? 0) + 1,
+        total: anime.episodes && anime.episodes > 0 ? anime.episodes : undefined,
+      } satisfies NextEpisode;
+    });
+  } catch {
+    return null;
+  }
+}
+
+/* ------------------------- Календарь выхода ------------------------- */
+
+interface CalendarDto {
+  next_episode?: number;
+  next_episode_at?: string;
+  anime?: {
+    id?: number;
+    name?: string;
+    russian?: string;
+    image?: { original?: string; preview?: string };
+    kind?: string;
+    score?: string;
+    episodes?: number;
+    episodes_aired?: number;
+  };
+}
+
+export interface CalendarEntry {
+  shikimoriId: number;
+  /** Момент выхода серии, ISO */
+  at: string;
+  episode: number;
+  total?: number;
+  title: string;
+  image?: string;
+  score?: number;
+}
+
+/** Ближайшие серии идущих тайтлов (около двух недель вперёд) */
+export async function calendar(): Promise<CalendarEntry[]> {
+  return memo("shikimori:calendar", 15 * MINUTE, async () => {
+    const rows = await api<CalendarDto[]>("/api/calendar?censored=true");
+    const out: CalendarEntry[] = [];
+    for (const row of rows) {
+      const anime = row.anime;
+      if (!anime?.id || !row.next_episode_at || !row.next_episode) continue;
+      out.push({
+        shikimoriId: anime.id,
+        at: row.next_episode_at,
+        episode: row.next_episode,
+        total: anime.episodes && anime.episodes > 0 ? anime.episodes : undefined,
+        title: anime.russian || anime.name || "",
+        image: anime.image?.original ? asset(anime.image.original) : undefined,
+        score: anime.score ? Number(anime.score) || undefined : undefined,
+      });
+    }
+    return out;
+  });
+}

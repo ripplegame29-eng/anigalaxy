@@ -170,7 +170,7 @@ export function EventGame({
       pop.className = "ev-pop";
       pop.textContent = bad ? "−5" : "+10";
       pop.style.cssText = `left:${target.offsetLeft + 10}px;top:${target.offsetTop}px;color:${
-        bad ? "#ff5c7c" : "#61d1ff"
+        bad ? "#ff5c7c" : "#ffc861"
       }`;
       arena.appendChild(pop);
       window.setTimeout(() => pop.remove(), 800);

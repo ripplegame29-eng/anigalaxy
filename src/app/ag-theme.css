@@ -20,7 +20,7 @@
   --line: rgba(96, 150, 255, 0.16);
   --blue: #2b7fff;
   --cyan: #22d3ee;
-  --gold: #4ac5f5;
+  --gold: #f5b74a;
   --green: #34e0a1;
   --red: #ff5d73;
   --violet: #9b86ff;
@@ -4190,8 +4190,8 @@ body {
 .ag-root .ag-aw-score {
   font: 800 38px var(--font-display);
   line-height: 1;
-  color: #6bcbff;
-  background: linear-gradient(100deg, #ffe9a8, #3cccff 40%, #fff3c4 60%, #3cccff);
+  color: #ffd66b;
+  background: linear-gradient(100deg, #ffe9a8, #ffb43c 40%, #fff3c4 60%, #ffb43c);
   background-size: 220% 100%;
   -webkit-background-clip: text;
   background-clip: text;
@@ -4208,7 +4208,7 @@ body {
   font-size: 10px;
   font-weight: 800;
   letter-spacing: 0.12em;
-  color: rgba(107, 204, 255, 0.75);
+  color: rgba(255, 212, 107, 0.75);
 }
 
 .ag-root .ag-aw-score-label svg {
@@ -4330,7 +4330,7 @@ body {
   height: 5px;
   border-radius: 50%;
   background: var(--color-accent-2);
-  box-shadow: 0 0 7px 1px rgba(107, 204, 255, 0.9);
+  box-shadow: 0 0 7px 1px rgba(255, 212, 107, 0.9);
 }
 
 .ag-root .ag-aw-rar b {
@@ -4949,4 +4949,27 @@ body {
   .ag-root .ag-nav > button {
     transition-duration: 0.01ms !important;
   }
+}
+
+/* Плеер: кнопки пропуска и вспышка перемотки */
+.ag-skipbtn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 10px 16px; border-radius: 12px;
+  font-size: 13px; font-weight: 800; color: #fff; cursor: pointer;
+  background: rgba(14, 16, 24, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  backdrop-filter: blur(14px);
+  box-shadow: 0 10px 30px -10px #000;
+  animation: ag-skip-in 0.35s cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+  transition: background 0.2s, transform 0.2s, border-color 0.2s;
+}
+.ag-skipbtn:hover { background: rgba(255, 255, 255, 0.92); color: #0a0d14; transform: translateY(-2px); }
+.ag-skipbtn--next { border-color: rgba(var(--accent-rgb), 0.7); background: rgba(var(--accent-rgb), 0.35); }
+.ag-seekflash { animation: ag-flash 0.6s ease-out both; }
+@keyframes ag-skip-in { from { opacity: 0; transform: translateX(24px) scale(0.95); } }
+@keyframes ag-flash { 0% { opacity: 0; transform: translateY(-50%) scale(0.7); } 25% { opacity: 1; } 100% { opacity: 0; transform: translateY(-50%) scale(1.15); } }
+
+@media (max-width: 640px) {
+  .ag-skipbtn { padding: 8px 12px; font-size: 12px; border-radius: 10px; }
+  .ag-seekflash { height: 72px !important; width: 72px !important; }
 }
