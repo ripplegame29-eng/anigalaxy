@@ -32,7 +32,7 @@ box-sizing:border-box;color-scheme:dark;
   --gold:#4ac5f5;
   --green:#34e0a1;
   --red:#ff5d73;
-  --violet:#9b86ff;
+  --violet:#38c8ff; /* имя историческое: теперь голубой конец синей палитры */
   --disp:var(--font-display)
 }
 
@@ -196,7 +196,7 @@ box-sizing:border-box;color-scheme:dark;
 .agh .dd.mega .mg-mi:hover .mg-tx b,.agh .dd.mega .mg-mi:focus-visible .mg-tx b{color:#fff}
 .agh .dd.mega .mg-mi:hover .mg-tx small,.agh .dd.mega .mg-mi:focus-visible .mg-tx small{color:#a9b2c8}
 .agh .dd.mega .mg-meta{font-size:12px;font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums;transition:transform .35s,opacity .3s;font-style:normal}
-.agh .dd.mega .mg-new{font-size:11px;font-weight:800;padding:5px 11px;border-radius:99px;color:#ffd0e3;background:rgba(255,92,157,.16);border:1px solid rgba(255,92,157,.4);box-shadow:0 0 18px -4px #ff5c9d}
+.agh .dd.mega .mg-new{font-size:11px;font-weight:800;padding:5px 11px;border-radius:99px;color:#c9f2ff;background:rgba(34,211,238,.16);border:1px solid rgba(34,211,238,.42);box-shadow:0 0 18px -4px #22d3ee}
 .agh .dd.mega .mg-go{width:18px;height:18px;margin-left:-6px;opacity:0;transform:translateX(-8px);color:var(--c);transition:.35s}
 .agh .dd.mega .mg-mi:hover .mg-go,.agh .dd.mega .mg-mi:focus-visible .mg-go{opacity:1;transform:none}
 .agh .dd.mega .mg-mi:hover .mg-meta{transform:translateX(-4px)}

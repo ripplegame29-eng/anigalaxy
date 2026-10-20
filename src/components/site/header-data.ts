@@ -75,13 +75,13 @@ export const CATALOG_LINKS: CatalogLink[] = [
   // Подборки — отдельный раздел: витрина курируемых списков из макета
   // `collections.html`. Числа пока нет: сервера у проекта нет, а выдуманный
   // «64» в меню врёт (как и счётчик каталога выше — см. `countHint`).
-  { icon: "layers", label: "Подборки", hint: "Тематические коллекции аниме", color: "#9b86ff", href: "/collections" },
+  { icon: "layers", label: "Подборки", hint: "Тематические коллекции аниме", color: "#4a9dff", href: "/collections" },
   // TODO: страницы «Расписание» (/schedule) в проекте нет,
   // показан ближайший раздел с тем же смыслом — онгоинги
   { icon: "cal", label: "Расписание", hint: "Что выходит на этой неделе", color: "#22d3ee", href: "/catalog?status=ongoing", countHint: "сегодня" },
-  { icon: "trophy", label: "Лидерборд", hint: "Топ самых активных зрителей", color: "#34e0a1", href: "/leaderboard" },
+  { icon: "trophy", label: "Лидерборд", hint: "Топ самых активных зрителей", color: "#4a9dff", href: "/leaderboard" },
   // Публичный роадмап проекта: что готово, что в работе и что в планах
-  { icon: "spark", label: "Обновления", hint: "Что нового в AniGalaxy", color: "#ff7ab8", href: "/updates", badge: "new" },
+  { icon: "spark", label: "Обновления", hint: "Что нового в AniGalaxy", color: "#22d3ee", href: "/updates", badge: "new" },
 ];
 
 /**
@@ -146,7 +146,7 @@ export const NOTIFICATIONS: HeaderNotification[] = [
     icon: "film",
     title: "Вышла новая серия",
     text: "Блич: Тысячелетняя война · 5",
-    color: "#9b86ff",
+    color: "#4a9dff",
     ago: "3 ч",
     unread: false,
   },

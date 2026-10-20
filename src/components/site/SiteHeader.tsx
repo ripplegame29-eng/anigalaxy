@@ -69,7 +69,8 @@ const GRADIENT_ID = "ag-hd-xg";
 const RING = 113;
 
 /** Цвета точек у жанров подвала — как в макете catalog-menu.html */
-const GENRE_DOTS = ["#ff6a4d", "#ff5c9d", "#61d1ff", "#8b5cff", "#4dffb0"];
+/** Точки жанров в подвале меню: оттенки одной синей палитры */
+const GENRE_DOTS = ["#2b7fff", "#4a9dff", "#22d3ee", "#61d1ff", "#7cc4ff"];
 
 /**
  * Отметка «бонус уже получен» живёт в localStorage по никнейму: без неё
