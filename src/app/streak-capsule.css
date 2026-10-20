@@ -1,0 +1,490 @@
+/* ==========================================================================
+   Серия дней — капсула в шапке профиля.
+
+   Перенесено из макета «AniGalaxy — серия дней». Классы в макете были
+  generic-именами (.chip, .pop, .week, .dot, .bar, .row, .state) — в проекте
+   такие имена забрали бы себе весь интерфейс, поэтому у всех префикс `sc-`.
+   Внутри ничего не менялось: та же палитра по уровням, тот же конусный
+   градиент кольца, те же тайминги блика, искр, орбиты и перелива.
+
+   Шрифты макета (Unbounded для цифр, Manrope для текста) в проекте уже
+   загружены как --font-display и --font-body.
+   ========================================================================== */
+
+.sc-chip {
+  --c1: #fb923c;
+  --c2: #ef4444;
+  --p: 40;
+  --sc-void: #050810;
+  --sc-ice: #7dd3fc;
+  --sc-line: rgba(255, 255, 255, 0.08);
+  --sc-tx: #eef2ff;
+  --sc-mut: #8792b4;
+  --sc-ok: #34d399;
+
+  all: unset;
+  box-sizing: border-box;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  height: 40px;
+  padding: 0 16px 0 5px;
+  border-radius: 999px;
+  cursor: pointer;
+  color: var(--c1);
+  font: 800 13px/1.2 var(--font-body);
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--c1) 15%, #0a0c18),
+    color-mix(in srgb, var(--c2) 11%, #0a0c18)
+  );
+  box-shadow:
+    inset 0 0 0 1.5px color-mix(in srgb, var(--c1) 50%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    0 0 24px -8px var(--c1);
+  transition:
+    transform 0.15s,
+    box-shadow 0.3s;
+}
+
+.sc-chip:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    inset 0 0 0 1.5px var(--c1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16),
+    0 0 30px -6px var(--c1);
+}
+
+.sc-chip:active {
+  transform: scale(0.98);
+}
+
+.sc-chip:focus-visible {
+  outline: 2px solid var(--sc-ice);
+  outline-offset: 3px;
+}
+
+.sc-core {
+  position: relative;
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+
+/* Кольцо прогресса до следующей отметки: конус с --p в процентах. */
+.sc-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 0deg,
+    var(--c1),
+    var(--c2) calc(var(--p) * 1%),
+    rgba(255, 255, 255, 0.1) 0
+  );
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2.5px), #000 0);
+  mask: radial-gradient(farthest-side, transparent calc(100% - 2.5px), #000 0);
+}
+
+.sc-fl {
+  width: 17px;
+  height: 17px;
+  fill: currentColor;
+  fill-opacity: 0.22;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  transform-origin: 50% 90%;
+  animation: sc-fl 1.6s ease-in-out infinite;
+  filter: drop-shadow(0 0 5px var(--c1));
+}
+
+@keyframes sc-fl {
+  0%,
+  100% {
+    transform: scale(1) skewX(0);
+  }
+  35% {
+    transform: scale(1.07, 1.12) skewX(-3deg);
+  }
+  70% {
+    transform: scale(0.96, 1.03) skewX(2deg);
+  }
+}
+
+.sc-chip b {
+  font: 800 15px var(--font-display);
+  color: #fff;
+  text-shadow: 0 0 12px var(--c1);
+  letter-spacing: 0.01em;
+}
+
+/* Точка «серия под угрозой»: серия идёт, но сегодняшний день не засчитан. */
+.sc-warn {
+  position: absolute;
+  right: -2px;
+  top: -2px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #fbbf24;
+  box-shadow: 0 0 0 2px #0a0c18;
+  animation: sc-ping 1.6s infinite;
+}
+
+@keyframes sc-ping {
+  0% {
+    box-shadow:
+      0 0 0 2px #0a0c18,
+      0 0 0 2px rgba(251, 191, 36, 0.7);
+  }
+  100% {
+    box-shadow:
+      0 0 0 2px #0a0c18,
+      0 0 0 9px rgba(251, 191, 36, 0);
+  }
+}
+
+/* Блик, пробегавший по капсуле (из макета), убран: это широкая светящаяся
+   полоса, она читалась как блик стекла, а не как огонь. На уровне 1+ капсулу
+   теперь оживляют искры и орбита. */
+
+.sc-sp {
+  position: absolute;
+  left: 18px;
+  bottom: 20px;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 6px 1px var(--c1);
+  opacity: 0;
+  animation: sc-rise 2.4s ease-out infinite;
+}
+
+.sc-sp:nth-child(2) {
+  left: 11px;
+  animation-delay: 0.8s;
+}
+
+.sc-sp:nth-child(3) {
+  left: 25px;
+  animation-delay: 1.6s;
+}
+
+@keyframes sc-rise {
+  0% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-14px);
+  }
+}
+
+/* Орбита — с третьего уровня. */
+.sc-orb {
+  position: absolute;
+  inset: -5px;
+  border-radius: 50%;
+  animation: sc-spin 3.4s linear infinite;
+}
+
+.sc-orb::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: -1px;
+  width: 5px;
+  height: 5px;
+  margin-left: -2.5px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 8px 2px var(--c1);
+}
+
+@keyframes sc-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Год: огонь переливается всеми цветами. Только капсула — окну серии
+   переливать нечего, оно и так окрашено градиентом по уровню. */
+.sc-chip.sc-t4 {
+  animation: sc-hue 8s linear infinite;
+}
+
+@keyframes sc-hue {
+  to {
+    filter: hue-rotate(360deg);
+  }
+}
+
+/* Пять уровней: палитра пары цветов своя у каждого. */
+.sc-t0 {
+  --c1: #fb923c;
+  --c2: #ef4444;
+}
+
+.sc-t1 {
+  --c1: #fbbf24;
+  --c2: #f97316;
+}
+
+.sc-t2 {
+  --c1: #c084fc;
+  --c2: #ec4899;
+}
+
+.sc-t3 {
+  --c1: #67e8f9;
+  --c2: #818cf8;
+}
+
+.sc-t4 {
+  --c1: #f9a8d4;
+  --c2: #67e8f9;
+}
+
+/* ------------------------------- Окно серии ------------------------------ */
+
+.sc-pop {
+  position: absolute;
+  left: 0;
+  /* Окно открывается под капсулой, а не поверх неё: без `top` встанет на
+     статичную позицию, то есть на саму капсулу. Отступ 12px — из макета,
+     где капсула 40px, а окно начинается с 74px. */
+  top: calc(100% + 12px);
+  z-index: 30;
+  /* Ширина от экрана, а не `100%`: капсула стоит в строчке чипов и по ширине
+     равна самой себе, поэтому 100% здесь — это 90 пикселей капсулы, и окно
+     ужималось до пары столбцов текста. */
+  width: min(340px, calc(100vw - 28px));
+  padding: 18px;
+  border-radius: 20px;
+  color: var(--sc-tx);
+  font: 600 13px/1.45 var(--font-body);
+  background: linear-gradient(180deg, #151b36, #0a0f20);
+  box-shadow:
+    inset 0 0 0 1px var(--sc-line),
+    0 30px 70px -20px #000,
+    0 0 50px -28px var(--c1);
+  animation: sc-pop 0.28s cubic-bezier(0.2, 0.9, 0.3, 1.15);
+}
+
+@keyframes sc-pop {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.97);
+  }
+}
+
+.sc-pop button {
+  all: unset;
+}
+
+.sc-i {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  flex: none;
+}
+
+.sc-ph {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.sc-ph strong {
+  font: 800 32px/1 var(--font-display);
+  background: linear-gradient(120deg, var(--c1), var(--c2));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.sc-ph span {
+  color: var(--sc-tx);
+  font-weight: 800;
+}
+
+.sc-sub {
+  margin: 6px 0 16px;
+  color: var(--sc-mut);
+  font-size: 13px;
+}
+
+.sc-week {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.sc-day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  color: var(--sc-mut);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.sc-dot {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  box-shadow: inset 0 0 0 1.5px var(--sc-line);
+  color: transparent;
+  font-size: 13px;
+  line-height: 1;
+}
+
+.sc-dot.done {
+  background: linear-gradient(135deg, var(--c1), var(--c2));
+  color: #140b08;
+  box-shadow: 0 0 14px -3px var(--c1);
+}
+
+.sc-dot.today:not(.done) {
+  box-shadow: inset 0 0 0 2px var(--c1);
+  animation: sc-ring-pulse 1.8s ease-in-out infinite;
+}
+
+.sc-dot.miss {
+  color: #475072;
+}
+
+@keyframes sc-ring-pulse {
+  50% {
+    box-shadow:
+      inset 0 0 0 2px var(--c1),
+      0 0 14px 0 var(--c1);
+  }
+}
+
+.sc-nx {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  margin-bottom: 8px;
+}
+
+.sc-nx span:last-child {
+  color: var(--sc-mut);
+}
+
+.sc-bar {
+  height: 6px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+.sc-bar i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--c1), var(--c2));
+  box-shadow: 0 0 12px var(--c1);
+  transition: width 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.sc-rw {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 10px 0 16px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  font-size: 13px;
+}
+
+.sc-rw svg {
+  color: #fbbf24;
+}
+
+.sc-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 0 0;
+  border-top: 1px solid var(--sc-line);
+  font-size: 13px;
+}
+
+.sc-fz {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.sc-fz svg {
+  width: 20px;
+  height: 20px;
+  color: #3a4366;
+}
+
+.sc-fz svg.on {
+  color: var(--sc-ice);
+  filter: drop-shadow(0 0 6px rgba(125, 211, 252, 0.7));
+}
+
+.sc-state {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 14px;
+  padding: 11px 12px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.sc-state.ok {
+  background: rgba(52, 211, 153, 0.1);
+  color: var(--sc-ok);
+}
+
+.sc-state.risk {
+  background: rgba(251, 191, 36, 0.1);
+  color: #fcd34d;
+}
+
+.sc-state time {
+  margin-left: auto;
+  font: 800 14px var(--font-display);
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sc-chip,
+  .sc-fl,
+  .sc-warn,
+  .sc-sp,
+  .sc-orb,
+  .sc-dot.today:not(.done),
+  .sc-pop {
+    animation: none !important;
+    transition: none !important;
+  }
+}

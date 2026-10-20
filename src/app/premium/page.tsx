@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
+import { PremiumEntry } from "@/components/PremiumEntry";
 import { PremiumLoginNote, PremiumPlans, PromoCode } from "@/components/PremiumPlans";
 
 export const metadata: Metadata = {
   title: "Premium-подписка",
   description:
-    "AniGalaxy Premium: 4K-качество, без рекламы, скачивание аниме, ранний доступ к новинкам, эксклюзивные рамки и бейджи профиля. Тарифы на месяц, квартал и год.",
-  keywords: ["premium", "подписка", "аниме 4K", "AniGalaxy premium"],
+    "AniGalaxy Premium: удвоенные XP и AC за квесты и вход, +50% очков клану, дополнительная линия боевого пропуска, эксклюзивные рамки и тег Premium. Тарифы на месяц, квартал и год.",
+  keywords: ["premium", "подписка", "AniGalaxy premium"],
 };
 
 const FAQ = [
@@ -18,7 +19,7 @@ const FAQ = [
   {
     question: "Подписка продлевается автоматически?",
     answer:
-      "Нет. Мы не списываем деньги автоматически: подписка действует до указанной даты, а продлить её можно в любой момент.",
+      "Денег мы не списываем — платёжных данных у проекта нет. Тумблер «Автопродление» на странице подписки продолжает её на 30 дней, когда срок закончился, но сам платёж не производит: продлить подписку можно промокодом.",
   },
   {
     question: "Где посмотреть статус и дату окончания?",
@@ -28,13 +29,14 @@ const FAQ = [
   {
     question: "Что входит в Premium?",
     answer:
-      "4K-качество, скачивание до 50 серий в день, ранний доступ к новинкам сезона, анимированные аватары, эксклюзивные рамки и бейджи, приоритетная поддержка.",
+      "Удвоенные XP и AC за квесты и ежедневный вход, +50% очков клану, дополнительная линия наград в боевом пропуске, эксклюзивные рамки и титулы, тег Premium. Апскейл до 2K/4K в плеере открыт после первых двух серий.",
   },
 ];
 
 export default function PremiumPage() {
   return (
-    <div className="relative overflow-hidden">
+    <PremiumEntry>
+      <div className="relative overflow-hidden">
       {/* Фоновое свечение */}
       <div
         className="pointer-events-none absolute inset-x-0 top-0 h-[520px] bg-gradient-to-b from-accent/18 via-accent-2/8 to-transparent"
@@ -117,10 +119,12 @@ export default function PremiumPage() {
       {/* ----------------------------- Сноски -------------------------------- */}
       <section className="relative mx-auto max-w-4xl px-4 pt-8 text-center">
         <p className="text-sm leading-relaxed text-muted">
-          Подписка не продлевается автоматически — продлить или перейти на другой тариф можно в
-          любой момент, пока подписка активна.
+          Денег мы не списываем автоматически: платёжных данных у проекта нет. Тумблер
+          «Автопродление» на странице подписки лишь продолжает её ещё на 30 дней, если срок
+          закончился.
         </p>
       </section>
-    </div>
+      </div>
+    </PremiumEntry>
   );
 }

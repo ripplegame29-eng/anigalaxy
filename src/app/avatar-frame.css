@@ -1,0 +1,72 @@
+/* ============================================================
+   AVATAR + FRAME — ФИКСИРОВАННЫЕ РАЗМЕРЫ. НЕ МЕНЯТЬ ЧИСЛА В ЭТОМ ФАЙЛЕ.
+   Формула: размер рамки = размер аватара × scale (scale у каждой рамки свой:
+   1.3 / 1.95 / 2.5 — берётся из данных рамки, в CSS/JS не хардкодить).
+   Файл рамки 512×512, круг под аватар занимает 1/scale кадра (при 1.3 ≈ 77%).
+   ============================================================ */
+:root {
+  --ag-av-xs: 36px; /* строка-сводка, комментарии, меню */
+  --ag-av-sm: 72px; /* карточка в магазине / каталоге */
+  --ag-av-md: 92px; /* панель предпросмотра, профиль   */
+  --ag-av-lg: 104px; /* предмет дня (hero)              */
+}
+.ag-frame {
+  --av: var(--ag-av-md);
+  --scale: 1.3; /* перекрывается inline: style="--scale:1.95" */
+  position: relative;
+  flex: none;
+  display: grid;
+  place-items: center;
+  /* Коробка — av × scale. Выравнивание аватарок держит justify-self: без
+     него грид с фиксированной колонкой прижимал коробку влево, и круг уезжал
+     вбок — аватарки в списках вставали не на одной вертикали.
+     Сжимать коробку до var(--av) нельзя: у картинок рамки глобальный
+     max-width: 100%, и она обрезалась бы по ширине до аватара. */
+  width: calc(var(--av) * var(--scale));
+  height: calc(var(--av) * var(--scale));
+  justify-self: center;
+}
+.ag-frame--xs {
+  --av: var(--ag-av-xs);
+}
+.ag-frame--sm {
+  --av: var(--ag-av-sm);
+}
+.ag-frame--md {
+  --av: var(--ag-av-md);
+}
+.ag-frame--lg {
+  --av: var(--ag-av-lg);
+}
+
+/* аватар всегда ровно --av по центру, рамка поверх на всю коробку */
+.ag-frame__avatar {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: var(--av);
+  height: var(--av);
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  font-weight: 800;
+  font-size: calc(var(--av) * 0.34);
+  background: #1d6fe0 center/cover no-repeat;
+}
+/* Рамка поверх аватара, размер av × scale, всегда по центру коробки —
+   тогда круг стоит на месте при любом scale. max-width: none обязателен:
+   глобальное правило для картинок иначе обрежет рамку по ширине коробки. */
+.ag-frame__img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  pointer-events: none;
+  overflow: visible;
+}
+.ag-frame--none .ag-frame__avatar {
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.3);
+}

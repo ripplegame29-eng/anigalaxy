@@ -1,0 +1,1413 @@
+/* ==========================================================================
+   Окно «Подарить Premium».
+
+   Дословная транскрипция макета «AniGalaxy — подарить Premium». Размеры,
+   цвета, тайминги, радиусы и градиенты — как в макете, включая вторую и
+   третью волны правок (blue theme и «apple-style» карточка).
+
+   Единственное отличие — префикс `gd-`: в макете классы generic (.dlg,
+   .shell, .pay, .tf, .sw), такими именами забрали бы весь интерфейс.
+
+   Шрифты макета: Unbounded → --font-display, Manrope → --font-body.
+   Переменные из :root макета вынесены в .gd один в один.
+   ========================================================================== */
+
+.gd {
+  --ln: rgba(255, 255, 255, 0.08);
+  --tx: #eef2ff;
+  --mut: #8792b4;
+  --vio: #3b9eff;
+  --cy: #22d3ee;
+  --gold: #f5c76b;
+  --ok: #34d399;
+  --grad: linear-gradient(115deg, #1d4ed8, #2563eb 30%, #0ea5e9 68%, #22d3ee);
+
+  border: 0;
+  padding: 0;
+  background: none;
+  color: var(--tx);
+  width: min(1040px, calc(100vw - 24px));
+  max-width: none;
+  max-height: calc(100vh - 24px);
+  margin: auto;
+  overflow: visible;
+  font-family: var(--font-body);
+}
+
+.gd::backdrop {
+  background: rgba(3, 5, 12, 0.78);
+  backdrop-filter: blur(10px);
+}
+
+.gd[open] {
+  animation: gd-pop 0.4s cubic-bezier(0.2, 0.9, 0.3, 1.1);
+}
+
+@keyframes gd-pop {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.97);
+  }
+}
+
+.gd-i {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  flex: none;
+}
+
+/* Бегущая рамка. Без @property угол не интерполируется: кадры анимации
+   меняли бы его скачком. Объявление — из макета, где оно тоже было. */
+@property --ba {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+/* ------------------------------- Оболочка -------------------------------- */
+
+.gd-shell {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 24px);
+  border-radius: 28px;
+  overflow: hidden;
+  background:
+    radial-gradient(60% 45% at 88% -5%, rgba(59, 158, 255, 0.42), transparent 70%),
+    radial-gradient(45% 35% at 0 0, rgba(34, 211, 238, 0.17), transparent 70%),
+    radial-gradient(55% 40% at 50% 125%, rgba(34, 211, 238, 0.13), transparent 70%),
+    linear-gradient(180deg, #0f1530, #060918);
+  box-shadow:
+    inset 0 0 0 1px var(--ln),
+    0 40px 120px -30px #000;
+}
+
+/* Звёзды */
+.gd-shell::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.7;
+  animation: gd-tw 7s ease-in-out infinite alternate;
+  background:
+    radial-gradient(1px 1px at 8% 14%, #fff, transparent),
+    radial-gradient(1.5px 1.5px at 30% 6%, #fde9b0, transparent),
+    radial-gradient(1px 1px at 52% 22%, #fff, transparent),
+    radial-gradient(1px 1px at 74% 9%, #cfe, transparent),
+    radial-gradient(1.5px 1.5px at 92% 30%, #fff, transparent),
+    radial-gradient(1px 1px at 18% 62%, #fff, transparent),
+    radial-gradient(1px 1px at 88% 70%, #fde9b0, transparent),
+    radial-gradient(1px 1px at 60% 88%, #fff, transparent);
+}
+
+@keyframes gd-tw {
+  to {
+    opacity: 0.25;
+  }
+}
+
+/* Бегущая рамка */
+.gd-shell::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1.5px;
+  pointer-events: none;
+  z-index: 4;
+  background: conic-gradient(
+    from var(--ba, 0deg),
+    transparent 0 60%,
+    rgba(34, 211, 238, 0.95) 78%,
+    rgba(59, 130, 246, 0.95) 92%,
+    transparent
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: gd-bd 9s linear infinite;
+}
+
+@keyframes gd-bd {
+  to {
+    --ba: 360deg;
+  }
+}
+
+.gd-scroll,
+.gd-foot,
+.gd-done {
+  position: relative;
+  z-index: 1;
+}
+
+.gd-x {
+  all: unset;
+  cursor: pointer;
+  position: absolute;
+  right: 18px;
+  top: 18px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: rgba(255, 255, 255, 0.06);
+  z-index: 3;
+}
+
+.gd-x:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.gd-scroll {
+  overflow: auto;
+  padding: 30px 32px 8px;
+  scrollbar-width: none;
+}
+
+.gd-scroll::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+.gd-scroll h2 {
+  margin: 0 0 8px;
+  font: 800 clamp(30px, 4.6vw, 46px) / 1.1 var(--font-display);
+  letter-spacing: -0.01em;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: linear-gradient(100deg, #fff 35%, #a5e8ff 50%, #fff 65%);
+  background-size: 250% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: gd-hs 7s linear infinite;
+}
+
+@keyframes gd-hs {
+  to {
+    background-position: -250% 0;
+  }
+}
+
+.gd-gi {
+  position: relative;
+  width: 54px;
+  height: 54px;
+  border-radius: 17px;
+  display: grid;
+  place-items: center;
+  color: #7dd3fc;
+  background: linear-gradient(145deg, rgba(34, 211, 238, 0.25), rgba(37, 99, 235, 0.25));
+  box-shadow:
+    inset 0 0 0 1px rgba(125, 211, 252, 0.45),
+    0 0 26px -6px var(--cy);
+  flex: none;
+}
+
+.gd-gi::after {
+  content: "";
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  animation: gd-sp 5s linear infinite;
+  background: radial-gradient(circle, #fff 0 1.5px, transparent 2px) 50% 0 / 6px 6px no-repeat;
+}
+
+@keyframes gd-sp {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.gd-lead {
+  margin: 0 0 22px;
+  max-width: 62ch;
+  color: var(--mut);
+  font-size: 15px;
+}
+
+/* ------------------------------ Переключатель ---------------------------- */
+
+.gd-seg {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  padding: 5px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.04);
+  box-shadow: inset 0 0 0 1px var(--ln);
+  margin-bottom: 24px;
+}
+
+.gd-seg button {
+  all: unset;
+  cursor: pointer;
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  padding: 13px;
+  font: 800 14px var(--font-body);
+  color: var(--mut);
+  transition: color 0.25s;
+}
+
+.gd-seg button[aria-selected="true"] {
+  color: #fff;
+}
+
+.gd-ind {
+  position: absolute;
+  top: 5px;
+  bottom: 5px;
+  left: 5px;
+  width: calc(50% - 5px);
+  border-radius: 12px;
+  background: linear-gradient(115deg, #2563eb, #0ea5e9);
+  box-shadow:
+    0 10px 30px -8px #2563eb,
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  transition: transform 0.35s cubic-bezier(0.3, 1.2, 0.4, 1);
+}
+
+.gd-shell[data-mode="r"] .gd-ind {
+  transform: translateX(100%);
+}
+
+/* ------------------------------- Две колонки ----------------------------- */
+
+.gd-cols {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+  gap: 28px;
+  padding-bottom: 20px;
+}
+
+@media (max-width: 820px) {
+  .gd-cols {
+    grid-template-columns: 1fr;
+  }
+  .gd-scroll {
+    padding: 24px 18px 8px;
+  }
+}
+
+/* Переключение блоков по режиму — как в макете через [data-mode] */
+.gd-shell[data-mode="f"] .gd-cols [data-m="r"],
+.gd-shell[data-mode="r"] .gd-cols [data-m="f"] {
+  display: none;
+}
+
+/* Отступы подписей — дословно из макета. У правил важен именно `:first-child`
+   на самом блоке: без него «Обёртка» и «Когда доставить» тоже получали
+   margin-top:0 и подписи прижимались к плиткам тарифа вплотную. */
+.gd-cols [data-m="f"] > .gd-lb:first-child {
+  margin-top: 22px;
+}
+
+.gd-cols > div > [data-m="f"]:first-child > .gd-lb:first-child {
+  margin-top: 0;
+}
+
+/* -------------------------------- Подписи -------------------------------- */
+
+.gd-lb {
+  display: flex;
+  justify-content: space-between;
+  margin: 22px 0 10px;
+  font-weight: 800;
+  font-size: 13px;
+}
+
+.gd-lb:first-child {
+  margin-top: 0;
+}
+
+.gd-lb span {
+  color: var(--mut);
+  font-weight: 600;
+}
+
+/* -------------------------------- Поля ----------------------------------- */
+
+.gd-fld {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 6px 6px 14px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.04);
+  box-shadow: inset 0 0 0 1px var(--ln);
+}
+
+.gd-fld:focus-within {
+  box-shadow:
+    inset 0 0 0 1.5px var(--vio),
+    0 0 26px -8px var(--vio);
+}
+
+.gd-fld.bad {
+  box-shadow: inset 0 0 0 1.5px #fb7185;
+}
+
+.gd-fld.good {
+  box-shadow: inset 0 0 0 1.5px var(--ok);
+}
+
+.gd-fld input,
+.gd-msg,
+.gd-num {
+  all: unset;
+  flex: 1;
+  min-width: 0;
+  font: 700 15px var(--font-body);
+  padding: 10px 0;
+}
+
+.gd-msg {
+  display: block;
+  width: 100%;
+  min-height: 84px;
+  padding: 14px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.04);
+  box-shadow: inset 0 0 0 1px var(--ln);
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 1.5;
+  resize: none;
+  box-sizing: border-box;
+  max-width: 100%;
+}
+
+.gd-msg:focus {
+  box-shadow: inset 0 0 0 1.5px var(--vio);
+}
+
+/* ------------------------------ Получатели ------------------------------- */
+
+.gd-frs {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+
+.gd-fr {
+  all: unset;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 12px 5px 5px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 13px;
+  box-shadow: inset 0 0 0 1px var(--ln);
+  transition: 0.2s;
+}
+
+.gd-fr:hover,
+.gd-fr.on {
+  background: rgba(59, 158, 255, 0.18);
+  box-shadow: inset 0 0 0 1px var(--vio);
+}
+
+.gd-av {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font: 800 12px var(--font-display);
+  background: var(--g);
+  flex: none;
+}
+
+.gd-rs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  font-size: 13px;
+  color: var(--mut);
+}
+
+.gd-rs i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--mut);
+  flex: none;
+}
+
+.gd-rs.ok {
+  color: var(--ok);
+}
+
+.gd-rs.ok i {
+  background: var(--ok);
+  box-shadow: 0 0 10px var(--ok);
+}
+
+/* ------------------------------- Тарифы ---------------------------------- */
+
+.gd-tfs {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.gd-tf {
+  all: unset;
+  cursor: pointer;
+  position: relative;
+  border: 1.5px solid transparent;
+  padding: 18px 14px 16px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.035);
+  box-shadow: inset 0 0 0 1px var(--ln);
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
+}
+
+.gd-tf:hover {
+  transform: translateY(-2px);
+}
+
+.gd-tf[aria-checked="true"] {
+  background: linear-gradient(#0c1a3a, #091330) padding-box, conic-gradient(from var(--ba, 0deg), #2563eb, #22d3ee, #bfdbfe, #2563eb) border-box;
+  box-shadow: 0 20px 46px -16px #2563eb;
+  animation: gd-bd 6s linear infinite;
+}
+
+.gd-tf small {
+  display: block;
+  color: var(--mut);
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.gd-tf b {
+  display: block;
+  margin: 6px 0 4px;
+  font: 800 30px/1 var(--font-display);
+}
+
+.gd-tf b i {
+  font: 600 14px var(--font-body);
+  font-style: normal;
+  color: var(--mut);
+}
+
+.gd-tf em {
+  font-style: normal;
+  color: var(--mut);
+  font-size: 12px;
+}
+
+.gd-hit {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font: 800 11px var(--font-body);
+  background-size: 200% 100%;
+  background-image: linear-gradient(100deg, var(--gold), #fff3c4, #f472b6, var(--gold));
+  color: #1a1020;
+  animation: gd-hs2 3.5s linear infinite;
+}
+
+@keyframes gd-hs2 {
+  to {
+    background-position: 200% 0;
+  }
+}
+
+/* ------------------------------- Обёртка --------------------------------- */
+
+.gd-sws {
+  display: flex;
+  gap: 12px;
+}
+
+/* Цвета обёрток. В макете они лежат в `--a`/`--b`, но в проекте `--a`
+   объявлен через `@property` как <angle> в семи таблицах стилей: значение
+   `#38bdf8` для угла невалидно, сбрасывалось в 0deg, и градиент не рисовался
+   вовсе. Поэтому имена свои — значения из макета не тронуты. */
+.gd-sw {
+  all: unset;
+  cursor: pointer;
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, var(--sw1), var(--sw2));
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.25);
+  transition: transform 0.2s;
+}
+
+.gd-sw[aria-checked="true"] {
+  transform: scale(1.12);
+  box-shadow:
+    0 0 0 2px #0b1024,
+    0 0 0 4px var(--a),
+    0 0 20px var(--a);
+}
+
+/* ------------------------- Поводы и «когда» ------------------------------ */
+
+.gd-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.gd-chips.occ {
+  margin: 10px 0 0;
+}
+
+.gd-chips button {
+  all: unset;
+  cursor: pointer;
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-weight: 800;
+  font-size: 13px;
+  box-shadow: inset 0 0 0 1px var(--ln);
+  color: var(--mut);
+}
+
+.gd-chips button:hover {
+  color: #fff;
+}
+
+.gd-chips button.on {
+  background: var(--grad);
+  color: #fff;
+  box-shadow: none;
+}
+
+.gd-when {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.gd-when button {
+  all: unset;
+  cursor: pointer;
+  text-align: center;
+  padding: 11px 8px;
+  border-radius: 14px;
+  font-weight: 800;
+  font-size: 13px;
+  color: var(--mut);
+  box-shadow: inset 0 0 0 1px var(--ln);
+  transition: 0.2s;
+}
+
+.gd-when button:hover {
+  color: #fff;
+}
+
+.gd-when button[aria-checked="true"] {
+  color: #fff;
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.4), rgba(34, 211, 238, 0.15));
+  box-shadow: inset 0 0 0 1.5px var(--vio);
+}
+
+.gd-at {
+  display: none;
+  margin-top: 10px;
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 0;
+  color: var(--tx);
+  color-scheme: dark;
+  background: rgba(255, 255, 255, 0.05);
+  box-shadow: inset 0 0 0 1px var(--ln);
+  font: 700 14px var(--font-body);
+}
+
+/* ------------------------------ Переключатель ---------------------------- */
+
+.gd-tog {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 22px;
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.035);
+  box-shadow: inset 0 0 0 1px var(--ln);
+  cursor: pointer;
+}
+
+.gd-tog p {
+  margin: 0;
+  flex: 1;
+}
+
+.gd-tog small {
+  display: block;
+  color: var(--mut);
+  font-weight: 600;
+}
+
+.gd-sw2 {
+  position: relative;
+  width: 46px;
+  height: 26px;
+  border-radius: 99px;
+  background: rgba(255, 255, 255, 0.12);
+  transition: 0.25s;
+  flex: none;
+}
+
+.gd-sw2::after {
+  content: "";
+  position: absolute;
+  left: 3px;
+  top: 3px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  transition: 0.25s;
+}
+
+.gd-tog[aria-checked="true"] .gd-sw2 {
+  background: var(--vio);
+}
+
+.gd-tog[aria-checked="true"] .gd-sw2::after {
+  transform: translateX(20px);
+}
+
+/* -------------------------------- Счётчик ------------------------------- */
+
+.gd-cnt {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.gd-num {
+  width: 96px;
+  flex: none;
+  text-align: center;
+  padding: 12px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.05);
+  box-shadow: inset 0 0 0 1px var(--ln);
+  font: 800 20px var(--font-display);
+}
+
+.gd-cnt input[type="range"] {
+  flex: 1;
+  accent-color: #3b9eff;
+}
+
+/* ------------------------------ Промокод --------------------------------- */
+
+.gd-pcb {
+  all: unset;
+  cursor: pointer;
+  padding: 11px 18px;
+  border-radius: 12px;
+  font-weight: 800;
+  font-size: 13px;
+  color: #fff;
+  background: var(--grad);
+  box-shadow:
+    0 10px 24px -10px #0ea5e9,
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+.gd-pcb:hover {
+  background: var(--grad);
+  filter: brightness(1.12);
+}
+
+.gd-pnote {
+  margin-top: 8px;
+  color: var(--mut);
+  font-size: 13px;
+}
+
+.gd-pnote:empty {
+  display: none;
+}
+
+/* -------------------------------- Оплата --------------------------------- */
+
+.gd-pms {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.gd-pm {
+  all: unset;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.03);
+  box-shadow: inset 0 0 0 1px var(--ln);
+}
+
+.gd-pm:hover:not([aria-disabled="true"]) {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.gd-pm[aria-checked="true"] {
+  background: rgba(37, 99, 235, 0.2);
+  box-shadow: inset 0 0 0 1.5px var(--vio);
+}
+
+.gd-pm[aria-disabled="true"] {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.gd-pm .ic {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.gd-pm[aria-checked="true"] .ic {
+  background: var(--vio);
+}
+
+.gd-pm p {
+  margin: 0;
+  flex: 1;
+}
+
+.gd-pm small {
+  display: block;
+  color: var(--mut);
+  font-weight: 600;
+  font-size: 12.5px;
+}
+
+/* ------------------------------ Правая часть ----------------------------- */
+
+.gd-right {
+  position: sticky;
+  top: 0;
+  align-self: start;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.gd-stage {
+  position: relative;
+  height: 262px;
+  display: grid;
+  place-items: center;
+  perspective: 900px;
+}
+
+.gd-stage::after {
+  content: "";
+  position: absolute;
+  bottom: 2px;
+  width: 62%;
+  height: 28px;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(37, 99, 235, 0.65), transparent);
+  filter: blur(8px);
+  animation: gd-sh 6s ease-in-out infinite;
+}
+
+@keyframes gd-sh {
+  50% {
+    transform: scale(0.82);
+    opacity: 0.5;
+  }
+}
+
+.gd-gc {
+  --w1: #2563eb;
+  --w2: #2563eb;
+  position: absolute;
+  width: min(330px, 100%);
+  aspect-ratio: 1.75;
+  border-radius: 20px;
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.16), rgba(0, 0, 0, 0.2)),
+    linear-gradient(135deg, var(--w1), var(--w2));
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.45),
+    0 40px 70px -28px var(--w1),
+    0 2px 6px rgba(0, 0, 0, 0.25);
+  transition:
+    background 0.4s,
+    transform 0.15s;
+}
+
+.gd-gc::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(240px circle at var(--gx, 30%) var(--gy, 0%), rgba(255, 255, 255, 0.2), transparent 65%);
+  mix-blend-mode: overlay;
+}
+
+.gd-gc.holo::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: conic-gradient(from 0deg, #f9a8d4, #67e8f9, #fde68a, #c4b5fd, #f9a8d4);
+  mix-blend-mode: soft-light;
+  opacity: 0.7;
+  animation: gd-sp 7s linear infinite;
+}
+
+.gd-gc.gd-s1 {
+  transform: translate(14px, 14px) scale(0.96);
+  filter: brightness(0.7);
+  z-index: 1;
+}
+
+.gd-gc.gd-s2 {
+  transform: translate(28px, 28px) scale(0.92);
+  filter: brightness(0.5);
+  z-index: 0;
+}
+
+.gd-gc.gd-top {
+  z-index: 2;
+  cursor: pointer;
+  transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+  animation: gd-fl 6s ease-in-out infinite;
+}
+
+.gd-gc.gd-top.in {
+  animation: gd-flin 0.18s ease-out, gd-fl 6s ease-in-out infinite;
+}
+
+.gd-gc.gd-top.out {
+  animation: gd-flout 0.18s ease-in forwards, gd-fl 6s ease-in-out infinite;
+}
+
+@keyframes gd-flin {
+  from {
+    transform: rotateY(90deg);
+  }
+}
+
+@keyframes gd-flout {
+  to {
+    transform: rotateY(90deg);
+  }
+}
+
+@keyframes gd-fl {
+  50% {
+    translate: 0 -9px;
+  }
+}
+
+/* Верх карточки */
+.gd-gc .row.t {
+  justify-content: space-between;
+}
+
+.gd-gc .lg {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.gd-gc .lg svg {
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  color: #fff;
+  filter: none;
+  stroke-width: 1.6;
+}
+
+.gd-gc .wm {
+  display: flex;
+  flex-direction: row;
+  align-items: baseline;
+  gap: 6px;
+  line-height: 1;
+}
+
+.gd-gc .wm em {
+  font: 700 15px var(--font-body);
+  font-style: normal;
+  letter-spacing: -0.01em;
+}
+
+.gd-gc .wm small {
+  margin: 0;
+  font: 600 15px var(--font-body);
+  letter-spacing: -0.01em;
+  color: rgba(255, 255, 255, 0.62);
+}
+
+.gd-gc .chip {
+  display: none;
+}
+
+.gd-gc .kj {
+  position: absolute;
+  width: 150px;
+  height: 150px;
+  right: -24px;
+  top: auto;
+  bottom: -36px;
+  color: rgba(255, 255, 255, 0.09);
+  pointer-events: none;
+  filter: none;
+}
+
+.gd-gc .kj svg {
+  width: 100%;
+  height: 100%;
+  fill: currentColor;
+}
+
+.gd-gc .big {
+  position: relative;
+  z-index: 2;
+  margin: auto 0 0;
+  font: 600 38px/1 var(--font-body);
+  letter-spacing: -0.035em;
+  background-image: linear-gradient(100deg, #fff 20%, #c9f0ff 50%, #fff 80%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 1px 6px rgba(0, 0, 0, 0.25));
+}
+
+.gd-gc .fm {
+  position: relative;
+  z-index: 2;
+  margin-top: 8px;
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  font: 600 12px var(--font-body);
+  color: rgba(255, 255, 255, 0.75);
+  letter-spacing: 0.01em;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.5);
+}
+
+.gd-gc .ms {
+  position: relative;
+  z-index: 2;
+  margin: 8px 0 0;
+  font: 500 12.5px var(--font-body);
+  color: rgba(255, 255, 255, 0.62);
+  min-height: 1.4em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.5);
+}
+
+.gd-gc .bm {
+  position: relative;
+  z-index: 2;
+  margin: auto 0 0;
+  font: 600 15px/1.4 var(--font-body);
+  font-style: italic;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.5);
+}
+
+.gd-stage .fh {
+  position: absolute;
+  bottom: -8px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  color: var(--mut);
+  font-size: 11px;
+  font-weight: 700;
+  z-index: 3;
+}
+
+/* ------------------------------- Плюшки ---------------------------------- */
+
+.gd-perks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+}
+
+.gd-perks span {
+  padding: 7px 12px;
+  border-radius: 999px;
+  font-weight: 800;
+  font-size: 12px;
+  color: #cdeeff;
+  background: rgba(34, 211, 238, 0.09);
+  box-shadow: inset 0 0 0 1px rgba(34, 211, 238, 0.3);
+}
+
+.gd-perks span::before {
+  content: "✦ ";
+  color: var(--cy);
+}
+
+/* ---------------------------- Путь щедрости ------------------------------ */
+
+.gd-path {
+  padding: 16px 16px 14px;
+  border-radius: 20px;
+  background: linear-gradient(160deg, rgba(59, 158, 255, 0.14), rgba(255, 255, 255, 0.02));
+  box-shadow: inset 0 0 0 1px rgba(59, 158, 255, 0.25);
+}
+
+.gd-path h4 {
+  margin: 0 0 2px;
+  font: 700 14px var(--font-body);
+}
+
+.gd-path p {
+  margin: 0 0 6px;
+  color: var(--mut);
+  font-size: 13px;
+}
+
+.gd-path svg {
+  width: 100%;
+  height: 60px;
+  overflow: visible;
+}
+
+.gd-path .dash {
+  animation: gd-dash 1.2s linear infinite;
+}
+
+@keyframes gd-dash {
+  to {
+    stroke-dashoffset: -14;
+  }
+}
+
+/* -------------------------------- Подвал --------------------------------- */
+
+.gd-foot {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+  padding: 18px 32px 20px;
+  border-top: 1px solid var(--ln);
+  background: linear-gradient(180deg, rgba(5, 8, 16, 0.4), rgba(5, 8, 16, 0.85));
+  backdrop-filter: blur(10px);
+}
+
+.gd-tot small {
+  display: block;
+  color: var(--mut);
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.gd-tot b {
+  font: 800 32px/1.1 var(--font-display);
+}
+
+.gd-tot s {
+  color: var(--mut);
+  font: 600 14px var(--font-body);
+  margin-left: 8px;
+}
+
+.gd-tot em {
+  display: inline-block;
+  margin-left: 10px;
+  padding: 3px 10px;
+  border-radius: 99px;
+  background: rgba(59, 158, 255, 0.25);
+  font-style: normal;
+  font-weight: 800;
+  font-size: 12px;
+  vertical-align: middle;
+}
+
+.gd-brk {
+  margin-top: 4px;
+  max-width: 340px;
+  color: var(--mut);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.gd-brk b {
+  font: 700 12px var(--font-body);
+  color: var(--ok);
+}
+
+.gd-pay {
+  all: unset;
+  cursor: pointer;
+  margin-left: auto;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 58px;
+  padding: 0 36px;
+  border-radius: 16px;
+  font: 800 15px var(--font-body);
+  color: #fff;
+  background: var(--grad);
+  background-size: 200% 100%;
+  animation: gd-foil2 6s ease-in-out infinite alternate;
+  box-shadow:
+    0 18px 44px -12px #0ea5e9,
+    inset 0 1px 0 rgba(255, 255, 255, 0.55),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.18);
+}
+
+@keyframes gd-foil2 {
+  to {
+    background-position: 100% 0;
+  }
+}
+
+.gd-pay::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 40%, rgba(255, 255, 255, 0.35) 50%, transparent 60%);
+  transform: translateX(-120%);
+  animation: gd-sw 4.5s ease-in-out infinite;
+}
+
+@keyframes gd-sw {
+  0%,
+  55% {
+    transform: translateX(-120%);
+  }
+  85%,
+  100% {
+    transform: translateX(120%);
+  }
+}
+
+.gd-pay[disabled] {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.gd-pay[disabled]::after {
+  display: none;
+}
+
+.gd-legal {
+  width: 100%;
+  margin: 0;
+  text-align: center;
+  color: var(--mut);
+  font-size: 12px;
+}
+
+/* --------------------------------- Готово -------------------------------- */
+
+.gd-shell[data-fin="y"] .gd-scroll,
+.gd-shell[data-fin="y"] .gd-foot {
+  display: none;
+}
+
+.gd-shell[data-fin="y"] .gd-done {
+  display: flex;
+}
+
+.gd-done {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 70px 30px 54px;
+}
+
+.gd-orb {
+  position: relative;
+  width: 132px;
+  height: 132px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: #7dd3fc;
+  background: radial-gradient(circle, rgba(34, 211, 238, 0.3), rgba(37, 99, 235, 0.14) 70%);
+  box-shadow: 0 0 80px -10px var(--cy);
+  animation: gd-pulse 2s ease-in-out infinite;
+}
+
+@keyframes gd-pulse {
+  50% {
+    transform: scale(1.06);
+  }
+}
+
+.gd-orb::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1.5px solid var(--cy);
+  animation: gd-wv 2.2s ease-out infinite;
+}
+
+@keyframes gd-wv {
+  to {
+    transform: scale(2.3);
+    opacity: 0;
+  }
+}
+
+.gd-orb svg {
+  width: 50px;
+  height: 50px;
+}
+
+.gd-orb i {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 10px 2px var(--gold);
+  animation: gd-burst 1.6s ease-out infinite;
+  animation-delay: calc(var(--k) * 0.13s);
+  --r: calc(var(--k) * 40deg);
+}
+
+@keyframes gd-burst {
+  0% {
+    opacity: 1;
+    transform: rotate(var(--r)) translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: rotate(var(--r)) translateY(-90px);
+  }
+}
+
+.gd-done h3 {
+  margin: 26px 0 8px;
+  font: 800 24px var(--font-display);
+}
+
+.gd-done p {
+  margin: 0 0 26px;
+  color: var(--mut);
+  max-width: 42ch;
+}
+
+/* ------------------------------ Чек-лист --------------------------------- */
+
+.gd-rcpt {
+  width: min(380px, 100%);
+  margin: 0 0 22px;
+  padding: 16px 18px;
+  border-radius: 18px;
+  text-align: left;
+  background: rgba(255, 255, 255, 0.04);
+  box-shadow: inset 0 0 0 1px var(--ln);
+}
+
+.gd-rcpt div {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 6px 0;
+  font-size: 13px;
+  border-bottom: 1px dashed var(--ln);
+}
+
+.gd-rcpt div:last-child {
+  border: 0;
+  padding-top: 10px;
+  font-weight: 800;
+  font-size: 15px;
+}
+
+.gd-rcpt span {
+  color: var(--mut);
+}
+
+.gd-cp {
+  all: unset;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+  padding: 10px 16px;
+  border-radius: 12px;
+  font-weight: 800;
+  font-size: 13px;
+  color: #fff;
+  background: var(--grad);
+  box-shadow:
+    0 10px 24px -10px #0ea5e9,
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+.gd-cp:hover {
+  filter: brightness(1.12);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gd *,
+  .gd *::before,
+  .gd *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}

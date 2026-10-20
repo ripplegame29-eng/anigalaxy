@@ -22,7 +22,7 @@ export interface ClanFactionInfo {
   name: string;
   /** Символ-эмблема faction'а */
   glyph: string;
-  /** Цвет к��ана */
+  /** Цвет канала */
   color: string;
   /** Короткий девиз на странице выбора */
   motto: string;

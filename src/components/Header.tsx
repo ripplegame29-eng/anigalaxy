@@ -4,7 +4,8 @@ import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { openBonusDialog } from "@/lib/bonus-dialog";
-import { AccountCard, AccountMenu, MenuItem, useAccountItems } from "./AccountMenu";
+import { ProfileMenu, ProfileMenuPremium } from "./ProfileMenu";
+import { MenuItem, useAccountItems } from "./AccountMenu";
 import { useAccount } from "@/lib/use-account";
 import { HeaderIconButton } from "./HeaderIconButton";
 import { Logo } from "./Logo";
@@ -19,19 +20,15 @@ interface NavItem {
 const NAV: NavItem[] = [
   { href: "/", label: "Главная" },
   { href: "/catalog", label: "Каталог" },
-  { href: "/catalog?status=ongoing", label: "Онгоинги" },
+  { href: "/aniswipe", label: "AniSwipe" },
   { href: "/manga", label: "Манга" },
-  { href: "/catalog?sort=rating", label: "Топ" },
 ];
 
-/** Иконка короны для кнопки PREMIUM */
-function CrownIcon({ className = "h-4 w-4" }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" className={className} fill="currentColor" aria-hidden>
-      <path d="M3 7.6a1 1 0 0 1 .72-.96l3.2-.92a1 1 0 0 1 1.27.63l.77 2.1a1 1 0 0 0 1.62.4l1.7-1.65a1 1 0 0 1 1.42 0l1.7 1.65a1 1 0 0 0 1.62-.4l.77-2.1a1 1 0 0 1 1.27-.63l3.2.92a1 1 0 0 1 .72.96c.14 1.36.28 2.73-.46 4.03A6.8 6.8 0 0 1 17.6 16H6.4a6.8 6.8 0 0 1-4.3-4.37c-.74-1.3-.6-2.67-.46-4.03ZM6 18h12a1 1 0 1 1 0 2H6a1 1 0 1 1 0-2Z" />
-    </svg>
-  );
-}
+/**
+ * Плашка PREMIUM в шапке рисует ProfileMenu.premiumButton (см.
+ * components/ProfileMenu.tsx) — так она выглядит и ведёт себя как меню
+ * профиля, а не как отдельная кнопка.
+ */
 
 /** Иконка щита со звездой — кнопка «Боевой пропуск» */
 function ShieldIcon({ className = "h-[18px] w-[18px]" }: { className?: string }) {
@@ -232,16 +229,9 @@ export function Header() {
             </HeaderIconButton>
           </div>
 
-          <Link
-            href="/premium"
-            aria-label="Premium-подписка"
-            className="btn-premium glow-ring"
-            aria-current={isActive("/premium") ? "page" : undefined}
-          >
-            <CrownIcon />
-            Premium
-          </Link>
-          <AccountMenu />
+          {/* Плашка PREMIUM — из того же компонента, что и меню профиля */}
+          <ProfileMenuPremium />
+          <ProfileMenu />
         </div>
 
         {/* Поиск (mobile) */}
@@ -329,8 +319,11 @@ export function Header() {
 
             {/* Скролл: список длинный, а экран телефонный */}
             <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pb-6">
+{/* То же меню профиля, что в шапке: на мобильном дропдаун в шапке не
+                помещается, поэтому он живёт в шторке. После выбора пункта
+                шторку закрываем — иначе она остаётся поверх перехода */}
               <div className="px-4">
-                <AccountCard onNavigate={closeMenu} />
+                <ProfileMenu onAfterSelect={closeMenu} />
               </div>
 
               {/* Разделы сайта */}

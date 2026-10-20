@@ -298,13 +298,6 @@ export default async function TitlePage({ params }: PageParams) {
 
                 {/* «В избранное» и «В подборку» (localStorage + модалка) */}
                 <TitleActions anime={{ id: card.id, title: card.title, poster: card.poster }} />
-
-                <Link
-                  href="/catalog"
-                  className="btn-ghost inline-flex items-center gap-2 rounded-xl bg-white/8 px-5 py-3 text-sm font-semibold text-white ring-1 ring-white/12 hover:bg-white/14"
-                >
-                  В каталог
-                </Link>
               </div>
             </div>
           </div>

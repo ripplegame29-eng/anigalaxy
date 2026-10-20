@@ -30,10 +30,13 @@
   --color-gold: #ffb020;
   --color-mint: #3ddc97;
 
-  --font-sans: "Outfit", "Outfit Fallback", ui-sans-serif, system-ui, "Segoe UI", sans-serif;
-  /* Акцентный шрифт (заголовки, логотип) — как на референсе animeon.cc:
-     латиница/кириллица/латин-ext разбиты на сабсеты с unicode-range */
-  --font-accent: "delaLatin", "delaCyrillic", "delaLatinExt", "delaLatinExt Fallback";
+  /* Шрифты: Montserrat — акцентный (--font-display), Onest — основной
+     (--font-body). Обе переменные приходят из `next/font` в layout.tsx и
+     висят на <html>, поэтому в @theme они только переиспользуются:
+     Tailwind-утилиты font-sans / font-accent и все стили сайта идут через
+     них, а старые локальные @font-face (Manrope, Dela) выпилены. */
+  --font-sans: var(--font-body);
+  --font-accent: var(--font-display);
 
   /* Колонка контента (max-w-7xl): 1552px вместо 1280px — как на референсе,
      где шапка/баннеры идут во всю колонку ≈1504px (без px-6) на
@@ -42,77 +45,15 @@
   --container-7xl: 1552px;
 }
 
-/* ================================================================== */
-/*  Шрифты (скопированы с animeon.cc): Outfit — основной, Dela — акцент */
-/* ================================================================== */
-@font-face {
-  font-family: Outfit;
-  font-style: normal;
-  font-weight: 100 900;
-  font-display: swap;
-  src: url("./fonts/outfit-latin.woff2") format("woff2");
-  unicode-range: u+00??, u+0131, u+0152-0153, u+02bb-02bc, u+02c6, u+02da, u+02dc, u+0304, u+0308,
-    u+0329, u+2000-206f, u+20ac, u+2122, u+2191, u+2193, u+2212, u+2215, u+feff, u+fffd;
+/* Tailwind-утилиты под новые гарнитуры. Переменные --font-display и
+   --font-body объявляет next/font на <html>, поэтому utility описаны
+   через @utility, а не через @theme — иначе получился бы цикл. */
+@utility font-display {
+  font-family: var(--font-display);
 }
 
-@font-face {
-  font-family: Outfit;
-  font-style: normal;
-  font-weight: 100 900;
-  font-display: swap;
-  src: url("./fonts/outfit-latin-ext.woff2") format("woff2");
-  unicode-range: u+0100-02ba, u+02bd-02c5, u+02c7-02cc, u+02ce-02d7, u+02dd-02ff, u+0304, u+0308,
-    u+0329, u+1d00-1dbf, u+1e00-1e9f, u+1ef2-1eff, u+2020, u+20a0-20ab, u+20ad-20c4, u+2113,
-    u+2c60-2c7f, u+a720-a7ff;
-}
-
-/* Метрически выровненный фолбэк Outfit под кириллицу (на референсе — Arial) */
-@font-face {
-  font-family: "Outfit Fallback";
-  src: local("Arial");
-  ascent-override: 100.18%;
-  descent-override: 26.05%;
-  line-gap-override: 0%;
-  size-adjust: 99.82%;
-}
-
-@font-face {
-  font-family: delaLatin;
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url("./fonts/dela-latin.woff2") format("woff2");
-  unicode-range: u+00??, u+0131, u+0152-0153, u+02bb-02bc, u+02c6, u+02da, u+02dc, u+0304, u+0308,
-    u+0329, u+2000-206f, u+20ac, u+2122, u+2191, u+2193, u+2212, u+2215, u+feff, u+fffd;
-}
-
-@font-face {
-  font-family: delaCyrillic;
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url("./fonts/dela-cyrillic.woff2") format("woff2");
-  unicode-range: u+0301, u+0400-045f, u+0490-0491, u+04b0-04b1, u+2116;
-}
-
-@font-face {
-  font-family: delaLatinExt;
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url("./fonts/dela-latin-ext.woff2") format("woff2");
-  unicode-range: u+0100-02ba, u+02bd-02c5, u+02c7-02cc, u+02ce-02d7, u+02dd-02ff, u+0304, u+0308,
-    u+0329, u+1d00-1dbf, u+1e00-1e9f, u+1ef2-1eff, u+2020, u+20a0-20ab, u+20ad-20c0, u+2113,
-    u+2c60-2c7f, u+a720-a7ff;
-}
-
-@font-face {
-  font-family: "delaLatinExt Fallback";
-  src: local("Arial");
-  ascent-override: 116%;
-  descent-override: 28.8%;
-  line-gap-override: 0%;
-  size-adjust: 100%;
+@utility font-body {
+  font-family: var(--font-body);
 }
 
 /* ================================================================== */
@@ -121,22 +62,41 @@
 @layer base {
   html {
     scroll-behavior: smooth;
+    /* Липкая шапка — 65px. Без этого отступа браузер приводит цель
+       прокрутки к верхнему краю окна, и она оказывается под шапкой.
+       74px = 65px шапки + 9px воздуха. */
+    scroll-padding-top: 74px;
     -webkit-tap-highlight-color: transparent;
   }
 
   body {
     background-color: var(--color-ink);
     color: var(--color-bright);
-    font-family: var(--font-sans);
-    font-feature-settings: "cv11", "ss01";
+    font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
     overflow-x: hidden;
   }
 
-  /* Заголовки страниц и секций — акцентный шрифт Dela,
-     как на референсе animeon.cc (класс font-accent) */
+  /* Формы и кнопки наследуют шрифт страницы — иначе браузер подставил бы
+     в них системный шрифт вместо Onest */
+  button,
+  input,
+  textarea,
+  select {
+    font-family: var(--font-body);
+  }
+
+  /* Заголовки и названия разделов — Montserrat 800. Размеры прежние,
+     изменились только гарнитура, начертание и разрядка. */
   h1,
-  h2 {
-    font-family: var(--font-accent);
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    text-wrap: balance;
   }
 
   /* Мягкое свечение фона — «живой» градиент вместо плоского чёрного */
@@ -745,10 +705,31 @@
   display: none;
 }
 
-/* Лёгкий плюс к интервалу у заголовков (вместо tracking-tight -0.025em),
-   чтобы жирная Dela не сливалась: только буквы чуть разведены, без
-   обводок и теней. Вне @layer — важно для приоритета над утилитами. */
-h1,
+/* Разрядка заголовков: -0.03em из типографики Montserrat. Правило вне
+   @layer — иначе утилиты разрядки перебили бы базовое значение.
+   `.tracking-tight` оставлен как был (0.01em): это утилита всего сайта,
+   и её значение не входит в задачу по шрифтам. */
+h1 {
+  letter-spacing: -0.03em;
+}
 .tracking-tight {
   letter-spacing: 0.01em;
+}
+
+/*
+ * Тема меню профиля (ProfileMenu) привязана к токенам проекта.
+ *
+ * У компонента свои переменные с дефолтами (--pm-accent: #2b7fff и т.д.),
+ * поэтому переопределение обязательно с удвоенным классом: так селектор
+ * специфичнее, чем один .pm-root, и порядок подключения CSS больше не
+ * влияет на результат. Значения берём из :root — при смене палитры сайта
+ * меню меняется вместе с ним, а не отстаёт.
+ */
+.pm-root.pm-root {
+  --pm-accent: var(--color-accent);
+  --pm-text: var(--color-bright);
+  --pm-muted: var(--color-muted);
+  --pm-line: var(--color-line);
+  --pm-gold: var(--color-gold);
+  --pm-red: #f14c4c;
 }

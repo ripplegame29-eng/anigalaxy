@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+﻿import type { Metadata } from "next";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { CatalogFilters } from "@/components/CatalogFilters";
 import { CatalogResults } from "@/components/CatalogResults";
@@ -14,6 +14,16 @@ export const metadata: Metadata = {
 
 interface PageProps {
   searchParams: Promise<SearchParams>;
+}
+
+/** 1 тайтл / 2 тайтла / 5 тайтлов */
+function pluralTitles(count: number): string {
+  const abs = Math.abs(count) % 100;
+  const last = abs % 10;
+  if (abs > 10 && abs < 20) return "тайтлов";
+  if (last === 1) return "тайтл";
+  if (last > 1 && last < 5) return "тайтла";
+  return "тайтлов";
 }
 
 export default async function CatalogPage({ searchParams }: PageProps) {
@@ -38,41 +48,37 @@ export default async function CatalogPage({ searchParams }: PageProps) {
   ]);
 
   const title = state.q ? `Поиск: «${state.q}»` : "Каталог аниме";
+  const totalText = total.toLocaleString("ru-RU");
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10">
-      <Breadcrumbs items={[{ label: "Каталог" }, ...(state.q ? [{ label: state.q }] : [])]} />
-
-      <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-extrabold tracking-tight sm:text-3xl">{title}</h1>
-          <p className="mt-1.5 text-sm text-muted">
-            {total > 0 ? (
-              <>
-                Найдено{" "}
-                <span className="font-semibold text-white">
-                  {next ? "≈ " : ""}
-                  {total.toLocaleString("ru-RU")}
-                </span>{" "}
-                тайтлов
-              </>
-            ) : (
-              "По вашему запросу ничего не найдено"
-            )}
-          </p>
+    <div className="cat-page">
+      <div className="cat-wrap">
+        <div className="cat-crumbs">
+          <Breadcrumbs items={[{ label: "Каталог" }, ...(state.q ? [{ label: state.q }] : [])]} />
         </div>
-      </div>
 
-      <CatalogFilters value={state} meta={meta} />
+        <h1 className="cat-h1">{title}</h1>
+        <p className="cat-found" aria-live="polite">
+          {total > 0 ? (
+            <>
+              Найдено <b>{next ? "≈ " : ""}{totalText}</b> {pluralTitles(total)}
+            </>
+          ) : (
+            "По вашему запросу ничего не найдено"
+          )}
+        </p>
 
-      <div className="mt-8">
-        <CatalogResults
-          key={toSearch(state)}
-          initial={cards}
-          next={next}
-          total={total}
-          state={state}
-        />
+        <CatalogFilters value={state} meta={meta} />
+
+        <div className="cat-results">
+          <CatalogResults
+            key={toSearch(state)}
+            initial={cards}
+            next={next}
+            total={total}
+            state={state}
+          />
+        </div>
       </div>
     </div>
   );

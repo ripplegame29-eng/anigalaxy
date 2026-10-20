@@ -72,7 +72,8 @@ const KIND_CLASS: Record<ToastItem["kind"], string> = {
   achievement: "ring-gold/40 bg-gold/10 text-gold",
   tag: "ring-accent-2/45 bg-accent-2/12 text-accent-2",
   quest: "ring-mint/40 bg-mint/12 text-mint",
-  ac: "ring-gold/40 bg-gold/10 text-gold",
+  ac: "ring-accent-2/45 bg-accent-2/12 text-accent-2",
+  premium: "ring-gold/50 bg-gold/14 text-gold",
 };
 
 function ToastCard({ toast }: { toast: ToastItem }) {
@@ -107,7 +108,7 @@ function ToastCard({ toast }: { toast: ToastItem }) {
           type="button"
           onClick={() => dismissToast(toast.id)}
           aria-label="Скрыть уведомление"
-          className="-mr-1 -mt-0.5 shrink-0 rounded-md p-1 text-muted transition hover:bg-white/10 hover:text-white"
+          className="-mr-2 -mt-2 shrink-0 rounded-md p-2.5 text-muted transition hover:bg-white/10 hover:text-white"
         >
           <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2.4">
             <path strokeLinecap="round" d="M6 6l12 12M18 6L6 18" />

@@ -1,0 +1,5 @@
+[     166ms] ReferenceError: esc is not defined
+    at renderGrid (http://127.0.0.1:3011/levels-preview.html:494:97)
+    at http://127.0.0.1:3011/levels-preview.html:524:3
+    at http://127.0.0.1:3011/levels-preview.html:526:3
+[     297ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://127.0.0.1:3011/favicon.ico:0

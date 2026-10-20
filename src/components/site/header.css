@@ -1,0 +1,501 @@
+/* Сгенерировано из _design/Header_AniGalaxy_flat (1).html — не править руками.
+ *
+ * Перенесены все правила прототипа без изменений, кроме изоляции:
+ *  - селекторы спрятаны под .agh (шапка + оверлей поиска), глобальные
+ *    сбросы (html, body, *, a, button, svg, :focus-visible) вырезаны;
+ *  - @keyframes получили префикс hd-, иначе spin/sh/fl/pl/sc
+ *    перезаписали бы одноимённые анимации других страниц;
+ *  - :root прототипа перенесён на .agh (палитра шапки своя);
+ *  - в самом прототипе шапка не помещается уже на 560px (прокрутка 592px
+ *    при ширине 375, проверено на оригинале). Ниже — единственное
+ *    отступление от макета: на узких экранах уходит текст ловотипа и
+ *    сжимаются отступы, чтобы полоса не выезжала за экран. Все элементы
+ *    шапки остаются на месте, ничего не скрыто.
+ *
+ * Пересобрать: node tools/build-header-css.mjs
+ */
+.agh {
+  /* Липкость держит .agh, а не .hd. Почему: .hd лежит ВНУТРИ .agh, а
+     .agh обхватывает только шапку, поэтому у .hd не было места для хода —
+     sticky упирался в высоту собственного контейнера и шапка уезжала.
+     У .agh родитель body высотой во весь документ, так что ходить есть куда. */
+  position: sticky;
+  top: 0;
+  z-index: 60;
+box-sizing:border-box;color-scheme:dark;
+  --bg:#050810;
+  --text:#eef2fb;
+  --muted:#8d98b4;
+  --line:rgba(96,150,255,.16);
+  --blue:#2b7fff;
+  --cyan:#22d3ee;
+  --gold:#f5b74a;
+  --green:#34e0a1;
+  --red:#ff5d73;
+  --violet:#9b86ff;
+  --disp:var(--font-display)
+}
+
+.agh *,.agh *::before,.agh *::after{box-sizing:inherit}
+.agh input{font:inherit;color:inherit}
+@property --a{syntax:'<angle>';initial-value:0deg;inherits:false}
+@keyframes hd-spin{to{--a:360deg}}
+.agh .hd{position:relative;z-index:100;padding:12px 14px 0;pointer-events:none}
+.agh .hi{pointer-events:auto;position:relative;max-width:1340px;margin:0 auto;height:66px;padding:0 10px 0 14px;display:flex;align-items:center;gap:12px;border-radius:26px;background:linear-gradient(180deg,rgba(14,22,44,.66),rgba(7,11,24,.7));backdrop-filter:blur(22px) saturate(1.5);box-shadow:0 18px 50px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.07);transition:max-width .45s cubic-bezier(.3,.9,.3,1),height .3s,background .3s}
+.agh .hi::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:1px;background:conic-gradient(from var(--a),rgba(96,150,255,.18) 0 62%,var(--cyan) 80%,var(--blue) 90%,rgba(96,150,255,.18) 100%);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;animation:hd-spin 7s linear infinite;pointer-events:none}
+.agh .hi::after{content:"";position:absolute;left:30px;bottom:-1px;height:2px;border-radius:2px;width:calc((100% - 60px)*var(--pp,0));background:linear-gradient(90deg,var(--blue),var(--cyan),var(--violet));box-shadow:0 0 12px var(--blue);pointer-events:none}
+.agh .hd.sc .hi{max-width:1100px;height:58px;background:rgba(5,8,16,.9)}
+.agh .logo{display:flex;align-items:center;gap:6px;font:800 24px/1 var(--font-display);letter-spacing:-.035em;flex:none}
+.agh .logo .fox{position:relative;width:58px;height:50px;flex:none;display:grid;place-items:center;margin:-6px 0 -6px -2px}
+.agh .logo .fox img{width:56px;height:56px;object-fit:contain;filter:drop-shadow(0 0 6px rgba(43,127,255,.5));transition:transform .45s cubic-bezier(.3,1.6,.5,1)}
+.agh .logo:hover .fox img{transform:rotate(-8deg) scale(1.12)}
+.agh .logo .fox s{position:absolute;width:7px;height:7px;background:#9fe8ff;clip-path:polygon(50% 0,62% 38%,100% 50%,62% 62%,50% 100%,38% 62%,0 50%,38% 38%);opacity:0;pointer-events:none}
+.agh .logo .fox s:nth-of-type(1){top:-1px;right:-1px}
+.agh .logo .fox s:nth-of-type(2){bottom:2px;left:-4px;width:5px;height:5px}
+.agh .logo:hover .fox s{animation:hd-foxStar 1.1s ease-out infinite}
+.agh .logo:hover .fox s:nth-of-type(2){animation-delay:.45s}
+.agh .logo b{font-weight:800;color:#fff}
+.agh .logo b em{font-style:normal;background:linear-gradient(100deg,#2b8cff,#1fb6ff 60%,#22d3ee);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 10px rgba(43,127,255,.45))}
+@keyframes hd-foxStar{0%{opacity:0;transform:scale(.2) rotate(0)}40%{opacity:1}100%{opacity:0;transform:scale(1.3) rotate(90deg) translateY(-4px)}}
+@media (prefers-reduced-motion:reduce){.agh .logo:hover .fox s{animation:none}
+}
+.agh .nav{position:relative;display:flex;gap:2px}
+.agh .nav .hl,.agh .nav .act{position:absolute;left:0;top:0;width:0;height:0;border-radius:12px;opacity:0;pointer-events:none}
+.agh .nav .hl{background:rgba(255,255,255,.07)}
+.agh .nav .act{background:linear-gradient(135deg,rgba(43,127,255,.4),rgba(34,211,238,.15));box-shadow:inset 0 0 0 1px rgba(43,127,255,.6),0 0 20px rgba(43,127,255,.25)}
+.agh .nav.rdy .hl,.agh .nav.rdy .act{transition:transform .32s cubic-bezier(.3,.9,.3,1.1),width .32s,height .32s,opacity .2s}
+.agh .nav a,.agh .nav button{position:relative;z-index:1;display:flex;align-items:center;gap:6px;border:0;background:none;padding:8px 12px;border-radius:12px;font-weight:700;font-size:14px;color:#aab4cc;transition:color .2s}
+.agh .nav a:hover,.agh .nav button:hover,.agh .nav .on,.agh .nav [aria-expanded=true]{color:#fff}
+.agh .nav svg.ch{width:14px;transition:transform .25s}
+.agh .nav [aria-expanded=true] svg.ch{transform:rotate(180deg)}
+.agh .sp{flex:1}
+.agh .srch{display:flex;align-items:center;gap:10px;height:42px;min-width:0;flex:1;max-width:340px;padding:0 12px;border-radius:14px;border:1px solid var(--line);background:rgba(3,6,14,.55);color:var(--muted);transition:.2s;text-align:left}
+.agh .srch:hover{border-color:rgba(43,127,255,.6);box-shadow:0 0 0 3px rgba(43,127,255,.14)}
+.agh .srch svg{width:17px;flex:none}
+.agh .srch span{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.agh .ib{position:relative;width:42px;height:42px;flex:none;border-radius:13px;border:1px solid var(--line);background:rgba(255,255,255,.04);display:grid;place-items:center;color:#c3cadb;transition:.2s}
+.agh .ib:hover,.agh .ib[aria-expanded=true]{background:rgba(43,127,255,.16);border-color:rgba(43,127,255,.6);color:#fff;transform:translateY(-2px)}
+.agh .ib svg{width:19px}
+.agh .ib .bd{position:absolute;right:-5px;top:-5px;min-width:19px;height:19px;padding:0 5px;border-radius:10px;background:linear-gradient(135deg,var(--blue),var(--cyan));font-size:10.5px;font-weight:800;display:grid;place-items:center;box-shadow:0 0 10px var(--blue);border:2px solid var(--bg)}
+.agh .ib .dot{position:absolute;right:7px;top:7px;width:9px;height:9px;border-radius:50%;background:var(--gold);box-shadow:0 0 10px var(--gold);animation:hd-pl 1.8s infinite}
+@keyframes hd-pl{50%{transform:scale(1.4);opacity:.6}}
+.agh .coin{display:flex;align-items:center;gap:8px;height:42px;padding:0 14px 0 8px;border-radius:13px;border:1px solid rgba(245,183,74,.35);background:rgba(245,183,74,.08);font-weight:800;transition:.2s}
+.agh .coin:hover{background:rgba(245,183,74,.16);transform:translateY(-2px)}
+.agh .coin i{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,var(--gold),#ff8a3d);color:#2a1700;font-size:12px;font-style:normal;box-shadow:0 0 12px rgba(245,183,74,.6)}
+.agh .prem{position:relative;overflow:hidden;display:flex;align-items:center;gap:8px;height:42px;padding:0 16px;border-radius:13px;border:1px solid rgba(43,127,255,.6);background:linear-gradient(135deg,rgba(43,127,255,.25),rgba(34,211,238,.1));font-weight:800;letter-spacing:.04em;transition:.2s;flex:none}
+.agh .prem:hover{box-shadow:0 0 26px rgba(43,127,255,.5);transform:translateY(-2px)}
+.agh .prem svg{width:17px;color:var(--gold)}
+.agh .prem::after{content:"";position:absolute;inset:0;background:linear-gradient(105deg,transparent 35%,rgba(255,255,255,.28) 50%,transparent 65%);transform:translateX(-120%);animation:hd-sh 3.4s ease-in-out infinite}
+@keyframes hd-sh{50%,100%{transform:translateX(120%)}}
+.agh .me{display:flex;align-items:center;gap:9px;height:46px;padding:0 10px 0 4px;border-radius:30px;border:1px solid var(--line);background:rgba(255,255,255,.04);transition:.2s;flex:none}
+.agh .me:hover,.agh .me[aria-expanded=true]{border-color:rgba(43,127,255,.6);background:rgba(43,127,255,.12)}
+.agh .av{position:relative;width:38px;height:38px;flex:none}
+.agh .av svg{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg)}
+.agh .av circle{fill:none;stroke-width:3}
+.agh .av .t{stroke:rgba(255,255,255,.12)}
+.agh .av .v{stroke:url(#ag-hd-xg);stroke-linecap:round;stroke-dasharray:113;stroke-dashoffset:113;transition:stroke-dashoffset 1.4s cubic-bezier(.2,.9,.2,1)}
+.agh .av b{position:absolute;inset:5px;border-radius:50%;display:grid;place-items:center;font-weight:800;background:radial-gradient(circle at 30% 25%,#7cc0ff,#2b3b8f 70%);border:1px solid rgba(255,255,255,.2)}
+.agh .av em{position:absolute;right:-4px;bottom:-4px;min-width:17px;height:17px;border-radius:6px;background:var(--bg);border:1px solid var(--gold);color:var(--gold);font:800 9.5px var(--font-display);display:grid;place-items:center;font-style:normal}
+.agh .me span{font-weight:800;font-size:13.5px;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.agh .me svg.ch{width:14px;color:var(--muted);transition:.25s}
+.agh .me[aria-expanded=true] svg.ch{transform:rotate(180deg)}
+.agh .bur{display:none}
+.agh .cap{display:flex;align-items:center;gap:2px;padding:4px;border-radius:17px;background:rgba(255,255,255,.04);border:1px solid var(--line);flex:none}
+.agh .cap .ib{width:38px;height:38px;border:0;background:none;border-radius:13px}
+.agh .cap .ib:hover,.agh .cap .ib[aria-expanded=true]{background:rgba(43,127,255,.2);transform:none}
+.agh .cap .ib .bd{border-color:#0b1226}
+.agh .srch{container-type:inline-size;max-width:none;flex:0 1 260px;min-width:46px;width:auto;padding:0;height:46px;border-radius:16px;border-color:transparent;background:rgba(255,255,255,.04)}
+.agh .si{display:flex;align-items:center;gap:10px;width:100%;padding:0 12px;min-width:0}
+.agh .si svg{flex:none}
+@container (max-width:170px){.si{justify-content:center;padding:0}.si span,.si kbd{display:none}}
+.agh .hi>*{min-width:0}
+.agh .hi>.logo,.agh .hi>.cap,.agh .hi>.prem,.agh .hi>.rel,.agh .hi>.nav{flex:none}
+.agh .hi{overflow:visible}
+.agh .sp{flex:1 1 0;min-width:0}
+.agh .prem{height:46px;border-radius:16px}
+.agh .me{height:46px;gap:10px;padding:0 12px 0 4px;border-radius:16px}
+.agh .me span{font-weight:inherit;font-size:inherit;max-width:none;overflow:visible;text-overflow:clip;white-space:normal}
+.agh .nm{display:flex;flex-direction:column;line-height:1.2;text-align:left}
+.agh .nm b{font-size:13.5px;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.agh .nm small{font-size:11.5px;font-weight:800;color:var(--gold)}
+.agh .cap .ib[data-tip]::after{content:attr(data-tip);position:absolute;top:calc(100% + 12px);left:50%;transform:translate(-50%,-4px);white-space:nowrap;padding:6px 11px;border-radius:10px;background:#0d1730;border:1px solid rgba(43,127,255,.5);font-size:12px;font-weight:800;color:#fff;opacity:0;pointer-events:none;transition:.2s;box-shadow:0 10px 30px rgba(0,0,0,.6);z-index:6}
+.agh .cap .ib[data-tip]:hover::after{opacity:1;transform:translate(-50%,0);transition-delay:.25s}
+.agh .cap .ib[aria-expanded=true]::after{display:none}
+.agh .hd{padding:0;pointer-events:auto;background:rgba(6,8,15,.94);border-bottom:1px solid rgba(255,255,255,.06);backdrop-filter:blur(14px);transition:background .28s ease,border-color .28s ease}
+/* Прокрутили — шапка становится полупрозрачной: сквозь неё видно контент,
+   размытие усиливается, чтобы подложка не мешала читать текст. Класс .sc
+   ставит SiteHeader при scrollY > 12. */
+.agh .hd.sc{background:rgba(6,8,15,.62);border-bottom-color:rgba(255,255,255,.1);backdrop-filter:blur(22px) saturate(1.4)}
+.agh .hi,.agh .hd.sc .hi{max-width:1560px;height:64px;padding:0 16px;gap:12px;border-radius:0;background:none;box-shadow:none;backdrop-filter:none}
+.agh .hi::before,.agh .hi::after{display:none}
+.agh .nav{gap:4px;margin-left:4px}
+.agh .nav a,.agh .nav button{padding:9px 13px;border-radius:10px;font-size:15px;font-weight:700;color:#9ca5bb}
+.agh .nav a:hover,.agh .nav button:hover{color:#fff}
+.agh .nav svg.ch{display:none}
+.agh .nav .hl{background:rgba(255,255,255,.05);border-radius:10px}
+.agh .nav .act{background:rgba(255,255,255,.09);box-shadow:none;border-radius:10px}
+.agh .srch{flex:1 1 320px;max-width:440px;min-width:46px;height:40px;border-radius:10px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03)}
+.agh .srch:hover{border-color:rgba(255,255,255,.18);box-shadow:none}
+.agh .si{padding:0 14px;font-size:14px}
+.agh .si kbd{display:none}
+.agh .cap{padding:0;gap:6px;background:none;border:0;border-radius:0}
+.agh .cap .ib{width:40px;height:40px;border:1px solid rgba(255,255,255,.08);border-radius:10px;background:rgba(255,255,255,.03);color:#cfd6e6}
+.agh .cap .ib:hover,.agh .cap .ib[aria-expanded=true]{background:rgba(255,255,255,.09);border-color:rgba(255,255,255,.18);transform:none}
+.agh .cap .ib .bd{border-color:#06080f}
+.agh .prem{height:40px;border-radius:10px;padding:0 18px;letter-spacing:0;font-weight:800;border:1px solid rgba(43,127,255,.55);background:linear-gradient(180deg,rgba(43,127,255,.14),rgba(43,127,255,.04))}
+.agh .prem::after{display:none}
+.agh .prem:hover{box-shadow:0 0 18px rgba(43,127,255,.3);transform:none}
+.agh .me{height:42px;border-radius:12px;padding:0 10px 0 5px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03)}
+.agh .me:hover,.agh .me[aria-expanded=true]{border-color:rgba(255,255,255,.18);background:rgba(255,255,255,.07)}
+.agh .av{width:34px;height:34px}
+.agh .av b{inset:4px;font-size:13px}
+.agh .av em{background:#1d7bff;border:0;color:#fff;border-radius:50%;min-width:16px;height:16px;right:-5px;bottom:-3px;font:800 9.5px var(--font-body)}
+.agh .nm small{display:none}
+.agh .nm b{font-size:14px;max-width:130px}
+.agh .dd{top:calc(100% + 8px)}
+.agh .dd{position:absolute;top:calc(100% + 10px);z-index:5;border-radius:22px;border:1px solid rgba(255,255,255,.1);background:linear-gradient(#0d1426f5,#080c18f8);backdrop-filter:blur(22px);box-shadow:0 30px 80px rgba(0,0,0,.8),inset 0 1px 0 rgba(255,255,255,.06),0 0 60px rgba(43,127,255,.1);
+ opacity:0;visibility:hidden;transform:translateY(-10px) scale(.96);filter:blur(6px);transition:opacity .22s,transform .32s cubic-bezier(.2,.9,.25,1.15),filter .25s,visibility 0s .3s}
+.agh .dd.o{opacity:1;visibility:visible;transform:none;filter:none;transition-delay:0s}
+.agh .dd .it{opacity:0;transform:translateX(10px);transition:.3s}
+.agh .dd.o .it{opacity:1;transform:none;transition-delay:calc(var(--i)*35ms + 80ms)}
+.agh .rel{position:relative}
+/* Мега-меню каталога — транскрипция макета catalog-menu.html.
+   Классы макета с префиксом mg-: в проекте .mi/.ic/.meta/.feat и подобные уже
+   заняты общими стилями, а без префикса они перебивали бы разметку. */
+@property --ma{syntax:"<angle>";inherits:false;initial-value:0deg}
+@keyframes hd-megab{to{--ma:360deg}}
+@keyframes hd-megashine{from{transform:translateX(-130%) skewX(-18deg)}to{transform:translateX(330%) skewX(-18deg)}}
+/* Обёртка: пустая и на всю ширину шапки — как `.mega{left:0;right:0;top:100%}
+   в макете. Поэтому панель центрируется по полосе, а не по кнопке «Каталог».
+   Своих фонов у обёртки нет: всё оформление живёт в `.mg-panel`. */
+.agh .dd.mega{position:absolute;left:0;right:0;top:100%;width:auto;height:0;padding:0;border:0;border-radius:0;background:none;backdrop-filter:none;box-shadow:none;opacity:1;visibility:visible;transform:none;filter:none;overflow:visible;pointer-events:none}
+/* Панель. Показ/прятку держит она сама (как `.panel` в макете), а не обёртка:
+   в закрытом состоянии панель обязана быть `visibility:hidden`, иначе
+   размытый полупрозрачный прямоугольник висит поверх страницы. */
+.agh .dd.mega .mg-panel{position:absolute;left:50%;top:10px;width:min(920px,calc(100vw - 24px));padding:0;border-radius:26px;pointer-events:none;isolation:isolate;
+  background:linear-gradient(180deg,rgba(16,19,30,.9),rgba(9,11,18,.92));backdrop-filter:blur(28px) saturate(1.6);-webkit-backdrop-filter:blur(28px) saturate(1.6);
+  box-shadow:0 50px 120px -30px #000,0 0 0 1px rgba(255,255,255,.06),inset 0 1px 0 rgba(255,255,255,.1);
+  opacity:0;visibility:hidden;transform:translate(-50%,-14px) scale(.965);filter:blur(10px);transform-origin:50% 0;
+  transition:opacity .35s,transform .5s cubic-bezier(.2,.9,.3,1),filter .4s,visibility 0s .5s}
+.agh .dd.mega.o .mg-panel{opacity:1;visibility:visible;pointer-events:auto;transform:translate(-50%,0);filter:none;transition:opacity .35s,transform .5s cubic-bezier(.2,.9,.3,1),filter .4s}
+/* Бегущая коническая рамка и свет за курсором — задаются --mx/--my из JS */
+.agh .dd.mega .mg-panel::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:1px;pointer-events:none;z-index:3;background:conic-gradient(from var(--ma),transparent 0 66%,var(--cyan) 80%,var(--violet) 92%,transparent);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;animation:hd-megab 8s linear infinite}
+.agh .dd.mega .mg-panel::after{content:"";position:absolute;inset:0;border-radius:inherit;z-index:-1;pointer-events:none;background:radial-gradient(420px circle at var(--mx,30%) var(--my,0%),rgba(120,160,255,.11),transparent 60%)}
+.agh .dd.mega .mg-body{display:grid;grid-template-columns:1fr 380px;gap:18px;padding:18px}
+/* Список разделов + плашка за курсором */
+.agh .dd.mega .mg-list{position:relative;display:flex;flex-direction:column;gap:2px;align-self:start}
+.agh .dd.mega .mg-pill{position:absolute;left:0;right:0;top:0;height:0;z-index:0;opacity:0;border-radius:16px;pointer-events:none;background:linear-gradient(90deg,color-mix(in srgb,var(--pc,#2aa7ff) 18%,transparent),rgba(255,255,255,.015));border:1px solid color-mix(in srgb,var(--pc,#2aa7ff) 30%,transparent);transform:translateY(var(--y,0));height:var(--h,0);transition:transform .38s cubic-bezier(.2,.85,.3,1),height .38s,opacity .25s}
+.agh .dd.mega .mg-mi{position:relative;z-index:1;display:flex;align-items:center;gap:15px;padding:12px 14px;border-radius:16px;outline:none;opacity:0;transform:translateX(-14px);transition:opacity .45s,transform .55s cubic-bezier(.2,.9,.3,1)}
+.agh .dd.mega.o .mg-mi{opacity:1;transform:none;transition-delay:calc(var(--i)*55ms + 120ms)}
+.agh .dd.mega .mg-ic{width:46px;height:46px;flex:none;display:grid;place-items:center;border-radius:14px;color:var(--c);background:linear-gradient(145deg,color-mix(in srgb,var(--c) 30%,#10131f),color-mix(in srgb,var(--c) 7%,#0a0c14));border:1px solid color-mix(in srgb,var(--c) 38%,transparent);box-shadow:inset 0 1px 0 rgba(255,255,255,.13);transition:box-shadow .35s,transform .35s cubic-bezier(.2,1.4,.4,1)}
+.agh .dd.mega .mg-ic svg{width:22px;height:22px}
+.agh .dd.mega .mg-mi:hover .mg-ic,.agh .dd.mega .mg-mi:focus-visible .mg-ic{box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 0 26px -2px var(--c);transform:scale(1.07) rotate(-4deg)}
+.agh .dd.mega .mg-tx{flex:1;min-width:0}
+.agh .dd.mega .mg-tx b{display:block;font-size:16px;font-weight:800;color:#e8ecf6;letter-spacing:-.01em;transition:color .2s}
+.agh .dd.mega .mg-tx small{display:block;margin-top:3px;font-size:13px;color:var(--muted);transition:color .2s}
+.agh .dd.mega .mg-mi:hover .mg-tx b,.agh .dd.mega .mg-mi:focus-visible .mg-tx b{color:#fff}
+.agh .dd.mega .mg-mi:hover .mg-tx small,.agh .dd.mega .mg-mi:focus-visible .mg-tx small{color:#a9b2c8}
+.agh .dd.mega .mg-meta{font-size:12px;font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums;transition:transform .35s,opacity .3s;font-style:normal}
+.agh .dd.mega .mg-new{font-size:11px;font-weight:800;padding:5px 11px;border-radius:99px;color:#ffd0e3;background:rgba(255,92,157,.16);border:1px solid rgba(255,92,157,.4);box-shadow:0 0 18px -4px #ff5c9d}
+.agh .dd.mega .mg-go{width:18px;height:18px;margin-left:-6px;opacity:0;transform:translateX(-8px);color:var(--c);transition:.35s}
+.agh .dd.mega .mg-mi:hover .mg-go,.agh .dd.mega .mg-mi:focus-visible .mg-go{opacity:1;transform:none}
+.agh .dd.mega .mg-mi:hover .mg-meta{transform:translateX(-4px)}
+/* Плитка «Аниме дня»: оттенок задаёт компонент через --h по жанру тайла,
+   наклон и параллакс постера приходят из JS (--rx/--ry/--tx/--ty) */
+.agh-feat{--h:215;position:relative;min-height:372px;border-radius:22px;overflow:hidden;isolation:isolate;display:flex;flex-direction:column;justify-content:flex-end;padding:22px;border:1px solid var(--line);text-align:left;
+  transform:perspective(900px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg));transition:transform .35s cubic-bezier(.2,.8,.3,1),box-shadow .35s,opacity .6s .3s;
+  background:
+    radial-gradient(1.2px 1.2px at 14% 22%,#fff,transparent),
+    radial-gradient(1px 1px at 70% 14%,#fff,transparent),
+    radial-gradient(1.2px 1.2px at 86% 40%,#fff,transparent),
+    radial-gradient(110% 80% at 85% 0%,hsl(var(--h) 90% 55%/.5),transparent 62%),
+    linear-gradient(160deg,hsl(var(--h) 45% 15%),#0a0b10)}
+.agh-feat:hover{box-shadow:0 30px 60px -28px var(--violet)}
+/* Постер тайла — фон плитки. Постеры вертикальные 2:3, а плитка почти
+   квадратная, поэтому кадр сдвинут вверх (logoтип снизу остаётся за нижним
+   затемнением, под названием) и слегка увеличен — чтобы лица не резались.
+   Затемнение сверху и снизу нужно, иначе светлый постер съест белый текст. */
+.agh-feat-poster{object-fit:cover;object-position:center 12%;opacity:.62;inset:-4%!important;width:108%!important;height:108%!important;transform:translate(var(--tx,0),var(--ty,0)) scale(1.03);transition:transform .5s cubic-bezier(.2,.8,.3,1),opacity .3s}
+.agh-feat:hover .agh-feat-poster{transform:translate(var(--tx,0),var(--ty,0)) scale(1.08)}
+.agh-feat::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:0;
+  background:linear-gradient(180deg,rgba(6,8,14,.1) 20%,rgba(6,8,14,.55) 55%,rgba(6,8,14,.96))}
+/* Блик-проход по плитке при наведении */
+.agh-feat::before{content:"";position:absolute;top:0;bottom:0;width:36%;z-index:1;pointer-events:none;background:linear-gradient(90deg,transparent,rgba(255,255,255,.14),transparent);transform:translateX(-130%) skewX(-18deg)}
+.agh-feat:hover::before{animation:hd-megashine .9s ease-out}
+/* Всё, что лежит поверх постера, поднимаем над псевдоэлементом */
+.agh-feat-badge,.agh-feat-rate,.agh-feat h3,.agh-feat p,.agh-feat-go,.agh-feat-again{z-index:2}
+.agh-feat-badge{position:absolute;top:16px;left:16px;display:inline-flex;gap:6px;align-items:center;font-size:12px;font-weight:800;padding:7px 12px;border-radius:99px;color:#e8ecf6;background:rgba(10,12,20,.55);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.16)}
+.agh-feat-badge svg{width:13px;height:13px;color:var(--cyan)}
+.agh-feat-rate{position:absolute;top:16px;right:16px;display:inline-flex;gap:6px;align-items:center;font-size:12px;font-weight:800;padding:7px 12px;border-radius:99px;color:var(--gold);background:rgba(10,12,20,.55);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.16)}
+.agh-feat h3{margin:0 0 4px;font:800 25px/1.12 var(--font-display);letter-spacing:-.02em;color:#fff;text-shadow:0 4px 24px rgba(0,0,0,.6)}
+.agh-feat p{margin:9px 0 0;font-size:13px;color:#b3bccf;font-weight:600;text-shadow:0 2px 12px rgba(0,0,0,.5)}
+.agh-feat-go{align-self:flex-start;margin-top:18px;display:inline-flex;align-items:center;gap:9px;padding:11px 18px;border:1px solid rgba(255,255,255,.18);border-radius:13px;background:rgba(255,255,255,.1);backdrop-filter:blur(10px);color:#fff;font-weight:800;font-size:14px;cursor:pointer;transition:background .3s,box-shadow .3s,border-color .3s}
+.agh-feat-go svg{width:16px;height:16px;transition:transform .35s}
+.agh-feat:hover .agh-feat-go{background:linear-gradient(120deg,var(--blue),var(--violet));border-color:transparent;box-shadow:0 12px 30px -10px var(--violet)}
+.agh-feat:hover .agh-feat-go svg{transform:translateX(4px)}
+.agh-feat-go:disabled{opacity:.6;cursor:progress}
+.agh-feat-go svg.spinning,.agh-feat-again svg.spinning{animation:hd-gxspin .9s linear infinite}
+.agh-feat-again{position:absolute;top:44px;right:16px;display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:99px;border:1px solid rgba(255,255,255,.14);background:rgba(0,0,0,.35);color:#dbe7ff;font-size:11.5px;font-weight:700;cursor:pointer}
+.agh-feat-again svg{width:13px;height:13px}
+/* Подвал мега-меню: пять ходовых жанров и ссылка на все */
+.agh .dd.mega .mg-foot{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:16px 22px 18px;border-top:1px solid var(--line);background:linear-gradient(180deg,transparent,rgba(255,255,255,.02));border-radius:0 0 26px 26px}
+.agh .dd.mega .mg-foot>span{font-size:13px;color:var(--muted);font-weight:700;margin-right:6px}
+.agh .dd.mega .mg-gn{display:inline-flex;gap:8px;align-items:center;padding:8px 15px;border-radius:99px;font-size:13px;font-weight:700;border:1px solid var(--line);background:rgba(255,255,255,.03);opacity:0;transform:translateY(8px);transition:opacity .4s,transform .5s cubic-bezier(.2,.9,.3,1),border-color .25s,background .25s,box-shadow .25s}
+.agh .dd.mega .mg-gn::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--d);box-shadow:0 0 10px var(--d)}
+.agh .dd.mega.o .mg-gn{opacity:1;transform:none;transition-delay:calc(var(--i)*45ms + 380ms)}
+.agh .dd.mega .mg-gn:hover{transform:translateY(-2px);transition-delay:0s;border-color:var(--d);background:color-mix(in srgb,var(--d) 12%,transparent);box-shadow:0 10px 24px -12px var(--d)}
+.agh .dd.mega .mg-all{margin-left:auto;display:inline-flex;gap:6px;align-items:center;font-size:13px;font-weight:800;color:#8fc4ff;transition:gap .3s,color .2s}
+.agh .dd.mega .mg-all svg{width:15px;height:15px}
+.agh .dd.mega .mg-all:hover{gap:10px;color:#fff}
+@media(max-width:800px){
+  .agh .dd.mega .mg-body{grid-template-columns:1fr}
+  .agh-feat{display:none}
+}
+/* Затемнение страницы под открытым меню (`.scrim` в макете). Позиция
+   фиксированная, а z-index ниже `.hd` (100) — сама полоса шапки остаётся
+   поверх затемнения и кликабельна. */
+.agh-mega-scrim{position:fixed;inset:0;z-index:40;background:rgba(3,4,8,.6);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);opacity:0;pointer-events:none;transition:opacity .35s}
+.agh-mega-scrim.on{opacity:1;pointer-events:auto}
+.agh .pn{right:0;width:370px;max-width:calc(100vw - 20px);padding:16px}
+.agh .pn h5{margin:0 0 4px;font:800 13px var(--font-body);letter-spacing:.14em;color:var(--muted);display:flex;justify-content:space-between}
+.agh .pn h5 a{color:var(--cyan);letter-spacing:0;font-size:12.5px}
+.agh .ntf{display:flex;gap:12px;padding:11px;border-radius:14px;margin-top:6px;transition:.2s;position:relative}
+.agh .ntf:hover{background:rgba(255,255,255,.05)}
+.agh .ntf.un::after{content:"";position:absolute;right:12px;top:14px;width:8px;height:8px;border-radius:50%;background:var(--cyan);box-shadow:0 0 8px var(--cyan)}
+.agh .ntf .ic{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:color-mix(in srgb,var(--c) 15%,transparent);color:var(--c);flex:none}
+.agh .ntf .ic svg{width:18px}
+.agh .ntf b{display:block;font-size:13.5px}
+.agh .ntf small{color:var(--muted);font-size:12px}
+.agh .promo{border-radius:16px;padding:16px;background:linear-gradient(135deg,rgba(43,127,255,.3),rgba(155,134,255,.2));border:1px solid rgba(43,127,255,.5);position:relative;overflow:hidden}
+.agh .promo small{font-size:10px;letter-spacing:.14em;font-weight:800;color:#bcd6ff}
+.agh .promo b{display:block;font:800 22px var(--font-display);margin-top:4px}
+.agh .promo b em{font-style:normal;background:linear-gradient(100deg,#7cc0ff,var(--cyan),var(--violet));-webkit-background-clip:text;background-clip:text;color:transparent}
+.agh .tk{display:flex;gap:12px;align-items:center;padding:11px;border-radius:14px;margin-top:8px;border:1px solid var(--line);background:rgba(255,255,255,.03)}
+.agh .tk .rg{width:26px;height:26px;border-radius:50%;border:2px dashed rgba(255,255,255,.25);flex:none;display:grid;place-items:center}
+.agh .tk.d .rg{border:0;background:linear-gradient(135deg,var(--green),#14b8a6)}
+.agh .tk.d .rg svg{width:14px}
+.agh .tk b{font-size:13.5px}
+.agh .tk small{color:var(--muted);display:block;font-size:11.5px}
+.agh .tk a{margin-left:auto;font-size:12px;font-weight:800;padding:6px 11px;border-radius:9px;background:rgba(43,127,255,.2);border:1px solid rgba(43,127,255,.5)}
+.agh .bar{height:8px;border-radius:8px;background:rgba(255,255,255,.08);margin-top:12px;overflow:hidden}
+.agh .bar i{display:block;height:100%;width:0;border-radius:8px;background:linear-gradient(90deg,var(--blue),var(--cyan));transition:width 1.2s .2s}
+.agh .dd.o .bar i{width:var(--w)}
+.agh .um{right:0;width:320px;max-width:calc(100vw - 20px);padding:14px}
+.agh .uh{display:flex;gap:12px;align-items:center;padding:6px 6px 14px}
+.agh .uh .av{width:54px;height:54px}
+.agh .uh .av circle{stroke-width:3.4}
+.agh .uh b{display:block;font-size:16px}
+.agh .uh small{color:var(--muted)}
+.agh .lv{padding:12px;border-radius:14px;background:rgba(3,6,14,.55);border:1px solid var(--line);margin-bottom:8px}
+.agh .lv div{display:flex;justify-content:space-between;font-size:12.5px;color:var(--muted)}
+.agh .lv b{color:#fff}
+.agh .ul a{display:flex;align-items:center;gap:12px;padding:10px;border-radius:12px;font-weight:700;color:#cfd7ea;transition:.2s}
+.agh .ul a:hover{background:rgba(255,255,255,.06);color:#fff;transform:translateX(4px)}
+.agh .ul svg{width:18px;color:var(--cyan)}
+.agh .ul i{margin-left:auto;font-style:normal;font-size:11px;padding:2px 8px;border-radius:8px;background:var(--blue);font-weight:800}
+.agh .ul hr{border:0;height:1px;background:var(--line);margin:6px 4px}
+.agh .ul .ex{color:var(--red)}
+.agh .ul .ex svg{color:var(--red)}
+.agh .cp{position:fixed;inset:0;z-index:200;display:flex;justify-content:center;align-items:flex-start;padding:min(13vh,120px) 14px 0;background:rgba(2,4,10,.74);backdrop-filter:blur(12px) saturate(1.2);opacity:0;visibility:hidden;transition:opacity .2s,visibility 0s .2s}
+.agh .cp.o{opacity:1;visibility:visible;transition-delay:0s}
+.agh .cpw{width:min(800px,100%);transform:translateY(-18px) scale(.97);transition:transform .38s cubic-bezier(.2,.9,.25,1.15)}
+.agh .cp.o .cpw{transform:none}
+.agh .cpb{display:flex;align-items:center;gap:8px;height:64px;padding:0 10px 0 18px;border-radius:21px;border:1px solid rgba(43,127,255,.65);background:#0a1126;box-shadow:0 0 0 4px rgba(43,127,255,.12),0 30px 80px rgba(0,0,0,.7),0 0 70px rgba(43,127,255,.22)}
+.agh .cpb>svg{width:21px;color:var(--cyan);flex:none}
+.agh .cpb input{flex:1;min-width:0;background:none;border:0;outline:0;font-size:17px;padding:0 6px}
+.agh .cpb .fr{width:40px;height:40px;border-radius:12px;border:0;background:none;color:var(--muted);display:grid;place-items:center;flex:none;transition:.2s}
+.agh .cpb .fr:hover{color:#fff;background:rgba(255,255,255,.07)}
+.agh .cpb .fr svg{width:19px}
+.agh .cpb .esc{height:40px;padding:0 13px;border-radius:12px;border:1px solid var(--line);background:rgba(255,255,255,.04);font-weight:800;font-size:12px;color:#aab4cc;flex:none}
+.agh .cpb .esc:hover{color:#fff}
+.agh .modes{display:flex;gap:2px;padding:4px;border-radius:15px;background:rgba(255,255,255,.04);border:1px solid var(--line);position:relative;flex:none}
+.agh .modes button{width:46px;height:40px;border:0;background:none;border-radius:11px;color:#8d98b4;display:grid;place-items:center;position:relative;z-index:1;transition:color .2s}
+.agh .modes button svg{width:19px}
+.agh .modes button.on,.agh .modes button:hover{color:#fff}
+.agh .modes i{position:absolute;top:4px;left:4px;width:46px;height:40px;border-radius:11px;background:linear-gradient(135deg,var(--blue),var(--violet));box-shadow:0 6px 22px rgba(43,127,255,.55);transition:transform .32s cubic-bezier(.3,.9,.3,1.15)}
+.agh .cpp{margin-top:10px;border-radius:22px;border:1px solid var(--line);background:linear-gradient(#0c1328f4,#080c18f6);box-shadow:0 30px 80px rgba(0,0,0,.7);overflow:hidden}
+.agh .cph{display:flex;align-items:center;gap:10px;padding:16px 20px 8px;font-size:11.5px;letter-spacing:.14em;font-weight:800;color:var(--muted)}
+.agh .cph .fi{width:28px;height:28px;border-radius:9px;background:rgba(245,183,74,.14);color:var(--gold);display:grid;place-items:center}
+.agh .cph .fi svg{width:15px}
+.agh .cph em{margin-left:auto;font-style:normal;letter-spacing:0;font-weight:700}
+.agh .rc{display:flex;gap:6px;padding:2px 20px 8px;flex-wrap:wrap}
+.agh .rc button{padding:5px 12px;border-radius:20px;border:1px solid var(--line);background:rgba(255,255,255,.04);font-size:12.5px;font-weight:700;color:#c3cadb;transition:.2s}
+.agh .rc button:hover{border-color:var(--blue);color:#fff;background:rgba(43,127,255,.15)}
+.agh .cpl{max-height:min(50vh,540px);overflow:auto;padding:4px 10px 10px;scrollbar-width:thin;scrollbar-color:#ffffff22 transparent}
+.agh .ri{display:flex;gap:14px;padding:12px;border-radius:16px;border:1px solid transparent;cursor:pointer;transition:background .18s,border-color .18s,transform .18s;animation:hd-rin .35s both;animation-delay:calc(var(--i)*40ms)}
+@keyframes hd-rin{from{opacity:0;transform:translateY(10px)}}
+.agh .ri.s{background:rgba(43,127,255,.12);border-color:rgba(43,127,255,.5);transform:translateX(3px)}
+.agh .po{width:64px;height:92px;border-radius:11px;flex:none;background:var(--g);position:relative;overflow:hidden;display:grid;place-items:center;font:800 20px var(--font-display);color:rgba(255,255,255,.9);box-shadow:0 8px 20px rgba(0,0,0,.5)}
+.agh .po::after{content:"";position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.2),transparent 45%)}
+.agh .po.rd{width:52px;height:52px;border-radius:50%}
+.agh .ri .m{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center}
+.agh .ri .m>b{font-size:15.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.agh .ri .m>small{color:var(--muted);font-size:12px}
+.agh .tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:7px}
+.agh .tgx{padding:3px 9px;border-radius:9px;font-size:11.5px;font-weight:700;background:rgba(255,255,255,.07);color:#c3cadb}
+.agh .tgx.r{background:linear-gradient(135deg,var(--gold),#ff9a3d);color:#2a1700;font-weight:800}
+.agh .stt{margin-top:auto;padding-top:6px;font-size:12px;font-weight:800;display:flex;align-items:center;gap:6px;color:var(--c)}
+.agh .stt i{width:7px;height:7px;border-radius:50%;background:var(--c);box-shadow:0 0 8px var(--c)}
+.agh .ep{align-self:flex-end;padding:4px 10px;border-radius:9px;border:1px solid var(--line);background:rgba(255,255,255,.04);font-size:11.5px;font-weight:800;white-space:nowrap}
+.agh .cpl mark{background:none;color:var(--cyan);font-weight:800}
+.agh .none{padding:34px 10px;text-align:center;color:var(--muted)}
+.agh .none b{display:block;color:#fff;font-size:16px;margin-bottom:4px}
+.agh .scan{display:flex;gap:16px;align-items:center;padding:18px}
+.agh .scan .pv{width:150px;height:92px;border-radius:12px;background:#000 center/cover;position:relative;overflow:hidden;flex:none;border:1px solid var(--line)}
+.agh .scan .pv::after{content:"";position:absolute;left:0;right:0;height:3px;background:var(--cyan);box-shadow:0 0 16px var(--cyan);animation:hd-sc 1.4s ease-in-out infinite alternate}
+@keyframes hd-sc{from{top:0}to{top:calc(100% - 3px)}}
+.agh .scan b{display:block;font-size:15px}
+.agh .scan small{color:var(--muted)}
+.agh .cpf{display:flex;align-items:center;gap:10px;padding:14px 20px;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}
+.agh .cpf svg{width:18px;flex:none}
+.agh .cpf a{margin-left:auto;color:#9fc4ff;font-weight:800;white-space:nowrap;cursor:pointer}
+.agh .cpf a:hover{color:#fff}
+.agh .cpk{display:flex;gap:16px;flex-wrap:wrap;padding:11px 20px;border-top:1px solid var(--line);font-size:11.5px;color:#6b7690}
+.agh .cpk span{display:flex;align-items:center;gap:6px}
+@media (max-width:640px){.agh .cpb .fr,.agh .cpb .esc{display:none}
+.agh .modes button{width:38px}
+.agh .modes i{width:38px}
+.agh .po{width:52px;height:76px}
+.agh .ep{display:none}
+.agh .cpk,.agh .cpf span{display:none}
+}
+.agh .prem{height:42px;padding:0 20px;gap:9px;border-radius:13px;border:1.5px solid transparent;text-transform:uppercase;letter-spacing:.09em;font-weight:800;font-size:14px;color:#a9d8ff;
+background:linear-gradient(135deg,#08101f,#0a1428) padding-box,linear-gradient(135deg,rgba(43,127,255,.9),rgba(34,211,238,.55) 55%,rgba(43,127,255,.35)) border-box;
+box-shadow:0 0 18px rgba(43,127,255,.18),inset 0 0 14px rgba(43,127,255,.14);transition:box-shadow .25s,color .25s}
+.agh .prem span{background:linear-gradient(100deg,#8cc4ff,#7ee8fb);-webkit-background-clip:text;background-clip:text;color:transparent}
+.agh .prem svg{width:20px;color:#7cc8ff;filter:drop-shadow(0 0 6px rgba(43,127,255,.7))}
+.agh .prem:hover{box-shadow:0 0 26px rgba(43,127,255,.4),inset 0 0 18px rgba(43,127,255,.22);transform:none}
+/* Окно бонуса «Разбуди лисёнка» — карточка свёрстана по макету
+ * `ag-promo.html` и живёт в `header-promo.css` (префикс `px-`). Рамку, фон и
+ * свечение рисует сама карточка макета, поэтому панель выпадашки прозрачная:
+ * иначе карточка оказывается «в рамке». Ширина — как в макете, 400px. */
+.agh #gf.gx{width:400px;padding:0;border:0;border-radius:0;background:none;box-shadow:none;overflow:visible}
+@keyframes hd-gxspin{to{transform:rotate(360deg)}}
+@media (max-width:480px){.agh #gf.gx{width:min(400px,calc(100vw - 20px))}
+}
+.agh .prem{height:36px;padding:0 16px;gap:8px;border-radius:12px;font-size:12px;letter-spacing:.12em;font-weight:800;font-family:var(--font-body)}
+.agh .prem svg{width:16px;height:16px}
+.agh .hi>.prem{margin-left:2px}
+.agh .cp{background:rgba(0,0,0,.72);backdrop-filter:blur(10px)}
+.agh .cpw{width:min(770px,100%)}
+.agh .cpb{height:60px;padding:0 9px 0 18px;gap:10px;border-radius:18px;border:1.5px solid transparent;background:linear-gradient(#090a11,#090a11) padding-box,linear-gradient(120deg,#2b7fff,#22d3ee 55%,#2b7fff) border-box;box-shadow:0 0 0 4px rgba(43,127,255,.08),0 0 36px rgba(43,127,255,.22),0 24px 70px rgba(0,0,0,.7)}
+.agh #cpi{display:grid;place-items:center;flex:none}
+.agh #cpi svg{width:22px;height:22px;stroke:url(#ag-hd-xg)}
+.agh .cpb input{font-size:17px;color:#eef2fb}
+.agh .cpb input::placeholder{color:#4d5568}
+.agh .cpb .fr{color:#6f7a92}
+.agh .cpb .fr:hover{color:#4fb4ff;background:rgba(43,127,255,.12)}
+.agh .cpb .esc{height:42px;padding:0 16px;border-radius:14px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.04);color:#aab2c4;letter-spacing:.04em}
+.agh .modes{padding:4px;gap:4px;border-radius:16px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08)}
+.agh .modes button{width:44px;height:38px;border-radius:12px;color:#7d879d}
+.agh .modes i{width:44px;height:38px;border-radius:12px;background:linear-gradient(135deg,#1f6bff,#22b8f0);box-shadow:0 0 18px rgba(43,127,255,.55),inset 0 1px 0 rgba(255,255,255,.3)}
+.agh .cpp{margin-top:10px;border-radius:20px;border:1px solid rgba(255,255,255,.07);background:#090a10;box-shadow:0 30px 80px rgba(0,0,0,.75)}
+.agh .cph{padding:18px 22px 10px;color:#7d879d}
+.agh .cph .fi{background:linear-gradient(135deg,rgba(43,127,255,.22),rgba(34,211,238,.12));border:1px solid rgba(43,127,255,.35);color:#4fb4ff}
+.agh .cpl{padding:4px 12px 8px}
+.agh .ri{border-radius:14px;padding:14px 10px;border:1px solid transparent;border-bottom-color:rgba(255,255,255,.06)}
+.agh .ri.s{background:linear-gradient(90deg,rgba(43,127,255,.16),rgba(34,211,238,.04));border-color:rgba(43,127,255,.4);transform:none}
+.agh .po{width:72px;height:108px;border-radius:9px}
+.agh .ri .m>b{font-size:16px;font-weight:800}
+.agh .ri .m>small{color:#6f7a92}
+.agh .tgx{padding:4px 10px;border-radius:20px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.07);color:#aab2c4}
+.agh .tgx.r{border:0}
+.agh .ep{border-radius:10px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:#cfd6e6}
+.agh .cpl mark{color:#22d3ee}
+.agh .cpf{border-top:1px solid rgba(255,255,255,.06);color:#7d879d}
+.agh .cpf kbd{border-radius:9px}
+.agh .cpf a{background:linear-gradient(100deg,#4fa0ff,#22d3ee);-webkit-background-clip:text;background-clip:text;color:transparent}
+.agh .cpk{border-top:1px solid rgba(255,255,255,.06);color:#4d5568}
+.agh .cpk kbd{border-radius:9px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);color:#7d879d;font-family:var(--font-body)}
+.agh .rc button:hover{border-color:rgba(43,127,255,.6);color:#fff}
+@media (max-width:1100px){.agh .nm,.agh .prem span{display:none}
+.agh .prem{padding:0 13px}
+.agh .nav a,.agh .nav button{padding:8px 10px}
+}
+@media (max-width:900px){.agh .nav{display:none}
+.agh .bur{display:grid}
+.agh .hi{gap:8px}
+.agh .srch{max-width:none}
+.agh .mega{display:none}
+.agh .mnav{display:flex}
+.agh .prem span{display:none}
+.agh .prem{padding:0 12px}
+}
+.agh .mnav{display:none;flex-direction:column;gap:4px;padding:10px;position:absolute;left:10px;right:10px;top:calc(100% + 8px);border-radius:20px}
+@media (min-width:901px){.agh .mnav{display:none!important}
+}
+@media (max-width:560px){.agh .srch{flex:none;width:44px}
+.agh .gift{display:none}
+}
+@media (prefers-reduced-motion:reduce){.agh *,.agh *::before,.agh *::after{animation:none!important;transition-duration:.01ms!important}
+}
+
+/* --- Открывающееся мобильное меню: исправление дефекта прототипа ---
+ *
+ * В прототипе строки идут в таком порядке:
+ *   @media(max-width:900px){ ... .mnav{display:flex} ... }
+ *   .mnav{display:none; ...}
+ *   @media(min-width:901px){.mnav{display:none!important}}
+ *
+ * У первых двух правил специфичность одинакова, а второе стоит позже,
+ * поэтому на узких экранах побеждает display:none и меню бургера не
+ * открывается: display:none, высота 0, ссылки не видны. На десктопе
+ * всё выглядит верно, поэтому в макете дефект не заметен — но на
+ * телефоне кнопка бургера, то есть вся навигация, не работала.
+ *
+ * Ниже display:flex возвращается безусловно: на десктопе выпадашку всё
+ * равно прячет @media(min-width:901px) с !important, а на узких
+ * экранах раскладка остаётся ровно прототипной — колонка с gap:4px.
+ * Именно flex, а не block: у .mnav заданы flex-direction:column и
+ * gap:4px, и с display:block они бы потерялись.
+ */
+.agh .mnav{display:flex}
+
+/* --- Сжатие полосы на узких экранах (единственное отступление от прототипа) --- */
+@media (max-width:560px){
+  /* Текстовое слово в логотипе уходит первым: с ним связана иконка лисёнка,
+     читаемость логотипа не страдает. */
+  .agh .logo b{display:none}
+  .agh .hi{gap:8px;padding:0 8px 0 10px}
+  /* Кнопки капсулы — главный потребитель ширины. 42 → 38px: межосевая
+     отметка 44px остаётся достижимой, полоса влезает в 375px. */
+  .agh .ib{width:38px;height:38px;border-radius:12px}
+  .agh .ib svg{width:18px}
+  /* Кнопка профиля без ника и шеврона: на телефоне они не читаются,
+     а место занимают. */
+  .agh .me{height:40px;padding:0 8px}
+  .agh .me .nm{display:none}
+}
+@media (max-width:480px){
+  /* Кнопка Premium уходит в меню профиля: на странице /premium остаётся. */
+  .agh .prem{display:none}
+  .agh .hi{gap:6px}
+  .agh .cap{padding:3px;border-radius:15px}
+  /* Иконка «Совместный просмотр» снята с капсулы: при 375px полоса иначе не
+     помещалась и кнопка «Войти» сжималась так, что её текст налезал на
+     бургер. Ссылка не потеряна — пункт есть в мобильном меню (mi-watch). */
+  .agh .cap-watch{display:none}
+  .agh .mi-watch{display:flex}
+  /* Кнопки в полосе не сжимаются: сжатый текст наезжал на соседа. */
+  .agh .btn-login{flex:none}
+  /* Палитра поиска на телефоне: поля не выходят за экран. */
+  .agh .cp{padding:min(9vh,72px) 10px 0}
+}
+/* 380px и уже (iPhone SE и подобные): полоса сжимается ещё.
+   Поиск сводится к иконке, иконки капсулы мельчают, кнопка «Войти»
+   теряет горизонтальные поля. Ничего не скрывается, всё остаётся
+   доступным — просто компактнее. */
+@media (max-width:380px){
+  .agh .hi{gap:2px;padding:0 4px 0 6px}
+  .agh .cap{padding:2px}
+  .agh .ib{width:32px;height:32px;border-radius:10px}
+  .agh .ib svg{width:16px}
+  .agh .srch{width:34px}
+  .agh .srch .si span{display:none}
+  .agh .srch kbd{display:none}
+  .agh .btn-login{padding:0.45rem 0.7rem}
+}
+/* На десктопе пункт из мобильного меню лишний — прячем. */
+@media (min-width:901px){
+  .agh .mi-watch{display:none}
+}

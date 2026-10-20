@@ -124,7 +124,7 @@
   }
   .bp-hd h1 {
     margin: 0;
-    font-family: var(--font-accent), var(--font-sans);
+    font-family: var(--font-display);
     font-size: clamp(26px, 4vw, 44px);
     font-weight: 800;
     line-height: 1.05;
@@ -331,7 +331,7 @@
     color: var(--color-muted);
   }
   .bp-ring .cn b {
-    font-family: var(--font-accent), var(--font-sans);
+    font-family: var(--font-display);
     font-size: 40px;
     font-weight: 800;
     line-height: 1;
@@ -730,7 +730,7 @@
   }
   .bp-mdl h2 {
     margin: 0 0 10px;
-    font-family: var(--font-accent), var(--font-sans);
+    font-family: var(--font-display);
     font-size: 24px;
     font-weight: 800;
     line-height: 1.15;
@@ -1082,7 +1082,7 @@
      с градами) и спорил с рамкой. Остались аура, ripple-кольца и искры. */
   .bp-res h2 {
     margin: 0;
-    font-family: var(--font-accent), var(--font-sans);
+    font-family: var(--font-display);
     font-size: 26px;
     font-weight: 800;
     line-height: 1.15;
@@ -1595,4 +1595,18 @@
   .bp-art .rays-bg {
     display: none;
   }
+}
+
+/* На этой странице под шапкой висит ещё и фиксированная полоса действий
+   боевого пропуска («Ур. N /100», прогресс, «Забрать») — 54px. Общего
+   отступа прокрутки (74px в globals.css) для неё не хватало: кнопки
+   «К текущему» и легенда дорожки при прокрутке к этой секции уезжали
+   под полосу и не нажимались.
+
+   Селектор — на html, потому что scroll-padding работает только на
+   самом контейнере прокрутки, а не на потомках. :has() уже используется
+   в проекте (body:has(.ag-root) в ag-theme.css).
+   132px = 78px (шапка + полоса) + 54px полоса действий. */
+html:has(.bp-track) {
+  scroll-padding-top: 132px;
 }

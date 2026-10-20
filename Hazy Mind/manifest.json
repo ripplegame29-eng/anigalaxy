@@ -1,0 +1,113 @@
+{
+  "game": "Hazy Mind",
+  "appid": 2380340,
+  "source": "https://store.steampowered.com/points/shop/app/2380340",
+  "api": "https://api.steampowered.com/ILoyaltyRewardsService/BatchedQueryRewardItems/v1",
+  "cdn": "https://shared.fastly.steamstatic.com/community_assets/images/items/2380340",
+  "note": "Steam Community items. Property of Valve Corporation and the game's publisher. Personal/fan use only.",
+  "groups": [
+    {
+      "dir": "1 Анимированные аватары",
+      "title": "Animated Avatars",
+      "items": [
+        {
+          "name": "Morana",
+          "files": [
+            {
+              "file": "morana.gif",
+              "bytes": 107453,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2380340/7c1d0210fd4286a0ad1a377176f07f266755dc3c.gif"
+            },
+            {
+              "file": "morana-1.jpg",
+              "bytes": 72404,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2380340/b578cf235c5f3053caaec8aefaf4da62d588ca7e.jpg"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "dir": "2 Рамки аватара",
+      "title": "Avatar Frames",
+      "items": [
+        {
+          "name": "Hazy",
+          "files": [
+            {
+              "file": "hazy.png",
+              "bytes": 194204,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2380340/1b056e751b715788badf103e1db304dc4e561f2b.png"
+            },
+            {
+              "file": "hazy-1.png",
+              "bytes": 72826,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2380340/f2f47e4a404999d49c68658b3bd9414b955ec9b8.png"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "dir": "4 Фоны профиля",
+      "title": "Profile Backgrounds",
+      "items": [
+        {
+          "name": "Blue space",
+          "files": [
+            {
+              "file": "blue-space.jpg",
+              "bytes": 281731,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2380340/85c35e1641aacb88dc77ee9f2c24340ffc971262.jpg"
+            },
+            {
+              "file": "blue-space-1.mp4",
+              "bytes": 4001495,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2380340/641061559e3b60e7655b87a5852f59c491d8ff94.mp4"
+            },
+            {
+              "file": "blue-space-2.mp4",
+              "bytes": 528524,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2380340/2b312860d558d83f99b391686e391ea7aa83d2b3.mp4"
+            }
+          ]
+        },
+        {
+          "name": "Monsters",
+          "files": [
+            {
+              "file": "monsters.jpg",
+              "bytes": 351285,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2380340/51158f7f5684aea418d4b954c924db8c686c7dbe.jpg"
+            }
+          ]
+        },
+        {
+          "name": "Morana",
+          "files": [
+            {
+              "file": "morana.jpg",
+              "bytes": 177531,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2380340/5aed8ff49276252b400d92bae0536543cb24f403.jpg"
+            }
+          ]
+        },
+        {
+          "name": "Blue Space",
+          "files": [
+            {
+              "file": "blue-space-2.jpg",
+              "bytes": 281731,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2380340/85c35e1641aacb88dc77ee9f2c24340ffc971262.jpg"
+            },
+            {
+              "file": "blue-space-2-1.jpg",
+              "bytes": 299579,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2380340/195d4a9453ef475b97fd8e980a070fe03dda8a2f.jpg"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

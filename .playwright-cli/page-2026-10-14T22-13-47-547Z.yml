@@ -1,0 +1,187 @@
+- generic [ref=e2]:
+  - banner [ref=e3]:
+    - generic [ref=e4]: Превью · AniGalaxy
+    - heading "Уровни" [level=1] [ref=e5]
+    - paragraph [ref=e6]:
+      - text: "Сто уровней и семь эр — от «Новичка» до «Трансцендента». Кривая опыта:"
+      - code [ref=e7]: xpToNext(L) = round(50 × L^1.2)
+      - text: ". Страница собрана из настоящих исходников проекта: генератор эмблемы"
+      - code [ref=e8]: src/lib/levelEmblem.js
+      - text: и стили
+      - code [ref=e9]: src/app/level-emblem.css
+      - text: .
+  - generic [ref=e10]:
+    - generic [ref=e11]:
+      - heading "Уровень и прогресс" [level=2] [ref=e12]
+      - paragraph [ref=e13]: двигайте ползунки — эмблема пересобирается на лету
+    - generic [ref=e14]:
+      - generic [ref=e15]:
+        - generic [ref=e16]: Уровень 37
+        - slider [ref=e17]: "37"
+      - generic [ref=e18]:
+        - generic [ref=e19]: Прогресс внутри уровня 64%
+        - slider [ref=e20]: "64"
+      - generic [ref=e21]:
+        - generic [ref=e22]: Вид
+        - generic [ref=e23] [cursor=pointer]:
+          - checkbox "закрытый" [ref=e24]
+          - text: закрытый
+        - generic [ref=e25] [cursor=pointer]:
+          - checkbox "вспышка «новый уровень»" [ref=e26]
+          - text: вспышка «новый уровень»
+  - generic [ref=e27]:
+    - generic [ref=e28]:
+      - heading "Кривая опыта" [level=2] [ref=e29]
+      - paragraph [ref=e30]: суммарный XP, необходимый для достижения уровня
+    - img [ref=e32]:
+      - generic [ref=e33]: "0"
+      - generic [ref=e34]: 141 153
+      - generic [ref=e35]: 282 307
+      - generic [ref=e36]: 423 460
+      - generic [ref=e37]: 564 613
+      - generic [ref=e40]: "1"
+      - generic [ref=e42]: "10"
+      - generic [ref=e44]: "25"
+      - generic [ref=e46]: "50"
+      - generic [ref=e48]: "75"
+      - generic [ref=e50]: "100"
+    - paragraph [ref=e52]: "Ориентиры: ур.5 ≈ 616 · ур.10 ≈ 3 211 · ур.25 ≈ 25 857 · ур.50 ≈ 121 519 · ур.75 ≈ 298 729 · ур.100 ≈ 564 613 XP."
+  - generic [ref=e54]:
+    - heading "Все 100 уровней" [level=2] [ref=e55]
+    - paragraph [ref=e56]: нажмите на эмблему — она попадёт в карточку выше
+  - generic [ref=e57]:
+    - generic [ref=e58]:
+      - heading "Источники XP" [level=2] [ref=e59]
+      - paragraph [ref=e60]: правила движка, progression.config.ts → rules
+    - table [ref=e62]:
+      - rowgroup [ref=e63]:
+        - row [ref=e64]:
+          - columnheader "Действие" [ref=e65]
+          - columnheader "XP" [ref=e66]
+          - columnheader "В сутки" [ref=e67]
+          - columnheader "XP в сутки" [ref=e68]
+      - rowgroup [ref=e69]:
+        - row [ref=e70]:
+          - cell "Первый вход" [ref=e71]
+          - cell "25" [ref=e72]
+          - cell "раз в день" [ref=e73]
+          - cell "25" [ref=e74]
+        - row [ref=e75]:
+          - cell "Досмотренная серия" [ref=e76]
+          - cell "10" [ref=e77]
+          - cell "30" [ref=e78]
+          - cell "300" [ref=e79]
+        - row [ref=e80]:
+          - cell "Первый просмотр" [ref=e81]
+          - cell "20" [ref=e82]
+          - cell "10" [ref=e83]
+          - cell "200" [ref=e84]
+        - row [ref=e85]:
+          - cell "Тайтл полностью" [ref=e86]
+          - cell "100" [ref=e87]
+          - cell "5" [ref=e88]
+          - cell "500" [ref=e89]
+        - row [ref=e90]:
+          - cell "Любимое в список" [ref=e91]
+          - cell "5" [ref=e92]
+          - cell "20" [ref=e93]
+          - cell "100" [ref=e94]
+        - row [ref=e95]:
+          - cell "Отметка «смотрю»" [ref=e96]
+          - cell "5" [ref=e97]
+          - cell "20" [ref=e98]
+          - cell "100" [ref=e99]
+        - row [ref=e100]:
+          - cell "Запланировано" [ref=e101]
+          - cell "3" [ref=e102]
+          - cell "20" [ref=e103]
+          - cell "60" [ref=e104]
+        - row [ref=e105]:
+          - cell "Оценка тайтла" [ref=e106]
+          - cell "5" [ref=e107]
+          - cell "20" [ref=e108]
+          - cell "100" [ref=e109]
+        - row [ref=e110]:
+          - cell "Первый комментарий" [ref=e111]
+          - cell "15" [ref=e112]
+          - cell "раз в день" [ref=e113]
+          - cell "15" [ref=e114]
+        - row [ref=e115]:
+          - cell "Комментарий" [ref=e116]
+          - cell "5" [ref=e117]
+          - cell "10" [ref=e118]
+          - cell "50" [ref=e119]
+        - row [ref=e120]:
+          - cell "Ответ на комментарий" [ref=e121]
+          - cell "3" [ref=e122]
+          - cell "20" [ref=e123]
+          - cell "60" [ref=e124]
+        - row [ref=e125]:
+          - cell "Итого в сутки" [ref=e126]
+          - cell "—" [ref=e127]
+          - cell "—" [ref=e128]
+          - cell "1 510" [ref=e129]
+    - paragraph [ref=e130]: "Soft-cap: до 1 000 XP в сутки — 100%, дальше 25%, потолок 1 500. Достижения, квесты, сезоны и админ-выдачи капают мимо ограничения."
+  - generic [ref=e131]:
+    - generic [ref=e132]:
+      - heading "Экономика за уровень" [level=2] [ref=e133]
+      - paragraph [ref=e134]: AC начисляются автоматически, подарок забирается вручную
+    - table [ref=e136]:
+      - rowgroup [ref=e137]:
+        - row [ref=e138]:
+          - columnheader "Правило" [ref=e139]
+          - columnheader "Значение" [ref=e140]
+      - rowgroup [ref=e141]:
+        - row [ref=e142]:
+          - cell "AC за уровень" [ref=e143]
+          - cell "10 + 2 × L, каждый 10-й ещё +100 × (L/10)" [ref=e144]
+        - row [ref=e145]:
+          - 'cell "Пример: уровень 37" [ref=e146]'
+          - cell "84 AC" [ref=e147]
+        - row [ref=e148]:
+          - 'cell "Пример: уровень 100" [ref=e149]'
+          - cell "1 210 AC" [ref=e150]
+        - row [ref=e151]:
+          - cell "Вход в день" [ref=e152]
+          - cell "25 XP + 10 AC" [ref=e153]
+        - row [ref=e154]:
+          - cell "Серия 7 дней" [ref=e155]
+          - cell "+50 AC" [ref=e156]
+        - row [ref=e157]:
+          - cell "Подарок за новый уровень" [ref=e158]
+          - cell "50 AC" [ref=e159]
+  - generic [ref=e160]:
+    - generic [ref=e161]:
+      - heading "Теги за уровень" [level=2] [ref=e162]
+      - paragraph [ref=e163]: выдаются автоматически, в магазине не продаются
+    - table [ref=e165]:
+      - rowgroup [ref=e166]:
+        - row [ref=e167]:
+          - columnheader "Уровень" [ref=e168]
+          - columnheader "Тег" [ref=e169]
+      - rowgroup [ref=e170]:
+        - row [ref=e171]:
+          - cell "5" [ref=e172]
+          - cell "Отаку" [ref=e173]
+        - row [ref=e174]:
+          - cell "10" [ref=e175]
+          - cell "Сенсей" [ref=e176]
+        - row [ref=e177]:
+          - cell "25" [ref=e178]
+          - cell "Синдикат" [ref=e179]
+        - row [ref=e180]:
+          - cell "30" [ref=e181]
+          - cell "Тэнгу" [ref=e182]
+        - row [ref=e183]:
+          - cell "50" [ref=e184]
+          - cell "Сёгун" [ref=e185]
+  - contentinfo [ref=e186]:
+    - text: Страница сгенерирована из исходников
+    - code [ref=e187]: anime-hub
+    - text: ": эмблема —"
+    - code [ref=e188]: src/lib/levelEmblem.js
+    - text: ", стили —"
+    - code [ref=e189]: src/app/level-emblem.css
+    - text: ", математика —"
+    - code [ref=e190]: src/lib/progression/curve.ts
+    - text: . Это статичное превью без Next.js, шрифты Manrope/Unbounded подставлены системными.

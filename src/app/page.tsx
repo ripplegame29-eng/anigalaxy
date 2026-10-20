@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Suspense } from "react";
 import { AnimeRow } from "@/components/AnimeRow";
+import { ContinueRow } from "@/components/ContinueRow";
 import { HeroSlider } from "@/components/HeroSlider";
 import { Reveal } from "@/components/Reveal";
 import { getTitleDetail, row } from "@/lib/kodik";
@@ -130,6 +131,11 @@ export default function HomePage() {
         >
           <DonateWidget />
         </section>
+
+        {/* Продолжить просмотр — прямо над онгоингами, как в макете. Блок
+            клиентский и пуст без истории просмотра: без записей он ничего
+            не рисует. */}
+        <ContinueRow />
 
         <Suspense fallback={<RowSkeleton title="Онгоинги" />}>
           <RowSection

@@ -12,6 +12,11 @@ export interface Collection {
   /** id тайтлов Kodik (`serial-29315`) */
   animeIds: string[];
   createdAt: number;
+  /**
+   * Видна ли подборка другим. У старых подборок поля нет — они считаются
+   * публичными, иначе половина списка внезапно стала бы приватной.
+   */
+  pub?: boolean;
 }
 
 export const COLLECTIONS_KEY = "animehub:collections:v1";
@@ -66,7 +71,17 @@ export function saveCollections(list: Collection[]): void {
   write(COLLECTIONS_KEY, list.slice(0, MAX_COLLECTIONS));
 }
 
-export function createCollection(name: string, animeId: string): Collection[] {
+/**
+ * Создаёт подборку и сразу кладёт в неё тайл.
+ *
+ * `pub` — публичная или приватная (окно «В подборки» спрашивает это при
+ * создании). Подборка с уже таким именем переиспользуется, а не дублируется.
+ */
+export function createCollection(
+  name: string,
+  animeId: string,
+  options?: { pub?: boolean },
+): Collection[] {
   const clean = sanitizeName(name);
   const list = loadCollections();
   if (!clean) return list;
@@ -88,6 +103,7 @@ export function createCollection(name: string, animeId: string): Collection[] {
     name: clean,
     animeIds: [animeId],
     createdAt: Date.now(),
+    pub: options?.pub !== false,
   };
   const next = [created, ...list];
   saveCollections(next);

@@ -29,6 +29,8 @@
     "src/lib/cosmetics.ts",
     "src/lib/backup.ts",
     "src/lib/auth.ts",
-    "src/lib/comments.ts"
+    "src/lib/comments.ts",
+    "src/lib/streak-capsule.ts",
+    "src/lib/nickname.ts"
   ]
 }

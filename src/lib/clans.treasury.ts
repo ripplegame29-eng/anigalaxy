@@ -1,6 +1,7 @@
 "use client";
 
 import { RESOURCE_LABEL, type ClanResource } from "./clans.game";
+import { emit } from "./progression/service";
 import {
   appendLedger,
   clanGame,
@@ -346,6 +347,11 @@ export function openChest(
   );
 
   if (!result.ok) return { ok: false, reason: result.reason };
+  /* «Атомы в личную копилку» обещаны в таблице наград — начисляем их
+     реально, через движок прогрессии (ключ открытия защищает от повтора). */
+  if (selfAc > 0) {
+    emit({ type: "CLAN_CHEST_REWARD", key: openKey, amount: selfAc });
+  }
   return { ok: true, loot, selfAc, unlocked };
 }
 

@@ -79,6 +79,12 @@ const META: Record<string, AchievementEmblemMeta> = {
   "ach_secret_early": { rarity: "legendary", glyph: "moon", maxTier: 8 },
   "ach_secret_rarity": { rarity: "legendary", glyph: "heart", maxTier: 8 },
   "ach_secret_restyle": { rarity: "legendary", glyph: "users", maxTier: 8 },
+  "ach_chrono_day": { rarity: "mythic", glyph: "clock", maxTier: 8 },
+  "ach_genre_shonen": { rarity: "mythic", glyph: "flame", maxTier: 8 },
+  "ach_genre_fantasy": { rarity: "mythic", glyph: "planet", maxTier: 8 },
+  "ach_secrets_all": { rarity: "mythic", glyph: "crown", maxTier: 8 },
+  "ach_seasons_all": { rarity: "mythic", glyph: "shield", maxTier: 8 },
+  "ach_all_done": { rarity: "mythic", glyph: "trophy", maxTier: 8 },
 };
 
 export function emblemMeta(id: string): AchievementEmblemMeta {

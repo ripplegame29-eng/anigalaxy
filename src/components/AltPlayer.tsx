@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import type Hls from "hls.js";
 import type { AniSearchCard, AniTitleDetail } from "@/lib/anilibria";
-import { qualityNeedsPremium, usePremium } from "@/lib/premium";
+import { FREE_HQ_EPISODES, hqFreeForEpisode, qualityNeedsPremium, usePremium } from "@/lib/premium";
 
 /**
  * Альтернативный плеер блока просмотра — каталог AniLiberty.
@@ -29,10 +29,11 @@ type StreamQuality = "480" | "720" | "1080";
  * и потоки AniLiberty. «1080» доступно всегда — без потока апскейлится
  * с меньшей силой.
  *
- * «2160» и «1440» — только Premium: это цели апскейла лучшего потока,
- * и шейдерный проход Anime4K реально грузит GPU и батарею, поэтому
- * выдавать его всем бесплатно было нечестно. Страница Premium обещает
- * «4K» — теперь обещание выполняется, и замок в меню качества это видно.
+ * «2160» и «1440» — витрина подписки: это цели апскейла лучшего потока,
+ * шейдерный проход Anime4K реально грузит GPU и батарею, поэтому всю серию
+ * выдавать его всем было бы нечестно. Первые FREE_HQ_EPISODES серий он
+ * открыт всем — посмотреть, что покупается, можно без подписки; дальше
+ * пункт закрыт и вместо переключения качества открывает окно с предложением.
  */
 const QUALITIES = ["auto", "2160", "1440", "1080", "720", "480", "360"] as const;
 type Quality = (typeof QUALITIES)[number];
@@ -244,7 +245,9 @@ export function AltPlayer({
   year,
   episode,
   titleId,
-  poster,
+  backend = "anilibria",
+  kodikId,
+  season = 1,
   onBack,
   onNextEpisode,
 }: {
@@ -258,8 +261,16 @@ export function AltPlayer({
   episode: number;
   /** Id тайтла (Kodik) — ключ позиций просмотра в localStorage */
   titleId: string;
-  /** Постер Kodik — виден, пока тайтл ищется */
-  poster?: string;
+  /**
+   * Откуда берём поток: «anilibria» — поиск по каталогу AniLiberty,
+   * «kodik» — прямые HLS-манифесты Kodik (плеер AniGalaxy). Панель
+   * управления, качество, скорости и позиции — одни и те же.
+   */
+  backend?: "anilibria" | "kodik";
+  /** Id тайтла Kodik («serial-3566») — обязателен для backend="kodik" */
+  kodikId?: string;
+  /** Сезон Kodik; по умолчанию первый */
+  season?: number;
   /** «Не нашли» → вернуть исходный плеер */
   onBack: () => void;
   /** Авто-переключение: вызывается, если в AniLiberty есть следующая серия */
@@ -267,6 +278,18 @@ export function AltPlayer({
 }) {
   const [detail, setDetail] = useState<AniTitleDetail | null>(null);
   const [status, setStatus] = useState<"loading" | "ok" | "empty">("loading");
+  /**
+   * Потоки Kodik для текущей серии: качество → HLS-манифест.
+   * Наполняется вместо `detail` в режиме backend="kodik" — плеер дальше
+   * работает с тем же набором «качество → ссылка», что и у AniLiberty.
+   */
+  const [kodikLinks, setKodikLinks] = useState<Record<string, string> | null>(null);
+  /**
+   * Настоящая причина неудачи в режиме Kodik. Раньше всё сводилось к
+   * «не нашли», хотя на самом деле могла не ответить сеть или сам Kodik —
+   * по такому тексту непонятно, что делать.
+   */
+  const [kodikError, setKodikError] = useState<string | null>(null);
   /** Что выбрал пользователь. Действующее качество — выведено ниже:
       подписка может кончиться, и тогда цель апскейла сама откатывается
       на «Авто», без записи в состояние из эффекта. */
@@ -287,6 +310,8 @@ export function AltPlayer({
   const [rate, setRate] = useState(1);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [qualityOpen, setQualityOpen] = useState(false);
+  /** Окно «2K/4K — по подписке»: замкнуто на текущую серию, не серию из localStorage */
+  const [hqModal, setHqModal] = useState(false);
   const [autoNext, setAutoNext] = useState(true);
   const [isFs, setIsFs] = useState(false);
   /** Anime4K не запустился (нет WebGL / canvas заблокирован CORS) */
@@ -295,6 +320,8 @@ export function AltPlayer({
   const videoRef = useRef<HTMLVideoElement>(null);
   /** Канвас поверх видео: на нём Anime4K рисует апскейленные кадры */
   const a4kCanvasRef = useRef<HTMLCanvasElement>(null);
+  /** Диалог «2K/4K по подписке» — на него ставим фокус при открытии */
+  const hqDialogRef = useRef<HTMLDivElement>(null);
   /** true, пока управление ошибками у hls.js (чтобы onError не дублировал) */
   const hlsActiveRef = useRef(false);
   /** Отложенные перемотка/воспроизведение при смене качества */
@@ -310,6 +337,63 @@ export function AltPlayer({
   /* ---------------------- Поиск тайтла и серий ---------------------- */
   useEffect(() => {
     let alive = true;
+
+    // Режим Kodik (AniGalaxy): серию мы знаем точно — поиск по каталогу не
+    // нужен, сразу берём подписанные HLS-манифесты у /api/kodik/stream.
+    if (backend === "kodik") {
+      (async () => {
+        setKodikLinks(null);
+        setKodikError(null);
+        try {
+          if (!kodikId) {
+            if (alive) {
+              setKodikError("Не указан id тайтла Kodik");
+              setStatus("empty");
+            }
+            return;
+          }
+          const query_ =
+            `id=${encodeURIComponent(kodikId)}&season=${season}&episode=${episode}`;
+          const res = await fetch(`/api/kodik/stream?${query_}`);
+
+          // Сервер отдаёт { error } с кодом 404/502/500 — разбираем его,
+          // чтобы показать причину, а не «не нашли»
+          const data = (await res.json().catch(() => null)) as {
+            links?: Record<string, { Src?: string }>;
+            error?: string;
+          } | null;
+
+          if (!alive) return;
+
+          if (!res.ok) {
+            setKodikError(data?.error ?? `Сервер ответил ${res.status}`);
+            setStatus("empty");
+            return;
+          }
+
+          const links: Record<string, string> = {};
+          for (const [q, value] of Object.entries(data?.links ?? {})) {
+            if (value?.Src) links[q] = value.Src;
+          }
+          if (Object.keys(links).length) {
+            setKodikLinks(links);
+            setStatus("ok");
+          } else {
+            setKodikError("Kodik не отдал ни одной ссылки на поток");
+            setStatus("empty");
+          }
+        } catch {
+          if (alive) {
+            setKodikError("Не удалось связаться с сервером");
+            setStatus("empty");
+          }
+        }
+      })();
+      return () => {
+        alive = false;
+      };
+    }
+
     const names = [query, altQuery].filter((name): name is string => Boolean(name));
     (async () => {
       try {
@@ -345,10 +429,13 @@ export function AltPlayer({
     return () => {
       alive = false;
     };
-  }, [query, altQuery, year]);
+  }, [backend, kodikId, season, episode, query, altQuery, year]);
 
   const router = useRouter();
   const { active: premiumActive } = usePremium();
+
+  /** Название источника в статусах: свой плеер Kodik — AniGalaxy, каталог — AniLiberty */
+  const brand = backend === "kodik" ? "AniGalaxy" : "AniLiberty";
 
   /* ------------------------ Текущая серия и src --------------------- */
   // Фильм/серии с другими номерами: для первого эпизода берём первый
@@ -356,7 +443,13 @@ export function AltPlayer({
   const current =
     detail?.episodes.find((ep) => ep.number === episode) ??
     (episode === 1 ? detail?.episodes[0] : undefined);
-  const sources = current?.sources;
+  /**
+   * Набор «качество → ссылка на поток». В режиме Kodik он приходит
+   * готовым из /api/kodik/stream (серия известна заранее, искать нечего),
+   * в режиме AniLiberty — из найденной серии каталога.
+   */
+  const sources: Record<string, string> | undefined =
+    backend === "kodik" ? (kodikLinks ?? undefined) : current?.sources;
   /** Лучший поток серии: база для апскейла 4K/2K и фоллбэка без потока */
   const bestSrc = sources?.["1080"] ?? sources?.["720"] ?? sources?.["480"];
   /** Мельчайший поток — цель 360p (апскейл не нужен, уменьшает дисплей) */
@@ -369,8 +462,11 @@ export function AltPlayer({
     if (q === "480") return sources?.["480"] ?? bestSrc;
     return lowSrc;
   };
+  // Действующее качество выведено: подписка может кончиться, а серия
+  // уехать за пределы бесплатных — цель сама откатывается на «Авто»,
+  // без записи в состояние из эффекта.
   const quality: Quality =
-    qualityNeedsPremium(qualityPref) && !premiumActive ? "auto" : qualityPref;
+    qualityNeedsPremium(qualityPref, episode) && !premiumActive ? "auto" : qualityPref;
   const src = srcFor(quality);
   const mediaFailed = Boolean(src) && failedSrc === src;
   /** Фактически играющий поток (апскейл рисуется поверх) */
@@ -547,6 +643,21 @@ export function AltPlayer({
     };
   }, [settingsOpen, qualityOpen]);
 
+  /**
+   * Окно «2K/4K по подписке»: закрывается по Escape, по клику по подложке
+   * и по кнопке. Фокус уводим внутрь окна — иначе он остаётся на пункте
+   * качества под подложкой, и с клавиатуры до «Оформить» не дойти.
+   */
+  useEffect(() => {
+    if (!hqModal) return;
+    const onEsc = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setHqModal(false);
+    };
+    document.addEventListener("keydown", onEsc);
+    hqDialogRef.current?.focus();
+    return () => document.removeEventListener("keydown", onEsc);
+  }, [hqModal]);
+
   /* ---------------------------- Действия ---------------------------- */
   const clearHideTimer = () => {
     if (hideTimerRef.current !== null) {
@@ -574,8 +685,12 @@ export function AltPlayer({
   const pickQuality = (next: Quality) => {
     setQualityOpen(false);
     if (next === quality) return;
-    // Подстраховка к замку в меню: цели апскейла без подписки не включаем
-    if (qualityNeedsPremium(next) && !premiumActive) return;
+    // Замок: за пределами бесплатных серий цель 2K/4K не включаем, а
+    // показываем окно. На первых сериях замка нет — замку там неоткуда взяться.
+    if (qualityNeedsPremium(next, episode) && !premiumActive) {
+      setHqModal(true);
+      return;
+    }
     // Апскейл-цели (4K/2K) играют лучший поток — src обычно не меняется,
     // слой апскейла просто включается/выключается поверх без перезапуска
     const nextSrc = srcFor(next);
@@ -669,7 +784,6 @@ export function AltPlayer({
         ref={videoRef}
         playsInline
         preload="metadata"
-        poster={poster ?? detail?.card.poster}
         className="absolute inset-0 h-full w-full bg-black object-contain"
         onPlay={() => {
           setStarted(true);
@@ -959,7 +1073,18 @@ export function AltPlayer({
 
           {!premiumActive && (
             <p className="mx-2 mb-1.5 rounded-lg bg-gold/10 px-3 py-2 text-[11px] leading-relaxed text-gold/90 ring-1 ring-gold/25">
-              4K и 2K — часть Premium: это апскейл Anime4K поверх потока 1080p.
+              {hqFreeForEpisode(episode) ? (
+                <>
+                  4K и 2K открыты на первых {FREE_HQ_EPISODES} сериях — это апскейл
+                  Anime4K поверх потока 1080p. С {FREE_HQ_EPISODES + 1}-й — по подписке.
+                </>
+              ) : (
+                <>
+                  4K и 2K с {FREE_HQ_EPISODES + 1}-й серии — часть Premium: апскейл
+                  Anime4K поверх потока 1080p. Первые {FREE_HQ_EPISODES} серии открыты
+                  всем.
+                </>
+              )}
             </p>
           )}
           <div className="p-1.5">
@@ -972,15 +1097,15 @@ export function AltPlayer({
                     : Boolean(bestSrc);
               const selected = quality === q;
               const beta = q === "2160" || q === "1440" || q === "1080";
-              /** Цель апскейла без подписки: кнопка не гасится, а объясняет */
-              const locked = qualityNeedsPremium(q) && !premiumActive;
+              /** Замок есть только на платных сериях: кнопку не гасим, а объясняем */
+              const locked = qualityNeedsPremium(q, episode) && !premiumActive;
               return (
                 <button
                   key={q}
                   type="button"
                   disabled={!available}
                   aria-pressed={selected}
-                  onClick={() => (locked ? router.push("/premium") : pickQuality(q))}
+                  onClick={() => (locked ? setHqModal(true) : pickQuality(q))}
                   className={`flex w-full items-center justify-between gap-2 rounded-xl px-3.5 py-3 text-left transition ${
                     !available
                       ? "cursor-not-allowed text-white/25"
@@ -1044,6 +1169,69 @@ export function AltPlayer({
         </div>
       )}
 
+      {/* ------------- Окно «2K/4K по подписке» -------------------------
+          Всплывает вместо переключения качества, когда серия не входит
+          в бесплатные первые FREE_HQ_EPISODES. */}
+      {hqModal && (
+        <div
+          className="absolute inset-0 z-40 grid place-items-center bg-black/70 p-4 backdrop-blur-sm animate-fade-in"
+          onClick={(e) => {
+            // подложка — всё, кроме самого окна
+            if (e.target === e.currentTarget) setHqModal(false);
+          }}
+        >
+          <div
+            ref={hqDialogRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="alt-hq-title"
+            data-alt-hq-modal=""
+            tabIndex={-1}
+            className="w-full max-w-md rounded-2xl border border-line bg-[#0d0d15]/98 p-5 text-center shadow-[0_36px_80px_-28px_rgba(0,0,0,1)] outline-none animate-fade-in"
+          >
+            <span className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-gold/15 text-gold ring-1 ring-gold/30">
+              <svg
+                viewBox="0 0 24 24"
+                className="h-6 w-6"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.2"
+                aria-hidden
+              >
+                <rect x="5" y="11" width="14" height="9" rx="2" />
+                <path strokeLinecap="round" d="M8 11V8a4 4 0 0 1 8 0v3" />
+              </svg>
+            </span>
+
+            <h3 id="alt-hq-title" className="mt-3 text-lg font-black text-white">
+              2K и 4K — с подпиской Premium
+            </h3>
+            <p className="mt-2 text-[13px] leading-relaxed text-muted">
+              На первых {FREE_HQ_EPISODES} сериях 2K и 4K доступны всем. С 3-й серии
+              качество выше 1080p открывается по подписке — это апскейл Anime4K, он
+              считается на видеокарте.
+            </p>
+
+            <div className="mt-5 flex flex-col gap-2 sm:flex-row-reverse">
+              <button
+                type="button"
+                onClick={() => router.push("/premium")}
+                className="flex-1 rounded-xl bg-accent px-4 py-3 text-sm font-black text-white transition hover:brightness-110"
+              >
+                Оформить Premium
+              </button>
+              <button
+                type="button"
+                onClick={() => setHqModal(false)}
+                className="flex-1 rounded-xl bg-white/8 px-4 py-3 text-sm font-bold text-white ring-1 ring-white/12 transition hover:bg-white/14"
+              >
+                Смотреть в 1080p
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ------------------ Постер-оверлей до первого play -------------- */}
       {mediaReady && !started && (
         <div className="absolute inset-0 z-30 flex flex-col items-center justify-center gap-4 bg-gradient-to-b from-black/55 via-black/25 to-black/75 px-8 text-center">
@@ -1083,7 +1271,7 @@ export function AltPlayer({
           <div className="grid justify-items-center gap-3 text-center">
             <span className="h-9 w-9 animate-spin-slow rounded-full border-[3px] border-white/20 border-t-accent" />
             <span className="text-xs font-semibold uppercase tracking-widest text-muted">
-              Ищем на AniLiberty…
+              Ищем на {brand}…
             </span>
           </div>
         </div>
@@ -1092,11 +1280,29 @@ export function AltPlayer({
       {status === "empty" && (
         <div className="absolute inset-0 z-40 grid place-items-center bg-ink/85 animate-fade-in">
           <div className="grid max-w-xs justify-items-center gap-3 px-6 text-center">
-            <p className="text-sm font-semibold text-white">Не нашли на AniLiberty</p>
-            <p className="text-xs text-muted">
-              Возможно, этого тайтла нет в каталоге альтернативы — вернитесь на
-              основной плеер.
-            </p>
+            {/* У Kodik серия ищется не по каталогу, а прямой подписанной
+                ссылкой, поэтому «не нашли» тут означало бы неверно:
+                показываем то, что сервер ответил на самом деле. */}
+            {backend === "kodik" ? (
+              <>
+                <p className="text-sm font-semibold text-white">Поток не получен</p>
+                <p className="text-xs text-muted">
+                  {kodikError ?? "Kodik не ответил"}
+                </p>
+                <p className="text-xs text-muted/80">
+                  Если с VPN работает, а без него — нет, значит до сервера Kodik
+                  закрыт доступ из вашей сети.
+                </p>
+              </>
+            ) : (
+              <>
+                <p className="text-sm font-semibold text-white">Не нашли на {brand}</p>
+                <p className="text-xs text-muted">
+                  Возможно, этого тайтла нет в каталоге альтернативы — вернитесь на
+                  основной плеер.
+                </p>
+              </>
+            )}
             <button
               type="button"
               onClick={onBack}
@@ -1108,10 +1314,12 @@ export function AltPlayer({
         </div>
       )}
 
-      {status === "ok" && !current && (
+      {/* Нет именно этой серии в каталоге: у Kodik серии приходят по номеру,
+          пустой результат сюда не попадает — там своя проверка выше */}
+      {status === "ok" && !current && backend === "anilibria" && (
         <div className="absolute inset-0 z-40 grid place-items-center bg-ink/85 animate-fade-in">
           <div className="grid max-w-xs justify-items-center gap-2 px-6 text-center">
-            <p className="text-sm font-semibold text-white">Серии {episode} нет в AniLiberty</p>
+            <p className="text-sm font-semibold text-white">Серии {episode} нет на {brand}</p>
             <p className="text-xs text-muted">
               Выберите другую серию или переключитесь обратно на основной плеер.
             </p>

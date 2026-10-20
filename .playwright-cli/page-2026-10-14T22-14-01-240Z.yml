@@ -1,0 +1,644 @@
+- generic [ref=f1e2]:
+  - banner [ref=f1e3]:
+    - generic [ref=f1e4]: Превью · AniGalaxy
+    - heading "Уровни" [level=1] [ref=f1e5]
+    - paragraph [ref=f1e6]:
+      - text: "Сто уровней и семь эр — от «Новичка» до «Трансцендента». Кривая опыта:"
+      - code [ref=f1e7]: xpToNext(L) = round(50 × L^1.2)
+      - text: ". Страница собрана из настоящих исходников проекта: генератор эмблемы"
+      - code [ref=f1e8]: src/lib/levelEmblem.js
+      - text: и стили
+      - code [ref=f1e9]: src/app/level-emblem.css
+      - text: .
+  - generic [ref=f1e10]:
+    - generic [ref=f1e11]:
+      - heading "Уровень и прогресс" [level=2] [ref=f1e12]
+      - paragraph [ref=f1e13]: двигайте ползунки — эмблема пересобирается на лету
+    - generic [ref=f1e14]:
+      - generic [ref=f1e15]:
+        - generic [ref=f1e16]: Уровень 37
+        - slider [ref=f1e17]: "37"
+      - generic [ref=f1e18]:
+        - generic [ref=f1e19]: Прогресс внутри уровня 64%
+        - slider [ref=f1e20]: "64"
+      - generic [ref=f1e21]:
+        - generic [ref=f1e22]: Вид
+        - generic [ref=f1e23] [cursor=pointer]:
+          - checkbox "закрытый" [ref=f1e24]
+          - text: закрытый
+        - generic [ref=f1e25] [cursor=pointer]:
+          - checkbox "вспышка «новый уровень»" [ref=f1e26]
+          - text: вспышка «новый уровень»
+    - generic [ref=f1e28]:
+      - img "Уровень 37, эра Мастер, прогресс 64%" [ref=f1e29]:
+        - generic [ref=f1e57]: "37"
+      - generic [ref=f1e58]:
+        - heading "Уровень 37 Мастер 3 809 XP" [level=2] [ref=f1e59]:
+          - text: Уровень 37
+          - generic [ref=f1e60]: Мастер
+          - emphasis [ref=f1e61]: 3 809 XP
+        - generic [ref=f1e64]:
+          - generic [ref=f1e65]:
+            - generic [ref=f1e66]: Накоплено XP
+            - generic [ref=f1e67]: 64 600
+          - generic [ref=f1e68]:
+            - generic [ref=f1e69]: Внутри уровня
+            - generic [ref=f1e70]: 2 438 / 3 809
+          - generic [ref=f1e71]:
+            - generic [ref=f1e72]: До следующего уровня
+            - generic [ref=f1e73]: 1 371 XP
+          - generic [ref=f1e74]:
+            - generic [ref=f1e75]: Награда за уровень
+            - generic [ref=f1e76]: 84 AC
+  - generic [ref=f1e77]:
+    - generic [ref=f1e78]:
+      - heading "Кривая опыта" [level=2] [ref=f1e79]
+      - paragraph [ref=f1e80]: суммарный XP, необходимый для достижения уровня
+    - img [ref=f1e82]:
+      - generic [ref=f1e83]: "0"
+      - generic [ref=f1e84]: 141 153
+      - generic [ref=f1e85]: 282 307
+      - generic [ref=f1e86]: 423 460
+      - generic [ref=f1e87]: 564 613
+      - generic [ref=f1e90]: "1"
+      - generic [ref=f1e92]: "10"
+      - generic [ref=f1e94]: "25"
+      - generic [ref=f1e96]: "50"
+      - generic [ref=f1e98]: "75"
+      - generic [ref=f1e100]: "100"
+    - paragraph [ref=f1e102]: "Ориентиры: ур.5 ≈ 616 · ур.10 ≈ 3 211 · ур.25 ≈ 25 857 · ур.50 ≈ 121 519 · ур.75 ≈ 298 729 · ур.100 ≈ 564 613 XP."
+  - generic [ref=f1e103]:
+    - generic [ref=f1e104]:
+      - heading "Все 100 уровней" [level=2] [ref=f1e105]
+      - paragraph [ref=f1e106]: нажмите на эмблему — она попадёт в карточку выше
+    - generic [ref=f1e107]:
+      - generic "Уровень 1" [ref=f1e108] [cursor=pointer]:
+        - img "Уровень 1, эра Новичок, прогресс 0%" [ref=f1e109]:
+          - generic [ref=f1e130]: "1"
+        - generic [ref=f1e131]: 0 XP
+      - generic "Уровень 2" [ref=f1e132] [cursor=pointer]:
+        - img "Уровень 2, эра Новичок, прогресс 0%" [ref=f1e133]:
+          - generic [ref=f1e153]: "2"
+        - generic [ref=f1e154]: 50 XP
+      - generic "Уровень 3" [ref=f1e155] [cursor=pointer]:
+        - img "Уровень 3, эра Новичок, прогресс 0%" [ref=f1e156]:
+          - generic [ref=f1e179]: "3"
+        - generic [ref=f1e180]: 165 XP
+      - generic "Уровень 4" [ref=f1e181] [cursor=pointer]:
+        - img "Уровень 4, эра Новичок, прогресс 0%" [ref=f1e182]:
+          - generic [ref=f1e204]: "4"
+        - generic [ref=f1e205]: 352 XP
+      - generic [ref=f1e206]:
+        - generic [ref=f1e207]:
+          - generic [ref=f1e208]: Зритель
+          - generic [ref=f1e209]: уровни 5–14 · 10
+        - generic [ref=f1e211]:
+          - generic "Уровень 5" [ref=f1e212] [cursor=pointer]:
+            - img "Уровень 5, эра Зритель, прогресс 0%" [ref=f1e213]:
+              - generic [ref=f1e236]: "5"
+            - generic [ref=f1e237]: 616 XP
+            - generic [ref=f1e238]: Отаку
+          - generic "Уровень 6" [ref=f1e239] [cursor=pointer]:
+            - img "Уровень 6, эра Зритель, прогресс 0%" [ref=f1e240]:
+              - generic [ref=f1e263]: "6"
+            - generic [ref=f1e264]: 961 XP
+          - generic "Уровень 7" [ref=f1e265] [cursor=pointer]:
+            - img "Уровень 7, эра Зритель, прогресс 0%" [ref=f1e266]:
+              - generic [ref=f1e289]: "7"
+            - generic [ref=f1e290]: 1 390 XP
+          - generic "Уровень 8" [ref=f1e291] [cursor=pointer]:
+            - img "Уровень 8, эра Зритель, прогресс 0%" [ref=f1e292]:
+              - generic [ref=f1e315]: "8"
+            - generic [ref=f1e316]: 1 907 XP
+          - generic "Уровень 9" [ref=f1e317] [cursor=pointer]:
+            - img "Уровень 9, эра Зритель, прогресс 0%" [ref=f1e318]:
+              - generic [ref=f1e342]: "9"
+            - generic [ref=f1e343]: 2 513 XP
+          - generic "Уровень 10" [ref=f1e344] [cursor=pointer]:
+            - img "Уровень 10, эра Зритель, прогресс 0%" [ref=f1e345]:
+              - generic [ref=f1e369]: "10"
+            - generic [ref=f1e370]: 3 211 XP
+            - generic [ref=f1e371]: Сенсей
+          - generic "Уровень 11" [ref=f1e372] [cursor=pointer]:
+            - img "Уровень 11, эра Зритель, прогресс 0%" [ref=f1e373]:
+              - generic [ref=f1e398]: "11"
+            - generic [ref=f1e399]: 4 003 XP
+          - generic "Уровень 12" [ref=f1e400] [cursor=pointer]:
+            - img "Уровень 12, эра Зритель, прогресс 0%" [ref=f1e401]:
+              - generic [ref=f1e428]: "12"
+            - generic [ref=f1e429]: 4 891 XP
+          - generic "Уровень 13" [ref=f1e430] [cursor=pointer]:
+            - img "Уровень 13, эра Зритель, прогресс 0%" [ref=f1e431]:
+              - generic [ref=f1e458]: "13"
+            - generic [ref=f1e459]: 5 877 XP
+          - generic "Уровень 14" [ref=f1e460] [cursor=pointer]:
+            - img "Уровень 14, эра Зритель, прогресс 0%" [ref=f1e461]:
+              - generic [ref=f1e488]: "14"
+            - generic [ref=f1e489]: 6 963 XP
+        - generic [ref=f1e490]:
+          - generic [ref=f1e491]:
+            - generic [ref=f1e492]: Знаток
+            - generic [ref=f1e493]: уровни 15–29 · 15
+          - generic [ref=f1e495]:
+            - generic "Уровень 15" [ref=f1e496] [cursor=pointer]:
+              - img "Уровень 15, эра Знаток, прогресс 0%" [ref=f1e497]:
+                - generic [ref=f1e517]: "15"
+              - generic [ref=f1e518]: 8 150 XP
+            - generic "Уровень 16" [ref=f1e519] [cursor=pointer]:
+              - img "Уровень 16, эра Знаток, прогресс 0%" [ref=f1e520]:
+                - generic [ref=f1e540]: "16"
+              - generic [ref=f1e541]: 9 439 XP
+            - generic "Уровень 17" [ref=f1e542] [cursor=pointer]:
+              - img "Уровень 17, эра Знаток, прогресс 0%" [ref=f1e543]:
+                - generic [ref=f1e563]: "17"
+              - generic [ref=f1e564]: 10 832 XP
+            - generic "Уровень 18" [ref=f1e565] [cursor=pointer]:
+              - img "Уровень 18, эра Знаток, прогресс 0%" [ref=f1e566]:
+                - generic [ref=f1e586]: "18"
+              - generic [ref=f1e587]: 12 330 XP
+            - generic "Уровень 19" [ref=f1e588] [cursor=pointer]:
+              - img "Уровень 19, эра Знаток, прогресс 0%" [ref=f1e589]:
+                - generic [ref=f1e609]: "19"
+              - generic [ref=f1e610]: 13 934 XP
+            - generic "Уровень 20" [ref=f1e611] [cursor=pointer]:
+              - img "Уровень 20, эра Знаток, прогресс 0%" [ref=f1e612]:
+                - generic [ref=f1e633]: "20"
+              - generic [ref=f1e634]: 15 646 XP
+            - generic "Уровень 21" [ref=f1e635] [cursor=pointer]:
+              - img "Уровень 21, эра Знаток, прогресс 0%" [ref=f1e636]:
+                - generic [ref=f1e657]: "21"
+              - generic [ref=f1e658]: 17 467 XP
+            - generic "Уровень 22" [ref=f1e659] [cursor=pointer]:
+              - img "Уровень 22, эра Знаток, прогресс 0%" [ref=f1e660]:
+                - generic [ref=f1e681]: "22"
+              - generic [ref=f1e682]: 19 397 XP
+            - generic "Уровень 23" [ref=f1e683] [cursor=pointer]:
+              - img "Уровень 23, эра Знаток, прогресс 0%" [ref=f1e684]:
+                - generic [ref=f1e706]: "23"
+              - generic [ref=f1e707]: 21 438 XP
+            - generic "Уровень 24" [ref=f1e708] [cursor=pointer]:
+              - img "Уровень 24, эра Знаток, прогресс 0%" [ref=f1e709]:
+                - generic [ref=f1e731]: "24"
+              - generic [ref=f1e732]: 23 591 XP
+            - generic "Уровень 25" [ref=f1e733] [cursor=pointer]:
+              - img "Уровень 25, эра Знаток, прогресс 0%" [ref=f1e734]:
+                - generic [ref=f1e758]: "25"
+              - generic [ref=f1e759]: 25 857 XP
+              - generic [ref=f1e760]: Синдикат
+            - generic "Уровень 26" [ref=f1e761] [cursor=pointer]:
+              - img "Уровень 26, эра Знаток, прогресс 0%" [ref=f1e762]:
+                - generic [ref=f1e786]: "26"
+              - generic [ref=f1e787]: 28 237 XP
+            - generic "Уровень 27" [ref=f1e788] [cursor=pointer]:
+              - img "Уровень 27, эра Знаток, прогресс 0%" [ref=f1e789]:
+                - generic [ref=f1e813]: "27"
+              - generic [ref=f1e814]: 30 731 XP
+            - generic "Уровень 28" [ref=f1e815] [cursor=pointer]:
+              - img "Уровень 28, эра Знаток, прогресс 0%" [ref=f1e816]:
+                - generic [ref=f1e840]: "28"
+              - generic [ref=f1e841]: 33 341 XP
+            - generic "Уровень 29" [ref=f1e842] [cursor=pointer]:
+              - img "Уровень 29, эра Знаток, прогресс 0%" [ref=f1e843]:
+                - generic [ref=f1e867]: "29"
+              - generic [ref=f1e868]: 36 067 XP
+          - generic [ref=f1e869]:
+            - generic [ref=f1e870]:
+              - generic [ref=f1e871]: Мастер
+              - generic [ref=f1e872]: уровни 30–49 · 20
+            - generic [ref=f1e874]:
+              - generic "Уровень 30" [ref=f1e875] [cursor=pointer]:
+                - img "Уровень 30, эра Мастер, прогресс 0%" [ref=f1e876]:
+                  - generic [ref=f1e902]: "30"
+                - generic [ref=f1e903]: 38 910 XP
+                - generic [ref=f1e904]: Тэнгу
+              - generic "Уровень 31" [ref=f1e905] [cursor=pointer]:
+                - img "Уровень 31, эра Мастер, прогресс 0%" [ref=f1e906]:
+                  - generic [ref=f1e932]: "31"
+                - generic [ref=f1e933]: 41 872 XP
+              - generic "Уровень 32" [ref=f1e934] [cursor=pointer]:
+                - img "Уровень 32, эра Мастер, прогресс 0%" [ref=f1e935]:
+                  - generic [ref=f1e961]: "32"
+                - generic [ref=f1e962]: 44 952 XP
+              - generic "Уровень 33" [ref=f1e963] [cursor=pointer]:
+                - img "Уровень 33, эра Мастер, прогресс 0%" [ref=f1e964]:
+                  - generic [ref=f1e990]: "33"
+                - generic [ref=f1e991]: 48 152 XP
+              - generic "Уровень 34" [ref=f1e992] [cursor=pointer]:
+                - img "Уровень 34, эра Мастер, прогресс 0%" [ref=f1e993]:
+                  - generic [ref=f1e1019]: "34"
+                - generic [ref=f1e1020]: 51 472 XP
+              - generic "Уровень 35" [ref=f1e1021] [cursor=pointer]:
+                - img "Уровень 35, эра Мастер, прогресс 0%" [ref=f1e1022]:
+                  - generic [ref=f1e1048]: "35"
+                - generic [ref=f1e1049]: 54 913 XP
+              - generic "Уровень 36" [ref=f1e1050] [cursor=pointer]:
+                - img "Уровень 36, эра Мастер, прогресс 0%" [ref=f1e1051]:
+                  - generic [ref=f1e1077]: "36"
+                - generic [ref=f1e1078]: 58 476 XP
+              - generic "Уровень 37" [ref=f1e1079] [cursor=pointer]:
+                - img "Уровень 37, эра Мастер, прогресс 0%" [ref=f1e1080]:
+                  - generic [ref=f1e1107]: "37"
+                - generic [ref=f1e1108]: 62 162 XP
+              - generic "Уровень 38" [ref=f1e1109] [cursor=pointer]:
+                - img "Уровень 38, эра Мастер, прогресс 0%" [ref=f1e1110]:
+                  - generic [ref=f1e1137]: "38"
+                - generic [ref=f1e1138]: 65 971 XP
+              - generic "Уровень 39" [ref=f1e1139] [cursor=pointer]:
+                - img "Уровень 39, эра Мастер, прогресс 0%" [ref=f1e1140]:
+                  - generic [ref=f1e1167]: "39"
+                - generic [ref=f1e1168]: 69 904 XP
+              - generic "Уровень 40" [ref=f1e1169] [cursor=pointer]:
+                - img "Уровень 40, эра Мастер, прогресс 0%" [ref=f1e1170]:
+                  - generic [ref=f1e1197]: "40"
+                - generic [ref=f1e1198]: 73 961 XP
+              - generic "Уровень 41" [ref=f1e1199] [cursor=pointer]:
+                - img "Уровень 41, эра Мастер, прогресс 0%" [ref=f1e1200]:
+                  - generic [ref=f1e1228]: "41"
+                - generic [ref=f1e1229]: 78 144 XP
+              - generic "Уровень 42" [ref=f1e1230] [cursor=pointer]:
+                - img "Уровень 42, эра Мастер, прогресс 0%" [ref=f1e1231]:
+                  - generic [ref=f1e1259]: "42"
+                - generic [ref=f1e1260]: 82 452 XP
+              - generic "Уровень 43" [ref=f1e1261] [cursor=pointer]:
+                - img "Уровень 43, эра Мастер, прогресс 0%" [ref=f1e1262]:
+                  - generic [ref=f1e1290]: "43"
+                - generic [ref=f1e1291]: 86 887 XP
+              - generic "Уровень 44" [ref=f1e1292] [cursor=pointer]:
+                - img "Уровень 44, эра Мастер, прогресс 0%" [ref=f1e1293]:
+                  - generic [ref=f1e1323]: "44"
+                - generic [ref=f1e1324]: 91 449 XP
+              - generic "Уровень 45" [ref=f1e1325] [cursor=pointer]:
+                - img "Уровень 45, эра Мастер, прогресс 0%" [ref=f1e1326]:
+                  - generic [ref=f1e1356]: "45"
+                - generic [ref=f1e1357]: 96 138 XP
+              - generic "Уровень 46" [ref=f1e1358] [cursor=pointer]:
+                - img "Уровень 46, эра Мастер, прогресс 0%" [ref=f1e1359]:
+                  - generic [ref=f1e1389]: "46"
+                - generic [ref=f1e1390]: 100 956 XP
+              - generic "Уровень 47" [ref=f1e1391] [cursor=pointer]:
+                - img "Уровень 47, эра Мастер, прогресс 0%" [ref=f1e1392]:
+                  - generic [ref=f1e1422]: "47"
+                - generic [ref=f1e1423]: 105 902 XP
+              - generic "Уровень 48" [ref=f1e1424] [cursor=pointer]:
+                - img "Уровень 48, эра Мастер, прогресс 0%" [ref=f1e1425]:
+                  - generic [ref=f1e1455]: "48"
+                - generic [ref=f1e1456]: 110 978 XP
+              - generic "Уровень 49" [ref=f1e1457] [cursor=pointer]:
+                - img "Уровень 49, эра Мастер, прогресс 0%" [ref=f1e1458]:
+                  - generic [ref=f1e1488]: "49"
+                - generic [ref=f1e1489]: 116 183 XP
+            - generic [ref=f1e1490]:
+              - generic [ref=f1e1491]:
+                - generic [ref=f1e1492]: Чемпион
+                - generic [ref=f1e1493]: уровни 50–74 · 25
+              - generic [ref=f1e1495]:
+                - generic "Уровень 50" [ref=f1e1496] [cursor=pointer]:
+                  - img "Уровень 50, эра Чемпион, прогресс 0%" [ref=f1e1497]:
+                    - generic [ref=f1e1532]: "50"
+                  - generic [ref=f1e1533]: 121 519 XP
+                  - generic [ref=f1e1534]: Сёгун
+                - generic "Уровень 51" [ref=f1e1535] [cursor=pointer]:
+                  - img "Уровень 51, эра Чемпион, прогресс 0%" [ref=f1e1536]:
+                    - generic [ref=f1e1571]: "51"
+                  - generic [ref=f1e1572]: 126 986 XP
+                - generic "Уровень 52" [ref=f1e1573] [cursor=pointer]:
+                  - img "Уровень 52, эра Чемпион, прогресс 0%" [ref=f1e1574]:
+                    - generic [ref=f1e1609]: "52"
+                  - generic [ref=f1e1610]: 132 584 XP
+                - generic "Уровень 53" [ref=f1e1611] [cursor=pointer]:
+                  - img "Уровень 53, эра Чемпион, прогресс 0%" [ref=f1e1612]:
+                    - generic [ref=f1e1647]: "53"
+                  - generic [ref=f1e1648]: 138 314 XP
+                - generic "Уровень 54" [ref=f1e1649] [cursor=pointer]:
+                  - img "Уровень 54, эра Чемпион, прогресс 0%" [ref=f1e1650]:
+                    - generic [ref=f1e1685]: "54"
+                  - generic [ref=f1e1686]: 144 177 XP
+                - generic "Уровень 55" [ref=f1e1687] [cursor=pointer]:
+                  - img "Уровень 55, эра Чемпион, прогресс 0%" [ref=f1e1688]:
+                    - generic [ref=f1e1723]: "55"
+                  - generic [ref=f1e1724]: 150 173 XP
+                - generic "Уровень 56" [ref=f1e1725] [cursor=pointer]:
+                  - img "Уровень 56, эра Чемпион, прогресс 0%" [ref=f1e1726]:
+                    - generic [ref=f1e1761]: "56"
+                  - generic [ref=f1e1762]: 156 302 XP
+                - generic "Уровень 57" [ref=f1e1763] [cursor=pointer]:
+                  - img "Уровень 57, эра Чемпион, прогресс 0%" [ref=f1e1764]:
+                    - generic [ref=f1e1799]: "57"
+                  - generic [ref=f1e1800]: 162 565 XP
+                - generic "Уровень 58" [ref=f1e1801] [cursor=pointer]:
+                  - img "Уровень 58, эра Чемпион, прогресс 0%" [ref=f1e1802]:
+                    - generic [ref=f1e1837]: "58"
+                  - generic [ref=f1e1838]: 168 963 XP
+                - generic "Уровень 59" [ref=f1e1839] [cursor=pointer]:
+                  - img "Уровень 59, эра Чемпион, прогресс 0%" [ref=f1e1840]:
+                    - generic [ref=f1e1876]: "59"
+                  - generic [ref=f1e1877]: 175 496 XP
+                - generic "Уровень 60" [ref=f1e1878] [cursor=pointer]:
+                  - img "Уровень 60, эра Чемпион, прогресс 0%" [ref=f1e1879]:
+                    - generic [ref=f1e1915]: "60"
+                  - generic [ref=f1e1916]: 182 164 XP
+                - generic "Уровень 61" [ref=f1e1917] [cursor=pointer]:
+                  - img "Уровень 61, эра Чемпион, прогресс 0%" [ref=f1e1918]:
+                    - generic [ref=f1e1954]: "61"
+                  - generic [ref=f1e1955]: 188 968 XP
+                - generic "Уровень 62" [ref=f1e1956] [cursor=pointer]:
+                  - img "Уровень 62, эра Чемпион, прогресс 0%" [ref=f1e1957]:
+                    - generic [ref=f1e1993]: "62"
+                  - generic [ref=f1e1994]: 195 908 XP
+                - generic "Уровень 63" [ref=f1e1995] [cursor=pointer]:
+                  - img "Уровень 63, эра Чемпион, прогресс 0%" [ref=f1e1996]:
+                    - generic [ref=f1e2033]: "63"
+                  - generic [ref=f1e2034]: 202 985 XP
+                - generic "Уровень 64" [ref=f1e2035] [cursor=pointer]:
+                  - img "Уровень 64, эра Чемпион, прогресс 0%" [ref=f1e2036]:
+                    - generic [ref=f1e2073]: "64"
+                  - generic [ref=f1e2074]: 210 199 XP
+                - generic "Уровень 65" [ref=f1e2075] [cursor=pointer]:
+                  - img "Уровень 65, эра Чемпион, прогресс 0%" [ref=f1e2076]:
+                    - generic [ref=f1e2113]: "65"
+                  - generic [ref=f1e2114]: 217 551 XP
+                - generic "Уровень 66" [ref=f1e2115] [cursor=pointer]:
+                  - img "Уровень 66, эра Чемпион, прогресс 0%" [ref=f1e2116]:
+                    - generic [ref=f1e2153]: "66"
+                  - generic [ref=f1e2154]: 225 041 XP
+                - generic "Уровень 67" [ref=f1e2155] [cursor=pointer]:
+                  - img "Уровень 67, эра Чемпион, прогресс 0%" [ref=f1e2156]:
+                    - generic [ref=f1e2195]: "67"
+                  - generic [ref=f1e2196]: 232 669 XP
+                - generic "Уровень 68" [ref=f1e2197] [cursor=pointer]:
+                  - img "Уровень 68, эра Чемпион, прогресс 0%" [ref=f1e2198]:
+                    - generic [ref=f1e2237]: "68"
+                  - generic [ref=f1e2238]: 240 436 XP
+                - generic "Уровень 69" [ref=f1e2239] [cursor=pointer]:
+                  - img "Уровень 69, эра Чемпион, прогресс 0%" [ref=f1e2240]:
+                    - generic [ref=f1e2279]: "69"
+                  - generic [ref=f1e2280]: 248 342 XP
+                - generic "Уровень 70" [ref=f1e2281] [cursor=pointer]:
+                  - img "Уровень 70, эра Чемпион, прогресс 0%" [ref=f1e2282]:
+                    - generic [ref=f1e2321]: "70"
+                  - generic [ref=f1e2322]: 256 388 XP
+                - generic "Уровень 71" [ref=f1e2323] [cursor=pointer]:
+                  - img "Уровень 71, эра Чемпион, прогресс 0%" [ref=f1e2324]:
+                    - generic [ref=f1e2363]: "71"
+                  - generic [ref=f1e2364]: 264 574 XP
+                - generic "Уровень 72" [ref=f1e2365] [cursor=pointer]:
+                  - img "Уровень 72, эра Чемпион, прогресс 0%" [ref=f1e2366]:
+                    - generic [ref=f1e2405]: "72"
+                  - generic [ref=f1e2406]: 272 901 XP
+                - generic "Уровень 73" [ref=f1e2407] [cursor=pointer]:
+                  - img "Уровень 73, эра Чемпион, прогресс 0%" [ref=f1e2408]:
+                    - generic [ref=f1e2447]: "73"
+                  - generic [ref=f1e2448]: 281 369 XP
+                - generic "Уровень 74" [ref=f1e2449] [cursor=pointer]:
+                  - img "Уровень 74, эра Чемпион, прогресс 0%" [ref=f1e2450]:
+                    - generic [ref=f1e2489]: "74"
+                  - generic [ref=f1e2490]: 289 978 XP
+              - generic [ref=f1e2491]:
+                - generic [ref=f1e2492]:
+                  - generic [ref=f1e2493]: Легенда
+                  - generic [ref=f1e2494]: уровни 75–99 · 25
+                - generic [ref=f1e2496]:
+                  - generic "Уровень 75" [ref=f1e2497] [cursor=pointer]:
+                    - img "Уровень 75, эра Легенда, прогресс 0%" [ref=f1e2498]:
+                      - generic [ref=f1e2562]: "75"
+                    - generic [ref=f1e2563]: 298 729 XP
+                  - generic "Уровень 76" [ref=f1e2564] [cursor=pointer]:
+                    - img "Уровень 76, эра Легенда, прогресс 0%" [ref=f1e2565]:
+                      - generic [ref=f1e2621]: "76"
+                    - generic [ref=f1e2622]: 307 622 XP
+                  - generic "Уровень 77" [ref=f1e2623] [cursor=pointer]:
+                    - img "Уровень 77, эра Легенда, прогресс 0%" [ref=f1e2624]:
+                      - generic [ref=f1e2680]: "77"
+                    - generic [ref=f1e2681]: 316 657 XP
+                  - generic "Уровень 78" [ref=f1e2682] [cursor=pointer]:
+                    - img "Уровень 78, эра Легенда, прогресс 0%" [ref=f1e2683]:
+                      - generic [ref=f1e2743]: "78"
+                    - generic [ref=f1e2744]: 325 835 XP
+                  - generic "Уровень 79" [ref=f1e2745] [cursor=pointer]:
+                    - img "Уровень 79, эра Легенда, прогресс 0%" [ref=f1e2746]:
+                      - generic [ref=f1e2804]: "79"
+                    - generic [ref=f1e2805]: 335 156 XP
+                  - generic "Уровень 80" [ref=f1e2806] [cursor=pointer]:
+                    - img "Уровень 80, эра Легенда, прогресс 0%" [ref=f1e2807]:
+                      - generic [ref=f1e2865]: "80"
+                    - generic [ref=f1e2866]: 344 621 XP
+                  - generic "Уровень 81" [ref=f1e2867] [cursor=pointer]:
+                    - img "Уровень 81, эра Легенда, прогресс 0%" [ref=f1e2868]:
+                      - generic [ref=f1e2932]: "81"
+                    - generic [ref=f1e2933]: 354 230 XP
+                  - generic "Уровень 82" [ref=f1e2934] [cursor=pointer]:
+                    - img "Уровень 82, эра Легенда, прогресс 0%" [ref=f1e2935]:
+                      - generic [ref=f1e2997]: "82"
+                    - generic [ref=f1e2998]: 363 983 XP
+                  - generic "Уровень 83" [ref=f1e2999] [cursor=pointer]:
+                    - img "Уровень 83, эра Легенда, прогресс 0%" [ref=f1e3000]:
+                      - generic [ref=f1e3062]: "83"
+                    - generic [ref=f1e3063]: 373 881 XP
+                  - generic "Уровень 84" [ref=f1e3064] [cursor=pointer]:
+                    - img "Уровень 84, эра Легенда, прогресс 0%" [ref=f1e3065]:
+                      - generic [ref=f1e3130]: "84"
+                    - generic [ref=f1e3131]: 383 924 XP
+                  - generic "Уровень 85" [ref=f1e3132] [cursor=pointer]:
+                    - img "Уровень 85, эра Легенда, прогресс 0%" [ref=f1e3133]:
+                      - generic [ref=f1e3194]: "85"
+                    - generic [ref=f1e3195]: 394 112 XP
+                  - generic "Уровень 86" [ref=f1e3196] [cursor=pointer]:
+                    - img "Уровень 86, эра Легенда, прогресс 0%" [ref=f1e3197]:
+                      - generic [ref=f1e3260]: "86"
+                    - generic [ref=f1e3261]: 404 446 XP
+                  - generic "Уровень 87" [ref=f1e3262] [cursor=pointer]:
+                    - img "Уровень 87, эра Легенда, прогресс 0%" [ref=f1e3263]:
+                      - generic [ref=f1e3326]: "87"
+                    - generic [ref=f1e3327]: 414 926 XP
+                  - generic "Уровень 88" [ref=f1e3328] [cursor=pointer]:
+                    - img "Уровень 88, эра Легенда, прогресс 0%" [ref=f1e3329]:
+                      - generic [ref=f1e3389]: "88"
+                    - generic [ref=f1e3390]: 425 553 XP
+                  - generic "Уровень 89" [ref=f1e3391] [cursor=pointer]:
+                    - img "Уровень 89, эра Легенда, прогресс 0%" [ref=f1e3392]:
+                      - generic [ref=f1e3456]: "89"
+                    - generic [ref=f1e3457]: 436 326 XP
+                  - generic "Уровень 90" [ref=f1e3458] [cursor=pointer]:
+                    - img "Уровень 90, эра Легенда, прогресс 0%" [ref=f1e3459]:
+                      - generic [ref=f1e3519]: "90"
+                    - generic [ref=f1e3520]: 447 246 XP
+                  - generic "Уровень 91" [ref=f1e3521] [cursor=pointer]:
+                    - img "Уровень 91, эра Легенда, прогресс 0%" [ref=f1e3522]:
+                      - generic [ref=f1e3582]: "91"
+                    - generic [ref=f1e3583]: 458 314 XP
+                  - generic "Уровень 92" [ref=f1e3584] [cursor=pointer]:
+                    - img "Уровень 92, эра Легенда, прогресс 0%" [ref=f1e3585]:
+                      - generic [ref=f1e3645]: "92"
+                    - generic [ref=f1e3646]: 469 530 XP
+                  - generic "Уровень 93" [ref=f1e3647] [cursor=pointer]:
+                    - img "Уровень 93, эра Легенда, прогресс 0%" [ref=f1e3648]:
+                      - generic [ref=f1e3714]: "93"
+                    - generic [ref=f1e3715]: 480 894 XP
+                  - generic "Уровень 94" [ref=f1e3716] [cursor=pointer]:
+                    - img "Уровень 94, эра Легенда, прогресс 0%" [ref=f1e3717]:
+                      - generic [ref=f1e3783]: "94"
+                    - generic [ref=f1e3784]: 492 406 XP
+                  - generic "Уровень 95" [ref=f1e3785] [cursor=pointer]:
+                    - img "Уровень 95, эра Легенда, прогресс 0%" [ref=f1e3786]:
+                      - generic [ref=f1e3852]: "95"
+                    - generic [ref=f1e3853]: 504 067 XP
+                  - generic "Уровень 96" [ref=f1e3854] [cursor=pointer]:
+                    - img "Уровень 96, эра Легенда, прогресс 0%" [ref=f1e3855]:
+                      - generic [ref=f1e3919]: "96"
+                    - generic [ref=f1e3920]: 515 877 XP
+                  - generic "Уровень 97" [ref=f1e3921] [cursor=pointer]:
+                    - img "Уровень 97, эра Легенда, прогресс 0%" [ref=f1e3922]:
+                      - generic [ref=f1e3984]: "97"
+                    - generic [ref=f1e3985]: 527 836 XP
+                  - generic "Уровень 98" [ref=f1e3986] [cursor=pointer]:
+                    - img "Уровень 98, эра Легенда, прогресс 0%" [ref=f1e3987]:
+                      - generic [ref=f1e4053]: "98"
+                    - generic [ref=f1e4054]: 539 945 XP
+                  - generic "Уровень 99" [ref=f1e4055] [cursor=pointer]:
+                    - img "Уровень 99, эра Легенда, прогресс 0%" [ref=f1e4056]:
+                      - generic [ref=f1e4116]: "99"
+                    - generic [ref=f1e4117]: 552 204 XP
+                - generic [ref=f1e4118]:
+                  - generic [ref=f1e4119]:
+                    - generic [ref=f1e4120]: Трансцендент
+                    - generic [ref=f1e4121]: уровни 100–100 · 1
+                  - generic "Уровень 100" [ref=f1e4124] [cursor=pointer]:
+                    - img "Уровень 100, эра Трансцендент, прогресс 0%" [ref=f1e4125]:
+                      - generic [ref=f1e4156]: "100"
+                    - generic [ref=f1e4157]: 564 613 XP
+  - generic [ref=f1e4158]:
+    - generic [ref=f1e4159]:
+      - heading "Источники XP" [level=2] [ref=f1e4160]
+      - paragraph [ref=f1e4161]: правила движка, progression.config.ts → rules
+    - table [ref=f1e4163]:
+      - rowgroup [ref=f1e4164]:
+        - row [ref=f1e4165]:
+          - columnheader "Действие" [ref=f1e4166]
+          - columnheader "XP" [ref=f1e4167]
+          - columnheader "В сутки" [ref=f1e4168]
+          - columnheader "XP в сутки" [ref=f1e4169]
+      - rowgroup [ref=f1e4170]:
+        - row [ref=f1e4171]:
+          - cell "Первый вход" [ref=f1e4172]
+          - cell "25" [ref=f1e4173]
+          - cell "раз в день" [ref=f1e4174]
+          - cell "25" [ref=f1e4175]
+        - row [ref=f1e4176]:
+          - cell "Досмотренная серия" [ref=f1e4177]
+          - cell "10" [ref=f1e4178]
+          - cell "30" [ref=f1e4179]
+          - cell "300" [ref=f1e4180]
+        - row [ref=f1e4181]:
+          - cell "Первый просмотр" [ref=f1e4182]
+          - cell "20" [ref=f1e4183]
+          - cell "10" [ref=f1e4184]
+          - cell "200" [ref=f1e4185]
+        - row [ref=f1e4186]:
+          - cell "Тайтл полностью" [ref=f1e4187]
+          - cell "100" [ref=f1e4188]
+          - cell "5" [ref=f1e4189]
+          - cell "500" [ref=f1e4190]
+        - row [ref=f1e4191]:
+          - cell "Любимое в список" [ref=f1e4192]
+          - cell "5" [ref=f1e4193]
+          - cell "20" [ref=f1e4194]
+          - cell "100" [ref=f1e4195]
+        - row [ref=f1e4196]:
+          - cell "Отметка «смотрю»" [ref=f1e4197]
+          - cell "5" [ref=f1e4198]
+          - cell "20" [ref=f1e4199]
+          - cell "100" [ref=f1e4200]
+        - row [ref=f1e4201]:
+          - cell "Запланировано" [ref=f1e4202]
+          - cell "3" [ref=f1e4203]
+          - cell "20" [ref=f1e4204]
+          - cell "60" [ref=f1e4205]
+        - row [ref=f1e4206]:
+          - cell "Оценка тайтла" [ref=f1e4207]
+          - cell "5" [ref=f1e4208]
+          - cell "20" [ref=f1e4209]
+          - cell "100" [ref=f1e4210]
+        - row [ref=f1e4211]:
+          - cell "Первый комментарий" [ref=f1e4212]
+          - cell "15" [ref=f1e4213]
+          - cell "раз в день" [ref=f1e4214]
+          - cell "15" [ref=f1e4215]
+        - row [ref=f1e4216]:
+          - cell "Комментарий" [ref=f1e4217]
+          - cell "5" [ref=f1e4218]
+          - cell "10" [ref=f1e4219]
+          - cell "50" [ref=f1e4220]
+        - row [ref=f1e4221]:
+          - cell "Ответ на комментарий" [ref=f1e4222]
+          - cell "3" [ref=f1e4223]
+          - cell "20" [ref=f1e4224]
+          - cell "60" [ref=f1e4225]
+        - row [ref=f1e4226]:
+          - cell "Итого в сутки" [ref=f1e4227]
+          - cell "—" [ref=f1e4228]
+          - cell "—" [ref=f1e4229]
+          - cell "1 510" [ref=f1e4230]
+    - paragraph [ref=f1e4231]: "Soft-cap: до 1 000 XP в сутки — 100%, дальше 25%, потолок 1 500. Достижения, квесты, сезоны и админ-выдачи капают мимо ограничения."
+  - generic [ref=f1e4232]:
+    - generic [ref=f1e4233]:
+      - heading "Экономика за уровень" [level=2] [ref=f1e4234]
+      - paragraph [ref=f1e4235]: AC начисляются автоматически, подарок забирается вручную
+    - table [ref=f1e4237]:
+      - rowgroup [ref=f1e4238]:
+        - row [ref=f1e4239]:
+          - columnheader "Правило" [ref=f1e4240]
+          - columnheader "Значение" [ref=f1e4241]
+      - rowgroup [ref=f1e4242]:
+        - row [ref=f1e4243]:
+          - cell "AC за уровень" [ref=f1e4244]
+          - cell "10 + 2 × L, каждый 10-й ещё +100 × (L/10)" [ref=f1e4245]
+        - row [ref=f1e4246]:
+          - 'cell "Пример: уровень 37" [ref=f1e4247]'
+          - cell "84 AC" [ref=f1e4248]
+        - row [ref=f1e4249]:
+          - 'cell "Пример: уровень 100" [ref=f1e4250]'
+          - cell "1 210 AC" [ref=f1e4251]
+        - row [ref=f1e4252]:
+          - cell "Вход в день" [ref=f1e4253]
+          - cell "25 XP + 10 AC" [ref=f1e4254]
+        - row [ref=f1e4255]:
+          - cell "Серия 7 дней" [ref=f1e4256]
+          - cell "+50 AC" [ref=f1e4257]
+        - row [ref=f1e4258]:
+          - cell "Подарок за новый уровень" [ref=f1e4259]
+          - cell "50 AC" [ref=f1e4260]
+  - generic [ref=f1e4261]:
+    - generic [ref=f1e4262]:
+      - heading "Теги за уровень" [level=2] [ref=f1e4263]
+      - paragraph [ref=f1e4264]: выдаются автоматически, в магазине не продаются
+    - table [ref=f1e4266]:
+      - rowgroup [ref=f1e4267]:
+        - row [ref=f1e4268]:
+          - columnheader "Уровень" [ref=f1e4269]
+          - columnheader "Тег" [ref=f1e4270]
+      - rowgroup [ref=f1e4271]:
+        - row [ref=f1e4272]:
+          - cell "5" [ref=f1e4273]
+          - cell "Отаку" [ref=f1e4274]
+        - row [ref=f1e4275]:
+          - cell "10" [ref=f1e4276]
+          - cell "Сенсей" [ref=f1e4277]
+        - row [ref=f1e4278]:
+          - cell "25" [ref=f1e4279]
+          - cell "Синдикат" [ref=f1e4280]
+        - row [ref=f1e4281]:
+          - cell "30" [ref=f1e4282]
+          - cell "Тэнгу" [ref=f1e4283]
+        - row [ref=f1e4284]:
+          - cell "50" [ref=f1e4285]
+          - cell "Сёгун" [ref=f1e4286]
+  - contentinfo [ref=f1e4287]:
+    - text: Страница сгенерирована из исходников
+    - code [ref=f1e4288]: anime-hub
+    - text: ": эмблема —"
+    - code [ref=f1e4289]: src/lib/levelEmblem.js
+    - text: ", стили —"
+    - code [ref=f1e4290]: src/app/level-emblem.css
+    - text: ", математика —"
+    - code [ref=f1e4291]: src/lib/progression/curve.ts
+    - text: . Это статичное превью без Next.js, шрифты Manrope/Unbounded подставлены системными.

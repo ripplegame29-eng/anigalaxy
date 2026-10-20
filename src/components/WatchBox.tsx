@@ -4,15 +4,20 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { kindLabel, statusLabel, truncate } from "@/lib/anime";
 import { recordWatch, tickWatch } from "@/lib/history";
 import { rememberTitle } from "@/lib/titles";
-import { playerFilter, useQuality } from "@/lib/quality";
-import { registerPlayer, useLiveUpscale } from "@/lib/live-upscale";
+import { usePrefs } from "@/lib/prefs";
+import { PLAYER_FILTER } from "@/lib/quality";
 import { progressEmit } from "@/lib/progression/events";
 import type { TitleDetail, TranslationOption } from "@/lib/types";
-import { QualitySelect } from "./QualitySelect";
 import { AltPlayer } from "./AltPlayer";
 
-/** Источник видео в блоке просмотра: основной Kodik или альтернатива AniLiberty */
-type PlayerSource = "kodik" | "anilibria";
+/**
+ * Источник видео в блоке просмотра:
+ *   «kodik»      — встроенный плеер Kodik;
+ *   «anigalaxy»  — наш плеер на прямых HLS-потоках Kodik;
+ *   «anilibria»  — наш плеер на каталоге AniLiberty.
+ * У «anigalaxy» и «anilibria» панель управления одна и та же.
+ */
+type PlayerSource = "kodik" | "anigalaxy" | "anilibria";
 
 /**
  * Блок просмотра: плеер Kodik + боковая панель со студиями озвучки
@@ -29,6 +34,15 @@ export function WatchBox({
   translations: TranslationOption[];
 }) {
   const [detail, setDetail] = useState<TitleDetail>(initialDetail);
+  /**
+   * Список озвучек, перезапрошенный на клиенте.
+   *
+   * Сервер отдаёт его вместе со страницей, но разбор страницы плеера Kodik
+   * может не удаться — тогда приходит одна строка, и меню выглядит так,
+   * будто озвучек больше нет. Список помечается id тайтла: при переходе на
+   * другой тайтл старый не подставляется.
+   */
+  const [reloaded, setReloaded] = useState<{ id: string; list: TranslationOption[] } | null>(null);
   const [transId, setTransId] = useState<number | null>(
     translations.find((t) => t.current)?.id ?? translations[0]?.id ?? null,
   );
@@ -37,18 +51,12 @@ export function WatchBox({
   const [switching, setSwitching] = useState(false);
   const [playerLoading, setPlayerLoading] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
-  // Источник видео: Kodik (по умолчанию) или альтернатива AniLiberty (HLS до 1080p)
+  // Источник видео: Kodik (по умолчанию), AniGalaxy (HLS Kodik) или AniLiberty
   const [source, setSource] = useState<PlayerSource>("kodik");
 
-  // Качество изображения: CSS-фильтр iframe — база и фолбэк; настоящий
-  // апскейл 2x (захват кадров + WebGL-шейдер поверх плеера) поднимает
-  // live-конвейер, его статус читаем для data-атрибута тестами
-  const quality = useQuality();
-  const frameFilter = playerFilter(quality);
-  const live = useLiveUpscale();
-
+  // Кадр Kodik показывается как отдаёт источник: кнопки «Апскейл» под
+  // плеером больше нет, а вместе с ней и конвейера захвата вкладки
   const iframeRef = useRef<HTMLIFrameElement>(null);
-  const overlayRef = useRef<HTMLCanvasElement>(null);
 
   const menuRef = useRef<HTMLDivElement>(null);
   /** Пропускаем первую запись URL, пока не применены глубокие ссылки */
@@ -67,6 +75,42 @@ export function WatchBox({
   } | null>(null);
 
   const isSerial = detail.isSerial;
+  const titleId = initialDetail.card.id;
+  const studioList =
+    reloaded && reloaded.id === titleId && reloaded.list.length > 1 ? reloaded.list : translations;
+
+  /* ------------------- Подстраховка списка озвучек --------------------- */
+  useEffect(() => {
+    if (translations.length > 1) return;
+    let cancelled = false;
+    let timer: number | undefined;
+    const id = initialDetail.card.id;
+
+    const load = (attempt: number) => {
+      void fetch(`/api/kodik/translations?id=${encodeURIComponent(id)}&fresh=1`)
+        .then((res) => (res.ok ? (res.json() as Promise<{ translations?: TranslationOption[] }>) : null))
+        .then((data) => {
+          if (cancelled) return;
+          const list = data?.translations ?? [];
+          if (list.length > 1) {
+            setReloaded({ id, list });
+            return;
+          }
+          // Первый запрос может прийтись на пересборку маршрута или на
+          // холодный ответ Kodik — одна попытка оставила бы меню урезанным.
+          if (attempt === 0) timer = window.setTimeout(() => load(1), 1500);
+        })
+        .catch(() => {
+          if (!cancelled && attempt === 0) timer = window.setTimeout(() => load(1), 1500);
+        });
+    };
+
+    load(0);
+    return () => {
+      cancelled = true;
+      if (timer) window.clearTimeout(timer);
+    };
+  }, [initialDetail.card.id, translations.length]);
 
   /* ------------------------- Глубокие ссылки ------------------------- */
   useEffect(() => {
@@ -89,6 +133,25 @@ export function WatchBox({
     return () => cancelAnimationFrame(raf);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  /**
+   * Глубокая ссылка вида ?tr=910 после догрузки списка.
+   *
+   * На первом проходе список может быть урезан, и нужной озвучки в нём нет —
+   * тогда ссылка «молча» не срабатывает. Повторяем попытку, когда список
+   * догрузился, но ровно один раз на параметр.
+   */
+  const appliedTr = useRef<number | null>(null);
+  useEffect(() => {
+    if (translations.length > 1) return;
+    const trParam = Number(new URLSearchParams(window.location.search).get("tr"));
+    if (!trParam || appliedTr.current === trParam) return;
+    const option = studioList.find((item) => item.id === trParam);
+    if (!option) return;
+    appliedTr.current = trParam;
+    void switchTranslation(option, { silent: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [studioList]);
 
   /* ------------------------ Закрытие меню кликом ---------------------- */
   useEffect(() => {
@@ -122,17 +185,6 @@ export function WatchBox({
     setPlayerLoading(true);
   }
 
-  // Регистрируем плеер у конвейера апскейла. Смена эпизода меняет iframe
-  // (он с key), эффект пере-направляет захват на новый элемент без повторного
-  // вопроса браузера: поток живёт, пока он нужен (см. lib/live-upscale).
-  // Альтернатива AniLiberty играет без iframe — канваса в это время нет,
-  // захват не регистрируем (визуал живёт на нативном <video>)
-  useEffect(() => {
-    const overlay = overlayRef.current;
-    if (!overlay || source !== "kodik") return;
-    return registerPlayer({ iframe: iframeRef.current, overlay });
-  }, [playerSrc, source]);
-
   /* ---------------------- Смена ссылки в адресной строке --------------- */
   useEffect(() => {
     // Первый рендер пропускаем: глубокие ссылки ещё применяются
@@ -155,8 +207,19 @@ export function WatchBox({
 
   /* ------------------------ История просмотра -------------------------- */
   useEffect(() => {
-    // Запоминаем тайтл для плиток профиля и фиксируем открытие серии
-    rememberTitle({ id: detail.card.id, title: detail.card.title, poster: detail.card.poster });
+    // Запоминаем тайтл для плиток профиля и фиксируем открытие серии.
+    // Жанры и студии кладём в кэш: из них виджеты считают распределение
+    // просмотренного, а в самом плеере Kodik их всё равно не отдаёт.
+    rememberTitle({
+      id: detail.card.id,
+      title: detail.card.title,
+      poster: detail.card.poster,
+      genres: detail.card.genres,
+      studios: detail.card.studios,
+      year: detail.card.year,
+      rating: detail.card.rating,
+      episodesTotal: detail.card.episodesTotal,
+    });
     recordWatch({
       id: detail.card.id,
       title: detail.card.title,
@@ -258,17 +321,58 @@ export function WatchBox({
   }
 
   /* ----------------------------- Визуал ------------------------------- */
-  const activeOption = translations.find((t) => t.id === transId);
+  const activeOption = studioList.find((t) => t.id === transId);
   const activeSeason = detail.seasons.find((s) => s.number === season) ?? detail.seasons[0];
   const episodeCount = activeSeason?.episodes.length ?? 0;
+
+  /**
+   * Горячие клавиши и подсветка кинозала из настроек.
+   *
+   * Внутри iframe Kodik нельзя ни остановить видео, ни сменить скорость —
+   * это чужой документ. Поэтому из шести клавиш реально работают те, что
+   * управляют страницей: следующая серия и полный экран. Остальные
+   * включаются тумблерами и подействуют на альтернативный HLS-плеер,
+   * который живёт на том же origin и слушается команд извне.
+   */
+  const prefs = usePrefs();
+
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (target && /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName)) return;
+      if (target?.isContentEditable) return;
+
+      const key = event.key.toLowerCase();
+      if (prefs.keys.next && key === "n") {
+        const eps = activeSeason?.episodes ?? [];
+        const i = eps.findIndex((e) => e.number === episode);
+        if (i >= 0 && i + 1 < eps.length) {
+          event.preventDefault();
+          setEpisode(eps[i + 1].number);
+        }
+        return;
+      }
+      if (prefs.keys.fullscreen && (key === "f" || key === "а")) {
+        event.preventDefault();
+        const shell = document.getElementById("player-shell");
+        if (shell && document.fullscreenElement) void document.exitFullscreen();
+        else void shell?.requestFullscreen?.();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [prefs.keys.next, prefs.keys.fullscreen, activeSeason, episode]);
+
+  /** Подсветка кинозала: мягкий свет вокруг плеера, когда он включён */
+  const ambient = prefs.ambient;
 
   return (
     <section id="watch" className="scroll-mt-24">
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_330px]">
         {/* ------------------------- Плеер ------------------------- */}
         <div className="min-w-0">
-          {/* Переключатель источника: основной Kodik или альтернатива
-              AniLiberty (HLS с качеством до 1080p) */}
+          {/* Переключатель источника: встроенный Kodik, наш плеер AniGalaxy
+              на прямых HLS-потоках Kodik или каталог AniLiberty */}
           <div className="mb-2.5 flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <span className="text-[11px] font-bold uppercase tracking-wider text-muted">
@@ -289,6 +393,18 @@ export function WatchBox({
                 </button>
                 <button
                   type="button"
+                  onClick={() => switchSource("anigalaxy")}
+                  aria-pressed={source === "anigalaxy"}
+                  className={`rounded-lg px-3 py-1.5 text-xs font-bold transition-colors ${
+                    source === "anigalaxy"
+                      ? "bg-accent text-white shadow-[0_8px_18px_-10px_rgba(31,123,255,1)]"
+                      : "text-muted hover:text-white"
+                  }`}
+                >
+                  AniGalaxy
+                </button>
+                <button
+                  type="button"
                   onClick={() => switchSource("anilibria")}
                   aria-pressed={source === "anilibria"}
                   className={`rounded-lg px-3 py-1.5 text-xs font-bold transition-colors ${
@@ -302,27 +418,35 @@ export function WatchBox({
               </div>
             </div>
             <span className="text-[11px] text-muted">
-              {source === "kodik" ? "основной плеер" : "альтернатива · HLS до 1080p"}
+              {source === "kodik"
+                ? "основной плеер"
+                : source === "anigalaxy"
+                  ? "прямые HLS-потоки"
+                  : "альтернатива · HLS до 1080p"}
             </span>
           </div>
 
-            {/* id="player-shell" — точка входа для подписи о смене качества (портал из QualitySelect);
-                data-upscale — статус live-конвейера для диагностики/тестов */}
+            {/* Оболочка плеера — см. AltPlayer: тот ищет своё «плеер» по этому id */}
           <div
             id="player-shell"
-            data-upscale={live.status}
-            className="relative aspect-video w-full overflow-hidden rounded-2xl bg-black ring-1 ring-white/12 shadow-[0_40px_80px_-40px_rgba(0,0,0,1)]"
+            className={`relative aspect-video w-full overflow-hidden rounded-2xl bg-black ring-1 ring-white/12 shadow-[0_40px_80px_-40px_rgba(0,0,0,1)] ${
+              ambient ? "ag-ambient" : ""
+            }`}
           >
-            {source === "anilibria" ? (
-              // Альтернатива: HLS-потоки AniLiberty, серии теми же номерами
+            {source !== "kodik" ? (
+              // Наш плеер: та же панель, качество, скорости и позиции.
+              // AniGalaxy играет прямые HLS-манифесты Kodik (серия известна),
+              // AniLiberty — потоки найденного по названию тайтла.
               <AltPlayer
-                key={detail.card.id}
+                key={`${detail.card.id}:${source}`}
                 query={detail.card.title}
                 altQuery={detail.card.titleOrig ?? detail.card.otherTitles?.[0]}
                 year={detail.card.year}
                 episode={episode}
                 titleId={detail.card.id}
-                poster={detail.card.poster}
+                backend={source === "anigalaxy" ? "kodik" : "anilibria"}
+                kodikId={detail.card.id}
+                season={activeSeason?.number ?? season}
                 onBack={() => switchSource("kodik")}
                 onNextEpisode={() => {
                   const eps = activeSeason?.episodes ?? [];
@@ -340,9 +464,7 @@ export function WatchBox({
                 src={playerSrc}
                 title="Плеер Kodik"
                 className="absolute inset-0 h-full w-full transition-[filter] duration-500 ease-out"
-                // isolation: обязателен для Element Capture — цель захвата
-                // должна быть собственным стек-контекстом (см. lib/live-upscale)
-                style={{ filter: frameFilter, isolation: "isolate" }}
+                style={{ filter: PLAYER_FILTER }}
                 allow="autoplay *; fullscreen *; picture-in-picture *; encrypted-media *"
                 allowFullScreen
                 loading="lazy"
@@ -352,20 +474,6 @@ export function WatchBox({
               <div className="grid h-full place-items-center text-sm text-muted">
                 Плеер недоступен
               </div>
-            )}
-
-            {/* Апскейл 2x: кадры iframe, пропущенные через WebGL-шейдер,
-                рисуются поверх плеера. pointer-events: none — клики идут в
-                iframe (звук/управление/фулскрин остаются у Kodik), а видимостью
-                канваса целиком управляет lib/live-upscale. У альтернативы
-                iframe нет — канваса тоже не монтируем */}
-            {source === "kodik" && (
-              <canvas
-                ref={overlayRef}
-                aria-hidden="true"
-                data-upscale-canvas=""
-                className="pointer-events-none absolute inset-0 h-full w-full"
-              />
             )}
 
             {/* Оверлей загрузки (только iframe: у альтернативы свой скелет) */}
@@ -397,11 +505,11 @@ export function WatchBox({
                   : "Полная версия"}
                 {activeOption && <> · {activeOption.title}</>}
                 {source === "anilibria" && <> · AniLiberty</>}
+                {source === "anigalaxy" && <> · AniGalaxy</>}
               </p>
             </div>
 
             <div className="flex items-center gap-2 text-xs text-muted">
-              {source === "kodik" && <QualitySelect />}
               <span className="rounded-md bg-white/6 px-2 py-1 ring-1 ring-white/10">
                 {kindLabel(detail.card.kind) ?? "Видео"}
               </span>
@@ -423,7 +531,7 @@ export function WatchBox({
                 Студия озвучки
               </span>
               <span className="rounded-md bg-white/6 px-1.5 py-0.5 text-[10px] font-semibold text-muted ring-1 ring-white/10">
-                {translations.length || 1}
+                {studioList.length || 1}
               </span>
             </div>
 
@@ -455,7 +563,7 @@ export function WatchBox({
                   role="listbox"
                   className="absolute left-0 right-0 top-[calc(100%+6px)] z-30 max-h-64 overflow-y-auto rounded-xl border border-line bg-[#0d0d15]/98 p-1.5 shadow-[0_28px_60px_-24px_rgba(0,0,0,1)] backdrop-blur-xl animate-fade-in"
                 >
-                  {translations.map((t) => (
+                  {studioList.map((t) => (
                     <li key={t.id}>
                       <button
                         type="button"

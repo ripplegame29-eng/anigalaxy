@@ -11,7 +11,7 @@ export function Breadcrumbs({ items }: { items: Crumb[] }) {
     <nav aria-label="Хлебные крошки" className="mb-5 text-xs text-muted">
       <ol className="flex flex-wrap items-center gap-1.5">
         <li>
-          <Link href="/" className="btn-ghost transition-colors hover:text-white">
+          <Link href="/" className="btn-ghost inline-flex items-center py-2 transition-colors hover:text-white">
             Главная
           </Link>
         </li>
@@ -21,7 +21,7 @@ export function Breadcrumbs({ items }: { items: Crumb[] }) {
               /
             </span>
             {item.href ? (
-              <Link href={item.href} className="btn-ghost transition-colors hover:text-white">
+              <Link href={item.href} className="btn-ghost inline-flex items-center py-2 transition-colors hover:text-white">
                 {item.label}
               </Link>
             ) : (

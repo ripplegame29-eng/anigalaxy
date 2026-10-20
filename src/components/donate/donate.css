@@ -1,0 +1,926 @@
+/* ==========================================================================
+   «Поддержать проект» — страница доната.
+
+   Транскрипция макета `donate.html`: размеры, цвета, радиусы, тайминги и
+   анимации — как в макете.
+
+   Отличия от макета:
+   • префикс `don-` у классов и свой корневой `.don-page` вместо `body`:
+     в макете классы generic (.card, .bar, .timer, .btn, .note…), а такие
+     имена в проекте уже заняты общими стилями — без префикса они перебили бы
+     разметку страницы;
+   • блок `.ag-tag`/`.ag-premium` из макета не копируется: это копия уже
+     подключённых глобальных `app/ag-tag.css` и `app/ag-tag-premium.css`,
+     капсулы и PREMIUM-тег рендерит проект;
+   • своя шапка и подвал макета не переносятся — у сайта они свои.
+   ========================================================================== */
+
+.don-page {
+  --bg: #04060f;
+  --panel: #0b1020;
+  --line: #1a2542;
+  --text: #e8eeff;
+  --mute: #8d9bbd;
+  --blue: #2f8bff;
+  --cyan: #38d6ff;
+  --gold: #ffc861;
+  --violet: #8a6bff;
+  --r: 20px;
+
+  position: relative;
+  background: var(--bg);
+  color: var(--text);
+  font: 400 16px/1.55 var(--font-body);
+  overflow-x: clip;
+}
+
+.don-page * {
+  box-sizing: border-box;
+}
+
+.don-page canvas.don-stars {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.don-main {
+  position: relative;
+  z-index: 1;
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 40px 20px 120px;
+}
+
+.don-page .don-aurora {
+  position: absolute;
+  inset: -10% -20% auto;
+  height: 640px;
+  z-index: -1;
+  background: radial-gradient(40% 50% at 50% 30%, #1b5cff55, transparent 70%),
+    radial-gradient(30% 40% at 80% 20%, #8a6bff33, transparent 70%);
+  filter: blur(30px);
+  animation: don-drift 14s ease-in-out infinite alternate;
+}
+
+@keyframes don-drift {
+  to {
+    transform: translateX(60px) scale(1.08);
+  }
+}
+
+/* --------------------------------- Hero ---------------------------------- */
+
+.don-page .don-hero {
+  text-align: center;
+  padding-top: 20px;
+}
+
+.don-page .don-live {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  padding: 7px 16px;
+  border-radius: 99px;
+  background: #38d6ff14;
+  border: 1px solid #38d6ff55;
+  color: var(--cyan);
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.don-page .don-live i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--cyan);
+  box-shadow: 0 0 0 0 #38d6ffaa;
+  animation: don-ping 1.6s infinite;
+}
+
+@keyframes don-ping {
+  to {
+    box-shadow: 0 0 0 12px #38d6ff00;
+  }
+}
+
+.don-page .don-mascot {
+  position: relative;
+  width: 260px;
+  height: 260px;
+  margin: 22px auto 6px;
+  display: grid;
+  place-items: center;
+  transform-style: preserve-3d;
+  transition: transform 0.15s;
+}
+
+.don-page .don-mascot img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 0 40px #2f8bffaa);
+  animation: don-float 5s ease-in-out infinite;
+}
+
+.don-page .don-mascot .don-ph {
+  font-size: 150px;
+  filter: drop-shadow(0 0 40px #2f8bffaa);
+  animation: don-float 5s ease-in-out infinite;
+}
+
+@keyframes don-float {
+  50% {
+    transform: translateY(-14px);
+  }
+}
+
+.don-page .don-ring {
+  position: absolute;
+  inset: -10px;
+  border-radius: 50%;
+  border: 1px dashed #38d6ff44;
+  animation: don-spin 30s linear infinite;
+}
+
+.don-page .don-ring.don-b {
+  inset: -40px;
+  border-color: #8a6bff33;
+  animation-duration: 50s;
+  animation-direction: reverse;
+}
+
+@keyframes don-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.don-page h1 {
+  font: 800 clamp(30px, 5.4vw, 58px) / 1.08 var(--font-display);
+  letter-spacing: -0.02em;
+  margin: 14px auto 16px;
+  max-width: 820px;
+  background: linear-gradient(100deg, #fff 20%, #9cc8ff 50%, #38d6ff 80%, #fff);
+  background-size: 250% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: don-sheen 6s linear infinite;
+}
+
+@keyframes don-sheen {
+  to {
+    background-position: -250% 0;
+  }
+}
+
+.don-page .don-sub {
+  color: var(--mute);
+  max-width: 620px;
+  margin: 0 auto;
+  font-size: 18px;
+}
+
+.don-page .don-sub b {
+  color: var(--text);
+}
+
+/* --------------------------------- Тарифы -------------------------------- */
+
+.don-page .don-tiers {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin: 48px 0 20px;
+}
+
+.don-page .don-tier {
+  --rx: 0deg;
+  --ry: 0deg;
+  --mx: 50%;
+  --my: 0%;
+  --ang: 0deg;
+
+  position: relative;
+  text-align: left;
+  cursor: pointer;
+  background: linear-gradient(180deg, #0e1530, #090d1c);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  padding: 26px 22px;
+  color: inherit;
+  font: inherit;
+  transform: perspective(900px) rotateX(var(--rx)) rotateY(var(--ry));
+  overflow: hidden;
+  transition:
+    transform 0.25s,
+    border-color 0.25s,
+    box-shadow 0.25s;
+}
+
+.don-page .don-tier:hover {
+  transform: perspective(900px) rotateX(var(--rx)) rotateY(var(--ry)) translateY(-4px);
+}
+
+.don-page .don-tier > * {
+  position: relative;
+  z-index: 1;
+}
+
+.don-page .don-tier::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: radial-gradient(260px circle at var(--mx) var(--my), #38d6ff26, transparent 60%);
+  opacity: 0;
+  transition: opacity 0.25s;
+}
+
+.don-page .don-tier:hover::before {
+  opacity: 1;
+}
+
+.don-page .don-tier[aria-pressed="true"] {
+  border-color: var(--cyan);
+  box-shadow:
+    0 0 0 1px var(--cyan),
+    0 18px 60px -12px #2f8bff77;
+}
+
+.don-page .don-tier[aria-pressed="true"]::after {
+  content: "✓";
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--cyan);
+  color: #001425;
+  font-weight: 800;
+  animation: don-pop 0.35s;
+}
+
+@keyframes don-pop {
+  from {
+    transform: scale(0);
+  }
+}
+
+.don-page .don-tier.don-pop {
+  border-color: transparent;
+  background: linear-gradient(#0c1330, #080c1b) padding-box,
+    conic-gradient(from var(--ang), #2f8bff, #8a6bff, #38d6ff, #2f8bff) border-box;
+  animation: don-rot 6s linear infinite;
+}
+
+@keyframes don-rot {
+  to {
+    --ang: 360deg;
+  }
+}
+
+.don-page .don-badge {
+  position: absolute;
+  top: -12px;
+  left: 20px;
+  background: linear-gradient(90deg, var(--gold), #ff9a5c);
+  color: #2a1400;
+  font-weight: 800;
+  font-size: 12px;
+  padding: 4px 12px;
+  border-radius: 99px;
+}
+
+.don-page .don-tier .don-badge {
+  background: linear-gradient(90deg, #2f8bff, #38d6ff);
+  color: #001425;
+  z-index: 2;
+  left: 20px;
+  top: 12px;
+}
+
+.don-page .don-tier h3 {
+  font: 800 15px var(--font-display);
+  color: var(--mute);
+  margin-bottom: 10px;
+}
+
+.don-page .don-tier.don-pop h3 {
+  margin-top: 26px;
+}
+
+.don-page .don-price {
+  font: 800 36px var(--font-display);
+  letter-spacing: -0.02em;
+}
+
+.don-page .don-coins {
+  margin: 16px 0 0;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #2f8bff22, #38d6ff0a);
+  border: 1px solid #38d6ff33;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: inset 0 1px 0 #ffffff12;
+}
+
+.don-page .don-tier.don-pop .don-coins,
+.don-page .don-tier.don-max .don-coins {
+  border-color: #38d6ff66;
+  box-shadow:
+    0 0 24px -8px #2f8bffaa,
+    inset 0 1px 0 #ffffff18;
+}
+
+.don-page .don-coins .don-ci {
+  width: 44px;
+  height: 44px;
+}
+
+.don-page .don-amt {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+
+.don-page .don-amt b {
+  font: 800 27px var(--font-display);
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+}
+
+.don-page .don-amt small {
+  font: 600 12px var(--font-body);
+  color: var(--mute);
+  letter-spacing: 0.1em;
+  margin-top: 4px;
+}
+
+.don-page .don-tier ul {
+  list-style: none;
+  padding: 0;
+  margin-top: 12px;
+  color: var(--mute);
+  font-size: 14px;
+  display: grid;
+  gap: 6px;
+}
+
+.don-page .don-tier li::before {
+  content: "• ";
+  color: var(--cyan);
+}
+
+.don-page .don-prem2 {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: #0a1330;
+  border: 1px solid #22d3ee33;
+  font-family: var(--font-display);
+}
+
+.don-page .don-prem2 .ag-premium {
+  font-size: 12px;
+}
+
+.don-page .don-prem2 b {
+  font: 800 14px var(--font-display);
+  color: #cfe9ff;
+}
+
+.don-page .don-tier.don-max .don-prem2 {
+  border-color: #22d3ee88;
+  box-shadow: 0 0 26px -8px #22d3eeaa;
+}
+
+.don-page .don-tier.don-max .don-prem2 .ag-premium {
+  font-size: 13px;
+}
+
+.don-page .don-pb {
+  display: none;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+
+.don-page .don-pb .ag-premium {
+  font-size: 10px;
+}
+
+.don-page .don-on .don-pb {
+  display: inline-block;
+  animation: don-pop 0.4s 0.1s both;
+}
+
+/* ------------------------- Предпросмотр и лимит --------------------------- */
+
+.don-page .don-grid2 {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 16px;
+}
+
+.don-page .don-card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  padding: 26px;
+}
+
+.don-page .don-card h2 {
+  font: 800 18px var(--font-display);
+  margin-bottom: 6px;
+}
+
+.don-page .don-card p.don-d {
+  color: var(--mute);
+  font-size: 14px;
+  margin-bottom: 18px;
+}
+
+.don-page .don-profile {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: #060a16;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 16px;
+}
+
+.don-page .don-ava {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, var(--blue), var(--violet), var(--cyan), var(--blue));
+  display: grid;
+  place-items: center;
+  font-size: 24px;
+  flex: none;
+}
+
+.don-page .don-nick {
+  font-weight: 700;
+  font-size: 18px;
+  position: relative;
+  display: inline-block;
+}
+
+.don-page .don-nick.don-glitch::before,
+.don-page .don-nick.don-glitch::after {
+  content: attr(data-t);
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+}
+
+.don-page .don-nick.don-glitch::before {
+  color: #ff3d81;
+  animation: don-gl 2.2s infinite steps(1);
+  clip-path: inset(0 0 55% 0);
+  mix-blend-mode: screen;
+}
+
+.don-page .don-nick.don-glitch::after {
+  color: var(--cyan);
+  animation: don-gl 2.2s infinite steps(1) reverse;
+  clip-path: inset(55% 0 0 0);
+  mix-blend-mode: screen;
+}
+
+@keyframes don-gl {
+  0%,
+  86%,
+  100% {
+    transform: none;
+  }
+  88% {
+    transform: translate(-3px, 1px);
+  }
+  92% {
+    transform: translate(3px, -1px);
+  }
+  95% {
+    transform: translate(-2px, 0);
+  }
+}
+
+.don-page .don-dn {
+  display: none;
+  margin-left: 10px;
+  vertical-align: middle;
+}
+
+.don-page .don-on .don-dn {
+  display: inline-block;
+  animation: don-pop 0.4s;
+}
+
+.don-page .don-toggle {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.don-page .don-toggle button {
+  flex: 1;
+  padding: 10px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: #0a1124;
+  color: var(--text);
+  font: 600 14px var(--font-body);
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.don-page .don-toggle button.don-act {
+  border-color: var(--cyan);
+  background: #38d6ff1a;
+}
+
+.don-page .don-bal {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-top: 18px;
+}
+
+.don-page .don-bal span {
+  color: var(--mute);
+  font-size: 14px;
+}
+
+/* Монетка в строке баланса — inline, как в макете: глобальный сброс
+   `img{display:block}` (styles.css) иначе роняет её на отдельную строку */
+.don-page .don-bal img.don-ci {
+  display: inline-block;
+}
+
+.don-page .don-bal b {
+  font: 800 30px var(--font-display);
+}
+
+.don-page .don-scar .don-big {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font: 800 46px var(--font-display);
+}
+
+.don-page .don-scar small {
+  color: var(--mute);
+  font-size: 15px;
+  font-family: var(--font-body);
+  font-weight: 500;
+}
+
+.don-page .don-bar {
+  position: relative;
+  height: 12px;
+  border-radius: 9px;
+  background: #10182f;
+  overflow: hidden;
+  margin: 14px 0 10px;
+}
+
+.don-page .don-bar i {
+  display: block;
+  height: 100%;
+  width: 0;
+  border-radius: 9px;
+  background: linear-gradient(90deg, var(--blue), var(--cyan), var(--blue));
+  background-size: 200% 100%;
+  animation: don-run 2.4s linear infinite;
+  transition: width 1.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@keyframes don-run {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+.don-page .don-bar i::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  top: -3px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 14px 4px var(--cyan);
+}
+
+.don-page .don-timer {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.don-page .don-timer div {
+  flex: 1;
+  text-align: center;
+  background: #060a16;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 10px 0;
+}
+
+.don-page .don-timer b {
+  display: block;
+  font: 800 22px var(--font-display);
+}
+
+.don-page .don-timer span {
+  font-size: 12px;
+  color: var(--mute);
+}
+
+.don-page .don-note {
+  margin-top: 14px;
+  font-size: 14px;
+  color: var(--mute);
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.don-page .don-note b {
+  color: var(--cyan);
+}
+
+/* ---------------------------------- FAQ ----------------------------------- */
+
+.don-page .don-faq {
+  margin-top: 16px;
+}
+
+.don-page .don-faq details {
+  border-top: 1px solid var(--line);
+  padding: 16px 0;
+}
+
+.don-page .don-faq summary {
+  cursor: pointer;
+  font-weight: 700;
+  list-style: none;
+  display: flex;
+  justify-content: space-between;
+}
+
+.don-page .don-faq summary::after {
+  content: "+";
+  color: var(--cyan);
+  font-size: 22px;
+  line-height: 1;
+  transition: transform 0.25s;
+}
+
+.don-page .don-faq details[open] summary::after {
+  transform: rotate(45deg);
+}
+
+.don-page .don-faq details p {
+  color: var(--mute);
+  margin-top: 10px;
+  font-size: 15px;
+}
+
+/* ------------------------------- Кнопка CTA ------------------------------- */
+
+.don-page .don-cta {
+  position: fixed;
+  z-index: 40;
+  left: 50%;
+  bottom: 20px;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  background: #0b1226ee;
+  backdrop-filter: blur(14px);
+  border: 1px solid #2a3a66;
+  border-radius: 99px;
+  padding: 10px 10px 10px 26px;
+  box-shadow: 0 20px 60px #000a;
+  width: max-content;
+  max-width: calc(100% - 24px);
+  transition:
+    opacity 0.25s,
+    transform 0.25s;
+}
+
+/* Подвал у сайта свой (в макете его нет), и липкая кнопка наезжала бы на его
+   ссылки — поэтому уходит, как только подвал попадает в кадр */
+.don-page .don-cta.don-hide {
+  opacity: 0;
+  transform: translateX(-50%) translateY(16px);
+  pointer-events: none;
+}
+
+.don-page .don-cta .don-sum {
+  font-weight: 700;
+}
+
+.don-page .don-cta .don-sum small {
+  display: block;
+  color: var(--mute);
+  font-weight: 500;
+  font-size: 12px;
+}
+
+.don-page .don-btn {
+  position: relative;
+  overflow: hidden;
+  border: 0;
+  cursor: pointer;
+  color: #fff;
+  font: 700 16px var(--font-body);
+  padding: 14px 30px;
+  border-radius: 99px;
+  background: linear-gradient(90deg, #1b6dff, #2fc4ff);
+  box-shadow: 0 8px 30px -6px #2f8bffcc;
+  transition: transform 0.2s;
+}
+
+.don-page .don-btn:hover {
+  transform: scale(1.04);
+}
+
+.don-page .don-btn:active {
+  transform: scale(0.97);
+}
+
+.don-page .don-btn::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -60%;
+  width: 40%;
+  height: 100%;
+  background: linear-gradient(100deg, transparent, #fff7, transparent);
+  transform: skewX(-20deg);
+  animation: don-shine 3.2s infinite;
+}
+
+@keyframes don-shine {
+  60%,
+  100% {
+    left: 140%;
+  }
+}
+
+.don-page .don-ghost {
+  background: none;
+  border: 1px solid var(--line);
+  color: var(--text);
+  padding: 12px 20px;
+  border-radius: 99px;
+  font: 600 14px var(--font-body);
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.don-page .don-ghost:hover {
+  border-color: var(--cyan);
+  color: var(--cyan);
+}
+
+/* --------------------------------- Тост ----------------------------------- */
+
+.don-page .don-toast {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: none;
+  place-items: center;
+  background: #000a;
+  backdrop-filter: blur(6px);
+}
+
+.don-page .don-toast.don-show {
+  display: grid;
+}
+
+.don-page .don-toast div {
+  background: var(--panel);
+  border: 1px solid var(--cyan);
+  border-radius: 24px;
+  padding: 36px;
+  text-align: center;
+  max-width: 380px;
+  animation: don-pop 0.4s;
+}
+
+.don-page .don-toast h3 {
+  font: 800 22px var(--font-display);
+  margin: 10px 0;
+}
+
+/* ------------------------- Монетки и курсор-подсветка ---------------------- */
+
+.don-page .don-money {
+  background: linear-gradient(90deg, #2f8bff, #38d6ff, #c8f3ff, #38d6ff, #2f8bff);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: don-run 4s linear infinite;
+}
+
+.don-page .don-ci {
+  width: 30px;
+  height: 30px;
+  flex: none;
+  animation: don-flip 7s ease-in-out infinite;
+  filter: drop-shadow(0 0 8px #2f8bffaa);
+}
+
+@keyframes don-flip {
+  0%,
+  70% {
+    transform: rotateY(0);
+  }
+  85% {
+    transform: rotateY(360deg);
+  }
+  100% {
+    transform: rotateY(360deg);
+  }
+}
+
+.don-page .don-spot {
+  position: fixed;
+  width: 520px;
+  height: 520px;
+  margin: -260px 0 0 -260px;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(circle, #2f8bff1f, transparent 65%);
+  left: 50%;
+  top: 30%;
+}
+
+.don-page .don-pc {
+  position: fixed;
+  z-index: 70;
+  width: 28px;
+  pointer-events: none;
+  animation: don-pc 1.4s cubic-bezier(0.2, 0.7, 0.3, 1) forwards;
+}
+
+@keyframes don-pc {
+  to {
+    transform: translate(var(--dx), var(--dy)) rotate(var(--rt)) scale(0.4);
+    opacity: 0;
+  }
+}
+
+/* -------------------------------- Адаптив --------------------------------- */
+
+@media (max-width: 820px) {
+  .don-page .don-tiers,
+  .don-page .don-grid2 {
+    grid-template-columns: 1fr;
+  }
+  .don-page .don-mascot {
+    width: 200px;
+    height: 200px;
+  }
+  .don-page .don-cta .don-sum {
+    display: none;
+  }
+  .don-page .don-cta {
+    padding: 8px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .don-page *,
+  .don-page *::before,
+  .don-page *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+.don-page :focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 3px;
+}

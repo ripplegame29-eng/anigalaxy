@@ -153,8 +153,10 @@
 }
 .stat-num {
   display: block;
-  font-family: var(--font-unbounded), "Arial Black", system-ui, sans-serif;
-  font-weight: 900;
+  font-family: var(--font-display);
+  /* Montserrat подключён одним начертанием — 800; 900 браузер рисовал бы
+     синтетическим жирным и цифры «съезжали» по толщине */
+  font-weight: 800;
   font-size: clamp(26px, 4.6vw, 44px);
   line-height: 1.1;
   letter-spacing: 0.01em;

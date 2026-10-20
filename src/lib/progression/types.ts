@@ -11,6 +11,8 @@
  * Здесь — только контракты данных; всё наполняется `progression.config.ts`.
  */
 
+import type { NickAddons, NickStyle } from "../nickname";
+
 /* ------------------------------ Базовые ------------------------------- */
 
 export type Rarity =
@@ -44,7 +46,7 @@ export type StorageMode = "local" | "server";
 /** Списки тайтлов ( XP даёт только первое добавление в каждый список ) */
 export type ListKind = "favorite" | "planned" | "watched";
 
-export type ShopKind = "tag" | "frame" | "background" | "effect" | "service" | "title";
+export type ShopKind = "tag" | "frame" | "background" | "effect" | "service" | "title" | "custom";
 
 /** Линии наград боевого пропуска */
 export type BattlepassLine = "free" | "premium";
@@ -119,6 +121,23 @@ export type DomainEvent =
   | { type: "QUEST_CLAIMED"; questId: string; at?: number }
   /** Покупка за AC (атомарно: списание + выдача) */
   | { type: "SHOP_PURCHASED"; itemId: string; kind: ShopKind; price: number; at?: number }
+  /**
+   * Смена отображаемого ника (услуга `svc_nick`).
+   *
+   * Логин и ссылка на профиль при этом не меняются — меняется только имя,
+   * которое видно в профиле и комментариях. Само имя записывает UI в
+   * аккаунт (`lib/auth.ts`) после того, как движок принял событие: движок
+   * отвечает за AC, хранилище аккаунта — не его дело.
+   */
+  | { type: "NICKNAME_RENAMED"; nickname: string; price: number; at?: number }
+  /**
+   * Применение оформления ника (услуга `svc_color`).
+   *
+   * Цена — базовая плюс наценки за градиент, переливание и свечение; движок
+   * пересчитывает её сам по конфигу, клиент присылает только «сколько вышло».
+   */
+  | { type: "NICK_COLOR_SET"; style: NickStyle; price: number; at?: number }
+  | { type: "TOME_PURCHASED"; tomeId: string; price: number; at?: number }
   /** Экипирован тег */
   | { type: "TAG_EQUIPPED"; tagId: string; at?: number }
   /** Тег снят (§12.3: кнопка «Снять») */
@@ -134,11 +153,35 @@ export type DomainEvent =
   /** Dev-панель: ручная выдача тега (та же дорога, что и за уровень/достижение) */
   | { type: "DEV_TAG_GRANTED"; tagId: string; at?: number }
   /**
+   * Новый аккаунт зарегистрировался по реферальной ссылке.
+   *
+   * Клиент шлёт только код пригласившего и ник новичка: сумму и право
+   * выдачи считает движок по конфигу (`economy.referralXp/Ac`), а
+   * идемпотентность — ключ `REF:<refCode>:<newNick>`, чтобы повторная
+   * регистрация с того же аккаунта не начисляла награду дважды.
+   */
+  | { type: "REFERRAL_REGISTERED"; refCode: string; newNick: string; at?: number }
+  /**
    * Забрать награду уровня боевого пропуска: клиент шлёт только линию и
    * номер уровня — суммы, предметы и право выдачи считает движок по
    * конфигу сезона (`lib/battlepass`), идемпотентность — ключ в журнале.
    */
-  | { type: "BATTLEPASS_CLAIMED"; line: BattlepassLine; level: number; at?: number };
+  | { type: "BATTLEPASS_CLAIMED"; line: BattlepassLine; level: number; at?: number }
+  /**
+   * Вклад AC в клан. Сумму считает клановая логика (сколько реально
+   * поместилось в клетки), движок только проверяет баланс и списывает.
+   */
+  | { type: "CLAN_CONTRIBUTED"; amount: number; at?: number }
+  /**
+   * Награда за уровень клана: AC начисляет движок, идемпотентность — по
+   * номеру уровня, чтобы повторное открытие сундука не удвоило выплату.
+   */
+  | { type: "CLAN_REWARD_CLAIMED"; level: number; amount: number; at?: number }
+  /**
+   * Личная награда из сундука сокровищницы. `key` — ключ открытия
+   * (`chest:<tier>:<n>`): повторная выдача по тому же ключу отклоняется.
+   */
+  | { type: "CLAN_CHEST_REWARD"; key: string; amount: number; at?: number };
 
 export type EventType = DomainEvent["type"];
 
@@ -256,6 +299,8 @@ export interface DailyState {
   xpActivity: number;
   /** Сколько XP начислено сегодня вообще (для секрета «Перегрузка») */
   xpTotal: number;
+  /** Сколько секунд досмотрено сегодня — из этого растёт рекорд суток */
+  secondsWatched: number;
   /** Счётчики за день: EP_COMPLETE:3, LIST_ADD:7, COMMENT:2, ... */
   counts: Record<string, number>;
   /** Счётчики за неделю (для недельных квестов) */
@@ -340,7 +385,17 @@ export interface ProgressDoc {
   /** Lifetime-счётчики (EPISODES_COMPLETED, DISTINCT_DAYS, ...) */
   counters: Record<string, number>;
   /** Множества (жанры завершённых тайтлов) */
-  sets: { genres: string[] };
+  sets: {
+    genres: string[];
+    /**
+     * id тайтлов по жанрам: `genreTitles["Сёнэн"] = ["12","88",…]`.
+     *
+     * Хранятся именно id, а не счётчик: один и тот же тайтл присылает
+     * `TITLE_COMPLETED` больше одного раза, и счётчик на месте события
+     * посчитал бы его дважды. Со списком id повтор отсекается честно.
+     */
+    genreTitles: Record<string, string[]>;
+  };
   daily: DailyState;
   quests: QuestState;
   /**
@@ -481,11 +536,13 @@ export interface TagDef {
   name: string;
   description: string;
   rarity: Rarity;
-  source: "level" | "achievement" | "shop" | "event" | "secret";
+  source: "level" | "achievement" | "shop" | "referral" | "event" | "secret";
   /** Цена в магазине (только source === 'shop') */
   price?: number;
   /** Уровень, с которого открывается (source === 'level') */
   level?: number;
+  /** Сколько приглашённых друзей нужно (source === 'referral') */
+  friends?: number;
   /** Достижение, которым открывается (source === 'achievement' | 'secret') */
   achievementId?: string;
   visual: TagVisual;
@@ -519,6 +576,29 @@ export interface ShopItem {
   rarity: Rarity;
   /** Максимум покупок (1 — одноразово; заморозка — 2) */
   maxOwned?: number;
+  enabled?: boolean;
+}
+
+/**
+ * Том опыта: разовый платный бустер XP за AC.
+ *
+ * Отдельный список, а не магазин: у тома нет предмета в гардеробе, есть
+ * срок жизни (сутки) и порог уровня. XP идёт мимо soft-cap — оплачено.
+ */
+export interface XpTomeDef {
+  id: string;
+  name: string;
+  /** Сколько опыта даёт том */
+  xp: number;
+  /** Цена в AC */
+  price: number;
+  rarity: Rarity;
+  /** С уровня какого открывается (не задан — с первого) */
+  fromLevel?: number;
+  /** Сколько раз в сутки можно купить (по умолчанию 1) */
+  perDay?: number;
+  /** Акцентный цвет карточки */
+  accent: string;
   enabled?: boolean;
 }
 
@@ -573,6 +653,11 @@ export interface EconomyConfig {
   levelGiftAc: number;
   levelGiftName: string;
   levelGiftHint: string;
+  /** Награда за приглашённого друга (раздел «Пригласи друзей») */
+  referralXp: number;
+  referralAc: number;
+  /** Дней Premium сверху: пригласившему продлевают подписку */
+  referralPremiumDays: number;
   /** Стоимость «заморозки серии» и лимит */
   freezePrice: number;
   freezeMax: number;
@@ -613,6 +698,13 @@ export interface SimConfig {
   targets: SimTarget[];
 }
 
+/** Наценки за опции оформления ника и число бесплатных применений подписки */
+export interface NicknameConfig {
+  /** Сколько раз Premium покрывает услугу полностью (одноразовый флаг) */
+  freeUses: number;
+  addons: NickAddons;
+}
+
 export interface ProgressionConfig {
   version: number;
   /** local = LocalStore (IndexedDB недоступен синхронно в этом проекте), server — заглушка */
@@ -621,6 +713,7 @@ export interface ProgressionConfig {
   levels: LevelConfig;
   softCap: SoftCapConfig;
   economy: EconomyConfig;
+  nickname: NicknameConfig;
   watch: WatchConfig;
   eras: EraDef[];
   levelTags: LevelTagDef[];
@@ -629,6 +722,7 @@ export interface ProgressionConfig {
   tags: TagDef[];
   quests: { dailyPool: QuestDef[]; dailyPick: number; weeklyPool: QuestDef[]; weeklyPick: number };
   shop: ShopItem[];
+  tomes: XpTomeDef[];
   seasons: SeasonDef[];
   ranks: RankDef[];
   /** Редкость → трофейные очки (если у достижения не заданы явно) */

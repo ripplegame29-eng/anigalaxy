@@ -111,19 +111,10 @@ const DEMO_ROOMS: WatchRoom[] = [
   },
 ];
 
-/** Статистика героя: стартовые значения, дальше — лёгкий «живой» дрейф */
-const BASE_STATS = { rooms: 148, viewers: 3274 };
-
 /** Алфавит кода комнаты — без похожих символов (0/O, 1/I) */
 const CODE_ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
 
 /* ------------------------------ Утилиты ----------------------------- */
-
-const clamp = (n: number, min: number, max: number) => Math.min(Math.max(n, min), max);
-
-/** Случайное целое в диапазоне — вызывается только из обработчиков/таймеров */
-const drift = (min: number, max: number) =>
-  Math.floor(Math.random() * (max - min + 1)) + min;
 
 /** Генерация 6-символьного кода комнаты (в обработчике клика, не в рендере) */
 function makeCode(): string {
@@ -216,39 +207,89 @@ function Icon({
 /* --------------------------- Общие стили ---------------------------- */
 
 /** Подпись поля формы */
-const LABEL = "mb-1.5 block text-[11px] font-black uppercase tracking-[0.14em] text-muted";
+const LABEL = "wtv-label";
 
-/** Поле ввода в стиле SearchBox (высота задаётся отдельно: h-11 / h-10) */
-const FIELD =
-  "w-full rounded-xl border border-line bg-white/6 px-3 text-sm text-white outline-none transition placeholder:text-muted/80 focus:border-accent/60 focus:bg-white/10 focus:shadow-[0_0_0_4px_rgba(31,123,255,.14)]";
+/** Поле ввода в стиле нового макета */
+const FIELD = "wtv-in";
 
 /** Компактный бейдж-пилюля */
-const CHIP =
-  "inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-[11px] font-black uppercase tracking-wide ring-1";
+const CHIP = "wtv-chip";
 
 /* ================================================================== */
 /*  Герой: живая статистика + кнопки                                   */
 /* ================================================================== */
 
+/* --------------------------- Демо-сцена героя --------------------------- */
+
+interface CinemaMessage {
+  id: string;
+  author: string;
+  text: string;
+  color: string;
+}
+
+const CINEMA_INITIAL: CinemaMessage[] = [
+  { id: "cin-1", author: "Рин", text: "Этот кадр — просто огонь", color: "#2d7dff" },
+  { id: "cin-2", author: "Аки", text: "Пауза сработала у всех", color: "#8a5cff" },
+  { id: "cin-3", author: "Юки", text: "Не спойлерите, я первый раз 🙈", color: "#34e5a0" },
+];
+
+const CINEMA_POOL: Omit<CinemaMessage, "id">[] = [
+  { author: "Кен", text: "Синхронно, идём дальше", color: "#22d3ee" },
+  { author: "Ами", text: "Опенинг на повтор!", color: "#f5b94a" },
+  { author: "Рин", text: "Вот это поворот…", color: "#2d7dff" },
+  { author: "Юки", text: "Чат, вы лучшие 💙", color: "#34e5a0" },
+];
+
+const CINEMA_REACTIONS = [
+  { emoji: "🔥", label: "Огонь", base: 12 },
+  { emoji: "😱", label: "Страх", base: 7 },
+  { emoji: "😂", label: "Смешно", base: 9 },
+  { emoji: "💙", label: "Люблю", base: 21 },
+] as const;
+
+const SEATS = [
+  { initial: "Р", from: "#2d7dff", to: "#8a5cff" },
+  { initial: "А", from: "#22d3ee", to: "#2d7dff" },
+  { initial: "Ю", from: "#34e5a0", to: "#22d3ee" },
+  { initial: "К", from: "#f5b94a", to: "#ff7d90" },
+  { initial: "М", from: "#8a5cff", to: "#ff7d90" },
+];
+
 /**
- * Счётчики и CTA героя. Первый рендер одинаков на сервере и клиенте —
- * дрейф чисел стартует только в эффекте (иначе рассинхрон гидратации).
+ * Герой совместного просмотра.
+ *
+ * Счётчики берутся из реального списка демо-комнат и своих комнат, без
+ * «живого» дрейфа выдуманных чисел. Сцена справа — интерактивная
+ * иллюстрация комнаты: чат, реакции и прогресс-бар; она не выдаёт себя
+ * за настоящий эфир и подписана «демо».
  */
 export function WatchTogetherHero() {
-  const [stats, setStats] = useState(BASE_STATS);
+  const myRooms = roomsStore.useStore();
+  const [messages, setMessages] = useState<CinemaMessage[]>(CINEMA_INITIAL);
+  const [counts, setCounts] = useState<number[]>(CINEMA_REACTIONS.map((item) => item.base));
+  const [bursts, setBursts] = useState<{ id: number; emoji: string; x: number; rot: number }[]>([]);
+  const messageIndex = useRef(0);
+  const burstId = useRef(0);
 
-  // Лёгкий «живой» дрейф: раз в 4 с подкручиваем числа в разумных пределах
   useEffect(() => {
+    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
     const timer = window.setInterval(() => {
-      setStats((prev) => ({
-        rooms: clamp(prev.rooms + drift(-2, 3), 96, 320),
-        viewers: clamp(prev.viewers + drift(-45, 70), 1800, 6400),
-      }));
-    }, 4200);
+      const next = CINEMA_POOL[messageIndex.current % CINEMA_POOL.length];
+      messageIndex.current += 1;
+      setMessages((prev) => [
+        ...prev.slice(-2),
+        { ...next, id: `cin-${messageIndex.current}-${Date.now()}` },
+      ]);
+    }, 3400);
     return () => window.clearInterval(timer);
   }, []);
 
-  /** Кнопка «Создать комнату»: прокрутка к форме + фокус на первом поле */
+  const rooms = DEMO_ROOMS.length + myRooms.length;
+  const viewers =
+    DEMO_ROOMS.reduce((sum, room) => sum + room.viewers, 0) +
+    myRooms.reduce((sum, room) => sum + room.viewers, 0);
+
   const openForm = () => {
     document.getElementById("create-room")?.scrollIntoView({ behavior: "smooth", block: "start" });
     window.setTimeout(
@@ -257,52 +298,145 @@ export function WatchTogetherHero() {
     );
   };
 
+  const react = (index: number) => {
+    const item = CINEMA_REACTIONS[index];
+    setCounts((prev) => prev.map((count, i) => (i === index ? count + 1 : count)));
+    burstId.current += 1;
+    const id = burstId.current;
+    setBursts((prev) => [
+      ...prev.slice(-7),
+      {
+        id,
+        emoji: item.emoji,
+        x: 18 + ((id * 37) % 64),
+        rot: ((id * 23) % 40) - 20,
+      },
+    ]);
+  };
+
+  const demo = DEMO_ROOMS[0];
+
   return (
-    <div className="mt-7 flex flex-col items-center gap-6">
-      {/* Счётчики */}
-      <dl className="flex flex-wrap items-stretch justify-center gap-3">
-        <div className="min-w-[152px] rounded-2xl border border-line bg-card/70 px-5 py-3 text-left">
-          <dt className="text-[11px] font-black uppercase tracking-[0.14em] text-muted">
-            Активных комнат
-          </dt>
-          <dd className="mt-1 flex items-baseline gap-2">
-            <span className="text-2xl font-black text-white sm:text-3xl">{stats.rooms}</span>
-            <span className="text-[11px] font-black uppercase tracking-wide text-mint">live</span>
-          </dd>
+    <header className="wtv-hero">
+      <div className="wtv-hero-copy">
+        <h1>
+          Смотрите аниме <span>вместе</span>, даже на расстоянии
+        </h1>
+        <p>
+          Одна комната, общая пауза и чат поверх плеера. Все видят один и тот же кадр
+          в одну и ту же секунду.
+        </p>
+
+        <div className="wtv-cta">
+          <button type="button" className="wtv-btn" onClick={openForm}>
+            Создать комнату
+          </button>
+          <a className="wtv-btn ghost" href="#how-it-works">
+            Как это работает
+          </a>
         </div>
 
-        <div className="min-w-[152px] rounded-2xl border border-line bg-card/70 px-5 py-3 text-left">
-          <dt className="text-[11px] font-black uppercase tracking-[0.14em] text-muted">
-            Зрителей сейчас
-          </dt>
-          <dd className="mt-1 flex items-baseline gap-2">
-            <span className="text-2xl font-black text-white sm:text-3xl">
-              {stats.viewers.toLocaleString("ru-RU")}
-            </span>
-            <span className="text-[11px] font-black uppercase tracking-wide text-accent-2">
-              онлайн
-            </span>
-          </dd>
+        <div className="wtv-stats">
+          <div className="wtv-stat">
+            <b>{rooms}</b>
+            <small>
+              <span className="wtv-dot" aria-hidden />
+              комнат в списке
+            </small>
+          </div>
+          <div className="wtv-stat">
+            <b>{viewers.toLocaleString("ru-RU")}</b>
+            <small>
+              <span className="wtv-dot" aria-hidden />
+              зрителей в комнатах
+            </small>
+          </div>
         </div>
-      </dl>
-
-      {/* CTA */}
-      <div className="flex flex-wrap items-center justify-center gap-3">
-        <button
-          type="button"
-          onClick={openForm}
-          className="btn-primary rounded-xl px-6 py-3 text-sm font-black text-white"
-        >
-          Создать комнату
-        </button>
-        <a
-          href="#how-it-works"
-          className="btn-ghost inline-flex rounded-xl border border-line bg-white/6 px-6 py-3 text-sm font-bold text-white/85 hover:border-accent/40 hover:text-white"
-        >
-          Как это работает
-        </a>
       </div>
-    </div>
+
+      <div className="wtv-stage" aria-label="Демонстрация комнаты совместного просмотра">
+        <div className="wtv-cin">
+          <div className="wtv-cin-screen">
+            <span className="wtv-cin-jp" aria-hidden>
+              呪術
+            </span>
+            <div className="wtv-cin-top">
+              <span>
+                {demo.anime} · серия {demo.episode}
+              </span>
+              <span className="wtv-live">
+                <span className="wtv-dot" aria-hidden />
+                демо
+              </span>
+            </div>
+
+            <div className="wtv-cin-chat" aria-live="off">
+              {messages.map((message) => (
+                <div className="wtv-msg" key={message.id}>
+                  <b style={{ background: message.color }}>{message.author.slice(0, 1)}</b>
+                  <span>
+                    <em>{message.author}</em> {message.text}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            {bursts.map((burst) => (
+              <span
+                className="wtv-fl"
+                key={burst.id}
+                style={{
+                  left: `${burst.x}%`,
+                  ["--sx" as string]: `${((burst.id * 17) % 50) - 25}px`,
+                  ["--rot" as string]: `${burst.rot}deg`,
+                }}
+                onAnimationEnd={() =>
+                  setBursts((prev) => prev.filter((item) => item.id !== burst.id))
+                }
+                aria-hidden
+              >
+                {burst.emoji}
+              </span>
+            ))}
+          </div>
+
+          <div className="wtv-cin-dock">
+            <div className="wtv-cin-row">
+              <span className="wtv-sync">Синхронно у {demo.viewers} из {demo.viewers}</span>
+              <div className="wtv-rx">
+                {CINEMA_REACTIONS.map((item, index) => (
+                  <button
+                    type="button"
+                    key={item.emoji}
+                    onClick={() => react(index)}
+                    aria-label={item.label}
+                    style={{ ["--k" as string]: index === 0 ? "#2d7dff" : index === 1 ? "#8a5cff" : index === 2 ? "#f5b94a" : "#22d3ee" }}
+                  >
+                    <span className="e">{item.emoji}</span>
+                    <span className="n">{counts[index]}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="wtv-cin-tl">
+              <i />
+            </div>
+            <div className="wtv-seats">
+              {SEATS.map((seat) => (
+                <i
+                  key={seat.initial}
+                  style={{ background: `linear-gradient(135deg, ${seat.from}, ${seat.to})` }}
+                >
+                  {seat.initial}
+                </i>
+              ))}
+              <em>{demo.viewers} в комнате</em>
+            </div>
+          </div>
+          <div className="wtv-cin-under" aria-hidden />
+        </div>
+      </div>
+    </header>
   );
 }
 
@@ -585,27 +719,15 @@ export function WatchTogetherView() {
       )}
 
       {/* --------------------------- Форма ----------------------------- */}
-      <section
-        id="create-room"
-        aria-label="Создание комнаты"
-        className="relative scroll-mt-24 rounded-3xl border border-line bg-card/70 p-5 sm:p-6"
-      >
-        {/* Мягкое свечение в углу (без overflow-hidden — не режем выпадашку) */}
-        <div
-          className="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full bg-accent/14 blur-3xl"
-          aria-hidden
-        />
-
+      <section id="create-room" aria-label="Создание комнаты" className="wtv-panel scroll-mt-24">
         <div className="relative">
-          <h2 className="text-xl font-black tracking-tight text-white sm:text-2xl">
-            Создать комнату
-          </h2>
-          <p className="mt-1.5 max-w-2xl text-sm leading-relaxed text-muted">
+          <h2 className="wtv-h2">Создайте комнату</h2>
+          <p className="wtv-sub">
             Название, тайтл, озвучка и доступ — код на шесть символов сгенерируется сразу после
             создания.
           </p>
 
-          <form onSubmit={createRoom} className="mt-5 grid gap-4 sm:grid-cols-2">
+          <form onSubmit={createRoom} className="wtv-grid2">
             {/* Название комнаты */}
             <div>
               <label htmlFor="wt-room-name" className={LABEL}>
@@ -617,7 +739,7 @@ export function WatchTogetherView() {
                 onChange={(e) => setName(e.target.value)}
                 maxLength={60}
                 placeholder="Вечерний марафон"
-                className={`h-11 ${FIELD}`}
+                className={FIELD}
               />
             </div>
 
@@ -632,7 +754,7 @@ export function WatchTogetherView() {
                   value={dub}
                   onChange={(e) => setDub(e.target.value)}
                   aria-label="Озвучка комнаты"
-                  className="h-11 w-full cursor-pointer appearance-none rounded-xl border border-line bg-white/6 pr-9 pl-3 text-sm text-white outline-none transition focus:border-accent/60 focus:bg-white/10 focus:shadow-[0_0_0_4px_rgba(31,123,255,.14)]"
+                  className={`${FIELD} w-full cursor-pointer appearance-none pr-9 pl-3`}
                 >
                   {DUBS.map((option) => (
                     <option key={option} value={option} className="bg-card text-white">
@@ -653,7 +775,7 @@ export function WatchTogetherView() {
                 Аниме
               </label>
               <div className="relative" ref={boxRef}>
-                <div className="flex h-11 items-center gap-2 rounded-xl border border-line bg-white/6 px-3 transition focus-within:border-accent/60 focus-within:bg-white/10 focus-within:shadow-[0_0_0_4px_rgba(31,123,255,.14)]">
+                <div className="wtv-search">
                   <Icon d={PATHS.search} className="h-4 w-4 shrink-0 text-muted" sw={2} />
                   <input
                     id="wt-anime"
@@ -786,11 +908,7 @@ export function WatchTogetherView() {
                       type="button"
                       aria-pressed={active}
                       onClick={() => setAccess(option.value)}
-                      className={`min-w-[170px] flex-1 rounded-xl border px-4 py-2.5 text-left transition ${
-                        active
-                          ? "border-accent/60 bg-accent/15 text-white"
-                          : "border-line bg-white/5 text-muted hover:border-accent/35 hover:text-white"
-                      }`}
+                      className={`wtv-opt${active ? " on" : ""}`}
                     >
                       <span className="block text-sm font-black">{option.label}</span>
                       <span className="mt-0.5 block text-xs text-muted">{option.hint}</span>
@@ -804,7 +922,7 @@ export function WatchTogetherView() {
             {error && (
               <p
                 role="alert"
-                className="rounded-xl border border-gold/35 bg-gold/10 px-4 py-3 text-sm font-semibold text-gold sm:col-span-2"
+                className="wtv-error sm:col-span-2"
               >
                 {error}
               </p>
@@ -814,13 +932,13 @@ export function WatchTogetherView() {
             <div className="flex flex-wrap items-center gap-3 sm:col-span-2">
               <button
                 type="submit"
-                className="btn-primary rounded-xl px-6 py-3 text-sm font-black text-white"
+                className="wtv-btn"
               >
                 Создать комнату
               </button>
               <span className="text-xs leading-relaxed text-muted">
                 Комната сохраняется только в этом браузере — ключ{" "}
-                <code className="rounded bg-white/8 px-1.5 py-0.5 font-mono text-white/80">
+                <code className="wtv-code">
                   {ROOMS_KEY}
                 </code>
               </span>
@@ -875,7 +993,7 @@ export function WatchTogetherView() {
             <button
               type="button"
               onClick={() => copyLink(created.path)}
-              className="btn-primary rounded-xl px-5 py-2.5 text-sm font-black text-white"
+              className="wtv-btn"
             >
               {copiedAt ? "Скопировано ✓" : "Скопировать ссылку"}
             </button>
@@ -907,18 +1025,16 @@ export function WatchTogetherView() {
       {joined && <RoomPanel key={joined.code} room={joined} onLeave={() => setJoined(null)} />}
 
       {/* ------------------------ Список комнат ------------------------ */}
-      <section id="rooms" aria-label="Активные комнаты" className="scroll-mt-24">
-        <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <span className="h-7 w-1.5 shrink-0 rounded-full bg-accent-2" aria-hidden />
-            <h2 className="text-lg font-extrabold tracking-tight sm:text-xl">Активные комнаты</h2>
+      <section id="rooms" aria-label="Активные комнаты" className="wtv-rooms-section scroll-mt-24">
+        <div className="wtv-sh">
+          <div>
+            <h2>Активные комнаты</h2>
+            <p>Заходите к тем, кто уже смотрит.</p>
           </div>
-          <span className={`${CHIP} bg-white/8 text-muted ring-white/15`}>
-            {allRooms.length} комнат
-          </span>
+          <span className="wtv-pill">{allRooms.length} комнат</span>
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="wtv-rooms">
           {allRooms.map((room) => (
             <RoomCard key={room.code} room={room} onJoin={() => joinRoom(room)} />
           ))}
@@ -939,62 +1055,57 @@ export function WatchTogetherView() {
 
 function RoomCard({ room, onJoin }: { room: WatchRoom; onJoin: () => void }) {
   return (
-    <article className="group flex flex-col overflow-hidden rounded-2xl border border-line bg-card/70 transition hover:-translate-y-1 hover:border-accent/40 hover:shadow-[0_18px_40px_-24px_rgba(31,123,255,0.9)]">
-      {/* Обложка / плейсхолдер */}
-      <div className="relative aspect-video overflow-hidden bg-elevated">
+    <article className="wtv-room">
+      <div className="wtv-room-poster">
         <Poster
           src={room.poster}
           alt=""
           title={room.anime}
           sizes="(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 33vw"
-          className="object-cover transition duration-500 group-hover:scale-105"
+          className="object-cover"
         />
-        <div
-          className="absolute inset-0 bg-gradient-to-t from-card via-card/25 to-transparent"
-          aria-hidden
-        />
-
-        <div className="absolute left-3 top-3 flex flex-wrap gap-1.5">
-          <span className="rounded-md bg-accent/85 px-2 py-1 text-[11px] font-black text-white shadow-[0_8px_20px_-12px_rgba(31,123,255,1)]">
-            идёт {episodeLabel(room.episode)}
-          </span>
-        </div>
-
-        <span className="absolute right-3 top-3 inline-flex items-center gap-1.5 rounded-md bg-ink/85 px-2 py-1 text-[11px] font-black text-mint ring-1 ring-mint/35">
-          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-mint" aria-hidden />
-          в эфире
+        <span className="wtv-room-letter" aria-hidden>
+          {room.anime.slice(0, 1).toUpperCase()}
         </span>
-
-        <div className="absolute inset-x-3 bottom-2 flex items-center justify-between gap-2 text-[11px] font-bold text-white/90">
-          <span className="truncate">{room.dub}</span>
-          <span className="shrink-0">
-            {room.viewers}/{room.limit} зрителей
-          </span>
-        </div>
+        <span className="wtv-tag wtv-tag-ep">идёт {episodeLabel(room.episode)}</span>
+        <span className="wtv-tag wtv-tag-live">
+          <span className="wtv-dot" aria-hidden />
+          {room.owner ? "ваша" : "демо"}
+        </span>
+        <span className="wtv-room-dub">{room.dub}</span>
       </div>
 
-      {/* Тело карточки */}
-      <div className="flex flex-1 flex-col gap-3 p-4">
-        <div className="min-w-0">
-          <h3 className="truncate text-base font-black text-white">{room.title}</h3>
-          <p className="mt-1 truncate text-sm text-muted">{room.anime}</p>
-        </div>
+      <div className="wtv-room-body">
+        <h3 className="wtv-room-title">{room.title}</h3>
+        <p className="wtv-room-anime">{room.anime}</p>
 
-        <div className="flex flex-wrap items-center gap-2">
-          <span className={`${CHIP} bg-white/8 text-muted ring-white/15`}>
+        <div className="wtv-room-meta">
+          <span className="wtv-chip">
             {room.access === "open" ? "Открытая" : "По ссылке"}
           </span>
-          <span className={`${CHIP} bg-white/6 text-muted ring-white/12`}>{room.code}</span>
-          {room.owner && (
-            <span className={`${CHIP} bg-mint/12 text-mint ring-mint/35`}>ваша</span>
-          )}
+          <span className="wtv-chip wtv-chip-code">{room.code}</span>
+        </div>
+
+        <div className="wtv-room-bar">
+          <i style={{ width: Math.min(100, Math.round((room.viewers / room.limit) * 100)) + "%" }} />
+        </div>
+
+        <div className="wtv-room-foot">
+          <div className="wtv-room-stack" aria-hidden>
+            {Array.from({ length: Math.min(4, room.viewers) }).map((_, index) => (
+              <i key={index} />
+            ))}
+          </div>
+          <span className="wtv-room-count">
+            {room.viewers}/{room.limit} зрителей
+          </span>
         </div>
 
         <button
           type="button"
           onClick={onJoin}
           aria-label={`Присоединиться к комнате «${room.title}»`}
-          className="btn-primary mt-auto w-full rounded-xl px-4 py-2.5 text-sm font-black text-white"
+          className="wtv-room-join"
         >
           Присоединиться
         </button>
@@ -1133,12 +1244,12 @@ function RoomPanel({ room, onLeave }: { room: WatchRoom; onLeave: () => void }) 
               maxLength={200}
               placeholder="Сообщение…"
               aria-label="Сообщение в чат комнаты"
-              className={`h-10 ${FIELD}`}
+              className={FIELD}
             />
             <button
               type="submit"
               aria-label="Отправить сообщение"
-              className="btn-primary flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-white"
+              className="wtv-btn wtv-chat-send"
             >
               <Icon d={PATHS.arrow} className="h-4 w-4" sw={2.2} />
             </button>

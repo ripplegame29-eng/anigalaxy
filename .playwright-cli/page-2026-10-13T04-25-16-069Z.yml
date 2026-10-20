@@ -1,0 +1,1820 @@
+- generic [active] [ref=e1]:
+  - link "Перейти к содержимому" [ref=e2] [cursor=pointer]:
+    - /url: "#main"
+  - banner [ref=e4]:
+    - generic [ref=e5]:
+      - link "AniGalaxy" [ref=e6] [cursor=pointer]:
+        - /url: /
+        - generic [ref=e8]:
+          - text: Ani
+          - emphasis [ref=e9]: Galaxy
+      - navigation [ref=e10]:
+        - link "Главная" [ref=e11] [cursor=pointer]:
+          - /url: /
+        - button "Каталог" [ref=e13]
+        - link "Онгоинги" [ref=e14] [cursor=pointer]:
+          - /url: /catalog?status=ongoing
+        - link "Манга" [ref=e15] [cursor=pointer]:
+          - /url: /manga
+        - link "Топ" [ref=e16] [cursor=pointer]:
+          - /url: /catalog?sort=rating
+      - button "Поиск" [ref=e17]:
+        - generic [ref=e18]: Поиск аниме…
+      - generic [ref=e23]:
+        - link "Боевой пропуск" [ref=e24] [cursor=pointer]:
+          - /url: /battlepass
+        - link "Совместный просмотр" [ref=e28] [cursor=pointer]:
+          - /url: /watch-together
+        - button "Бонусы" [ref=e33]
+        - separator
+        - button "Уведомления" [ref=e39]
+      - button "Войти" [ref=e42]
+      - link "Premium" [ref=e43] [cursor=pointer]:
+        - /url: /premium
+  - main [ref=e47]:
+    - region "Рекомендуемые тайтлы" [ref=e48]:
+      - generic [ref=e54]:
+        - generic [ref=e55]:
+          - generic [ref=e56]: Рекомендуем
+          - generic [ref=e57]: "8.49"
+        - heading "Магическая битва" [level=1] [ref=e60]
+        - generic [ref=e61]:
+          - generic [ref=e62]: "2020"
+          - generic [ref=e63]: ТВ Сериал
+          - generic [ref=e64]: Завершён
+          - generic [ref=e65]: "Вышло серий: 24"
+          - generic [ref=e66]: · Сверхъестественное
+          - generic [ref=e67]: · Сёнен
+          - generic [ref=e68]: · Удостоено наград
+        - paragraph [ref=e69]: Действие аниме происходит в мире, где люди оказались вовсе не последним звеном в пищевой цепи, и любой ничего не подозревающий обыватель при должной доле невезения может оказаться съеденным демонами, которые воплощают собой негативные человеческие эмоции. Таких созданий называют…
+        - generic [ref=e70]:
+          - link "Смотреть" [ref=e71] [cursor=pointer]:
+            - /url: /title/serial-29315
+          - link "Подробнее" [ref=e74] [cursor=pointer]:
+            - /url: /title/serial-29315
+      - generic [ref=e76]:
+        - button "Слайд 1" [ref=e77]
+        - button "Слайд 2" [ref=e79]
+        - button "Слайд 3" [ref=e81]
+        - button "Слайд 4" [ref=e84]
+        - button "Слайд 5" [ref=e86]
+    - generic [ref=e88]:
+      - region "Донат и боевой пропуск" [ref=e89]:
+        - iframe [ref=e90]:
+          - generic [ref=f1e2]:
+            - generic [ref=f1e5]:
+              - img "Поддержи AniGalaxy — получи больше" [ref=f1e6]
+              - button "Поддержать" [ref=f1e10] [cursor=pointer]
+            - dialog "Спасибо за поддержку!":
+              - generic:
+                - heading "Спасибо за поддержку!" [level=3]
+                - paragraph: "Демо-окно. Здесь откроется страница оплаты. Ты получишь:"
+                - list:
+                  - listitem: 10 000 AniCoin
+                  - listitem: Эксклюзивный глитч-эффект
+                  - listitem: Тег «Донатер»
+                - button "Закрыть"
+            - generic [ref=f1e13]:
+              - img "Боевой пропуск — Сезон 01" [ref=f1e14]
+              - button "Открыть боевой пропуск" [ref=f1e18] [cursor=pointer]
+            - dialog "Спасибо за поддержку!":
+              - generic:
+                - heading "Боевой пропуск · Сезон 01" [level=3]
+                - paragraph: "Демо-окно. Здесь откроется страница пропуска. В него входит:"
+                - list:
+                  - listitem: Эксклюзивные награды
+                  - listitem: Уникальные скины
+                  - listitem: Доступ к особым ивентам
+                - button "Отлично"
+      - generic [ref=e91]:
+        - generic [ref=e92]:
+          - heading "Онгоинги" [level=2] [ref=e95]
+          - generic [ref=e96]:
+            - generic [ref=e97]:
+              - button "Прокрутить назад" [disabled]
+              - button "Прокрутить вперёд" [ref=e98]
+            - link "Смотреть все" [ref=e101] [cursor=pointer]:
+              - /url: /catalog?status=ongoing
+        - generic [ref=e104]:
+          - link "Свадьба светлячков, ТВ Сериал" [ref=e106] [cursor=pointer]:
+            - /url: /title/serial-78971
+            - generic [ref=e107]:
+              - img "Свадьба светлячков" [ref=e108]
+              - generic [ref=e114]: "7.93"
+              - generic [ref=e117]: 1 эп.
+              - generic [ref=e118]: Онгоинг
+            - generic [ref=e119]:
+              - heading "Свадьба светлячков" [level=3] [ref=e120]
+              - paragraph [ref=e121]:
+                - text: 2026ТВ Сериал
+                - generic [ref=e124]: 171 оценок
+          - link "Даже у студсовета есть косяки!, ТВ Сериал" [ref=e126] [cursor=pointer]:
+            - /url: /title/serial-78588
+            - generic [ref=e127]:
+              - img "Даже у студсовета есть косяки!" [ref=e128]
+              - generic [ref=e134]: "7.62"
+              - generic [ref=e137]: 2 эп.
+              - generic [ref=e138]: Онгоинг
+            - generic [ref=e139]:
+              - heading "Даже у студсовета есть косяки!" [level=3] [ref=e140]
+              - paragraph [ref=e141]:
+                - text: 2026ТВ Сериал
+                - generic [ref=e144]: 366 оценок
+          - link "Я встречаюсь с тёмным призывателем, ONA" [ref=e146] [cursor=pointer]:
+            - /url: /title/serial-78575
+            - generic [ref=e147]:
+              - img "Я встречаюсь с тёмным призывателем" [ref=e148]
+              - generic [ref=e154]: "6.96"
+              - generic [ref=e157]: 2 эп.
+              - generic [ref=e158]: Онгоинг
+            - generic [ref=e159]:
+              - heading "Я встречаюсь с тёмным призывателем" [level=3] [ref=e160]
+              - paragraph [ref=e161]:
+                - text: 2026ONA
+                - generic [ref=e164]: 62 оценок
+          - 'link "Операция: Семейка Ёдзакура 2. Часть 2, ТВ Сериал" [ref=e166] [cursor=pointer]':
+            - /url: /title/serial-78970
+            - generic [ref=e167]:
+              - 'img "Операция: Семейка Ёдзакура 2. Часть 2" [ref=e168]'
+              - generic [ref=e174]: "7.41"
+              - generic [ref=e177]: 1 эп.
+              - generic [ref=e178]: Онгоинг
+            - generic [ref=e179]:
+              - 'heading "Операция: Семейка Ёдзакура 2. Часть 2" [level=3] [ref=e180]'
+              - paragraph [ref=e181]:
+                - text: 2026ТВ Сериал
+                - generic [ref=e184]: 20 оценок
+          - link "Стать победителем, ONA" [ref=e186] [cursor=pointer]:
+            - /url: /title/serial-77540
+            - generic [ref=e187]:
+              - img "Стать победителем" [ref=e188]
+              - generic [ref=e194]: "6.75"
+              - generic [ref=e197]: 11 эп.
+              - generic [ref=e198]: Онгоинг
+            - generic [ref=e199]:
+              - heading "Стать победителем" [level=3] [ref=e200]
+              - paragraph [ref=e201]:
+                - text: 2026ONA
+                - generic [ref=e204]: 42 оценок
+          - 'link "Токийские мстители: Битва трёх небожителей, ТВ Сериал" [ref=e206] [cursor=pointer]':
+            - /url: /title/serial-78606
+            - generic [ref=e207]:
+              - 'img "Токийские мстители: Битва трёх небожителей" [ref=e208]'
+              - generic [ref=e214]: "7.78"
+              - generic [ref=e217]: 2 эп.
+              - generic [ref=e218]: Онгоинг
+            - generic [ref=e219]:
+              - 'heading "Токийские мстители: Битва трёх небожителей" [level=3] [ref=e220]'
+              - paragraph [ref=e221]:
+                - text: 2026ТВ Сериал
+                - generic [ref=e224]: 286 оценок
+          - link "Перерождение в аристократа со способностью анализа 3, ТВ Сериал" [ref=e226] [cursor=pointer]:
+            - /url: /title/serial-78263
+            - generic [ref=e227]:
+              - img "Перерождение в аристократа со способностью анализа 3" [ref=e228]
+              - generic [ref=e234]: "7.42"
+              - generic [ref=e237]: 3 эп.
+              - generic [ref=e238]: Онгоинг
+            - generic [ref=e239]:
+              - heading "Перерождение в аристократа со способностью анализа 3" [level=3] [ref=e240]
+              - paragraph [ref=e241]:
+                - text: 2026ТВ Сериал
+                - generic [ref=e244]: 196 оценок
+          - link "Бог богатства Чжаньлун Доу, ONA" [ref=e246] [cursor=pointer]:
+            - /url: /title/serial-77670
+            - generic [ref=e247]:
+              - img "Бог богатства Чжаньлун Доу" [ref=e248]
+              - generic [ref=e254]: "0.0"
+              - generic [ref=e257]: 11 эп.
+              - generic [ref=e258]: Онгоинг
+            - generic [ref=e259]:
+              - heading "Бог богатства Чжаньлун Доу" [level=3] [ref=e260]
+              - paragraph [ref=e261]:
+                - text: 2026ONA
+                - generic [ref=e264]: 29 оценок
+          - link "Семь рыцарей королевства Марронье, ТВ Сериал" [ref=e266] [cursor=pointer]:
+            - /url: /title/serial-78968
+            - generic [ref=e267]:
+              - img "Семь рыцарей королевства Марронье" [ref=e268]
+              - generic [ref=e274]: "6.35"
+              - generic [ref=e277]: 2 эп.
+              - generic [ref=e278]: Онгоинг
+            - generic [ref=e279]:
+              - heading "Семь рыцарей королевства Марронье" [level=3] [ref=e280]
+              - paragraph [ref=e281]:
+                - text: 2026ТВ Сериал
+                - generic [ref=e284]: 24 оценок
+          - link "Сказание о пастухе богов, ONA" [ref=e286] [cursor=pointer]:
+            - /url: /title/serial-62987
+            - generic [ref=e287]:
+              - img "Сказание о пастухе богов" [ref=e288]
+              - generic [ref=e294]: "8.31"
+              - generic [ref=e297]: 103 эп.
+              - generic [ref=e298]: Онгоинг
+            - generic [ref=e299]:
+              - heading "Сказание о пастухе богов" [level=3] [ref=e300]
+              - paragraph [ref=e301]:
+                - text: 2024ONA
+                - generic [ref=e304]: 572 оценок
+          - 'link "Пробуждение источника силы: Высший дяньтянь с самого начала, ONA" [ref=e306] [cursor=pointer]':
+            - /url: /title/serial-70589
+            - generic [ref=e307]:
+              - 'img "Пробуждение источника силы: Высший дяньтянь с самого начала" [ref=e308]'
+              - generic [ref=e314]: "0.0"
+              - generic [ref=e317]: 23 эп.
+              - generic [ref=e318]: Онгоинг
+            - generic [ref=e319]:
+              - 'heading "Пробуждение источника силы: Высший дяньтянь с самого начала" [level=3] [ref=e320]'
+              - paragraph [ref=e321]:
+                - text: 2025ONA
+                - generic [ref=e324]: 33 оценок
+          - link "Повелитель бесстрашного духа, ONA" [ref=e326] [cursor=pointer]:
+            - /url: /title/serial-24613
+            - generic [ref=e327]:
+              - img "Повелитель бесстрашного духа" [ref=e328]
+              - generic [ref=e334]: "7.6"
+              - generic [ref=e337]: 699 эп.
+              - generic [ref=e338]: Онгоинг
+            - generic [ref=e339]:
+              - heading "Повелитель бесстрашного духа" [level=3] [ref=e340]
+              - paragraph [ref=e341]:
+                - text: 2020ONA
+                - generic [ref=e344]: 606 оценок
+          - link "Некий ITEM тёмной стороны, ТВ Сериал" [ref=e346] [cursor=pointer]:
+            - /url: /title/serial-78967
+            - generic [ref=e347]:
+              - img "Некий ITEM тёмной стороны" [ref=e348]
+              - generic [ref=e354]: "7.46"
+              - generic [ref=e357]: 1 эп.
+              - generic [ref=e358]: Онгоинг
+            - generic [ref=e359]:
+              - heading "Некий ITEM тёмной стороны" [level=3] [ref=e360]
+              - paragraph [ref=e361]:
+                - text: 2026ТВ Сериал
+                - generic [ref=e364]: 61 оценок
+          - link "Голубая шкатулка 2, ТВ Сериал" [ref=e366] [cursor=pointer]:
+            - /url: /title/serial-78487
+            - generic [ref=e367]:
+              - img "Голубая шкатулка 2" [ref=e368]
+              - generic [ref=e374]: "8.17"
+              - generic [ref=e377]: 2 эп.
+              - generic [ref=e378]: Онгоинг
+            - generic [ref=e379]:
+              - heading "Голубая шкатулка 2" [level=3] [ref=e380]
+              - paragraph [ref=e381]:
+                - text: 2026ТВ Сериал
+                - generic [ref=e384]: 172 оценок
+          - link "Военная хроника Ромелии, ТВ Сериал" [ref=e386] [cursor=pointer]:
+            - /url: /title/serial-78601
+            - generic [ref=e387]:
+              - img "Военная хроника Ромелии" [ref=e388]
+              - generic [ref=e394]: "7.26"
+              - generic [ref=e397]: 2 эп.
+              - generic [ref=e398]: Онгоинг
+            - generic [ref=e399]:
+              - heading "Военная хроника Ромелии" [level=3] [ref=e400]
+              - paragraph [ref=e401]:
+                - text: 2026ТВ Сериал
+                - generic [ref=e404]: 158 оценок
+          - 'link "Проект воспитания девочек-волшебниц: Перезагрузка, ТВ Сериал" [ref=e406] [cursor=pointer]':
+            - /url: /title/serial-78596
+            - generic [ref=e407]:
+              - 'img "Проект воспитания девочек-волшебниц: Перезагрузка" [ref=e408]'
+              - generic [ref=e414]: "6.67"
+              - generic [ref=e417]: 2 эп.
+              - generic [ref=e418]: Онгоинг
+            - generic [ref=e419]:
+              - 'heading "Проект воспитания девочек-волшебниц: Перезагрузка" [level=3] [ref=e420]'
+              - paragraph [ref=e421]:
+                - text: 2026ТВ Сериал
+                - generic [ref=e424]: 24 оценок
+          - link "Пожалуйста, простите моих младших братьев, ТВ Сериал" [ref=e426] [cursor=pointer]:
+            - /url: /title/serial-77313
+            - generic [ref=e427]:
+              - img "Пожалуйста, простите моих младших братьев" [ref=e428]
+              - generic [ref=e434]: "7.07"
+              - generic [ref=e437]: 14 эп.
+              - generic [ref=e438]: Онгоинг
+            - generic [ref=e439]:
+              - heading "Пожалуйста, простите моих младших братьев" [level=3] [ref=e440]
+              - paragraph [ref=e441]:
+                - text: 2026ТВ Сериал
+                - generic [ref=e444]: 210 оценок
+          - link "Призрак встречает гяру!, ТВ Сериал" [ref=e446] [cursor=pointer]:
+            - /url: /title/serial-78399
+            - generic [ref=e447]:
+              - img "Призрак встречает гяру!" [ref=e448]
+              - generic [ref=e454]: "6.07"
+              - generic [ref=e457]: 6 эп.
+              - generic [ref=e458]: Онгоинг
+            - generic [ref=e459]:
+              - heading "Призрак встречает гяру!" [level=3] [ref=e460]
+              - paragraph [ref=e461]:
+                - text: 2026ТВ Сериал
+                - generic [ref=e464]: 14 оценок
+          - link "Я очнулся будучи пилотом сильнейшего космического корабля, а потому решил стать межгалактическим наёмником, ТВ Сериал" [ref=e466] [cursor=pointer]:
+            - /url: /title/serial-78542
+            - generic [ref=e467]:
+              - img "Я очнулся будучи пилотом сильнейшего космического корабля, а потому решил стать межгалактическим наёмником" [ref=e468]
+              - generic [ref=e474]: "6.9"
+              - generic [ref=e477]: 2 эп.
+              - generic [ref=e478]: Онгоинг
+            - generic [ref=e479]:
+              - heading "Я очнулся будучи пилотом сильнейшего космического корабля, а потому решил стать межгалактическим наёмником" [level=3] [ref=e480]
+              - paragraph [ref=e481]:
+                - text: 2026ТВ Сериал
+                - generic [ref=e484]: 210 оценок
+          - link "Я ведьма, которую возлюбленный попросил создать любовное зелье, ТВ Сериал" [ref=e486] [cursor=pointer]:
+            - /url: /title/serial-78590
+            - generic [ref=e487]:
+              - img "Я ведьма, которую возлюбленный попросил создать любовное зелье" [ref=e488]
+              - generic [ref=e494]: "7.36"
+              - generic [ref=e497]: 2 эп.
+              - generic [ref=e498]: Онгоинг
+            - generic [ref=e499]:
+              - heading "Я ведьма, которую возлюбленный попросил создать любовное зелье" [level=3] [ref=e500]
+              - paragraph [ref=e501]:
+                - text: 2026ТВ Сериал
+                - generic [ref=e504]: 120 оценок
+      - generic [ref=e505]:
+        - generic [ref=e506]:
+          - heading "Новинки сезона" [level=2] [ref=e509]
+          - generic [ref=e510]:
+            - generic [ref=e511]:
+              - button "Прокрутить назад" [disabled]
+              - button "Прокрутить вперёд" [ref=e512]
+            - link "Смотреть все" [ref=e515] [cursor=pointer]:
+              - /url: /catalog?sort=fresh
+        - generic [ref=e518]:
+          - link "Свадьба светлячков, ТВ Сериал" [ref=e520] [cursor=pointer]:
+            - /url: /title/serial-78971
+            - generic [ref=e521]:
+              - img "Свадьба светлячков" [ref=e522]
+              - generic [ref=e528]: "7.93"
+              - generic [ref=e531]: 1 эп.
+              - generic [ref=e532]: Онгоинг
+            - generic [ref=e533]:
+              - heading "Свадьба светлячков" [level=3] [ref=e534]
+              - paragraph [ref=e535]:
+                - text: 2026ТВ Сериал
+                - generic [ref=e538]: 171 оценок
+          - 'link "Операция: Семейка Ёдзакура 2. Часть 2, ТВ Сериал" [ref=e540] [cursor=pointer]':
+            - /url: /title/serial-78970
+            - generic [ref=e541]:
+              - 'img "Операция: Семейка Ёдзакура 2. Часть 2" [ref=e542]'
+              - generic [ref=e548]: "7.41"
+              - generic [ref=e551]: 1 эп.
+              - generic [ref=e552]: Онгоинг
+            - generic [ref=e553]:
+              - 'heading "Операция: Семейка Ёдзакура 2. Часть 2" [level=3] [ref=e554]'
+              - paragraph [ref=e555]:
+                - text: 2026ТВ Сериал
+                - generic [ref=e558]: 20 оценок
+          - link "Семь рыцарей королевства Марронье, ТВ Сериал" [ref=e560] [cursor=pointer]:
+            - /url: /title/serial-78968
+            - generic [ref=e561]:
+              - img "Семь рыцарей королевства Марронье" [ref=e562]
+              - generic [ref=e568]: "6.35"
+              - generic [ref=e571]: 2 эп.
+              - generic [ref=e572]: Онгоинг
+            - generic [ref=e573]:
+              - heading "Семь рыцарей королевства Марронье" [level=3] [ref=e574]
+              - paragraph [ref=e575]:
+                - text: 2026ТВ Сериал
+                - generic [ref=e578]: 24 оценок
+          - link "Некий ITEM тёмной стороны, ТВ Сериал" [ref=e580] [cursor=pointer]:
+            - /url: /title/serial-78967
+            - generic [ref=e581]:
+              - img "Некий ITEM тёмной стороны" [ref=e582]
+              - generic [ref=e588]: "7.46"
+              - generic [ref=e591]: 1 эп.
+              - generic [ref=e592]: Онгоинг
+            - generic [ref=e593]:
+              - heading "Некий ITEM тёмной стороны" [level=3] [ref=e594]
+              - paragraph [ref=e595]:
+                - text: 2026ТВ Сериал
+                - generic [ref=e598]: 61 оценок
+          - link "Маска вермильона, ТВ Сериал" [ref=e600] [cursor=pointer]:
+            - /url: /title/serial-78965
+            - generic [ref=e601]:
+              - img "Маска вермильона" [ref=e602]
+              - generic [ref=e608]: "7.05"
+              - generic [ref=e611]: 1 эп.
+              - generic [ref=e612]: Онгоинг
+            - generic [ref=e613]:
+              - heading "Маска вермильона" [level=3] [ref=e614]
+              - paragraph [ref=e615]:
+                - text: 2026ТВ Сериал
+                - generic [ref=e618]: 76 оценок
+          - link "Коллекционер ужасов, ТВ Сериал" [ref=e620] [cursor=pointer]:
+            - /url: /title/serial-78963
+            - generic [ref=e621]:
+              - img "Коллекционер ужасов" [ref=e622]
+              - generic [ref=e628]: "5.92"
+              - generic [ref=e631]: 1 эп.
+              - generic [ref=e632]: Онгоинг
+            - generic [ref=e633]:
+              - heading "Коллекционер ужасов" [level=3] [ref=e634]
+              - paragraph [ref=e635]:
+                - text: 2026ТВ Сериал
+                - generic [ref=e638]: 40 оценок
+          - link "Путешествие на поезде! Встреча с девушками-железнодорожницами, ТВ Сериал" [ref=e640] [cursor=pointer]:
+            - /url: /title/serial-78962
+            - generic [ref=e641]:
+              - img "Путешествие на поезде! Встреча с девушками-железнодорожницами" [ref=e642]
+              - generic [ref=e648]: "6.64"
+              - generic [ref=e651]: 1 эп.
+              - generic [ref=e652]: Онгоинг
+            - generic [ref=e653]:
+              - heading "Путешествие на поезде! Встреча с девушками-железнодорожницами" [level=3] [ref=e654]
+              - paragraph [ref=e655]:
+                - text: 2026ТВ Сериал
+                - generic [ref=e658]: 15 оценок
+          - link "Полицейский-экстрасенс Тёдзё!, ТВ Сериал" [ref=e660] [cursor=pointer]:
+            - /url: /title/serial-78959
+            - generic [ref=e661]:
+              - img "Полицейский-экстрасенс Тёдзё!" [ref=e662]
+              - generic [ref=e668]: "6.82"
+              - generic [ref=e671]: 1 эп.
+              - generic [ref=e672]: Онгоинг
+            - generic [ref=e673]:
+              - heading "Полицейский-экстрасенс Тёдзё!" [level=3] [ref=e674]
+              - paragraph [ref=e675]:
+                - text: 2026ТВ Сериал
+                - generic [ref=e678]: 53 оценок
+          - link "Её друг, ONA" [ref=e680] [cursor=pointer]:
+            - /url: /title/serial-78958
+            - generic [ref=e681]:
+              - img "Её друг" [ref=e682]
+              - generic [ref=e688]: "5.77"
+              - generic [ref=e691]: 2 эп.
+              - generic [ref=e692]: Онгоинг
+            - generic [ref=e693]:
+              - heading "Её друг" [level=3] [ref=e694]
+              - paragraph [ref=e695]:
+                - text: 2026ONA
+                - generic [ref=e698]: 26 оценок
+          - link "Не слишком ли ты сладкая, Бог соли Сато?, ТВ Сериал" [ref=e700] [cursor=pointer]:
+            - /url: /title/serial-78956
+            - generic [ref=e701]:
+              - img "Не слишком ли ты сладкая, Бог соли Сато?" [ref=e702]
+              - generic [ref=e708]: "6.94"
+              - generic [ref=e711]: 1 эп.
+              - generic [ref=e712]: Онгоинг
+            - generic [ref=e713]:
+              - heading "Не слишком ли ты сладкая, Бог соли Сато?" [level=3] [ref=e714]
+              - paragraph [ref=e715]:
+                - text: 2026ТВ Сериал
+                - generic [ref=e718]: 83 оценок
+          - 'link "Прохождение параллельного мира вместе с богиней, у которой нет последователей: Слабейший маг среди одноклассников, ТВ Сериал" [ref=e720] [cursor=pointer]':
+            - /url: /title/serial-78954
+            - generic [ref=e721]:
+              - 'img "Прохождение параллельного мира вместе с богиней, у которой нет последователей: Слабейший маг среди одноклассников" [ref=e722]'
+              - generic [ref=e728]: "6.6"
+              - generic [ref=e731]: 1 эп.
+              - generic [ref=e732]: Онгоинг
+            - generic [ref=e733]:
+              - 'heading "Прохождение параллельного мира вместе с богиней, у которой нет последователей: Слабейший маг среди одноклассников" [level=3] [ref=e734]'
+              - paragraph [ref=e735]:
+                - text: 2026ТВ Сериал
+                - generic [ref=e738]: 95 оценок
+          - 'link "Путь аса: Акт II 2. Часть 2, ТВ Сериал" [ref=e740] [cursor=pointer]':
+            - /url: /title/serial-78946
+            - generic [ref=e741]:
+              - 'img "Путь аса: Акт II 2. Часть 2" [ref=e742]'
+              - generic [ref=e748]: "7.55"
+              - generic [ref=e751]: 1 эп.
+              - generic [ref=e752]: Онгоинг
+            - generic [ref=e753]:
+              - 'heading "Путь аса: Акт II 2. Часть 2" [level=3] [ref=e754]'
+              - paragraph [ref=e755]:
+                - text: 2026ТВ Сериал
+                - generic [ref=e758]: 22 оценок
+          - 'link "Драконий жемчуг: Супер — Бирус, ТВ Сериал" [ref=e760] [cursor=pointer]':
+            - /url: /title/serial-78945
+            - generic [ref=e761]:
+              - 'img "Драконий жемчуг: Супер — Бирус" [ref=e762]'
+              - generic [ref=e768]: "8.32"
+              - generic [ref=e771]: 1 эп.
+              - generic [ref=e772]: Онгоинг
+            - generic [ref=e773]:
+              - 'heading "Драконий жемчуг: Супер — Бирус" [level=3] [ref=e774]'
+              - paragraph [ref=e775]:
+                - text: 2026ТВ Сериал
+                - generic [ref=e778]: 22 оценок
+          - link "Переродившаяся великая святая скрывает, что она святая, ТВ Сериал" [ref=e780] [cursor=pointer]:
+            - /url: /title/serial-78929
+            - generic [ref=e781]:
+              - img "Переродившаяся великая святая скрывает, что она святая" [ref=e782]
+              - generic [ref=e788]: "6.97"
+              - generic [ref=e791]: 2 эп.
+              - generic [ref=e792]: Онгоинг
+            - generic [ref=e793]:
+              - heading "Переродившаяся великая святая скрывает, что она святая" [level=3] [ref=e794]
+              - paragraph [ref=e795]:
+                - text: 2026ТВ Сериал
+                - generic [ref=e798]: 155 оценок
+          - link "Я встречаюсь с тёмным призывателем, ONA" [ref=e800] [cursor=pointer]:
+            - /url: /title/serial-78916
+            - generic [ref=e801]:
+              - img "Я встречаюсь с тёмным призывателем" [ref=e802]
+              - generic [ref=e808]: "6.96"
+              - generic [ref=e811]: 2 эп.
+              - generic [ref=e812]: Онгоинг
+            - generic [ref=e813]:
+              - heading "Я встречаюсь с тёмным призывателем" [level=3] [ref=e814]
+              - paragraph [ref=e815]:
+                - text: 2026ONA
+                - generic [ref=e818]: 62 оценок
+          - 'link "Путешествие на Запад: Безумный король 2, ONA" [ref=e820] [cursor=pointer]':
+            - /url: /title/serial-78914
+            - generic [ref=e821]:
+              - 'img "Путешествие на Запад: Безумный король 2" [ref=e822]'
+              - generic [ref=e828]: "0.0"
+              - generic [ref=e831]: 5 эп.
+              - generic [ref=e832]: Онгоинг
+            - generic [ref=e833]:
+              - 'heading "Путешествие на Запад: Безумный король 2" [level=3] [ref=e834]'
+              - paragraph [ref=e835]:
+                - text: 2026ONA
+                - generic [ref=e838]: 4 оценок
+          - link "Дядечка, которому нравятся милые вещи, ТВ Сериал" [ref=e840] [cursor=pointer]:
+            - /url: /title/serial-78907
+            - generic [ref=e841]:
+              - img "Дядечка, которому нравятся милые вещи" [ref=e842]
+              - generic [ref=e848]: "6.6"
+              - generic [ref=e851]: 1 эп.
+              - generic [ref=e852]: Онгоинг
+            - generic [ref=e853]:
+              - heading "Дядечка, которому нравятся милые вещи" [level=3] [ref=e854]
+              - paragraph [ref=e855]:
+                - text: 2026ТВ Сериал
+                - generic [ref=e858]: 42 оценок
+          - link "Детектив уже мёртв 2, ТВ Сериал" [ref=e860] [cursor=pointer]:
+            - /url: /title/serial-78903
+            - generic [ref=e861]:
+              - img "Детектив уже мёртв 2" [ref=e862]
+              - generic [ref=e868]: "7.15"
+              - generic [ref=e871]: 1 эп.
+              - generic [ref=e872]: Онгоинг
+            - generic [ref=e873]:
+              - heading "Детектив уже мёртв 2" [level=3] [ref=e874]
+              - paragraph [ref=e875]:
+                - text: 2026ТВ Сериал
+                - generic [ref=e878]: 205 оценок
+          - link "Чёрный клевер 2, ТВ Сериал" [ref=e880] [cursor=pointer]:
+            - /url: /title/serial-78889
+            - generic [ref=e881]:
+              - img "Чёрный клевер 2" [ref=e882]
+              - generic [ref=e888]: "8.81"
+              - generic [ref=e891]: 1 эп.
+              - generic [ref=e892]: Онгоинг
+            - generic [ref=e893]:
+              - heading "Чёрный клевер 2" [level=3] [ref=e894]
+              - paragraph [ref=e895]:
+                - text: 2026ТВ Сериал
+                - generic [ref=e898]: 423 оценок
+          - link "В поисках зомби, ТВ Сериал" [ref=e900] [cursor=pointer]:
+            - /url: /title/serial-78877
+            - generic [ref=e901]:
+              - img "В поисках зомби" [ref=e902]
+              - generic [ref=e908]: "6.66"
+              - generic [ref=e911]: 2 эп.
+              - generic [ref=e912]: Онгоинг
+            - generic [ref=e913]:
+              - heading "В поисках зомби" [level=3] [ref=e914]
+              - paragraph [ref=e915]:
+                - text: 2026ТВ Сериал
+                - generic [ref=e918]: 52 оценок
+      - generic [ref=e919]:
+        - generic [ref=e920]:
+          - heading "Топ рейтинга" [level=2] [ref=e923]
+          - generic [ref=e924]:
+            - generic [ref=e925]:
+              - button "Прокрутить назад" [disabled]
+              - button "Прокрутить вперёд" [ref=e926]
+            - link "Смотреть все" [ref=e929] [cursor=pointer]:
+              - /url: /catalog?sort=rating
+        - generic [ref=e932]:
+          - link "Провожающая в последний путь Фрирен, ТВ Сериал" [ref=e934] [cursor=pointer]:
+            - /url: /title/serial-77320
+            - generic [ref=e935]:
+              - img "Провожающая в последний путь Фрирен" [ref=e936]
+              - generic [ref=e942]: "9.25"
+              - generic [ref=e945]: 28 эп.
+              - generic [ref=e946]: Завершён
+            - generic [ref=e947]:
+              - heading "Провожающая в последний путь Фрирен" [level=3] [ref=e948]
+              - paragraph [ref=e949]:
+                - text: 2023ТВ Сериал
+                - generic [ref=e952]: 71 393 оценок
+          - 'link "Стальной алхимик: Братство, ТВ Сериал" [ref=e954] [cursor=pointer]':
+            - /url: /title/serial-7884
+            - generic [ref=e955]:
+              - 'img "Стальной алхимик: Братство" [ref=e956]'
+              - generic [ref=e962]: "9.11"
+              - generic [ref=e965]: 64 эп.
+              - generic [ref=e966]: Завершён
+            - generic [ref=e967]:
+              - 'heading "Стальной алхимик: Братство" [level=3] [ref=e968]'
+              - paragraph [ref=e969]:
+                - text: 2009ТВ Сериал
+                - generic [ref=e972]: 95 213 оценок
+          - link "Re:Zero. Жизнь с нуля в альтернативном мире 4, ТВ Сериал" [ref=e974] [cursor=pointer]:
+            - /url: /title/serial-74504
+            - generic [ref=e975]:
+              - img "Re:Zero. Жизнь с нуля в альтернативном мире 4" [ref=e976]
+              - generic [ref=e982]: "9.1"
+              - generic [ref=e985]: 19 эп.
+              - generic [ref=e986]: Завершён
+            - generic [ref=e987]:
+              - heading "Re:Zero. Жизнь с нуля в альтернативном мире 4" [level=3] [ref=e988]
+              - paragraph [ref=e989]:
+                - text: 2026ТВ Сериал
+                - generic [ref=e992]: 9 304 оценок
+          - link "Врата Штейна, ТВ Сериал" [ref=e994] [cursor=pointer]:
+            - /url: /title/serial-9804
+            - generic [ref=e995]:
+              - img "Врата Штейна" [ref=e996]
+              - generic [ref=e1002]: "9.07"
+              - generic [ref=e1005]: 24 эп.
+              - generic [ref=e1006]: Завершён
+            - generic [ref=e1007]:
+              - heading "Врата Штейна" [level=3] [ref=e1008]
+              - paragraph [ref=e1009]:
+                - text: 2011ТВ Сериал
+                - generic [ref=e1012]: 111 234 оценок
+          - link "Гинтама 4, ТВ Сериал" [ref=e1014] [cursor=pointer]:
+            - /url: /title/serial-8362
+            - generic [ref=e1015]:
+              - img "Гинтама 4" [ref=e1016]
+              - generic [ref=e1022]: "9.05"
+              - generic [ref=e1025]: 51 эп.
+              - generic [ref=e1026]: Завершён
+            - generic [ref=e1027]:
+              - heading "Гинтама 4" [level=3] [ref=e1028]
+              - paragraph [ref=e1029]:
+                - text: 2015ТВ Сериал
+                - generic [ref=e1032]: 12 714 оценок
+          - 'link "Невероятное приключение ДжоДжо: Гонка «Стальной шар», ONA" [ref=e1034] [cursor=pointer]':
+            - /url: /title/serial-78598
+            - generic [ref=e1035]:
+              - 'img "Невероятное приключение ДжоДжо: Гонка «Стальной шар»" [ref=e1036]'
+              - generic [ref=e1042]: "9.05"
+              - generic [ref=e1045]: 2 эп.
+              - generic [ref=e1046]: Онгоинг
+            - generic [ref=e1047]:
+              - 'heading "Невероятное приключение ДжоДжо: Гонка «Стальной шар»" [level=3] [ref=e1048]'
+              - paragraph [ref=e1049]:
+                - text: 2026ONA
+                - generic [ref=e1052]: 3 981 оценок
+          - link "Атака титанов 3. Часть 2, ТВ Сериал" [ref=e1054] [cursor=pointer]:
+            - /url: /title/serial-41699
+            - generic [ref=e1055]:
+              - img "Атака титанов 3. Часть 2" [ref=e1056]
+              - generic [ref=e1062]: "9.05"
+              - generic [ref=e1065]: 10 эп.
+              - generic [ref=e1066]: Завершён
+            - generic [ref=e1067]:
+              - heading "Атака титанов 3. Часть 2" [level=3] [ref=e1068]
+              - paragraph [ref=e1069]:
+                - text: 2019ТВ Сериал
+                - generic [ref=e1072]: 94 602 оценок
+          - 'link "Гинтама: Финал, Фильм" [ref=e1074] [cursor=pointer]':
+            - /url: /title/movie-75946
+            - generic [ref=e1075]:
+              - 'img "Гинтама: Финал" [ref=e1076]'
+              - generic [ref=e1082]: "9.05"
+              - generic [ref=e1085]: Завершён
+              - text: "0"
+            - generic [ref=e1086]:
+              - 'heading "Гинтама: Финал" [level=3] [ref=e1087]'
+              - paragraph [ref=e1088]:
+                - text: 2021Фильм
+                - generic [ref=e1091]: 4 435 оценок
+          - 'link "Человек-бензопила: Резе, Фильм" [ref=e1093] [cursor=pointer]':
+            - /url: /title/movie-119662
+            - generic [ref=e1094]:
+              - 'img "Человек-бензопила: Резе" [ref=e1095]'
+              - generic [ref=e1101]: "9.05"
+              - generic [ref=e1104]: Завершён
+              - text: "0"
+            - generic [ref=e1105]:
+              - 'heading "Человек-бензопила: Резе" [level=3] [ref=e1106]'
+              - paragraph [ref=e1107]:
+                - text: 2025Фильм
+                - generic [ref=e1110]: 34 230 оценок
+          - link "Охотник х Охотник (2011), ТВ Сериал" [ref=e1112] [cursor=pointer]:
+            - /url: /title/serial-77504
+            - generic [ref=e1113]:
+              - img "Охотник х Охотник (2011)" [ref=e1114]
+              - generic [ref=e1120]: "9.03"
+              - generic [ref=e1123]: 6 эп.
+              - generic [ref=e1124]: Завершён
+            - generic [ref=e1125]:
+              - heading "Охотник х Охотник (2011)" [level=3] [ref=e1126]
+              - paragraph [ref=e1127]:
+                - text: 2011ТВ Сериал
+                - generic [ref=e1130]: 85 171 оценок
+          - link "Гинтама 3, ТВ Сериал" [ref=e1132] [cursor=pointer]:
+            - /url: /title/serial-8360
+            - generic [ref=e1133]:
+              - img "Гинтама 3" [ref=e1134]
+              - generic [ref=e1140]: "9.02"
+              - generic [ref=e1143]: 13 эп.
+              - generic [ref=e1144]: Завершён
+            - generic [ref=e1145]:
+              - heading "Гинтама 3" [level=3] [ref=e1146]
+              - paragraph [ref=e1147]:
+                - text: 2012ТВ Сериал
+                - generic [ref=e1150]: 12 346 оценок
+          - link "Гинтама 2, ТВ Сериал" [ref=e1152] [cursor=pointer]:
+            - /url: /title/serial-8359
+            - generic [ref=e1153]:
+              - img "Гинтама 2" [ref=e1154]
+              - generic [ref=e1160]: "9.02"
+              - generic [ref=e1163]: 51 эп.
+              - generic [ref=e1164]: Завершён
+            - generic [ref=e1165]:
+              - heading "Гинтама 2" [level=3] [ref=e1166]
+              - paragraph [ref=e1167]:
+                - text: 2011ТВ Сериал
+                - generic [ref=e1170]: 14 273 оценок
+          - link "Легенда о героях Галактики, OVA" [ref=e1172] [cursor=pointer]:
+            - /url: /title/serial-8077
+            - generic [ref=e1173]:
+              - img "Легенда о героях Галактики" [ref=e1174]
+              - generic [ref=e1180]: "9.02"
+              - generic [ref=e1183]: 110 эп.
+              - generic [ref=e1184]: Завершён
+            - generic [ref=e1185]:
+              - heading "Легенда о героях Галактики" [level=3] [ref=e1186]
+              - paragraph [ref=e1187]:
+                - text: 1988OVA
+                - generic [ref=e1190]: 6 684 оценок
+          - 'link "Блич: Тысячелетняя кровавая война — Бедствие, ТВ Сериал" [ref=e1192] [cursor=pointer]':
+            - /url: /title/serial-78689
+            - generic [ref=e1193]:
+              - 'img "Блич: Тысячелетняя кровавая война — Бедствие" [ref=e1194]'
+              - generic [ref=e1200]: "9.01"
+              - generic [ref=e1203]: 3 эп.
+              - generic [ref=e1204]: Онгоинг
+            - generic [ref=e1205]:
+              - 'heading "Блич: Тысячелетняя кровавая война — Бедствие" [level=3] [ref=e1206]'
+              - paragraph [ref=e1207]:
+                - text: 2026ТВ Сериал
+                - generic [ref=e1210]: 1 529 оценок
+          - 'link "Ван-Пис: Письмо от поклонника, Спешл" [ref=e1212] [cursor=pointer]':
+            - /url: /title/movie-114980
+            - generic [ref=e1213]:
+              - 'img "Ван-Пис: Письмо от поклонника" [ref=e1214]'
+              - generic [ref=e1220]: "8.99"
+              - generic [ref=e1223]: Завершён
+              - text: "0"
+            - generic [ref=e1224]:
+              - 'heading "Ван-Пис: Письмо от поклонника" [level=3] [ref=e1225]'
+              - paragraph [ref=e1226]:
+                - text: 2024Спешл
+                - generic [ref=e1229]: 5 252 оценок
+          - link "Гинтама 5, ТВ Сериал" [ref=e1231] [cursor=pointer]:
+            - /url: /title/serial-8364
+            - generic [ref=e1232]:
+              - img "Гинтама 5" [ref=e1233]
+              - generic [ref=e1239]: "8.98"
+              - generic [ref=e1242]: 12 эп.
+              - generic [ref=e1243]: Завершён
+            - generic [ref=e1244]:
+              - heading "Гинтама 5" [level=3] [ref=e1245]
+              - paragraph [ref=e1246]:
+                - text: 2017ТВ Сериал
+                - generic [ref=e1249]: 9 850 оценок
+          - 'link "Блич: Тысячелетняя кровавая война, ТВ Сериал" [ref=e1251] [cursor=pointer]':
+            - /url: /title/serial-69163
+            - generic [ref=e1252]:
+              - 'img "Блич: Тысячелетняя кровавая война" [ref=e1253]'
+              - generic [ref=e1259]: "8.98"
+              - generic [ref=e1262]: 13 эп.
+              - generic [ref=e1263]: Завершён
+            - generic [ref=e1264]:
+              - 'heading "Блич: Тысячелетняя кровавая война" [level=3] [ref=e1265]'
+              - paragraph [ref=e1266]:
+                - text: 2022ТВ Сериал
+                - generic [ref=e1269]: 26 284 оценок
+          - 'link "Госпожа Кагуя: в любви как на войне 3, ТВ Сериал" [ref=e1271] [cursor=pointer]':
+            - /url: /title/serial-42284
+            - generic [ref=e1272]:
+              - 'img "Госпожа Кагуя: в любви как на войне 3" [ref=e1273]'
+              - generic [ref=e1279]: "8.95"
+              - generic [ref=e1282]: 13 эп.
+              - generic [ref=e1283]: Завершён
+            - generic [ref=e1284]:
+              - 'heading "Госпожа Кагуя: в любви как на войне 3" [level=3] [ref=e1285]'
+              - paragraph [ref=e1286]:
+                - text: 2022ТВ Сериал
+                - generic [ref=e1289]: 43 351 оценок
+          - link "Гинтама, ТВ Сериал" [ref=e1291] [cursor=pointer]:
+            - /url: /title/serial-8358
+            - generic [ref=e1292]:
+              - img "Гинтама" [ref=e1293]
+              - generic [ref=e1299]: "8.93"
+              - generic [ref=e1302]: 201 эп.
+              - generic [ref=e1303]: Завершён
+            - generic [ref=e1304]:
+              - heading "Гинтама" [level=3] [ref=e1305]
+              - paragraph [ref=e1306]:
+                - text: 2006ТВ Сериал
+                - generic [ref=e1309]: 24 523 оценок
+          - 'link "Кланнад: Продолжение истории, ТВ Сериал" [ref=e1311] [cursor=pointer]':
+            - /url: /title/serial-3848
+            - generic [ref=e1312]:
+              - 'img "Кланнад: Продолжение истории" [ref=e1313]'
+              - generic [ref=e1319]: "8.93"
+              - generic [ref=e1322]: 25 эп.
+              - generic [ref=e1323]: Завершён
+            - generic [ref=e1324]:
+              - 'heading "Кланнад: Продолжение истории" [level=3] [ref=e1325]'
+              - paragraph [ref=e1326]:
+                - text: 2008ТВ Сериал
+                - generic [ref=e1329]: 24 556 оценок
+      - generic [ref=e1330]:
+        - generic [ref=e1331]:
+          - heading "Аниме-фильмы" [level=2] [ref=e1334]
+          - generic [ref=e1335]:
+            - generic [ref=e1336]:
+              - button "Прокрутить назад" [disabled]
+              - button "Прокрутить вперёд" [ref=e1337]
+            - link "Смотреть все" [ref=e1340] [cursor=pointer]:
+              - /url: /catalog?type=movie
+        - generic [ref=e1343]:
+          - 'link "Атака титанов: Заключительная глава — Последняя атака, Фильм" [ref=e1345] [cursor=pointer]':
+            - /url: /title/movie-109658
+            - generic [ref=e1346]:
+              - 'img "Атака титанов: Заключительная глава — Последняя атака" [ref=e1347]'
+              - generic [ref=e1353]: "8.84"
+              - generic [ref=e1356]: Завершён
+              - text: "0"
+            - generic [ref=e1357]:
+              - 'heading "Атака титанов: Заключительная глава — Последняя атака" [level=3] [ref=e1358]'
+              - paragraph [ref=e1359]:
+                - text: 2024Фильм
+                - generic [ref=e1362]: 8 917 оценок
+          - 'link "Поднятие уровня в одиночку: Повторное пробуждение, Фильм" [ref=e1364] [cursor=pointer]':
+            - /url: /title/movie-108152
+            - generic [ref=e1365]:
+              - 'img "Поднятие уровня в одиночку: Повторное пробуждение" [ref=e1366]'
+              - generic [ref=e1372]: "8.03"
+              - generic [ref=e1375]: Завершён
+              - text: "0"
+            - generic [ref=e1376]:
+              - 'heading "Поднятие уровня в одиночку: Повторное пробуждение" [level=3] [ref=e1377]'
+              - paragraph [ref=e1378]:
+                - text: 2024Фильм
+                - generic [ref=e1381]: 2 387 оценок
+          - link "Унесённые призраками, Фильм" [ref=e1383] [cursor=pointer]:
+            - /url: /title/movie-91020
+            - generic [ref=e1384]:
+              - img "Унесённые призраками" [ref=e1385]
+              - generic [ref=e1391]: "8.77"
+              - generic [ref=e1394]: Завершён
+              - text: "0"
+            - generic [ref=e1395]:
+              - heading "Унесённые призраками" [level=3] [ref=e1396]
+              - paragraph [ref=e1397]:
+                - text: 2001Фильм
+                - generic [ref=e1400]: 120 905 оценок
+          - link "Легенда о Сяохэе Ло. Фильм 2, Фильм" [ref=e1402] [cursor=pointer]:
+            - /url: /title/movie-116477
+            - generic [ref=e1403]:
+              - img "Легенда о Сяохэе Ло. Фильм 2" [ref=e1404]
+              - generic [ref=e1410]: "8.66"
+              - generic [ref=e1413]: Завершён
+              - text: "0"
+            - generic [ref=e1414]:
+              - heading "Легенда о Сяохэе Ло. Фильм 2" [level=3] [ref=e1415]
+              - paragraph [ref=e1416]:
+                - text: 2025Фильм
+                - generic [ref=e1419]: 655 оценок
+          - link "Фландрийский пёс. Фильм, Фильм" [ref=e1421] [cursor=pointer]:
+            - /url: /title/movie-10084
+            - generic [ref=e1422]:
+              - img "Фландрийский пёс. Фильм" [ref=e1423]
+              - generic [ref=e1429]: "7.82"
+              - generic [ref=e1432]: 1 эп.
+              - generic [ref=e1433]: Завершён
+            - generic [ref=e1434]:
+              - heading "Фландрийский пёс. Фильм" [level=3] [ref=e1435]
+              - paragraph [ref=e1436]:
+                - text: 1997Фильм
+                - generic [ref=e1439]: 882 оценок
+          - 'link "Гинтама: Финальная арка — Ёродзуя навсегда!, Фильм" [ref=e1441] [cursor=pointer]':
+            - /url: /title/movie-9907
+            - generic [ref=e1442]:
+              - 'img "Гинтама: Финальная арка — Ёродзуя навсегда!" [ref=e1443]'
+              - generic [ref=e1449]: "8.89"
+              - generic [ref=e1452]: Завершён
+              - text: "0"
+            - generic [ref=e1453]:
+              - 'heading "Гинтама: Финальная арка — Ёродзуя навсегда!" [level=3] [ref=e1454]'
+              - paragraph [ref=e1455]:
+                - text: 2013Фильм
+                - generic [ref=e1458]: 10 123 оценок
+          - 'link "Гинтама: Джамп Феста 2005, Спешл" [ref=e1460] [cursor=pointer]':
+            - /url: /title/movie-96695
+            - generic [ref=e1461]:
+              - 'img "Гинтама: Джамп Феста 2005" [ref=e1462]'
+              - generic [ref=e1468]: "8.07"
+              - generic [ref=e1471]: Завершён
+              - text: "0"
+            - generic [ref=e1472]:
+              - 'heading "Гинтама: Джамп Феста 2005" [level=3] [ref=e1473]'
+              - paragraph [ref=e1474]:
+                - text: 2005Спешл
+                - generic [ref=e1477]: 4 062 оценок
+          - 'link "Баскетбол Куроко: Это лучший подарок!, Спешл" [ref=e1479] [cursor=pointer]':
+            - /url: /title/movie-84586
+            - generic [ref=e1480]:
+              - 'img "Баскетбол Куроко: Это лучший подарок!" [ref=e1481]'
+              - generic [ref=e1487]: "8.09"
+              - generic [ref=e1490]: Завершён
+              - text: "0"
+            - generic [ref=e1491]:
+              - 'heading "Баскетбол Куроко: Это лучший подарок!" [level=3] [ref=e1492]'
+              - paragraph [ref=e1493]:
+                - text: 2015Спешл
+                - generic [ref=e1496]: 8 669 оценок
+          - 'link "Мастер муси: Следующая глава — Капли колокольчиков, Фильм" [ref=e1498] [cursor=pointer]':
+            - /url: /title/movie-9950
+            - generic [ref=e1499]:
+              - 'img "Мастер муси: Следующая глава — Капли колокольчиков" [ref=e1500]'
+              - generic [ref=e1506]: "8.58"
+              - generic [ref=e1509]: Завершён
+              - text: "0"
+            - generic [ref=e1510]:
+              - 'heading "Мастер муси: Следующая глава — Капли колокольчиков" [level=3] [ref=e1511]'
+              - paragraph [ref=e1512]:
+                - text: 2015Фильм
+                - generic [ref=e1515]: 6 794 оценок
+          - 'link "Тетрадь дружбы Нацумэ: Однажды зимним днём, OVA" [ref=e1517] [cursor=pointer]':
+            - /url: /title/movie-99334
+            - generic [ref=e1518]:
+              - 'img "Тетрадь дружбы Нацумэ: Однажды зимним днём" [ref=e1519]'
+              - generic [ref=e1525]: "8.33"
+              - generic [ref=e1528]: Завершён
+              - text: "0"
+            - generic [ref=e1529]:
+              - 'heading "Тетрадь дружбы Нацумэ: Однажды зимним днём" [level=3] [ref=e1530]'
+              - paragraph [ref=e1531]:
+                - text: 2014OVA
+                - generic [ref=e1534]: 4 321 оценок
+          - link "Твоё имя, Фильм" [ref=e1536] [cursor=pointer]:
+            - /url: /title/movie-98307
+            - generic [ref=e1537]:
+              - img "Твоё имя" [ref=e1538]
+              - generic [ref=e1544]: "8.82"
+              - generic [ref=e1547]: 1 эп.
+              - generic [ref=e1548]: Завершён
+            - generic [ref=e1549]:
+              - heading "Твоё имя" [level=3] [ref=e1550]
+              - paragraph [ref=e1551]:
+                - text: 2016Фильм
+                - generic [ref=e1554]: 146 197 оценок
+          - link "Вайолет Эвергарден. Фильм, Фильм" [ref=e1556] [cursor=pointer]:
+            - /url: /title/movie-94767
+            - generic [ref=e1557]:
+              - img "Вайолет Эвергарден. Фильм" [ref=e1558]
+              - generic [ref=e1564]: "8.83"
+              - generic [ref=e1567]: Завершён
+              - text: "0"
+            - generic [ref=e1568]:
+              - heading "Вайолет Эвергарден. Фильм" [level=3] [ref=e1569]
+              - paragraph [ref=e1570]:
+                - text: 2020Фильм
+                - generic [ref=e1573]: 25 584 оценок
+          - 'link "Созданный в Бездне: Блуждающие сумерки, Фильм" [ref=e1575] [cursor=pointer]':
+            - /url: /title/movie-86440
+            - generic [ref=e1576]:
+              - 'img "Созданный в Бездне: Блуждающие сумерки" [ref=e1577]'
+              - generic [ref=e1583]: "8.39"
+              - generic [ref=e1586]: Завершён
+              - text: "0"
+            - generic [ref=e1587]:
+              - 'heading "Созданный в Бездне: Блуждающие сумерки" [level=3] [ref=e1588]'
+              - paragraph [ref=e1589]:
+                - text: 2019Фильм
+                - generic [ref=e1592]: 9 508 оценок
+          - 'link "Гинтама: Финал, Фильм" [ref=e1594] [cursor=pointer]':
+            - /url: /title/movie-75946
+            - generic [ref=e1595]:
+              - 'img "Гинтама: Финал" [ref=e1596]'
+              - generic [ref=e1602]: "9.05"
+              - generic [ref=e1605]: Завершён
+              - text: "0"
+            - generic [ref=e1606]:
+              - 'heading "Гинтама: Финал" [level=3] [ref=e1607]'
+              - paragraph [ref=e1608]:
+                - text: 2021Фильм
+                - generic [ref=e1611]: 4 435 оценок
+          - link "Дом из маленьких кубиков, Фильм" [ref=e1613] [cursor=pointer]:
+            - /url: /title/movie-20578
+            - generic [ref=e1614]:
+              - img "Дом из маленьких кубиков" [ref=e1615]
+              - generic [ref=e1621]: "7.99"
+              - generic [ref=e1624]: Завершён
+              - text: "0"
+            - generic [ref=e1625]:
+              - heading "Дом из маленьких кубиков" [level=3] [ref=e1626]
+              - paragraph [ref=e1627]:
+                - text: 2008Фильм
+                - generic [ref=e1630]: 4 181 оценок
+          - link "Волейбол!! Решающая игра на свалке, Фильм" [ref=e1632] [cursor=pointer]:
+            - /url: /title/movie-117546
+            - generic [ref=e1633]:
+              - img "Волейбол!! Решающая игра на свалке" [ref=e1634]
+              - generic [ref=e1640]: "8.61"
+              - generic [ref=e1643]: Завершён
+              - text: "0"
+            - generic [ref=e1644]:
+              - heading "Волейбол!! Решающая игра на свалке" [level=3] [ref=e1645]
+              - paragraph [ref=e1646]:
+                - text: 2024Фильм
+                - generic [ref=e1649]: 7 106 оценок
+          - 'link "Нэчжа: Дьявол на беспокойном море, Фильм" [ref=e1651] [cursor=pointer]':
+            - /url: /title/movie-113007
+            - generic [ref=e1652]:
+              - 'img "Нэчжа: Дьявол на беспокойном море" [ref=e1653]'
+              - generic [ref=e1659]: "8.45"
+              - generic [ref=e1662]: Завершён
+              - text: "0"
+            - generic [ref=e1663]:
+              - 'heading "Нэчжа: Дьявол на беспокойном море" [level=3] [ref=e1664]'
+              - paragraph [ref=e1665]:
+                - text: 2025Фильм
+                - generic [ref=e1668]: 975 оценок
+          - 'link "Благословение небожителей: Спецвыпуск, ONA" [ref=e1670] [cursor=pointer]':
+            - /url: /title/movie-104160
+            - generic [ref=e1671]:
+              - 'img "Благословение небожителей: Спецвыпуск" [ref=e1672]'
+              - generic [ref=e1678]: "8.47"
+              - generic [ref=e1681]: Завершён
+              - text: "0"
+            - generic [ref=e1682]:
+              - 'heading "Благословение небожителей: Спецвыпуск" [level=3] [ref=e1683]'
+              - paragraph [ref=e1684]:
+                - text: 2021ONA
+                - generic [ref=e1687]: 5 102 оценок
+          - link "Ученик чудовища, Фильм" [ref=e1689] [cursor=pointer]:
+            - /url: /title/movie-9911
+            - generic [ref=e1690]:
+              - img "Ученик чудовища" [ref=e1691]
+              - generic [ref=e1697]: "8.22"
+              - generic [ref=e1700]: Завершён
+              - text: "0"
+            - generic [ref=e1701]:
+              - heading "Ученик чудовища" [level=3] [ref=e1702]
+              - paragraph [ref=e1703]:
+                - text: 2015Фильм
+                - generic [ref=e1706]: 40 954 оценок
+          - 'link "Гуррен-Лаганн: На прорыв!, Фильм" [ref=e1708] [cursor=pointer]':
+            - /url: /title/movie-9909
+            - generic [ref=e1709]:
+              - 'img "Гуррен-Лаганн: На прорыв!" [ref=e1710]'
+              - generic [ref=e1716]: "8.18"
+              - generic [ref=e1719]: Завершён
+              - text: "0"
+            - generic [ref=e1720]:
+              - 'heading "Гуррен-Лаганн: На прорыв!" [level=3] [ref=e1721]'
+              - paragraph [ref=e1722]:
+                - text: 2008Фильм
+                - generic [ref=e1725]: 7 364 оценок
+      - generic [ref=e1726]:
+        - generic [ref=e1727]:
+          - heading "Манга · Горячие новинки" [level=2] [ref=e1730]
+          - generic [ref=e1731]:
+            - generic [ref=e1732]:
+              - button "Прокрутить назад" [disabled]
+              - button "Прокрутить вперёд" [ref=e1733]
+            - link "Смотреть все" [ref=e1736] [cursor=pointer]:
+              - /url: /manga
+        - generic [ref=e1739]:
+          - link "Aria's Medical Record, манга" [ref=e1741] [cursor=pointer]:
+            - /url: /manga/93f7b86f-d777-4429-961d-68b59703e5a6
+            - generic [ref=e1742]:
+              - img "Aria's Medical Record" [ref=e1743]
+              - generic [ref=e1749]: "10.0"
+              - generic [ref=e1752]: 1 гл.
+            - generic [ref=e1753]:
+              - heading "Aria's Medical Record" [level=3] [ref=e1754]
+              - paragraph [ref=e1755]: Драма · Ужасы
+          - link "Butterfly Trap, манга" [ref=e1757] [cursor=pointer]:
+            - /url: /manga/507eeb57-e212-4111-814e-2d71c5daf47b
+            - generic [ref=e1758]:
+              - img "Butterfly Trap" [ref=e1759]
+              - generic [ref=e1765]: "9.25"
+              - generic [ref=e1768]: 9 гл.
+            - generic [ref=e1769]:
+              - heading "Butterfly Trap" [level=3] [ref=e1770]
+              - paragraph [ref=e1771]: Фантастика · Драма
+          - link "My Beloved Apocalypse, манга" [ref=e1773] [cursor=pointer]:
+            - /url: /manga/c595a11d-8610-48c8-bd72-1755a5b6372b
+            - generic [ref=e1774]:
+              - img "My Beloved Apocalypse" [ref=e1775]
+              - generic [ref=e1781]: "9.11"
+              - generic [ref=e1784]: 12 гл.
+            - generic [ref=e1785]:
+              - heading "My Beloved Apocalypse" [level=3] [ref=e1786]
+              - paragraph [ref=e1787]: Романтика · Комедия
+          - link "REM, манга" [ref=e1789] [cursor=pointer]:
+            - /url: /manga/d58c566a-2f36-4d3c-8604-02ede54ada7f
+            - generic [ref=e1790]:
+              - img "REM" [ref=e1791]
+              - generic [ref=e1797]: "8.33"
+              - generic [ref=e1800]: 1 гл.
+            - generic [ref=e1801]:
+              - heading "REM" [level=3] [ref=e1802]
+              - paragraph [ref=e1803]: Боевик · Приключения
+          - link "Зелёная Эвглена, манга" [ref=e1805] [cursor=pointer]:
+            - /url: /manga/27156544-fde6-4950-ab06-52c73d733462
+            - generic [ref=e1806]:
+              - img "Зелёная Эвглена" [ref=e1807]
+              - generic [ref=e1813]: "8.75"
+              - generic [ref=e1816]: 15 гл.
+            - generic [ref=e1817]:
+              - heading "Зелёная Эвглена" [level=3] [ref=e1818]
+              - paragraph [ref=e1819]: Фантастика · Боевик
+          - link "Меня призвали в другой мир во второй раз!, манга" [ref=e1821] [cursor=pointer]:
+            - /url: /manga/d7d6829b-ceab-4346-a033-22387aeff297
+            - generic [ref=e1822]:
+              - img "Меня призвали в другой мир во второй раз!" [ref=e1823]
+              - generic [ref=e1829]: "6.03"
+              - generic [ref=e1832]: 67 гл.
+            - generic [ref=e1833]:
+              - heading "Меня призвали в другой мир во второй раз!" [level=3] [ref=e1834]
+              - paragraph [ref=e1835]: Боевик · Романтика
+          - link "Пока не заполню холст тобой, манга" [ref=e1837] [cursor=pointer]:
+            - /url: /manga/2fdf9c63-9ccd-4098-840c-853307075f5f
+            - generic [ref=e1838]:
+              - img "Пока не заполню холст тобой" [ref=e1839]
+              - generic [ref=e1845]: "8.32"
+              - generic [ref=e1848]: 2 гл.
+            - generic [ref=e1849]:
+              - heading "Пока не заполню холст тобой" [level=3] [ref=e1850]
+              - paragraph [ref=e1851]: Романтика · Комедия
+          - link "MF Ghost, манга" [ref=e1853] [cursor=pointer]:
+            - /url: /manga/c96f1bf8-a100-40bb-98ef-c240b9b7cf96
+            - generic [ref=e1854]:
+              - img "MF Ghost" [ref=e1855]
+              - generic [ref=e1861]: "8.94"
+              - generic [ref=e1864]: 61 гл.
+            - generic [ref=e1865]:
+              - heading "MF Ghost" [level=3] [ref=e1866]
+              - paragraph [ref=e1867]: Боевик · Спорт
+          - 'link "The Irregular at Magic High School: Sudden Change Arc, манга" [ref=e1869] [cursor=pointer]':
+            - /url: /manga/2fcc838e-8a62-44a5-874a-9b02add9c80c
+            - generic [ref=e1870]:
+              - 'img "The Irregular at Magic High School: Sudden Change Arc" [ref=e1871]'
+              - generic [ref=e1877]: "7.86"
+              - generic [ref=e1880]: 1 гл.
+            - generic [ref=e1881]:
+              - 'heading "The Irregular at Magic High School: Sudden Change Arc" [level=3] [ref=e1882]'
+              - paragraph [ref=e1883]: Фантастика · Боевик
+          - 'link "The Irregular at Magic High School: Invasion Arc, манга" [ref=e1885] [cursor=pointer]':
+            - /url: /manga/91c2cb66-6106-4c91-8bb4-703e801812a6
+            - generic [ref=e1886]:
+              - 'img "The Irregular at Magic High School: Invasion Arc" [ref=e1887]'
+              - generic [ref=e1893]: "8.19"
+              - generic [ref=e1896]: 3 гл.
+            - generic [ref=e1897]:
+              - 'heading "The Irregular at Magic High School: Invasion Arc" [level=3] [ref=e1898]'
+              - paragraph [ref=e1899]: Фантастика · Боевик
+          - link "The Irregular at Magic High School - Escape Arc, манга" [ref=e1901] [cursor=pointer]:
+            - /url: /manga/1418c8ba-6b5f-4a9a-8546-cea35cc69d27
+            - generic [ref=e1902]:
+              - img "The Irregular at Magic High School - Escape Arc" [ref=e1903]
+              - generic [ref=e1909]: "8.85"
+              - generic [ref=e1912]: 32 гл.
+            - generic [ref=e1913]:
+              - heading "The Irregular at Magic High School - Escape Arc" [level=3] [ref=e1914]
+              - paragraph [ref=e1915]: Боевик · Приключения
+          - link "Тайка и его причуды, манга" [ref=e1917] [cursor=pointer]:
+            - /url: /manga/607759cc-aa6a-4470-8f7c-9bbf8253b915
+            - generic [ref=e1918]:
+              - img "Тайка и его причуды" [ref=e1919]
+              - generic [ref=e1925]: "8.3"
+              - generic [ref=e1928]: 89 гл.
+            - generic [ref=e1929]:
+              - heading "Тайка и его причуды" [level=3] [ref=e1930]
+              - paragraph [ref=e1931]: Триллер · Психология
+          - link "Дни Сакамото, манга" [ref=e1933] [cursor=pointer]:
+            - /url: /manga/9d9b04ad-9a83-49f4-8ae4-a9a3780fe9c0
+            - generic [ref=e1934]:
+              - img "Дни Сакамото" [ref=e1935]
+              - generic [ref=e1941]: "9.1"
+              - generic [ref=e1944]: 14 гл.
+            - generic [ref=e1945]:
+              - heading "Дни Сакамото" [level=3] [ref=e1946]
+              - paragraph [ref=e1947]: Триллер · Фантастика
+          - link "Тайная битва сильнейшего принца-дуралея за престол, манга" [ref=e1949] [cursor=pointer]:
+            - /url: /manga/cbce49c7-6311-4955-8b10-1005775d5cee
+            - generic [ref=e1950]:
+              - img "Тайная битва сильнейшего принца-дуралея за престол" [ref=e1951]
+              - generic [ref=e1957]: "8.08"
+              - generic [ref=e1960]: 1 гл.
+            - generic [ref=e1961]:
+              - heading "Тайная битва сильнейшего принца-дуралея за престол" [level=3] [ref=e1962]
+              - paragraph [ref=e1963]: Боевик · Романтика
+          - link "Досье лорда Эль-Меллоя II, манга" [ref=e1965] [cursor=pointer]:
+            - /url: /manga/4d6decd4-835d-4905-9534-2571dae07bcd
+            - generic [ref=e1966]:
+              - img "Досье лорда Эль-Меллоя II" [ref=e1967]
+              - generic [ref=e1973]: "8.7"
+              - generic [ref=e1976]: 20 гл.
+            - generic [ref=e1977]:
+              - heading "Досье лорда Эль-Меллоя II" [level=3] [ref=e1978]
+              - paragraph [ref=e1979]: Боевик · Психология
+          - link "Koi to Senrigan to Aonisai, манга" [ref=e1981] [cursor=pointer]:
+            - /url: /manga/50f4173e-744d-4f17-a74e-4e2ea177282d
+            - generic [ref=e1982]:
+              - img "Koi to Senrigan to Aonisai" [ref=e1983]
+              - generic [ref=e1989]: "8.09"
+              - generic [ref=e1992]: 14 гл.
+            - generic [ref=e1993]:
+              - heading "Koi to Senrigan to Aonisai" [level=3] [ref=e1994]
+              - paragraph [ref=e1995]: Романтика · Комедия
+          - link "The Blank Love Letter, манга" [ref=e1997] [cursor=pointer]:
+            - /url: /manga/a7b889b3-6fc6-47f7-b436-abd8325728df
+            - generic [ref=e1998]:
+              - img "The Blank Love Letter" [ref=e1999]
+              - generic [ref=e2005]: "7.12"
+              - generic [ref=e2008]: 1 гл.
+            - generic [ref=e2009]:
+              - heading "The Blank Love Letter" [level=3] [ref=e2010]
+              - paragraph [ref=e2011]: Романтика · Повседневность
+          - link "The Girl Who Gets In The Way of My One True Love, манга" [ref=e2013] [cursor=pointer]:
+            - /url: /manga/7f6ee9cf-c706-4f74-80bd-2467fd02aeab
+            - generic [ref=e2014]:
+              - img "The Girl Who Gets In The Way of My One True Love" [ref=e2015]
+              - generic [ref=e2021]: "7.68"
+              - generic [ref=e2024]: 4 гл.
+            - generic [ref=e2025]:
+              - heading "The Girl Who Gets In The Way of My One True Love" [level=3] [ref=e2026]
+              - paragraph [ref=e2027]: Романтика · Комедия
+          - link "Сказочный котик, манга" [ref=e2029] [cursor=pointer]:
+            - /url: /manga/faf6ff44-e0fc-4785-8eb6-0daae880ba53
+            - generic [ref=e2030]:
+              - img "Сказочный котик" [ref=e2031]
+              - generic [ref=e2037]: "9.11"
+              - generic [ref=e2040]: 28 гл.
+            - generic [ref=e2041]:
+              - heading "Сказочный котик" [level=3] [ref=e2042]
+              - paragraph [ref=e2043]: Фэнтези · Повседневность
+          - link "Night Diver, манга" [ref=e2045] [cursor=pointer]:
+            - /url: /manga/8624c11e-98f8-4e2b-a75c-1b41c7b5ba16
+            - generic [ref=e2046]:
+              - img "Night Diver" [ref=e2047]
+              - generic [ref=e2053]: "7.0"
+              - generic [ref=e2056]: 1 гл.
+            - generic [ref=e2057]:
+              - heading "Night Diver" [level=3] [ref=e2058]
+              - paragraph [ref=e2059]: Ужасы
+          - link "Морино не даёт мне покоя, манга" [ref=e2061] [cursor=pointer]:
+            - /url: /manga/44e19786-bac7-47a6-a4fd-545aa68436ed
+            - generic [ref=e2062]:
+              - img "Морино не даёт мне покоя" [ref=e2063]
+              - generic [ref=e2069]: "8.78"
+              - generic [ref=e2072]: 10 гл.
+            - generic [ref=e2073]:
+              - heading "Морино не даёт мне покоя" [level=3] [ref=e2074]
+              - paragraph [ref=e2075]: Романтика · Комедия
+          - link "Kabuto Mushi, манга" [ref=e2077] [cursor=pointer]:
+            - /url: /manga/a6a46436-9ed4-4c20-8b11-6f4a0f74b23a
+            - generic [ref=e2078]:
+              - img "Kabuto Mushi" [ref=e2079]
+              - generic [ref=e2085]: "8.87"
+              - generic [ref=e2088]: 13 гл.
+            - generic [ref=e2089]:
+              - heading "Kabuto Mushi" [level=3] [ref=e2090]
+              - paragraph [ref=e2091]: Боевик · Драма
+          - 'link "Baki Gaiden: Shin Chiharu, манга" [ref=e2093] [cursor=pointer]':
+            - /url: /manga/4ed7f3b1-7496-4e0a-8ac0-642ef90d02e2
+            - generic [ref=e2094]:
+              - 'img "Baki Gaiden: Shin Chiharu" [ref=e2095]'
+              - generic [ref=e2101]: "8.33"
+              - generic [ref=e2104]: 3 гл.
+            - generic [ref=e2105]:
+              - 'heading "Baki Gaiden: Shin Chiharu" [level=3] [ref=e2106]'
+              - paragraph [ref=e2107]: Боевик
+          - link "Девочка, которая видит это, манга" [ref=e2109] [cursor=pointer]:
+            - /url: /manga/6670ee28-f26d-4b61-b49c-d71149cd5a6e
+            - generic [ref=e2110]:
+              - img "Девочка, которая видит это" [ref=e2111]
+              - generic [ref=e2117]: "9.32"
+              - generic [ref=e2120]: 81 гл.
+            - generic [ref=e2121]:
+              - heading "Девочка, которая видит это" [level=3] [ref=e2122]
+              - paragraph [ref=e2123]: Триллер · Психология
+          - link "Yane Urabeya no Koushaku Fujin, манга" [ref=e2125] [cursor=pointer]:
+            - /url: /manga/ab44f11b-a02c-427e-84ee-cce4bb6e77ef
+            - generic [ref=e2126]:
+              - img "Yane Urabeya no Koushaku Fujin" [ref=e2127]
+              - generic [ref=e2133]: "7.8"
+              - generic [ref=e2136]: 28 гл.
+            - generic [ref=e2137]:
+              - heading "Yane Urabeya no Koushaku Fujin" [level=3] [ref=e2138]
+              - paragraph [ref=e2139]: Романтика · Драма
+          - link "Chuuzai-san to Watashi, манга" [ref=e2141] [cursor=pointer]:
+            - /url: /manga/934f1a59-f252-4674-8dc0-a828281b3fc3
+            - generic [ref=e2142]:
+              - img "Chuuzai-san to Watashi" [ref=e2143]
+              - generic [ref=e2149]: "9.0"
+              - generic [ref=e2152]: 15 гл.
+            - generic [ref=e2153]:
+              - heading "Chuuzai-san to Watashi" [level=3] [ref=e2154]
+              - paragraph [ref=e2155]: Романтика · Комедия
+          - link "I May Be a Guild Receptionist, but I'll Solo Any Boss to Clock Out on Time, манга" [ref=e2157] [cursor=pointer]:
+            - /url: /manga/3b9bade6-28a0-4f2f-8211-4b5106a2cbbd
+            - generic [ref=e2158]:
+              - img "I May Be a Guild Receptionist, but I'll Solo Any Boss to Clock Out on Time" [ref=e2159]
+              - generic [ref=e2165]: "7.99"
+              - generic [ref=e2168]: 30 гл.
+            - generic [ref=e2169]:
+              - heading "I May Be a Guild Receptionist, but I'll Solo Any Boss to Clock Out on Time" [level=3] [ref=e2170]
+              - paragraph [ref=e2171]: Боевик · Романтика
+          - link "Куроива Мэдака не понимает моей привлекательности, манга" [ref=e2173] [cursor=pointer]:
+            - /url: /manga/87ffa375-bd2c-49ba-ba0c-6d78ea07c342
+            - generic [ref=e2174]:
+              - img "Куроива Мэдака не понимает моей привлекательности" [ref=e2175]
+              - generic [ref=e2181]: "8.37"
+              - generic [ref=e2184]: 31 гл.
+            - generic [ref=e2185]:
+              - heading "Куроива Мэдака не понимает моей привлекательности" [level=3] [ref=e2186]
+              - paragraph [ref=e2187]: Романтика · Комедия
+          - link "Have a Nice Ending, манга" [ref=e2189] [cursor=pointer]:
+            - /url: /manga/1765b1d0-ca8b-4e9d-8237-3c6f76e7c9c6
+            - generic [ref=e2190]:
+              - img "Have a Nice Ending" [ref=e2191]
+              - generic [ref=e2197]: "7.66"
+              - generic [ref=e2200]: 1 гл.
+            - generic [ref=e2201]:
+              - heading "Have a Nice Ending" [level=3] [ref=e2202]
+              - paragraph [ref=e2203]: Повседневность · Tragedy
+          - link "Любовь с кончиков пальцев, манга" [ref=e2205] [cursor=pointer]:
+            - /url: /manga/11bfa371-f53f-42b7-8213-94b1323b02b6
+            - generic [ref=e2206]:
+              - img "Любовь с кончиков пальцев" [ref=e2207]
+              - generic [ref=e2213]: "9.44"
+              - generic [ref=e2216]: 2 гл.
+            - generic [ref=e2217]:
+              - heading "Любовь с кончиков пальцев" [level=3] [ref=e2218]
+              - paragraph [ref=e2219]: Романтика · Драма
+      - generic [ref=e2220]:
+        - generic [ref=e2221]:
+          - heading "Манга · Лучшее" [level=2] [ref=e2224]
+          - generic [ref=e2225]:
+            - generic [ref=e2226]:
+              - button "Прокрутить назад" [disabled]
+              - button "Прокрутить вперёд" [ref=e2227]
+            - link "Смотреть все" [ref=e2230] [cursor=pointer]:
+              - /url: /manga
+        - generic [ref=e2233]:
+          - link "Приди же в Мир Демонов, Ирума-кун!, манга" [ref=e2235] [cursor=pointer]:
+            - /url: /manga/d7037b2a-874a-4360-8a7b-07f2899152fd
+            - generic [ref=e2236]:
+              - img "Приди же в Мир Демонов, Ирума-кун!" [ref=e2237]
+              - generic [ref=e2243]: "9.47"
+              - generic [ref=e2246]: 487 гл.
+            - generic [ref=e2247]:
+              - heading "Приди же в Мир Демонов, Ирума-кун!" [level=3] [ref=e2248]
+              - paragraph [ref=e2249]: Боевик · Романтика
+          - link "Haimiya Is Scary Cute, манга" [ref=e2251] [cursor=pointer]:
+            - /url: /manga/c4ca02fb-8378-433b-8049-fbbea5d25cba
+            - generic [ref=e2252]:
+              - img "Haimiya Is Scary Cute" [ref=e2253]
+              - generic [ref=e2259]: "9.46"
+              - generic [ref=e2262]: 17 гл.
+            - generic [ref=e2263]:
+              - heading "Haimiya Is Scary Cute" [level=3] [ref=e2264]
+              - paragraph [ref=e2265]: Романтика · Комедия
+          - link "Долой безделье!, манга" [ref=e2267] [cursor=pointer]:
+            - /url: /manga/244c9d4f-e5fb-4590-9b96-4da191977b33
+            - generic [ref=e2268]:
+              - img "Долой безделье!" [ref=e2269]
+              - generic [ref=e2275]: "9.48"
+              - generic [ref=e2278]: 16 гл.
+            - generic [ref=e2279]:
+              - heading "Долой безделье!" [level=3] [ref=e2280]
+              - paragraph [ref=e2281]: Романтика · Комедия
+          - 'link "Девушки-пони Славное Дерби: Звёздный цветок, манга" [ref=e2283] [cursor=pointer]':
+            - /url: /manga/778b8438-af3a-4534-841c-adf923b55ee1
+            - generic [ref=e2284]:
+              - 'img "Девушки-пони Славное Дерби: Звёздный цветок" [ref=e2285]'
+              - generic [ref=e2291]: "9.57"
+              - generic [ref=e2294]: 48 гл.
+            - generic [ref=e2295]:
+              - 'heading "Девушки-пони Славное Дерби: Звёздный цветок" [level=3] [ref=e2296]'
+              - paragraph [ref=e2297]: Боевик · Спорт
+          - link "Созданный в бездне, манга" [ref=e2299] [cursor=pointer]:
+            - /url: /manga/80422e14-b9ad-4fda-970f-de370d5fa4e5
+            - generic [ref=e2300]:
+              - img "Созданный в бездне" [ref=e2301]
+              - generic [ref=e2307]: "9.42"
+              - generic [ref=e2310]: 138 гл.
+            - generic [ref=e2311]:
+              - heading "Созданный в бездне" [level=3] [ref=e2312]
+              - paragraph [ref=e2313]: Фантастика · Приключения
+          - link "Любовь с кончиков пальцев, манга" [ref=e2315] [cursor=pointer]:
+            - /url: /manga/11bfa371-f53f-42b7-8213-94b1323b02b6
+            - generic [ref=e2316]:
+              - img "Любовь с кончиков пальцев" [ref=e2317]
+              - generic [ref=e2323]: "9.44"
+              - generic [ref=e2326]: 2 гл.
+            - generic [ref=e2327]:
+              - heading "Любовь с кончиков пальцев" [level=3] [ref=e2328]
+              - paragraph [ref=e2329]: Романтика · Драма
+          - 'link "JoJo’s Bizarre Adventure, Part 9: The JoJoLands - Digital Colored Comics, манга" [ref=e2331] [cursor=pointer]':
+            - /url: /manga/334019e1-18bb-4ac0-b35c-0e8efb1e481c
+            - generic [ref=e2332]:
+              - 'img "JoJo’s Bizarre Adventure, Part 9: The JoJoLands - Digital Colored Comics" [ref=e2333]'
+              - generic [ref=e2339]: "9.57"
+              - generic [ref=e2342]: 33 гл.
+            - generic [ref=e2343]:
+              - 'heading "JoJo’s Bizarre Adventure, Part 9: The JoJoLands - Digital Colored Comics" [level=3] [ref=e2344]'
+              - paragraph [ref=e2345]: Боевик · Криминал
+          - link "Unexciting Date, манга" [ref=e2347] [cursor=pointer]:
+            - /url: /manga/f4ad14b4-64d9-470f-9b4c-0fab84f0d507
+            - generic [ref=e2348]:
+              - img "Unexciting Date" [ref=e2349]
+              - generic [ref=e2355]: "9.46"
+              - generic [ref=e2358]: 13 гл.
+            - generic [ref=e2359]:
+              - heading "Unexciting Date" [level=3] [ref=e2360]
+              - paragraph [ref=e2361]: Романтика · Комедия
+          - link "Она наверняка влюблена в моего старшего брата, манга" [ref=e2363] [cursor=pointer]:
+            - /url: /manga/1fc3d326-c037-43fa-8953-ed52a56caa18
+            - generic [ref=e2364]:
+              - img "Она наверняка влюблена в моего старшего брата" [ref=e2365]
+              - generic [ref=e2371]: "9.33"
+              - generic [ref=e2374]: 7 гл.
+            - generic [ref=e2375]:
+              - heading "Она наверняка влюблена в моего старшего брата" [level=3] [ref=e2376]
+              - paragraph [ref=e2377]: Романтика · Комедия
+          - link "Девочка, которая видит это, манга" [ref=e2379] [cursor=pointer]:
+            - /url: /manga/6670ee28-f26d-4b61-b49c-d71149cd5a6e
+            - generic [ref=e2380]:
+              - img "Девочка, которая видит это" [ref=e2381]
+              - generic [ref=e2387]: "9.32"
+              - generic [ref=e2390]: 81 гл.
+            - generic [ref=e2391]:
+              - heading "Девочка, которая видит это" [level=3] [ref=e2392]
+              - paragraph [ref=e2393]: Триллер · Психология
+          - 'link "Одинокий Рокер! Спин-офф: Дневник пьяницы Хирои Кикури, манга" [ref=e2395] [cursor=pointer]':
+            - /url: /manga/56901ae8-aece-4983-96c3-94751c96a8bb
+            - generic [ref=e2396]:
+              - 'img "Одинокий Рокер! Спин-офф: Дневник пьяницы Хирои Кикури" [ref=e2397]'
+              - generic [ref=e2403]: "9.46"
+              - generic [ref=e2406]: 44 гл.
+            - generic [ref=e2407]:
+              - 'heading "Одинокий Рокер! Спин-офф: Дневник пьяницы Хирои Кикури" [level=3] [ref=e2408]'
+              - paragraph [ref=e2409]: Комедия · Повседневность
+          - link "Руководство по выживанию в Академии, манга" [ref=e2411] [cursor=pointer]:
+            - /url: /manga/7f15e45c-b7fd-4164-8d8e-ede14a817f0d
+            - generic [ref=e2412]:
+              - img "Руководство по выживанию в Академии" [ref=e2413]
+              - generic [ref=e2419]: "9.36"
+              - generic [ref=e2422]: 124 гл.
+            - generic [ref=e2423]:
+              - heading "Руководство по выживанию в Академии" [level=3] [ref=e2424]
+              - paragraph [ref=e2425]: Боевик · Романтика
+          - link "Learning to Love My Cat-like Classmate, манга" [ref=e2427] [cursor=pointer]:
+            - /url: /manga/61830b36-1712-4b7b-9421-f671e9ced6d3
+            - generic [ref=e2428]:
+              - img "Learning to Love My Cat-like Classmate" [ref=e2429]
+              - generic [ref=e2435]: "9.31"
+              - generic [ref=e2438]: 2 гл.
+            - generic [ref=e2439]:
+              - heading "Learning to Love My Cat-like Classmate" [level=3] [ref=e2440]
+              - paragraph [ref=e2441]: Романтика · Комедия
+          - link "For Your Eyes Only Darling, манга" [ref=e2443] [cursor=pointer]:
+            - /url: /manga/381b0e7e-ac7d-48bf-8379-9566cefe6747
+            - generic [ref=e2444]:
+              - img "For Your Eyes Only Darling" [ref=e2445]
+              - generic [ref=e2451]: "9.56"
+              - generic [ref=e2454]: 6 гл.
+            - generic [ref=e2455]:
+              - heading "For Your Eyes Only Darling" [level=3] [ref=e2456]
+              - paragraph [ref=e2457]: Психология · Романтика
+          - link "Хроники многоуровневого города, манга" [ref=e2459] [cursor=pointer]:
+            - /url: /manga/8e95570e-93a7-494d-8e83-bd755e3b631d
+            - generic [ref=e2460]:
+              - img "Хроники многоуровневого города" [ref=e2461]
+              - generic [ref=e2467]: "9.62"
+              - generic [ref=e2470]: 5 гл.
+            - generic [ref=e2471]:
+              - heading "Хроники многоуровневого города" [level=3] [ref=e2472]
+              - paragraph [ref=e2473]: Фантастика · Повседневность
+          - link "Mimi, манга" [ref=e2475] [cursor=pointer]:
+            - /url: /manga/3e11f43e-3d91-47c8-a2ad-e2f23d36ad4c
+            - generic [ref=e2476]:
+              - img "Mimi" [ref=e2477]
+              - generic [ref=e2483]: "9.31"
+              - generic [ref=e2486]: 27 гл.
+            - generic [ref=e2487]:
+              - heading "Mimi" [level=3] [ref=e2488]
+              - paragraph [ref=e2489]: Психология · Романтика
+          - link "Лагерь с ночёвкой △, манга" [ref=e2491] [cursor=pointer]:
+            - /url: /manga/1ee97895-4796-4bcf-bcd1-5ef99c011f8b
+            - generic [ref=e2492]:
+              - img "Лагерь с ночёвкой △" [ref=e2493]
+              - generic [ref=e2499]: "9.38"
+              - generic [ref=e2502]: 30 гл.
+            - generic [ref=e2503]:
+              - heading "Лагерь с ночёвкой △" [level=3] [ref=e2504]
+              - paragraph [ref=e2505]: Комедия · Приключения
+          - link "Семья шпиона, манга" [ref=e2507] [cursor=pointer]:
+            - /url: /manga/6b958848-c885-4735-9201-12ee77abcb3c
+            - generic [ref=e2508]:
+              - img "Семья шпиона" [ref=e2509]
+              - generic [ref=e2515]: "9.27"
+              - generic [ref=e2518]: 174 гл.
+            - generic [ref=e2519]:
+              - heading "Семья шпиона" [level=3] [ref=e2520]
+              - paragraph [ref=e2521]: Боевик · Романтика
+          - 'link "Dungeon Crawler: Our Failing Marriage, манга" [ref=e2523] [cursor=pointer]':
+            - /url: /manga/9ed6af6f-6b27-4162-90fd-f1938927ecb6
+            - generic [ref=e2524]:
+              - 'img "Dungeon Crawler: Our Failing Marriage" [ref=e2525]'
+              - generic [ref=e2531]: "9.4"
+              - generic [ref=e2534]: 14 гл.
+            - generic [ref=e2535]:
+              - 'heading "Dungeon Crawler: Our Failing Marriage" [level=3] [ref=e2536]'
+              - paragraph [ref=e2537]: Романтика · Комедия
+          - link "Прошепчу тебе песню о любви, манга" [ref=e2539] [cursor=pointer]:
+            - /url: /manga/0e8fac17-979e-4e37-8f45-2c334b25d6dd
+            - generic [ref=e2540]:
+              - img "Прошепчу тебе песню о любви" [ref=e2541]
+              - generic [ref=e2547]: "9.19"
+              - generic [ref=e2550]: 12 гл.
+            - generic [ref=e2551]:
+              - heading "Прошепчу тебе песню о любви" [level=3] [ref=e2552]
+              - paragraph [ref=e2553]: Романтика · Girls' Love
+          - link "Мой дорогой враг, манга" [ref=e2555] [cursor=pointer]:
+            - /url: /manga/32f887f1-824f-4dbc-8e15-70a5b0b8112a
+            - generic [ref=e2556]:
+              - img "Мой дорогой враг" [ref=e2557]
+              - generic [ref=e2563]: "9.19"
+              - generic [ref=e2566]: 7 гл.
+            - generic [ref=e2567]:
+              - heading "Мой дорогой враг" [level=3] [ref=e2568]
+              - paragraph [ref=e2569]: Романтика · Комедия
+          - link "Umamusume - Pretty Derby PisuPisu☆SupiSupi - Golshi-chan, манга" [ref=e2571] [cursor=pointer]:
+            - /url: /manga/c83006f3-e650-46fd-b6de-a88df6b59fab
+            - generic [ref=e2572]:
+              - img "Umamusume - Pretty Derby PisuPisu☆SupiSupi - Golshi-chan" [ref=e2573]
+              - generic [ref=e2579]: "9.49"
+              - generic [ref=e2582]: 1 гл.
+            - generic [ref=e2583]:
+              - heading "Umamusume - Pretty Derby PisuPisu☆SupiSupi - Golshi-chan" [level=3] [ref=e2584]
+              - paragraph [ref=e2585]: Комедия · Спорт
+          - link "Мой братик теперь не братик!, манга" [ref=e2587] [cursor=pointer]:
+            - /url: /manga/ed996855-70de-449f-bba2-e8e24224c14d
+            - generic [ref=e2588]:
+              - img "Мой братик теперь не братик!" [ref=e2589]
+              - generic [ref=e2595]: "9.17"
+              - generic [ref=e2598]: 57 гл.
+            - generic [ref=e2599]:
+              - heading "Мой братик теперь не братик!" [level=3] [ref=e2600]
+              - paragraph [ref=e2601]: Комедия · Повседневность
+          - link "JM, манга" [ref=e2603] [cursor=pointer]:
+            - /url: /manga/d5208b9d-5233-4672-bf5c-6e7d23767e37
+            - generic [ref=e2604]:
+              - img "JM" [ref=e2605]
+              - generic [ref=e2611]: "9.24"
+              - generic [ref=e2614]: 1 гл.
+            - generic [ref=e2615]:
+              - heading "JM" [level=3] [ref=e2616]
+              - paragraph [ref=e2617]: Боевик · Комедия
+          - link "Я беспокоюсь о своей девушке, которая раньше была вся в синяках, манга" [ref=e2619] [cursor=pointer]:
+            - /url: /manga/0550851a-961b-4b34-9684-4b2901e62079
+            - generic [ref=e2620]:
+              - img "Я беспокоюсь о своей девушке, которая раньше была вся в синяках" [ref=e2621]
+              - generic [ref=e2627]: "9.17"
+              - generic [ref=e2630]: 43 гл.
+            - generic [ref=e2631]:
+              - heading "Я беспокоюсь о своей девушке, которая раньше была вся в синяках" [level=3] [ref=e2632]
+              - paragraph [ref=e2633]: Романтика · Повседневность
+          - link "A Witch's Life in Mongol, манга" [ref=e2635] [cursor=pointer]:
+            - /url: /manga/bcfe1b36-daee-40fd-9984-d9597caf9da7
+            - generic [ref=e2636]:
+              - img "A Witch's Life in Mongol" [ref=e2637]
+              - generic [ref=e2643]: "9.35"
+              - generic [ref=e2646]: 8 гл.
+            - generic [ref=e2647]:
+              - heading "A Witch's Life in Mongol" [level=3] [ref=e2648]
+              - paragraph [ref=e2649]: История · Драма
+          - link "My Happy Marriage, манга" [ref=e2651] [cursor=pointer]:
+            - /url: /manga/8aa1fb77-c86e-41db-adfb-0737c3438113
+            - generic [ref=e2652]:
+              - img "My Happy Marriage" [ref=e2653]
+              - generic [ref=e2659]: "9.16"
+              - generic [ref=e2662]: 11 гл.
+            - generic [ref=e2663]:
+              - heading "My Happy Marriage" [level=3] [ref=e2664]
+              - paragraph [ref=e2665]: История · Романтика
+          - link "Гартен, манга" [ref=e2667] [cursor=pointer]:
+            - /url: /manga/9f9fa579-6320-4d01-943b-5be5356e1995
+            - generic [ref=e2668]:
+              - img "Гартен" [ref=e2669]
+              - generic [ref=e2675]: "9.14"
+              - generic [ref=e2678]: 8 гл.
+            - generic [ref=e2679]:
+              - heading "Гартен" [level=3] [ref=e2680]
+              - paragraph [ref=e2681]: Боевик · Ужасы
+          - link "Ведьмак Ити, манга" [ref=e2683] [cursor=pointer]:
+            - /url: /manga/dea77c2d-dbaa-434a-b0af-0c116642434c
+            - generic [ref=e2684]:
+              - img "Ведьмак Ити" [ref=e2685]
+              - generic [ref=e2691]: "9.13"
+              - generic [ref=e2694]: 31 гл.
+            - generic [ref=e2695]:
+              - heading "Ведьмак Ити" [level=3] [ref=e2696]
+              - paragraph [ref=e2697]: Боевик · Комедия
+          - link "A Yuri Love Story That Begins with Getting Dumped in a Dream, манга" [ref=e2699] [cursor=pointer]:
+            - /url: /manga/1d2967dd-d157-4cbb-84ed-ea7cf7140d14
+            - generic [ref=e2700]:
+              - img "A Yuri Love Story That Begins with Getting Dumped in a Dream" [ref=e2701]
+              - generic [ref=e2707]: "9.1"
+              - generic [ref=e2710]: 37 гл.
+            - generic [ref=e2711]:
+              - heading "A Yuri Love Story That Begins with Getting Dumped in a Dream" [level=3] [ref=e2712]
+              - paragraph [ref=e2713]: Романтика · Комедия
+      - generic [ref=e2714]:
+        - heading "Популярные жанры" [level=2] [ref=e2717]
+        - generic [ref=e2718]:
+          - link "Фэнтези16 769" [ref=e2719] [cursor=pointer]:
+            - /url: /catalog?genre=%D0%A4%D1%8D%D0%BD%D1%82%D0%B5%D0%B7%D0%B8
+          - link "Экшен19 868" [ref=e2720] [cursor=pointer]:
+            - /url: /catalog?genre=%D0%AD%D0%BA%D1%88%D0%B5%D0%BD
+          - link "Драма23 691" [ref=e2721] [cursor=pointer]:
+            - /url: /catalog?genre=%D0%94%D1%80%D0%B0%D0%BC%D0%B0
+          - link "Комедия20 839" [ref=e2722] [cursor=pointer]:
+            - /url: /catalog?genre=%D0%9A%D0%BE%D0%BC%D0%B5%D0%B4%D0%B8%D1%8F
+          - link "Романтика18 834" [ref=e2723] [cursor=pointer]:
+            - /url: /catalog?genre=%D0%A0%D0%BE%D0%BC%D0%B0%D0%BD%D1%82%D0%B8%D0%BA%D0%B0
+          - link "Приключения8 726" [ref=e2724] [cursor=pointer]:
+            - /url: /catalog?genre=%D0%9F%D1%80%D0%B8%D0%BA%D0%BB%D1%8E%D1%87%D0%B5%D0%BD%D0%B8%D1%8F
+          - link "Фантастика7 681" [ref=e2725] [cursor=pointer]:
+            - /url: /catalog?genre=%D0%A4%D0%B0%D0%BD%D1%82%D0%B0%D1%81%D1%82%D0%B8%D0%BA%D0%B0
+          - link "Детектив5 756" [ref=e2726] [cursor=pointer]:
+            - /url: /catalog?genre=%D0%94%D0%B5%D1%82%D0%B5%D0%BA%D1%82%D0%B8%D0%B2
+          - link "Ужасы3 558" [ref=e2727] [cursor=pointer]:
+            - /url: /catalog?genre=%D0%A3%D0%B6%D0%B0%D1%81%D1%8B
+          - link "Спорт1 571" [ref=e2728] [cursor=pointer]:
+            - /url: /catalog?genre=%D0%A1%D0%BF%D0%BE%D1%80%D1%82
+  - contentinfo [ref=e2729]:
+    - generic [ref=e2730]:
+      - generic [ref=e2731]:
+        - generic [ref=e2732]:
+          - link "AniGalaxy — на главную" [ref=e2733] [cursor=pointer]:
+            - /url: /
+            - generic [ref=e2735]: AniGalaxy
+          - paragraph [ref=e2736]: "Твой проводник в мире аниме: свежие релизы, онгоинги и классика. Удобный выбор серий и озвучек, быстрый поиск и фильтры — на любом устройстве."
+          - generic [ref=e2737]:
+            - generic [ref=e2738]: Онлайн
+            - generic [ref=e2740]: HD-качество
+        - generic [ref=e2741]:
+          - heading "Навигация" [level=3] [ref=e2742]
+          - list [ref=e2743]:
+            - listitem [ref=e2744]:
+              - link "Главная" [ref=e2745] [cursor=pointer]:
+                - /url: /
+            - listitem [ref=e2746]:
+              - link "Каталог аниме" [ref=e2747] [cursor=pointer]:
+                - /url: /catalog
+            - listitem [ref=e2748]:
+              - link "Онгоинги" [ref=e2749] [cursor=pointer]:
+                - /url: /catalog?status=ongoing
+            - listitem [ref=e2750]:
+              - link "Каталог манги" [ref=e2751] [cursor=pointer]:
+                - /url: /manga
+            - listitem [ref=e2752]:
+              - link "Кланы" [ref=e2753] [cursor=pointer]:
+                - /url: /clans
+            - listitem [ref=e2754]:
+              - link "Топ рейтинга" [ref=e2755] [cursor=pointer]:
+                - /url: /catalog?sort=rating
+            - listitem [ref=e2756]:
+              - link "Аниме-фильмы" [ref=e2757] [cursor=pointer]:
+                - /url: /catalog?type=movie
+            - listitem [ref=e2758]:
+              - link "Premium-подписка" [ref=e2759] [cursor=pointer]:
+                - /url: /premium
+        - generic [ref=e2760]:
+          - heading "Популярные жанры" [level=3] [ref=e2761]
+          - generic [ref=e2762]:
+            - link "Фэнтези" [ref=e2763] [cursor=pointer]:
+              - /url: /catalog?genre=%D0%A4%D1%8D%D0%BD%D1%82%D0%B5%D0%B7%D0%B8
+            - link "Экшен" [ref=e2764] [cursor=pointer]:
+              - /url: /catalog?genre=%D0%AD%D0%BA%D1%88%D0%B5%D0%BD
+            - link "Романтика" [ref=e2765] [cursor=pointer]:
+              - /url: /catalog?genre=%D0%A0%D0%BE%D0%BC%D0%B0%D0%BD%D1%82%D0%B8%D0%BA%D0%B0
+            - link "Комедия" [ref=e2766] [cursor=pointer]:
+              - /url: /catalog?genre=%D0%9A%D0%BE%D0%BC%D0%B5%D0%B4%D0%B8%D1%8F
+            - link "Драма" [ref=e2767] [cursor=pointer]:
+              - /url: /catalog?genre=%D0%94%D1%80%D0%B0%D0%BC%D0%B0
+            - link "Приключения" [ref=e2768] [cursor=pointer]:
+              - /url: /catalog?genre=%D0%9F%D1%80%D0%B8%D0%BA%D0%BB%D1%8E%D1%87%D0%B5%D0%BD%D0%B8%D1%8F
+            - link "Фантастика" [ref=e2769] [cursor=pointer]:
+              - /url: /catalog?genre=%D0%A4%D0%B0%D0%BD%D1%82%D0%B0%D1%81%D1%82%D0%B8%D0%BA%D0%B0
+            - link "Детектив" [ref=e2770] [cursor=pointer]:
+              - /url: /catalog?genre=%D0%94%D0%B5%D1%82%D0%B5%D0%BA%D1%82%D0%B8%D0%B2
+      - generic [ref=e2771]:
+        - paragraph [ref=e2772]: © 2026 AniGalaxy. Все права на контент принадлежат правообладателям.
+        - paragraph [ref=e2773]: Видео предоставляется сторонними сервисами хранения.
+  - status "Уведомления о наградах"
+  - link "Кланы" [ref=e2774] [cursor=pointer]:
+    - /url: /clans
+    - generic [aria-hidden] [ref=e2775]: 🛡
+  - button "Открыть общий чат" [ref=e2776]
+  - complementary [aria-hidden]:
+    - generic:
+      - generic:
+        - generic:
+          - paragraph: Общий чат
+          - paragraph: ● 8 в сети
+      - button
+    - generic:
+      - generic:
+        - generic: SA
+        - generic:
+          - generic:
+            - generic: SAH4R_TV
+            - generic: Легенда
+            - generic: 08:12
+          - paragraph: поставьте лайк на подборку пж
+      - generic:
+        - generic: MO
+        - generic:
+          - generic:
+            - generic: mochi
+            - generic: Отаку
+            - generic: 08:42
+          - paragraph: продлил премиум, рамка того стоила
+      - generic:
+        - generic: SL
+        - generic:
+          - generic:
+            - generic: sleepy
+            - generic: Вампир
+            - generic: 08:44
+          - paragraph: +1 серия перед сном, классика
+      - generic:
+        - generic: KU
+        - generic:
+          - generic:
+            - generic: Kuroi
+            - generic: Гуль Гуль Гуль
+            - generic: 08:49
+          - paragraph: сегодня дропнулась редкая рамка
+      - generic:
+        - generic: ХР
+        - generic:
+          - generic:
+            - generic: Хранитель
+            - generic: Мудрец
+            - generic: 08:49
+          - paragraph: читаю сначала описание, потом смотрю
+      - generic:
+        - generic: "ON"
+        - generic:
+          - generic:
+            - generic: oni-chan
+            - generic: Они
+            - generic: 08:52
+          - paragraph: смотрю и плак (от смеха)
+      - generic:
+        - generic: ТЭ
+        - generic:
+          - generic:
+            - generic: Тэнгу
+            - generic: Тэнгу
+            - generic: 09:03
+          - paragraph: вихрь из перьев и пыли — это про мой недосмотр-лист
+      - generic:
+        - generic: SA
+        - generic:
+          - generic:
+            - generic: SAH4R_TV
+            - generic: Легенда
+            - generic: 09:10
+          - paragraph: залетел на стрим — и пропал на три часа
+      - generic:
+        - generic: SL
+        - generic:
+          - generic:
+            - generic: sleepy
+            - generic: Вампир
+            - generic: 09:17
+          - paragraph: кто-нибудь смотрит новый сезон?
+    - generic:
+      - paragraph: Читать могут все, писать — после входа в аккаунт
+      - paragraph: "Серверов нет: чат локальный, «онлайн» симулируется в этом браузере"
+  - alert [ref=e2779]

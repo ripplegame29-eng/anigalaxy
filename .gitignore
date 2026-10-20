@@ -34,6 +34,11 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
+# логи локального dev-сервера (next dev пишет их в корень)
+dev.log
+dev*.out
+dev*.err
+
 # env files (can opt-in for committing if needed)
 .env*
 

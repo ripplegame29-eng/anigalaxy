@@ -1,0 +1,265 @@
+{
+  "game": "The NOexistenceN of you AND me",
+  "appid": 2873080,
+  "source": "https://store.steampowered.com/points/shop/app/2873080",
+  "api": "https://api.steampowered.com/ILoyaltyRewardsService/BatchedQueryRewardItems/v1",
+  "cdn": "https://shared.fastly.steamstatic.com/community_assets/images/items/2873080",
+  "note": "Steam Community items. Property of Valve Corporation and the game's publisher. Personal/fan use only.",
+  "groups": [
+    {
+      "dir": "1 Анимированные аватары",
+      "title": "Animated Avatars",
+      "items": [
+        {
+          "name": "Starry Lilith",
+          "files": [
+            {
+              "file": "starry-lilith.gif",
+              "bytes": 1720143,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2873080/33e549955162361a7684873731207e3cce5d66ad.gif"
+            },
+            {
+              "file": "starry-lilith-1.jpg",
+              "bytes": 35831,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2873080/21d49278763efc70a8003bbb1a529fede5ed7bcc.jpg"
+            }
+          ]
+        },
+        {
+          "name": "QQ Lilith",
+          "files": [
+            {
+              "file": "qq-lilith.gif",
+              "bytes": 1975942,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2873080/35f3f1f670296bc79b0d6706b1373d7805d0e4b5.gif"
+            },
+            {
+              "file": "qq-lilith-1.jpg",
+              "bytes": 35693,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2873080/d7bf1b7424692427894327843351abc8cb920725.jpg"
+            }
+          ]
+        },
+        {
+          "name": "Nurse Lilith",
+          "files": [
+            {
+              "file": "nurse-lilith.gif",
+              "bytes": 2079495,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2873080/52a165249be20fb3755e9dfff33205506d457616.gif"
+            },
+            {
+              "file": "nurse-lilith-1.jpg",
+              "bytes": 33439,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2873080/6b7f864731ac2dac5c3bf68e148648815e414782.jpg"
+            }
+          ]
+        },
+        {
+          "name": "Just Lilith",
+          "files": [
+            {
+              "file": "just-lilith.gif",
+              "bytes": 2067660,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2873080/2cf13c9b16e68774aeaaa12f812d0f0e25a56548.gif"
+            },
+            {
+              "file": "just-lilith-1.jpg",
+              "bytes": 40722,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2873080/7a704b96b6c605d9b69a92d10dbb50c7e70f574a.jpg"
+            }
+          ]
+        },
+        {
+          "name": "Cake Lilith",
+          "files": [
+            {
+              "file": "cake-lilith.gif",
+              "bytes": 2044303,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2873080/b7aa246e15b0bb0033e3566b4ed7db3861efad84.gif"
+            },
+            {
+              "file": "cake-lilith-1.jpg",
+              "bytes": 38495,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2873080/82cb5ecf945ecbf96e9509269f19ce3533e0ee93.jpg"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "dir": "2 Рамки аватара",
+      "title": "Avatar Frames",
+      "items": [
+        {
+          "name": "lilith_zzz",
+          "files": [
+            {
+              "file": "lilith-zzz.png",
+              "bytes": 47619,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2873080/63b449e0031452c69bad10399f8dd96b94f23c2b.png"
+            },
+            {
+              "file": "lilith-zzz-1.png",
+              "bytes": 29000,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2873080/7264173d19b477ece727d0ccf39033a503efbb23.png"
+            }
+          ]
+        },
+        {
+          "name": "lilith_wink",
+          "files": [
+            {
+              "file": "lilith-wink.png",
+              "bytes": 27266,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2873080/7591f6defdeafebf72d2bfdc75fc7568262557ba.png"
+            },
+            {
+              "file": "lilith-wink-1.png",
+              "bytes": 20064,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2873080/6a1dfcfa9567b298a5bd18dc2747410d07d01012.png"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "dir": "3 Фоны мини-профиля",
+      "title": "Mini-Profile Backgrounds",
+      "items": [
+        {
+          "name": "Just Lilith",
+          "files": [
+            {
+              "file": "just-lilith.jpg",
+              "bytes": 303373,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2873080/f1867ba793074b12184f8788fb6d6baaf1ed76bc.jpg"
+            },
+            {
+              "file": "just-lilith-1.webm",
+              "bytes": 1630431,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2873080/1c7d3d3fbbc9ef348d22a1b4ae8d49e2ffed31df.webm"
+            },
+            {
+              "file": "just-lilith-2.mp4",
+              "bytes": 4177513,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2873080/023547daf7a2822b76ef85f39e16b527bde63cbe.mp4"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "dir": "4 Фоны профиля",
+      "title": "Profile Backgrounds",
+      "items": [
+        {
+          "name": "Just Lilith",
+          "files": [
+            {
+              "file": "just-lilith.jpg",
+              "bytes": 324541,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2873080/3379ca0b5683d4a53960ed08bf9fd367a82225a3.jpg"
+            },
+            {
+              "file": "just-lilith-1.webm",
+              "bytes": 3535223,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2873080/b264df432dd16222bf65d4627a0dd6204b46a48b.webm"
+            },
+            {
+              "file": "just-lilith-2.mp4",
+              "bytes": 4188364,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2873080/1a12b4402002173a5025a87e430434f2448f4a5f.mp4"
+            },
+            {
+              "file": "just-lilith-3.webm",
+              "bytes": 255430,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2873080/f145ec20506b9b15f8e8f409e8aa832cee05de1b.webm"
+            },
+            {
+              "file": "just-lilith-4.mp4",
+              "bytes": 1018698,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2873080/3f9d620d07365dd5d2cf2ed6616edfb9bbd6e0ed.mp4"
+            }
+          ]
+        },
+        {
+          "name": "Starry Ferris Wheel",
+          "files": [
+            {
+              "file": "starry-ferris-wheel.jpg",
+              "bytes": 351230,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2873080/75c82d572f96aebd0aa1c5a31a17f4d5f159a59c.jpg"
+            },
+            {
+              "file": "starry-ferris-wheel-1.jpg",
+              "bytes": 340662,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2873080/d2a6425f84f402e9310dcb7c7e46695ed4d65f45.jpg"
+            }
+          ]
+        },
+        {
+          "name": "Fleeting Memories",
+          "files": [
+            {
+              "file": "fleeting-memories.jpg",
+              "bytes": 297047,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2873080/7b2d356fa5ab5b30ac510af77893adefcc5d9a7c.jpg"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "dir": "5 Анимированные стикеры",
+      "title": "Animated Stickers",
+      "items": [
+        {
+          "name": "Winkwink",
+          "files": [
+            {
+              "file": "winkwink.png",
+              "bytes": 291821,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2873080/6cee956fe98ee42e49c990a3ed5554be6a761a78.png"
+            },
+            {
+              "file": "winkwink-1.png",
+              "bytes": 23727,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2873080/3c9a51ae3de5884b56054a4cbe7b404ce8953991.png"
+            }
+          ]
+        },
+        {
+          "name": "GoodEnough",
+          "files": [
+            {
+              "file": "goodenough.png",
+              "bytes": 297265,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2873080/9ee20d6659d53379e040ca2737a5cfad059cd332.png"
+            },
+            {
+              "file": "goodenough-1.png",
+              "bytes": 21149,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2873080/df4d255d619e0c116e1862a3dc60cc3b2097487b.png"
+            }
+          ]
+        },
+        {
+          "name": "Confusion",
+          "files": [
+            {
+              "file": "confusion.png",
+              "bytes": 293606,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2873080/bd984efc18acc8815972c9de8e784dc806e6023f.png"
+            },
+            {
+              "file": "confusion-1.png",
+              "bytes": 20612,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2873080/e0ae2423468b8cf2e457174880f36e1567ab5f3b.png"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

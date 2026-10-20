@@ -64,6 +64,37 @@ export interface BpExtras {
 
 /* ------------------------------- Сезон ---------------------------------- */
 
+/**
+ * Тип задания сезона.
+ *
+ * Задания не заводят собственных счётчиков: каждое указывает на то сезонное
+ * состояние, которое движок и так ведёт в `doc.battlepass`. Поэтому прогресс
+ * всегда настоящий, а обнуляется он вместе со сменой сезона — см.
+ * `syncSeason` в engine.ts.
+ */
+export type BpMissionKind = "bpXp" | "level" | "claim";
+
+export interface BpMission {
+  id: string;
+  title: string;
+  description: string;
+  kind: BpMissionKind;
+  /** Цель в единицах kind: XP пропуска, номер уровня, число забранных наград */
+  target: number;
+}
+
+const SEASON_MISSIONS: BpMission[] = [
+  { id: "ms-xp-500", title: "Первый полёт", description: "Накопить 500 XP боевого пропуска за сезон", kind: "bpXp", target: 500 },
+  { id: "ms-xp-2000", title: "Разгон", description: "Накопить 2000 XP боевого пропуска за сезон", kind: "bpXp", target: 2000 },
+  { id: "ms-xp-6000", title: "Полный разгон", description: "Накопить 6000 XP боевого пропуска за сезон", kind: "bpXp", target: 6000 },
+  { id: "ms-lvl-10", title: "Десятый рубеж", description: "Дойти до 10 уровня боевого пропуска", kind: "level", target: 10 },
+  { id: "ms-lvl-30", title: "Тридцатый рубеж", description: "Дойти до 30 уровня боевого пропуска", kind: "level", target: 30 },
+  { id: "ms-claim-20", title: "Кладоискатель", description: "Забрать 20 наград на уровнях пропуска", kind: "claim", target: 20 },
+];
+
+/** Задания сезона в порядке показа */
+export const BP_MISSIONS: BpMission[] = SEASON_MISSIONS;
+
 /* ---------------------------- Уровни наград ------------------------------ */
 
 /**

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import type { AnimeCard as Card } from "@/lib/types";
 import { AnimeCard } from "./AnimeCard";
+import { RowHighlight } from "./RowHighlight";
 import { Reveal } from "./Reveal";
 
 /**
@@ -135,20 +136,22 @@ export function AnimeRow({
         </div>
       </div>
 
-      {/* Лента */}
-      <div
-        ref={railRef}
-        className="rail -mx-2 flex gap-3 overflow-x-auto px-2 pb-2 sm:gap-4"
+      {/* Лента. pb-2 убран: вертикальные отступы задаёт .hl-row (см.
+          components/row-highlight.css) — иначе плашку и подъём карточки
+          режет overflow ленты. */}
+      <RowHighlight
+        railRef={railRef}
+        className="rail -mx-2 flex gap-3 overflow-x-auto px-2 sm:gap-4"
       >
         {cards.map((card, i) => (
           <div
             key={card.id}
-            className="w-[160px] shrink-0 sm:w-[184px] md:w-[200px] lg:w-[216px] xl:w-[224px]"
+            className="hl-card w-[160px] shrink-0 sm:w-[184px] md:w-[200px] lg:w-[216px] xl:w-[224px]"
           >
             <AnimeCard card={card} priority={i < 4} />
           </div>
         ))}
-      </div>
+      </RowHighlight>
     </Reveal>
   );
 }

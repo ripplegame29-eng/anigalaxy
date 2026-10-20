@@ -12,6 +12,35 @@
  */
 
 import type { ProgressionConfig } from "./types";
+import { PARTICLE_EFFECTS, STYLE_EFFECTS } from "../profile-effects";
+
+/**
+ * id услуги «Эмблема уровня в профиле».
+ *
+ * Вынесен отдельно, потому что на неё смотрят в двух местах: витрина
+ * магазина (категория «Кастомизация») и предпросмотр профиля, где блок
+ * уровня появляется после покупки. Строка в обоих местах разъехалась бы
+ * при переименовании предмета.
+ */
+export const LEVEL_CARD_SERVICE = "svc_levelcard";
+
+/**
+ * Эффекты профиля в магазине.
+ *
+ * Собираются из каталога `profile-effects`, а не пишутся руками: цена и
+ * редкость эффекта нужны и в витрине, и в «Внешнем виде», и при покупке —
+ * три копии одного числа разъехались бы при первой же правке баланса.
+ */
+const EFFECT_SHOP_ITEMS = [...PARTICLE_EFFECTS, ...STYLE_EFFECTS].map((item) => ({
+  id: item.id,
+  name: item.name,
+  description: item.description,
+  kind: "effect" as const,
+  price: item.price,
+  rarity: item.rarity,
+  /** Постоянная покупка: эффект открывается навсегда */
+  maxOwned: 1,
+}));
 
 export const PROGRESSION_CONFIG = {
   version: 1,
@@ -42,10 +71,26 @@ export const PROGRESSION_CONFIG = {
     levelGiftAc: 50,
     levelGiftName: "Подарок за новый уровень",
     levelGiftHint: "Открывали уровень",
+    /** Награда за приглашённого друга (раздел «Пригласи друзей») */
+    referralXp: 100,
+    referralAc: 50,
+    /** Дней Premium сверху: пригласившему продлевают подписку */
+    referralPremiumDays: 5,
     freezePrice: 300,
     freezeMax: 2,
     // Ориентир «окупаемости» в магазине: ~40 AC/сутки у активного пользователя
     dailyAcEstimate: 40,
+  },
+
+  /* --------------------- Отображаемое имя и его стиль ------------------ */
+  // Услуги «Смена ника» (svc_nick) и «Цвет ника» (svc_color): базовые цены
+  // живут в магазине, здесь — только наценки за опции оформления и число
+  // бесплатных применений, которые даёт подписка (одноразовые, флаг в
+  // документе прогрессии: bonus:svc_nick / bonus:svc_color).
+  nickname: {
+    /** Сколько раз подписка покрывает услугу полностью */
+    freeUses: 1,
+    addons: { gradient: 100, flow: 100, glow: 50 },
   },
 
   /* --------------------------- Зачёт серии ---------------------------- */
@@ -72,12 +117,15 @@ export const PROGRESSION_CONFIG = {
   ],
 
   /* ------------------- Теги за достижение уровня ----------------------- */
+  /* Тэнгу — за 30 уровень. Раньше он продавался в магазине, теперь
+     выдаётся только здесь; «Император» убран с 75 уровня — он ушёл
+     за достижение, и держать его в levelTags незачем. */
   levelTags: [
     { level: 5, tagId: "tag_otaku" },
     { level: 10, tagId: "tag_sensei" },
     { level: 25, tagId: "tag_syndicate" },
+    { level: 30, tagId: "tag_tengu" },
     { level: 50, tagId: "tag_shogun" },
-    { level: 75, tagId: "tag_emperor" },
   ],
 
   /* --------------------------- Правила XP ------------------------------ */
@@ -664,10 +712,10 @@ export const PROGRESSION_CONFIG = {
       id: "ach_night_10",
       family: "night",
       name: "Полуночник",
-      description: "Досмотреть 10 серий с 00:00 до 05:00",
+      description: "Смотреть аниме после 3 часов ночи 30 раз",
       trophy: 25,
       rarity: "UNCOMMON",
-      condition: { metric: "NIGHT_EPISODES", threshold: 10 },
+      condition: { metric: "NIGHT_EPISODES", threshold: 30 },
       reward: { xp: 250, ac: 100 },
     },
     {
@@ -966,6 +1014,86 @@ export const PROGRESSION_CONFIG = {
       reward: { xp: 500, ac: 250 },
       hidden: true,
     },
+
+    /* ------------------------- Медали из коллекций ---------------------- */
+    /* Шесть достижений, которым в движке не хватало счётчиков: рекорд суток,
+       число тайтлов в конкретном жанре и три «мета»-условия. Каждому заведён
+       настоящий счётчик (см. `genres.ts` и `resolveMetrics`), а не выдуманное
+       число: недостижимое достижение хуже, чем его отсутствие.
+
+       Коды и названия у этих шести заданы медалями дословно из макетов, так
+       что лестница семейства `medal` для них не используется — она лишь
+       подстраховка на случай, если медаль для достижения не найдётся. */
+    {
+      id: "ach_chrono_day",
+      family: "medal",
+      name: "Хроноритм",
+      description: "Посмотреть 24 часа аниме за одни сутки",
+      trophy: 750,
+      rarity: "SECRET",
+      condition: { metric: "MAX_MINUTES_IN_DAY", threshold: 1440 },
+      reward: { xp: 2000, ac: 1000 },
+      hidden: true,
+    },
+    {
+      id: "ach_genre_shonen",
+      family: "medal",
+      name: "Клятва воина",
+      description: "Досмотреть 50 тайтлов в жанре сёнэн",
+      trophy: 300,
+      rarity: "SECRET",
+      condition: { metric: "GENRE_SHONEN", threshold: 50 },
+      reward: { xp: 1000, ac: 500 },
+      hidden: true,
+    },
+    {
+      id: "ach_genre_fantasy",
+      family: "medal",
+      name: "Звёздный странник",
+      description: "Посмотреть 30 тайтлов в жанре фантастики",
+      trophy: 300,
+      rarity: "SECRET",
+      condition: { metric: "GENRE_FANTASY", threshold: 30 },
+      reward: { xp: 1000, ac: 500 },
+      hidden: true,
+    },
+    {
+      id: "ach_secrets_all",
+      family: "medal",
+      name: "Врата ёкай",
+      /* 12, а не 13: тринадцатым скрытым было `ach_all_done`, которое само
+         требует это достижение — получался замкнутый круг, и оба оставались
+         недостижимыми навсегда. Теперь нужны все тайные знаки, кроме двух
+         финальных медалей. */
+      description: "Собрать все тайные знаки (12 из 14 скрытых)",
+      trophy: 1000,
+      rarity: "MYTHIC",
+      condition: { metric: "SECRETS_DONE", threshold: 12 },
+      reward: { xp: 3000, ac: 1500 },
+      hidden: true,
+    },
+    {
+      id: "ach_seasons_all",
+      family: "medal",
+      name: "Хранитель врат",
+      description: "Пройти все сезонные события сайта",
+      trophy: 1000,
+      rarity: "MYTHIC",
+      condition: { metric: "SEASONS_DONE", threshold: 1 },
+      reward: { xp: 3000, ac: 1500 },
+      hidden: true,
+    },
+    {
+      id: "ach_all_done",
+      family: "medal",
+      name: "Император аниме",
+      description: "Получить все остальные достижения",
+      trophy: 1000,
+      rarity: "MYTHIC",
+      condition: { metric: "ACHIEVEMENTS_DONE", threshold: 76 },
+      reward: { xp: 3000, ac: 1500 },
+      hidden: true,
+    },
   ],
 
   /* ------------------------------- Теги -------------------------------- */
@@ -1022,8 +1150,9 @@ export const PROGRESSION_CONFIG = {
       name: "Сенсей",
       description: "Тот, кто смотрит первым",
       rarity: "UNCOMMON",
-      source: "level",
-      level: 10,
+      // Рубеж «Первая искра» реферальной программы
+      source: "referral",
+      friends: 1,
       visual: {
         c: "#22d3ee",
         c2: "#164e63",
@@ -1036,10 +1165,10 @@ export const PROGRESSION_CONFIG = {
     {
       id: "tag_tengu",
       name: "Тэнгу",
-      description: "Вихрь из перьев и пыли",
+      description: "Вихрь из перьев и пыли. Тэг Тэнгу — за 30 уровень",
       rarity: "UNCOMMON",
-      source: "shop",
-      price: 1500,
+      source: "level",
+      level: 30,
       visual: {
         c: "#ef4444",
         c2: "#111827",
@@ -1052,10 +1181,10 @@ export const PROGRESSION_CONFIG = {
     {
       id: "tag_oni",
       name: "Они",
-      description: "Хищная улыбка в титрах",
+      description: "Хищная улыбка в титрах. Тэг Они — только за достижение",
       rarity: "UNCOMMON",
-      source: "shop",
-      price: 1500,
+      source: "achievement",
+      achievementId: "ach_streak_30",
       visual: {
         c: "#f43f5e",
         c2: "#7f1d1d",
@@ -1271,10 +1400,10 @@ export const PROGRESSION_CONFIG = {
     {
       id: "tag_legend",
       name: "Легенда",
-      description: "Его знают без представления",
+      description: "Его знают без представления. Тысяча подборок",
       rarity: "LEGENDARY",
       source: "achievement",
-      achievementId: "ach_titles_100",
+      achievementId: "ach_collection_1000",
       visual: {
         c: "#fde68a",
         c2: "#78350f",
@@ -1289,10 +1418,10 @@ export const PROGRESSION_CONFIG = {
     {
       id: "tag_emperor",
       name: "Император",
-      description: "Вершина пирамиды",
+      description: "Вершина пирамиды. Две тысячи серий — долгий путь",
       rarity: "LEGENDARY",
-      source: "level",
-      level: 75,
+      source: "achievement",
+      achievementId: "ach_episodes_2000",
       visual: {
         c: "#c084fc",
         c2: "#facc15",
@@ -1307,10 +1436,10 @@ export const PROGRESSION_CONFIG = {
     {
       id: "tag_overlord",
       name: "Владыка",
-      description: "Слово, которое цитируют",
+      description: "Слово, которое цитируют. Тысяча комментариев",
       rarity: "LEGENDARY",
       source: "achievement",
-      achievementId: "ach_ratings_500",
+      achievementId: "ach_comments_1000",
       visual: {
         c: "#22d3ee",
         c2: "#a855f7",
@@ -1344,10 +1473,10 @@ export const PROGRESSION_CONFIG = {
     {
       id: "tag_celestial",
       name: "Небожитель",
-      description: "Год без единого пропуска",
+      description: "Пятьсот оценок живых людей",
       rarity: "LEGENDARY",
       source: "achievement",
-      achievementId: "ach_days_365",
+      achievementId: "ach_ratings_500",
       visual: {
         c: "#e0f2fe",
         c2: "#312e81",
@@ -1468,6 +1597,292 @@ export const PROGRESSION_CONFIG = {
         "noise"],
         text: "metal",
         icon: `<path d="M6.4 21 8.8 8.6"/><path d="M8.8 8.6C14.6 9 19 13 20.4 18.7 18.5 13.4 14.4 10.6 8.8 10.4z"/>`,
+      },
+    },
+    {
+      id: "tag_bossfinala",
+      name: "Босс финала",
+      description: "Тот, кого ждали всю арку и кто держит её на себе",
+      rarity: "MYTHIC",
+      source: "shop",
+      price: 50000,
+      visual: {
+        c: "#ff2e4d",
+        c2: "#2a0509",
+        effects: ["enter", "aura", "orbit", "sparks", "double", "backdrop-lava", "noise"],
+        text: "neon",
+        icon: `<path d="M12 3a8 8 0 0 0-5 14v3h10v-3a8 8 0 0 0-5-14z"/><circle cx="9" cy="12" r="1.3"/><circle cx="15" cy="12" r="1.3"/>`,
+      },
+    },
+    {
+      id: "tag_tenmonarha",
+      name: "Тень монарха",
+      description: "Правит из тени, пока смотришь не туда",
+      rarity: "MYTHIC",
+      source: "shop",
+      price: 50000,
+      visual: {
+        c: "#9b5cff",
+        c2: "#12062a",
+        effects: ["enter", "aura", "orbit", "sparks", "double", "backdrop-stars", "runes"],
+        text: "neon",
+        icon: `<path d="M3 18h18M4 18L3 7l5 4 4-6 4 6 5-4-1 11"/>`,
+      },
+    },
+    {
+      id: "tag_yasilneyshiy",
+      name: "Я — сильнейший",
+      description: "Сила, которую не считали, потому что не с чем было",
+      rarity: "MYTHIC",
+      source: "shop",
+      price: 50000,
+      visual: {
+        c: "#4fc3ff",
+        c2: "#061a3a",
+        effects: ["enter", "aura", "orbit", "sparks", "double", "backdrop-grid", "glitch"],
+        text: "glitch",
+        icon: `<path d="M12 12c-2-2.7-3.5-4-5.5-4a4 4 0 0 0 0 8c2 0 3.5-1.3 5.5-4zm0 0c2 2.7 3.5 4 5.5 4a4 4 0 0 0 0-8c-2 0-3.5 1.3-5.5 4z"/>`,
+      },
+    },
+    {
+      id: "tag_skryvayusilu",
+      name: "Скрываю силу",
+      description: "Сильная сторона спрятана так, что её не видно",
+      rarity: "MYTHIC",
+      source: "shop",
+      price: 50000,
+      visual: {
+        c: "#e0b84f",
+        c2: "#14110a",
+        effects: ["enter", "aura", "orbit", "sparks", "double", "backdrop-fog", "flame"],
+        text: "neon",
+        icon: `<path d="M4 5h16v6a8 8 0 0 1-16 0z"/><path d="M8 10l2 1M16 10l-2 1M9 15c2 1.5 4 1.5 6 0"/>`,
+      },
+    },
+    {
+      id: "tag_regressor",
+      name: "Регрессор",
+      description: "Вернулся в прошлый раз и пошёл дальше",
+      rarity: "MYTHIC",
+      source: "shop",
+      price: 50000,
+      visual: {
+        c: "#2ee6c8",
+        c2: "#06262a",
+        effects: ["enter", "aura", "orbit", "sparks", "double", "backdrop-holo", "border-blade"],
+        text: "neon",
+        icon: `<path d="M6 3h12M6 21h12M7 3c0 5 5 6 5 9s-5 4-5 9M17 3c0 5-5 6-5 9s5 4 5 9"/>`,
+      },
+    },
+    {
+      id: "tag_boggachi",
+      name: "Бог гачи",
+      description: "Выпадает всё, что нужно, и в нужный момент",
+      rarity: "MYTHIC",
+      source: "shop",
+      price: 50000,
+      visual: {
+        c: "#ffd86b",
+        c2: "#1a1030",
+        effects: ["enter", "aura", "orbit", "sparks", "double", "backdrop-grid", "mist"],
+        text: "neon",
+        icon: `<rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="9" cy="9" r="1"/><circle cx="15" cy="9" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="9" cy="15" r="1"/><circle cx="15" cy="15" r="1"/>`,
+      },
+    },
+    {
+      id: "tag_geroyinogomira",
+      name: "Герой иного мира",
+      description: "Пришёл из мира, где таких, как ты, не бывает",
+      rarity: "MYTHIC",
+      // Рубеж «Архитектор галактики» реферальной программы
+      source: "referral",
+      friends: 100,
+      visual: {
+        c: "#ff7a45",
+        c2: "#3a1208",
+        effects: ["enter", "aura", "orbit", "sparks", "double", "backdrop-lava", "tremor"],
+        text: "neon",
+        icon: `<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/>`,
+      },
+    },
+    {
+      id: "tag_korolsceny",
+      name: "Король сцены",
+      description: "Сцена принадлежит ему с первой секунды",
+      rarity: "LEGENDARY",
+      source: "shop",
+      price: 30000,
+      visual: {
+        c: "#ff4fd8",
+        c2: "#2a0a33",
+        effects: ["aura", "border", "sparks", "backdrop-grid", "runes"],
+        text: "metal",
+        icon: `<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/>`,
+      },
+    },
+    {
+      id: "tag_bezkonkurentov",
+      name: "Без конкурентов",
+      description: "Рядом не осталось никого, кто мог бы сравниться",
+      rarity: "LEGENDARY",
+      source: "shop",
+      price: 30000,
+      visual: {
+        c: "#e8eefc",
+        c2: "#222833",
+        effects: ["aura", "border", "sparks", "backdrop-fog", "noise"],
+        text: "metal",
+        icon: `<path d="M7 4h10v5a5 5 0 0 1-10 0zM7 6H3v2a4 4 0 0 0 4 4M17 6h4v2a4 4 0 0 1-4 4M12 14v4M8 21h8"/>`,
+      },
+    },
+    {
+      id: "tag_izbrannyy",
+      name: "Избранный",
+      description: "Выбрали тебя — и теперь это твоё",
+      rarity: "LEGENDARY",
+      source: "shop",
+      price: 30000,
+      visual: {
+        c: "#3ef0b0",
+        c2: "#06281f",
+        effects: ["aura", "border", "sparks", "backdrop-holo", "mist"],
+        text: "metal",
+        icon: `<path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>`,
+      },
+    },
+    {
+      id: "tag_ohotniksranga",
+      name: "Охотник S-ранга",
+      description: "Охотится на то, что выше его класса",
+      rarity: "LEGENDARY",
+      source: "shop",
+      price: 30000,
+      visual: {
+        c: "#ffb02e",
+        c2: "#2a1a06",
+        effects: ["aura", "border", "sparks", "backdrop-stars", "tremor"],
+        text: "metal",
+        icon: `<circle cx="12" cy="12" r="7"/><path d="M12 2v5M12 17v5M2 12h5M17 12h5"/>`,
+      },
+    },
+    {
+      id: "tag_tsundere",
+      name: "Тсундере",
+      description: "Колкость вместо слов, и всё равно слышно",
+      rarity: "LEGENDARY",
+      source: "shop",
+      price: 30000,
+      visual: {
+        c: "#ff6b8b",
+        c2: "#3a0f1f",
+        effects: ["aura", "border", "sparks", "backdrop-lava", "glitch"],
+        text: "metal",
+        icon: `<path d="M12 21s-8-5.2-8-11a4.5 4.5 0 0 1 8-2.5A4.5 4.5 0 0 1 20 10c0 5.8-8 11-8 11z"/>`,
+      },
+    },
+    {
+      id: "tag_mehapilot",
+      name: "Меха-пилот",
+      description: "Связь с машиной прочнее, чем с людьми",
+      rarity: "LEGENDARY",
+      source: "shop",
+      price: 30000,
+      visual: {
+        c: "#38e0ff",
+        c2: "#06242e",
+        effects: ["aura", "border", "sparks", "backdrop-grid", "border-blade"],
+        text: "metal",
+        icon: `<path d="M12 3l8 4v6l-8 8-8-8V7z"/><path d="M8 11h8M12 11v5"/>`,
+      },
+    },
+    {
+      id: "tag_bezumnyygeniy",
+      name: "Безумный гений",
+      description: "Считает то, что другие не успевают",
+      rarity: "EPIC",
+      source: "shop",
+      price: 15000,
+      visual: {
+        c: "#b6ff3d",
+        c2: "#0f2a06",
+        effects: ["sparks", "border", "aura", "backdrop-grid", "glitch"],
+        text: "glitch",
+        icon: `<circle cx="12" cy="12" r="1.6"/><ellipse cx="12" cy="12" rx="10" ry="4"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(60 12 12)"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(120 12 12)"/>`,
+      },
+    },
+    {
+      id: "tag_narciss",
+      name: "Нарцисс",
+      description: "Смотрится в зеркало чаще, чем в цель",
+      rarity: "EPIC",
+      source: "shop",
+      price: 15000,
+      visual: {
+        c: "#ff7ad9",
+        c2: "#2a0a2a",
+        effects: ["sparks", "border", "aura", "backdrop-holo", "flame"],
+        text: "tremor",
+        icon: `<path d="M6 3h12l4 6-10 12L2 9zM2 9h20M9 3l-2 6 5 12 5-12-2-6"/>`,
+      },
+    },
+    {
+      id: "tag_yandere",
+      name: "Яндере",
+      description: "Любовь, от которой становится не по себе",
+      rarity: "EPIC",
+      source: "shop",
+      price: 15000,
+      visual: {
+        c: "#ff3b6b",
+        c2: "#3a0616",
+        effects: ["sparks", "border", "aura", "backdrop-lava", "tremor"],
+        text: "tremor",
+        icon: `<path d="M12 21s-8-5.2-8-11a4.5 4.5 0 0 1 8-2.5A4.5 4.5 0 0 1 20 10c0 5.8-8 11-8 11z"/><path d="M12 7.5l-2 4 3 2-2 4"/>`,
+      },
+    },
+    {
+      id: "tag_sempay",
+      name: "Сэмпай",
+      description: "Старший, к которому возвращаются",
+      rarity: "EPIC",
+      source: "shop",
+      price: 15000,
+      visual: {
+        c: "#d6a8ff",
+        c2: "#2a1040",
+        effects: ["sparks", "border", "aura", "backdrop-fog", "runes"],
+        text: "tremor",
+        icon: `<path d="M12 3l2 6 6 2-6 2-2 6-2-6-6-2 6-2z"/>`,
+      },
+    },
+    {
+      id: "tag_shinobi",
+      name: "Шиноби",
+      description: "Тень в ночи и счётчик убийств в кармане",
+      rarity: "EPIC",
+      source: "shop",
+      price: 15000,
+      visual: {
+        c: "#5b7bff",
+        c2: "#0b1230",
+        effects: ["sparks", "border", "aura", "backdrop-stars", "noise"],
+        text: "tremor",
+        icon: `<path d="M12 2l2.5 7.5L22 12l-7.5 2.5L12 22l-2.5-7.5L2 12l7.5-2.5z"/><circle cx="12" cy="12" r="1.5"/>`,
+      },
+    },
+    {
+      id: "tag_otakulegenda",
+      name: "Отаку-легенда",
+      description: "Смотрел всё и всё равно нашёл ещё",
+      rarity: "EPIC",
+      source: "shop",
+      price: 15000,
+      visual: {
+        c: "#43e0b5",
+        c2: "#062a22",
+        effects: ["sparks", "border", "aura", "backdrop-grid", "mist"],
+        text: "tremor",
+        icon: `<path d="M4 15v-3a8 8 0 0 1 16 0v3"/><rect x="3" y="14" width="4" height="6" rx="1.5"/><rect x="17" y="14" width="4" height="6" rx="1.5"/>`,
       },
     },
   ],
@@ -1617,12 +2032,61 @@ export const PROGRESSION_CONFIG = {
   /* ------------------------------ Магазин ------------------------------ */
   // Сливы AC: теги (500…25 000), рамки (300…5 000), фоны (500…3 000),
   // эффекты профиля, «Заморозка серии» (300, максимум 2), смена ника/цвета.
+  /* ------------------------------- Тома XP ------------------------------ */
+  // Раз в сутки на том. Эффективность падает с размером: 2.0 → 1.44 XP за AC,
+  // поэтому большой том никогда не выгоднее серии мелких. Цены — отстройка
+  // от ориентира ~40 AC/сутки активного пользователя (economy.dailyAcEstimate).
+  tomes: [
+    {
+      id: "tome_small",
+      name: "Том",
+      xp: 300,
+      price: 150,
+      rarity: "COMMON",
+      accent: "#6d7b96",
+    },
+    {
+      id: "tome_folio",
+      name: "Фолиант",
+      xp: 720,
+      price: 400,
+      rarity: "UNCOMMON",
+      accent: "#a879ff",
+    },
+    {
+      id: "tome_chapter",
+      name: "Глава",
+      xp: 1200,
+      price: 700,
+      rarity: "RARE",
+      accent: "#c07bff",
+      fromLevel: 10,
+    },
+    {
+      id: "tome_codex",
+      name: "Кодекс",
+      xp: 1440,
+      price: 900,
+      rarity: "EPIC",
+      accent: "#3ddc97",
+      fromLevel: 25,
+    },
+    {
+      id: "tome_grimdor",
+      name: "Гримдар",
+      xp: 3600,
+      price: 2500,
+      rarity: "LEGENDARY",
+      accent: "#ffb020",
+      fromLevel: 50,
+    },
+  ],
+
   shop: [
     // — теги (цены по редкости) —
     { id: "tag_ronin", name: "Ронин", kind: "tag", price: 500, rarity: "COMMON", description: "Тег-подпись у ника" },
     { id: "tag_outcast", name: "Изгой", kind: "tag", price: 500, rarity: "COMMON", description: "Тег-подпись у ника" },
-    { id: "tag_tengu", name: "Тэнгу", kind: "tag", price: 1500, rarity: "UNCOMMON", description: "Тег с частицами" },
-    { id: "tag_oni", name: "Они", kind: "tag", price: 1500, rarity: "UNCOMMON", description: "Тег с бликом" },
+
     { id: "tag_demon", name: "Демон", kind: "tag", price: 4000, rarity: "RARE", description: "Тег с пламенем" },
     { id: "tag_cursed", name: "Проклятый", kind: "tag", price: 10000, rarity: "EPIC", description: "Тег с аурой" },
     { id: "tag_shadow_clan", name: "Клан Теней", kind: "tag", price: 10000, rarity: "EPIC", description: "Тег с аурой" },
@@ -1631,6 +2095,24 @@ export const PROGRESSION_CONFIG = {
     { id: "frame-13", name: "Синее пламя эго", kind: "frame", price: 600, rarity: "RARE", description: "Синее пламя по краю" },
     { id: "frame-24", name: "Проклятая энергия", kind: "frame", price: 1500, rarity: "RARE", description: "Мерцающая аура" },
     { id: "frame-30", name: "Бензопила", kind: "frame", price: 3000, rarity: "EPIC", description: "Ревущие зубья" },
+    { id: "frame-lunar-feather", name: "Лунное перо", kind: "frame", price: 6000, rarity: "LEGENDARY", description: "Перламутр и мерцающая волна" },
+    { id: "frame-golden-laurel", name: "Золотой лавр", kind: "frame", price: 6000, rarity: "LEGENDARY", description: "Золото и тёплое сияние" },
+    { id: "frame-emerald-laurel", name: "Изумрудный лавр", kind: "frame", price: 6000, rarity: "LEGENDARY", description: "Глубокий зелёный и серебро" },
+    { id: "frame-sakura", name: "Сакура", kind: "frame", price: 6000, rarity: "LEGENDARY", description: "Вращающиеся лепестки" },
+    { id: "frame-ruby-laurel", name: "Рубиновый лавр", kind: "frame", price: 6000, rarity: "LEGENDARY", description: "Глубокий красный" },
+    { id: "frame-sapphire-night", name: "Сапфировая ночь", kind: "frame", price: 6000, rarity: "LEGENDARY", description: "Синее перо и серебро" },
+    { id: "frame-amethyst", name: "Аметист", kind: "frame", price: 6000, rarity: "LEGENDARY", description: "Фиолетовый и пурпур" },
+    { id: "frame-platinum", name: "Платина", kind: "frame", price: 6000, rarity: "LEGENDARY", description: "Серебряное перо" },
+    { id: "frame-turquoise-laurel", name: "Бирюзовый лавр", kind: "frame", price: 6000, rarity: "LEGENDARY", description: "Морская волна" },
+    { id: "frame-sunset", name: "Закат", kind: "frame", price: 6000, rarity: "LEGENDARY", description: "Оранжевый в розовый" },
+    { id: "frame-obsidian", name: "Обсидиан", kind: "frame", price: 6000, rarity: "LEGENDARY", description: "Чёрный камень и золото" },
+    { id: "frame-royal-purple", name: "Королевский пурпур", kind: "frame", price: 6000, rarity: "LEGENDARY", description: "Лавр с золотым кантом" },
+    { id: "frame-blue-flame", name: "Синее пламя", kind: "frame", price: 6000, rarity: "LEGENDARY", description: "Холодный огонь и пунктир" },
+    { id: "frame-ghost-flame", name: "Призрачный огонь", kind: "frame", price: 6000, rarity: "LEGENDARY", description: "Зелёные языки, много искр" },
+    { id: "frame-golden-seal", name: "Золотая печать", kind: "frame", price: 6000, rarity: "LEGENDARY", description: "Солнечные лучи и квадрат" },
+    { id: "frame-crimson-seal", name: "Багровая печать", kind: "frame", price: 6000, rarity: "LEGENDARY", description: "Кровавые руны" },
+    { id: "frame-golden-moths", name: "Золотые бабочки", kind: "frame", price: 6000, rarity: "LEGENDARY", description: "Четыре бабочки с хвостиками" },
+    { id: "frame-lunar-moths", name: "Лунные мотыльки", kind: "frame", price: 6000, rarity: "LEGENDARY", description: "Пять белых мотыльков, медленно" },
     { id: "frame-18", name: "Золотые крылья", kind: "frame", price: 5000, rarity: "LEGENDARY", description: "Расправленные крылья" },
     // — фоны баннера —
     { id: "preset-neon", name: "Неон", kind: "background", price: 800, rarity: "RARE", description: "Фон баннера" },
@@ -1638,8 +2120,10 @@ export const PROGRESSION_CONFIG = {
     { id: "preset-cybergrid", name: "Кибер-сетка", kind: "background", price: 1500, rarity: "EPIC", description: "Фон баннера" },
     { id: "preset-nova", name: "Нова", kind: "background", price: 3000, rarity: "LEGENDARY", description: "Фон баннера" },
     // — эффекты профиля —
-    { id: "fx-sparks", name: "Искры", kind: "effect", price: 1200, rarity: "RARE", description: "Искры у бейджа уровня" },
-    { id: "fx-holo", name: "Голограмма", kind: "effect", price: 2500, rarity: "EPIC", description: "Голографический слой" },
+    // Позиции fx-sparks и fx-holo, бывшие здесь заглушками, перенесены в
+    // каталог `profile-effects` вместе с остальными: id и цены те же, чтобы
+    // уже записанные покупки не осиротели, а эффекты наконец заработали.
+    ...EFFECT_SHOP_ITEMS,
     // — титулы магазина (guild-cosmetics.ts) —
     { id: "gt-wanderer", name: "Странник", kind: "title", price: 400, rarity: "COMMON", description: "Титул профиля" },
     { id: "gt-recruit", name: "Новичок гильдии", kind: "title", price: 400, rarity: "COMMON", description: "Титул профиля" },
@@ -1676,6 +2160,165 @@ export const PROGRESSION_CONFIG = {
     { id: "svc_freeze", name: "Заморозка серии", kind: "service", price: 300, rarity: "COMMON", maxOwned: 2, description: "Спасает серию при пропуске дня" },
     { id: "svc_nick", name: "Смена ника", kind: "service", price: 250, rarity: "COMMON", maxOwned: 999, description: "Разовая смена отображаемого ника" },
     { id: "svc_color", name: "Цвет ника", kind: "service", price: 150, rarity: "COMMON", maxOwned: 999, description: "Смена цвета отображаемого ника" },
+    // — кастомизация профиля —
+    // Постоянная покупка (maxOwned 1): открывает блок уровня с эмблемой
+    // в предпросмотре профиля — «Как видят другие». В самом профиле блок
+    // показан всем бесплатно, платным сделано ровно то, что видят другие.
+    { id: "svc_levelcard", name: "Эмблема уровня в профиле", kind: "custom", price: 800, rarity: "RARE", maxOwned: 1, description: "Блок уровня с эмблемой, XP и полосой прогресса в предпросмотре профиля" },
+    // — платные блоки витрины профиля —
+    // Постоянные покупки (maxOwned 1): включают блок на витрине «Виджеты».
+    // Показывать блок можно и без покупки — как превью, с замком; сохранить
+    // в раскладке можно только купленный. Хронология и «Студии» считаются
+    // по истории просмотра и по кэшу тайтлов; «Совместимость» требует
+    // других пользователей, которых у проекта нет, поэтому блок честно
+    // показывает пустое состояние, а не выдуманные проценты.
+    { id: "svc_widgets_chrono", name: "Блок «Хронология»", kind: "service", price: 2800, rarity: "RARE", maxOwned: 1, description: "Лента последних просмотров на витрине профиля" },
+    { id: "svc_widgets_studios", name: "Блок «Студии»", kind: "service", price: 2800, rarity: "RARE", maxOwned: 1, description: "Распределение просмотренного по студиям" },
+    { id: "svc_widgets_compat", name: "Блок «Совместимость»", kind: "service", price: 10800, rarity: "LEGENDARY", maxOwned: 1, description: "Сравнение вкусов с другими зрителями" },
+    {
+      id: "tag_bossfinala",
+      name: "Босс финала",
+      kind: "tag",
+      price: 50000,
+      rarity: "MYTHIC",
+      description: "Тот, кого ждали всю арку и кто держит её на себе",
+    },
+    {
+      id: "tag_tenmonarha",
+      name: "Тень монарха",
+      kind: "tag",
+      price: 50000,
+      rarity: "MYTHIC",
+      description: "Правит из тени, пока смотришь не туда",
+    },
+    {
+      id: "tag_yasilneyshiy",
+      name: "Я — сильнейший",
+      kind: "tag",
+      price: 50000,
+      rarity: "MYTHIC",
+      description: "Сила, которую не считали, потому что не с чем было",
+    },
+    {
+      id: "tag_skryvayusilu",
+      name: "Скрываю силу",
+      kind: "tag",
+      price: 50000,
+      rarity: "MYTHIC",
+      description: "Сильная сторона спрятана так, что её не видно",
+    },
+    {
+      id: "tag_regressor",
+      name: "Регрессор",
+      kind: "tag",
+      price: 50000,
+      rarity: "MYTHIC",
+      description: "Вернулся в прошлый раз и пошёл дальше",
+    },
+    {
+      id: "tag_boggachi",
+      name: "Бог гачи",
+      kind: "tag",
+      price: 50000,
+      rarity: "MYTHIC",
+      description: "Выпадает всё, что нужно, и в нужный момент",
+    },
+    {
+      id: "tag_korolsceny",
+      name: "Король сцены",
+      kind: "tag",
+      price: 30000,
+      rarity: "LEGENDARY",
+      description: "Сцена принадлежит ему с первой секунды",
+    },
+    {
+      id: "tag_bezkonkurentov",
+      name: "Без конкурентов",
+      kind: "tag",
+      price: 30000,
+      rarity: "LEGENDARY",
+      description: "Рядом не осталось никого, кто мог бы сравниться",
+    },
+    {
+      id: "tag_izbrannyy",
+      name: "Избранный",
+      kind: "tag",
+      price: 30000,
+      rarity: "LEGENDARY",
+      description: "Выбрали тебя — и теперь это твоё",
+    },
+    {
+      id: "tag_ohotniksranga",
+      name: "Охотник S-ранга",
+      kind: "tag",
+      price: 30000,
+      rarity: "LEGENDARY",
+      description: "Охотится на то, что выше его класса",
+    },
+    {
+      id: "tag_tsundere",
+      name: "Тсундере",
+      kind: "tag",
+      price: 30000,
+      rarity: "LEGENDARY",
+      description: "Колкость вместо слов, и всё равно слышно",
+    },
+    {
+      id: "tag_mehapilot",
+      name: "Меха-пилот",
+      kind: "tag",
+      price: 30000,
+      rarity: "LEGENDARY",
+      description: "Связь с машиной прочнее, чем с людьми",
+    },
+    {
+      id: "tag_bezumnyygeniy",
+      name: "Безумный гений",
+      kind: "tag",
+      price: 15000,
+      rarity: "EPIC",
+      description: "Считает то, что другие не успевают",
+    },
+    {
+      id: "tag_narciss",
+      name: "Нарцисс",
+      kind: "tag",
+      price: 15000,
+      rarity: "EPIC",
+      description: "Смотрится в зеркало чаще, чем в цель",
+    },
+    {
+      id: "tag_yandere",
+      name: "Яндере",
+      kind: "tag",
+      price: 15000,
+      rarity: "EPIC",
+      description: "Любовь, от которой становится не по себе",
+    },
+    {
+      id: "tag_sempay",
+      name: "Сэмпай",
+      kind: "tag",
+      price: 15000,
+      rarity: "EPIC",
+      description: "Старший, к которому возвращаются",
+    },
+    {
+      id: "tag_shinobi",
+      name: "Шиноби",
+      kind: "tag",
+      price: 15000,
+      rarity: "EPIC",
+      description: "Тень в ночи и счётчик убийств в кармане",
+    },
+    {
+      id: "tag_otakulegenda",
+      name: "Отаку-легенда",
+      kind: "tag",
+      price: 15000,
+      rarity: "EPIC",
+      description: "Смотрел всё и всё равно нашёл ещё",
+    },
   ],
 
   /* ------------------------------ Сезоны ------------------------------- */
@@ -1684,19 +2327,49 @@ export const PROGRESSION_CONFIG = {
   seasons: [],
 
   /* ------------------------------ Ранги -------------------------------- */
-  // Порог — трофейные очки (trophy) из полученных достижений.
+  /* Порог — трофейные очки (trophy) из полученных достижений.
+   *
+   * Всего 26 рангов, имена и значки — из components/progression/RankBadges.tsx
+   * (RankBadge). Шкала рассчитана на ТЯЖЁЛУЮ игру.
+   *
+   *   Пул очков — 17 780 на все 77 достижений. Из них «лёгких» (обычных,
+   *   редких, эпических, легендарных) всего ~9 080, а тяжёлых — 8 700:
+   *   четырнадцать тайных знаков, от 300 до 1 000 очков.
+   *
+   *   Ранг 21 (ПОВЕЛИТЕЛЬ ЗВЁЗД, 9 268) — это фактически «все обычные
+   *   достижения собраны». Дальше каждый ранг открывается только за тяжёлые,
+   *   поэтому 22–26 недостижимы, не заглянув в тайные знаки.
+   *
+   *   ЛЕГЕНДА (16 483) — 93% пула: нужны почти все тайные и все мифические.
+   *   Полностью закрыть игру нельзя, но почти — можно.
+   */
   ranks: [
-    { from: 0, name: "Наблюдатель" },
-    { from: 100, name: "Ученик" },
-    { from: 300, name: "Искатель" },
-    { from: 700, name: "Адепт" },
-    { from: 1300, name: "Хранитель" },
-    { from: 2100, name: "Знаток" },
-    { from: 3200, name: "Мастер" },
-    { from: 4600, name: "Архонт" },
-    { from: 6500, name: "Владыка" },
-    { from: 9000, name: "Император" },
-    { from: 12000, name: "Небожитель" },
+    { from: 0, name: "ПЫЛИНКА" },
+    { from: 33, name: "АСТЕРОИД" },
+    { from: 79, name: "МЕТЕОР" },
+    { from: 146, name: "КОМЕТА" },
+    { from: 238, name: "СПУТНИК" },
+    { from: 364, name: "ЛУНА" },
+    { from: 529, name: "ПЛАНЕТА" },
+    { from: 741, name: "ЗВЕЗДА" },
+    { from: 999, name: "ПУЛЬСАР" },
+    { from: 1310, name: "КВАЗАР" },
+    { from: 1680, name: "ТУМАННОСТЬ" },
+    { from: 2105, name: "СОЗВЕЗДИЕ" },
+    { from: 2588, name: "НАВИГАТОР" },
+    { from: 3138, name: "ПИЛОТ" },
+    { from: 3760, name: "КАПИТАН" },
+    { from: 4455, name: "АДМИРАЛ" },
+    { from: 5229, name: "ГАЛАКТИК" },
+    { from: 6090, name: "СВЕРХНОВА" },
+    { from: 7043, name: "ЧЁРНАЯ ДЫРА" },
+    { from: 8103, name: "СТРАЖ ГАЛАКТИК" },
+    { from: 9268, name: "ПОВЕЛИТЕЛЬ ЗВЁЗД" },
+    { from: 10525, name: "ТИТАН" },
+    { from: 11915, name: "ОРАКУЛ" },
+    { from: 13372, name: "АРХОНТ" },
+    { from: 14894, name: "ПЕРВОЗДАННЫЙ" },
+    { from: 16483, name: "ЛЕГЕНДА" },
   ],
 
   trophyByRarity: {

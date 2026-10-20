@@ -1,5 +1,5 @@
 /**
- * Аудит данных этапа 5 (§16) + FIX_TAGS: 29 тегов, все семейства достижений,
+ * Аудит данных этапа 5 (§16) + FIX_TAGS: 48 тегов, все семейства достижений,
  * 8 секретов, отсутствие совпадающих названий тег↔достижение,
  * согласованность источников/визуала, уникальность иконок/палитр/наборов
  * эффектов и наличие модулей эффектов в app/ag-tag.css.
@@ -23,7 +23,7 @@ import {
 
 const cfg = PROGRESSION_CONFIG;
 const RARITIES = Object.keys(RARITY_WEIGHT);
-const SOURCES = new Set(["level", "achievement", "shop", "event", "secret"]);
+const SOURCES = new Set(["level", "achievement", "shop", "referral", "event", "secret"]);
 const TEXT_STYLES = new Set(["plain", "glitch", "neon", "metal", "tremor"]);
 const FAMILIES = [
   "start",
@@ -42,10 +42,13 @@ const FAMILIES = [
   "quests",
   "tags",
   "secret",
+  // Шесть медалейных достижений: их счётчиков в движке не было, они
+  // добавлены вместе с `genres.ts` и новыми метриками §9.1
+  "medal",
 ];
 
-test("данные: ровно 29 тегов, id и имена уникальны", () => {
-  assert.equal(cfg.tags.length, 29, "тегов должно быть 29 (§9.2)");
+test(`данные: ровно 48 тегов, id и имена уникальны`, () => {
+  assert.equal(cfg.tags.length, 48, "тегов должно быть 48 (§9.2)");
   const ids = new Set();
   const names = new Set();
   for (const tag of cfg.tags) {
@@ -70,6 +73,16 @@ test("данные: источники тегов согласованы (уро
     }
     if (tag.source === "level") {
       assert.ok((tag.level ?? 0) >= 1, `тег уровня без уровня: ${tag.id}`);
+    }
+    if (tag.source === "referral") {
+      // Рубеж рефералки: у тега должен быть порог, и он не должен ещё и
+      // продаваться за AC — иначе предмет достаётся двумя путями сразу.
+      assert.ok((tag.friends ?? 0) >= 1, `тег рубежа без порога: ${tag.id}`);
+      assert.equal(tag.price, undefined, `у рубежного тега осталась цена: ${tag.id}`);
+      assert.ok(
+        !cfg.shop.some((item) => item.id === tag.id && item.kind === "tag"),
+        `рубежный тег продаётся в магазине: ${tag.id}`,
+      );
     }
     if (tag.source === "achievement" || tag.source === "secret") {
       assert.ok(tag.achievementId, `нет achievementId у ${tag.id}`);
@@ -110,22 +123,22 @@ test("данные: визуал тегов полон, эффекты есть 
   assert.ok(!/<TagCapsule|className="cap/.test(tsx), "AgTag не должен ссылаться на старую капсулу");
 });
 
-test("FIX: иконки 29 тегов уникальны и разные", () => {
+test("FIX: иконки всех тегов уникальны и разные", () => {
   const icons = cfg.tags.map((tag) => tag.visual.icon);
-  assert.equal(new Set(icons).size, 29, "иконки должны различаться попарно");
+  assert.equal(new Set(icons).size, 48, "иконки должны различаться попарно");
   for (const tag of cfg.tags) {
     assert.ok(tag.visual.icon.length >= 20, `слишком простая иконка у ${tag.id}`);
   }
 });
 
-test("FIX: палитры 29 тегов уникальны попарно (минимум 3 отличия)", () => {
+test("FIX: палитры всех тегов уникальны попарно (минимум 3 отличия)", () => {
   const pairs = cfg.tags.map((tag) => `${tag.visual.c}|${tag.visual.c2}`);
-  assert.equal(new Set(pairs).size, 29, "пары (c, c2) должны различаться у всех тегов");
+  assert.equal(new Set(pairs).size, 48, "пары (c, c2) должны различаться у всех тегов");
 });
 
-test("FIX: итоговые наборы эффектов 29 тегов уникальны попарно", () => {
+test("FIX: итоговые наборы эффектов всех тегов уникальны попарно", () => {
   const sets = cfg.tags.map((tag) => [...effectSet(tag)].sort().join(","));
-  assert.equal(new Set(sets).size, 29, `наборы эффектов должны быть разными: ${sets}`);
+  assert.equal(new Set(sets).size, 48, `наборы эффектов должны быть разными: ${sets}`);
   // ни один собственный эффект тега не теряется при объединении с полом
   for (const tag of cfg.tags) {
     for (const effect of tag.visual.effects) {
@@ -223,8 +236,8 @@ test("FIX: белый текст капсулы даёт контраст AA н�
   assert.ok(min < 20, `расчёт контраста выродился: ${min.toFixed(2)}`);
 });
 
-test("данные: ровно 71 достижение, все семейства §9.1 присутствуют", () => {
-  assert.equal(cfg.achievements.length, 71, "достижений должно быть 71 (§9.1)");
+test("данные: ровно 77 достижений, все семейства §9.1 присутствуют", () => {
+  assert.equal(cfg.achievements.length, 77, "достижений должно быть 77 (§9.1)");
   const families = [...new Set(cfg.achievements.map((item) => item.family))];
   for (const id of FAMILIES) {
     assert.ok(families.includes(id), `нет семейства ${id}`);
@@ -236,13 +249,65 @@ test("данные: ровно 71 достижение, все семейств�
   }
 });
 
-test("данные: 8 секретов — скрытые, редкость SECRET", () => {
+test("данные: 8 секретов семейства secret — скрытые, редкость SECRET", () => {
   const secrets = cfg.achievements.filter((item) => item.family === "secret");
   assert.equal(secrets.length, 8, "секретов должно быть 8 (§11)");
   for (const item of secrets) {
     assert.ok(item.hidden, `секрет ${item.id} не hidden`);
     assert.equal(item.rarity, "SECRET", `редкость секрета ${item.id}`);
   }
+});
+
+/**
+ * Медальные достижения — самые тяжёлые в игре, поэтому скрытые.
+ * Условия обязаны быть достижимы: «все тайные» считает все, кроме себя,
+ * «все достижения» — тоже все, кроме себя. Иначе они были бы вечными.
+ */
+test("данные: 6 медальных — скрытые, тяжёлые, с достижимыми порогами", () => {
+  const medals = cfg.achievements.filter((item) => item.family === "medal");
+  assert.equal(medals.length, 6, "медальных достижений должно быть 6");
+
+  const hiddenTotal = cfg.achievements.filter((item) => item.hidden).length;
+  const allTotal = cfg.achievements.length;
+
+  for (const item of medals) {
+    assert.ok(item.hidden, `медаль ${item.id} не hidden`);
+    assert.ok(item.trophy >= 300, `медаль ${item.id} слишком лёгкая: ${item.trophy}`);
+    assert.ok(item.reward.xp > 0 && item.reward.ac > 0, `медаль ${item.id} без награды`);
+  }
+
+  const secrets = medals.find((item) => item.id === "ach_secrets_all");
+  assert.ok(secrets, "нет ach_secrets_all");
+  // «собрать все тайные» — все скрытые, кроме самого достижения и финальной
+  // медали `ach_all_done`: иначе они блокируют друг друга навсегда.
+  assert.equal(secrets.condition.threshold, hiddenTotal - 2);
+
+  const all = medals.find((item) => item.id === "ach_all_done");
+  assert.ok(all, "нет ach_all_done");
+  assert.equal(all.condition.threshold, allTotal - 1);
+});
+
+test("данные: у каждого достижения есть счётчик в resolveMetrics", () => {
+  // Метрика, которой движок не умеет считать, — это достижение, которое
+  // невозможно получить. Проверяем по списку, что движок их всех считает.
+  const known = new Set([
+    "LEVEL", "STREAK_BEST", "EPISODES_COMPLETED", "EPISODES_STARTED",
+    "TITLES_COMPLETED", "DISTINCT_DAYS", "NIGHT_EPISODES", "MINUTES_WATCHED",
+    "RATINGS", "COMMENTS_VALID", "LIKES_RECEIVED", "LIKES_GIVEN", "QUESTS_DONE",
+    "DISTINCT_GENRES_COMPLETED", "TAGS_OWNED", "TAGS_RARITIES", "MAX_XP_IN_DAY",
+    "MAX_TITLES_IN_DAY", "MAX_TAG_SWAPS_IN_DAY", "SECRET_0404", "SECRET_ABYSS",
+    "FLAGS_LOGO", "FLAGS_EARLY_BIRD",
+    // приходят извне, их считает `externalMetrics()`
+    "ACCOUNT_CREATED", "PROFILE_PERCENT", "DISTINCT_TITLES_IN_LISTS",
+    // добавленные вместе с медалями
+    "MAX_MINUTES_IN_DAY", "GENRE_SHONEN", "GENRE_FANTASY",
+    "SECRETS_DONE", "ACHIEVEMENTS_DONE", "SEASONS_DONE",
+  ]);
+  const unknown = new Set();
+  for (const item of cfg.achievements) {
+    if (!known.has(item.condition.metric)) unknown.add(item.condition.metric);
+  }
+  assert.deepEqual([...unknown], [], "метрики, которых не знает тест");
 });
 
 test("данные: каждое достижение валидно (условие, награда, трофеи)", () => {

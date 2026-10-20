@@ -32,6 +32,7 @@ export const FAMILY_LABEL: Record<string, string> = {
   quests: "Квесты",
   tags: "Теги",
   secret: "Тайные знаки",
+  medal: "Медали",
 };
 
 export interface AchievementItem {

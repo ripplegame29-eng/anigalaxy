@@ -373,67 +373,88 @@ function attr(source: string, name: string): string | undefined {
  * В самой Kodik API отдельного «списка переводов тайтла» нет — он есть на
  * странице плеера в виде <select class="...-translations-box">, где каждый
  * option хранит id материала с этой озвучкой. Парсим её и строим ссылки.
+ *
+ * Страница плеера отдаётся не всегда: то ли Kodik не ответил, то ли
+ * разметка успела измениться. Тогда остаётся одна озвучка из API, и вот
+ * здесь важно, как она лежит в кэше. Полмига в кэше — и меню с одной
+ * строкой держится до следующего истечения TTL, хотя страница давно в
+ * порядке: пользователь перезагружает страницу и не видит выбора. Поэтому
+ * урезанный ответ кэшируется на минуту, а полный — как обычно.
  */
-export async function getTranslations(id: string): Promise<TranslationOption[]> {
+export async function getTranslations(
+  id: string,
+  opts: { fresh?: boolean } = {},
+): Promise<TranslationOption[]> {
   if (!/^(serial|movie)-\d+$/.test(id)) return [];
 
-  return withCache(`translations:${id}`, 30 * MINUTE, async () => {
-    const r = await fetchResult(id);
-    const fallback: TranslationOption[] = r?.translation
-      ? [toOption(r.translation, id, r.episodes_count)]
-      : [];
-    if (!r?.link) return fallback;
+  const key = `translations:${id}`;
+  if (!opts.fresh) {
+    const hit = cacheGet<TranslationOption[]>(key);
+    if (hit && hit.length > 1) return hit;
+  }
 
-    const pageUrl = absoluteUrl(r.link);
-    if (!pageUrl) return fallback;
+  const options = await scrapeTranslations(id);
+  cacheSet(key, options, options.length > 1 ? 30 * MINUTE : 60_000);
+  return options;
+}
 
-    try {
-      const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), 10_000);
-      const res = await fetch(pageUrl, {
-        headers: {
-          "User-Agent": USER_AGENT,
-          Referer: "https://www.google.com/",
-          "Accept-Language": "ru-RU,ru;q=0.9,en;q=0.8",
-        },
-        signal: controller.signal,
-        cache: "no-store",
+/** Разбор страницы плеера: полный список озвучек или пустой массив */
+async function scrapeTranslations(id: string): Promise<TranslationOption[]> {
+  const r = await fetchResult(id);
+  const fallback: TranslationOption[] = r?.translation
+    ? [toOption(r.translation, id, r.episodes_count)]
+    : [];
+  if (!r?.link) return fallback;
+
+  const pageUrl = absoluteUrl(r.link);
+  if (!pageUrl) return fallback;
+
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 10_000);
+    const res = await fetch(pageUrl, {
+      headers: {
+        "User-Agent": USER_AGENT,
+        Referer: "https://www.google.com/",
+        "Accept-Language": "ru-RU,ru;q=0.9,en;q=0.8",
+      },
+      signal: controller.signal,
+      cache: "no-store",
+    });
+    const html = await res.text();
+    clearTimeout(timer);
+
+    const options: TranslationOption[] = [];
+    for (const match of html.matchAll(TRANSLATION_OPTION_RE)) {
+      const [tag, label] = match;
+      const mediaId = attr(tag, "data-media-id");
+      const mediaType = attr(tag, "data-media-type");
+      const translationId = Number(attr(tag, "data-id") ?? attr(tag, "value"));
+      const title = attr(tag, "data-title")?.trim() || label.replace(/<[^>]+>/g, "").trim();
+      const count = Number(attr(tag, "data-episode-count") ?? 0);
+
+      if (!mediaId || !mediaType || !title || Number.isNaN(translationId)) continue;
+
+      options.push({
+        id: translationId,
+        title,
+        type: attr(tag, "data-translation-type") === "subtitles" ? "subtitles" : "voice",
+        mediaId: `${mediaType}-${mediaId}`,
+        episodeCount: count || undefined,
+        current: /\bselected\b/i.test(tag) || attr(tag, "selected") !== undefined,
       });
-      const html = await res.text();
-      clearTimeout(timer);
-
-      const options: TranslationOption[] = [];
-      for (const match of html.matchAll(TRANSLATION_OPTION_RE)) {
-        const [tag, label] = match;
-        const mediaId = attr(tag, "data-media-id");
-        const mediaType = attr(tag, "data-media-type");
-        const translationId = Number(attr(tag, "data-id") ?? attr(tag, "value"));
-        const title = attr(tag, "data-title")?.trim() || label.replace(/<[^>]+>/g, "").trim();
-        const count = Number(attr(tag, "data-episode-count") ?? 0);
-
-        if (!mediaId || !mediaType || !title || Number.isNaN(translationId)) continue;
-
-        options.push({
-          id: translationId,
-          title,
-          type: attr(tag, "data-translation-type") === "subtitles" ? "subtitles" : "voice",
-          mediaId: `${mediaType}-${mediaId}`,
-          episodeCount: count || undefined,
-          current: /\bselected\b/i.test(tag) || attr(tag, "selected") !== undefined,
-        });
-      }
-
-      // Дедупликация по id + сначала выбранная
-      const seen = new Set<number>();
-      const unique = options.filter((o) => (seen.has(o.id) ? false : (seen.add(o.id), true)));
-      unique.sort((a, b) => Number(b.current) - Number(a.current));
-
-      return unique.length ? unique : fallback;
-    } catch {
-      // Если страница плеера недоступна — отдаём хотя бы текущую озвучку
-      return fallback;
     }
-  });
+
+    // Дедупликация по id + сначала выбранная
+    const seen = new Set<number>();
+    const unique = options.filter((o) => (seen.has(o.id) ? false : (seen.add(o.id), true)));
+    unique.sort((a, b) => Number(b.current) - Number(a.current));
+
+    return unique.length ? unique : fallback;
+  } catch {
+    // Если страница плеера недоступна — отдаём хотя бы текущую озвучку
+    return fallback;
+  }
 }
 
 function toOption(t: KodikTranslation, mediaId: string, episodeCount?: number): TranslationOption {

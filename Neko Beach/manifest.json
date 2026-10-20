@@ -1,0 +1,268 @@
+{
+  "game": "Neko Beach",
+  "appid": 1630650,
+  "source": "https://store.steampowered.com/points/shop/app/1630650",
+  "api": "https://api.steampowered.com/ILoyaltyRewardsService/BatchedQueryRewardItems/v1",
+  "cdn": "https://shared.fastly.steamstatic.com/community_assets/images/items/1630650",
+  "note": "Steam Community items. Property of Valve Corporation and the game's publisher. Personal/fan use only.",
+  "groups": [
+    {
+      "dir": "1 Анимированные аватары",
+      "title": "Animated Avatars",
+      "items": [
+        {
+          "name": "A delicate flower",
+          "files": [
+            {
+              "file": "a-delicate-flower.gif",
+              "bytes": 874816,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/1630650/b6cad1a09d09717371637255be0f06cc740ce06c.gif"
+            },
+            {
+              "file": "a-delicate-flower-1.jpg",
+              "bytes": 26560,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/1630650/fc78d1c02c59f9d1cc41d9118cb530b220877110.jpg"
+            }
+          ]
+        },
+        {
+          "name": "Shy brunette",
+          "files": [
+            {
+              "file": "shy-brunette.gif",
+              "bytes": 904155,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/1630650/ddb4c8277cb54014ea0de3f642d7c4b0a6b78ce6.gif"
+            },
+            {
+              "file": "shy-brunette-1.jpg",
+              "bytes": 25103,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/1630650/f474889bd2f3dbee859cdd6747865911efed366d.jpg"
+            }
+          ]
+        },
+        {
+          "name": "The redheaded tomboy",
+          "files": [
+            {
+              "file": "the-redheaded-tomboy.gif",
+              "bytes": 844492,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/1630650/142b4205b24c7238eb5f7204edf69101893b6acc.gif"
+            },
+            {
+              "file": "the-redheaded-tomboy-1.jpg",
+              "bytes": 32419,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/1630650/c8fa3e8c4934c830441056edf2dcf0d8995121f5.jpg"
+            }
+          ]
+        },
+        {
+          "name": "Yellow-eyed beauty",
+          "files": [
+            {
+              "file": "yellow-eyed-beauty.gif",
+              "bytes": 842623,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/1630650/ef13a0f54ab88d788fa3c081f678507483346872.gif"
+            },
+            {
+              "file": "yellow-eyed-beauty-1.jpg",
+              "bytes": 24621,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/1630650/4fbe9c701fd09ea94a5ce9a0f5310756e095a458.jpg"
+            }
+          ]
+        },
+        {
+          "name": "Hunny Bunny",
+          "files": [
+            {
+              "file": "hunny-bunny.gif",
+              "bytes": 988543,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/1630650/f8ba809af53a3a0166127a29af0d867940c53939.gif"
+            },
+            {
+              "file": "hunny-bunny-1.jpg",
+              "bytes": 70012,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/1630650/6a057808f830c7eea02073eccfd9e75578d94220.jpg"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "dir": "2 Рамки аватара",
+      "title": "Avatar Frames",
+      "items": [
+        {
+          "name": "Purring neko",
+          "files": [
+            {
+              "file": "purring-neko.png",
+              "bytes": 468026,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/1630650/8123502d0e87761569ba8d793fa3a3f58f96dbaf.png"
+            },
+            {
+              "file": "purring-neko-1.png",
+              "bytes": 35950,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/1630650/22e4722a67b808401b5141c7810cd41669ee98db.png"
+            }
+          ]
+        },
+        {
+          "name": "The enchanted neko",
+          "files": [
+            {
+              "file": "the-enchanted-neko.png",
+              "bytes": 477881,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/1630650/c4da6acb5b79451f25688d66b3155c4b4308f513.png"
+            },
+            {
+              "file": "the-enchanted-neko-1.png",
+              "bytes": 27265,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/1630650/b88bb29af8b7a74e4f81eafd74df21901305b49e.png"
+            }
+          ]
+        },
+        {
+          "name": "The dreamy neko",
+          "files": [
+            {
+              "file": "the-dreamy-neko.png",
+              "bytes": 357067,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/1630650/61188125c2b424c28c741e8abdd42940758e183c.png"
+            },
+            {
+              "file": "the-dreamy-neko-1.png",
+              "bytes": 29518,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/1630650/69d2cc001b1ac4712fc97fbd8abb347c78b0354f.png"
+            }
+          ]
+        },
+        {
+          "name": "Hissing neko",
+          "files": [
+            {
+              "file": "hissing-neko.png",
+              "bytes": 659975,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/1630650/1ec6c28e908949452ee13960eca3b6b16bc6a696.png"
+            },
+            {
+              "file": "hissing-neko-1.png",
+              "bytes": 40171,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/1630650/51da7ef846fa82d83661a818fa8cb0a097190159.png"
+            }
+          ]
+        },
+        {
+          "name": "Carefree neko",
+          "files": [
+            {
+              "file": "carefree-neko.png",
+              "bytes": 642259,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/1630650/e0ca995ce121c702ec3314b72a8f94d54ffa40e1.png"
+            },
+            {
+              "file": "carefree-neko-1.png",
+              "bytes": 28403,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/1630650/6fc38ba31a8671f983858954824bce4764a92283.png"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "dir": "4 Фоны профиля",
+      "title": "Profile Backgrounds",
+      "items": [
+        {
+          "name": "Neko Beach",
+          "files": [
+            {
+              "file": "neko-beach.jpg",
+              "bytes": 223105,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/1630650/fdbb8b673c1782edd8dfcb7f0189661332dd6766.jpg"
+            }
+          ]
+        },
+        {
+          "name": "Honey beach",
+          "files": [
+            {
+              "file": "honey-beach.jpg",
+              "bytes": 248447,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/1630650/bb1cbb8dbce2943c83d6e70822818695ff8ba26e.jpg"
+            }
+          ]
+        },
+        {
+          "name": "Sunny beach",
+          "files": [
+            {
+              "file": "sunny-beach.jpg",
+              "bytes": 203735,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/1630650/78829900dda8f8db50234c6eba8c0d709f49e7a8.jpg"
+            }
+          ]
+        },
+        {
+          "name": "It's getting hot here",
+          "files": [
+            {
+              "file": "it-s-getting-hot-here.jpg",
+              "bytes": 133867,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/1630650/5b197ba6c7e375bf3ee6472f3757ee92e2097582.jpg"
+            },
+            {
+              "file": "it-s-getting-hot-here-1.webm",
+              "bytes": 1295893,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/1630650/888fe95dfa4d3630e3a1ce3beb4a7346e53044bf.webm"
+            },
+            {
+              "file": "it-s-getting-hot-here-2.mp4",
+              "bytes": 1281865,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/1630650/ea0322b1f953aa12d35cf89da482f4bff7e4b8f3.mp4"
+            },
+            {
+              "file": "it-s-getting-hot-here-3.webm",
+              "bytes": 436645,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/1630650/fd35bcd055c274d761dc49689d393deba84c152b.webm"
+            },
+            {
+              "file": "it-s-getting-hot-here-4.mp4",
+              "bytes": 119216,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/1630650/f7b8860edf10511b55052acc0cc9a6ec0ef23b20.mp4"
+            }
+          ]
+        },
+        {
+          "name": "More fun together",
+          "files": [
+            {
+              "file": "more-fun-together.jpg",
+              "bytes": 112819,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/1630650/fc023fe5360bcba43109428e7cb373a7b3b55819.jpg"
+            },
+            {
+              "file": "more-fun-together-1.webm",
+              "bytes": 1214946,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/1630650/9c3c5803186807a2f42f35a6e65a925ef18a7c2e.webm"
+            },
+            {
+              "file": "more-fun-together-2.mp4",
+              "bytes": 1092426,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/1630650/e7731edcf45cab30ba8107fc5fb975ef2821c9f6.mp4"
+            },
+            {
+              "file": "more-fun-together-3.webm",
+              "bytes": 512941,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/1630650/fa100d3d0cbf4e4939a3eecd792deccfc2f43c54.webm"
+            },
+            {
+              "file": "more-fun-together-4.mp4",
+              "bytes": 93154,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/1630650/e316d5464fa7992a1ac32abdb74f4f1ddb81ddd3.mp4"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

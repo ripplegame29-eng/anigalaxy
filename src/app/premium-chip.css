@@ -1,0 +1,89 @@
+/* ==========================================================================
+   PREMIUM-тег — перенесён из макета «AniGalaxy — PREMIUM тег» дословно.
+
+   Отступы, радиусы и размер иконки заданы в em, поэтому масштабируется тег
+   целиком: меняется только font-size. Ничего не «подгонял» под проект —
+   var(--font-body) в проекте есть (globals.css, --font-sans), остальные гарнитуры в
+   перечислении макета остаются запасными.
+
+   Селектор не привязан к .ag-root: тег показывается и в шапке профиля, и в
+   других местах с подпиской.
+   ========================================================================== */
+
+.ag-premium {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  overflow: hidden;
+  vertical-align: middle;
+  font: 800 10px/1 var(--font-body);
+  letter-spacing: 0.09em;
+  white-space: nowrap;
+  padding: 0.3em 0.95em 0.3em 0.65em;
+  border: 1px solid transparent;
+  border-radius: 0.8em;
+  color: #e3f7ff;
+  text-shadow: 0 0 0.9em rgba(34, 211, 238, 0.6);
+  /* Рамка рисуется вторым слоем градиента по border-box и течёт по anim. */
+  background:
+    linear-gradient(135deg, #0c2150, #071030) padding-box,
+    linear-gradient(120deg, #22d3ee, #60a5fa, #2563eb, #22d3ee) border-box;
+  background-size: 100% 100%, 300% 100%;
+  animation: ag-flow 5s linear infinite;
+  box-shadow:
+    0 0 1.6em -0.4em rgba(56, 189, 248, 0.8),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
+}
+
+/* Блик, пробегающий по тегу. */
+.ag-premium::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    105deg,
+    transparent 40%,
+    rgba(255, 255, 255, 0.5) 50%,
+    transparent 60%
+  );
+  transform: translateX(-130%);
+  animation: ag-shine 4s ease-in-out infinite;
+}
+
+.ag-premium svg {
+  width: 1.2em;
+  height: 1.2em;
+  flex: none;
+  fill: none;
+  stroke: #7dd3fc;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 0.4em rgba(56, 189, 248, 0.95));
+}
+
+@keyframes ag-flow {
+  to {
+    background-position: 0 0, 300% 0;
+  }
+}
+
+@keyframes ag-shine {
+  0%,
+  60% {
+    transform: translateX(-130%);
+  }
+  90%,
+  100% {
+    transform: translateX(130%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ag-premium,
+  .ag-premium::after {
+    animation: none;
+  }
+}

@@ -50,8 +50,10 @@ export function ReaderShell({
       />
 
       {(chapterLabel !== "—" || chapterTitle) && (
-        // pt-16 — запас под липкую шапку сайта, иначе заголовок уезжает под неё
-        <h1 className="mx-auto max-w-3xl px-4 pb-3 pt-16 text-center text-sm font-semibold text-white/70">
+        /* Раньше здесь был pt-16 — запас под прежнюю фиксированную шапку.
+           Новая шапка sticky и сама занимает место в потоке, поэтому
+           достаточно обычного вертикального отступа. */
+        <h1 className="mx-auto max-w-3xl px-4 pb-3 pt-4 text-center text-sm font-semibold text-white/70">
           {mangaTitle} · Глава {chapterLabel}
           {chapterTitle && (
             <span className="mt-1 block text-xs font-normal text-muted">{chapterTitle}</span>

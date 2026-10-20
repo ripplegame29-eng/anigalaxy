@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { formatRating, kindLabel, statusLabel, statusTone, truncate } from "@/lib/anime";
-import { SHADER_CONTRAST, SHADER_STRENGTH, useQuality } from "@/lib/quality";
+import { HERO_SHARPEN } from "@/lib/quality";
 import { attachSharpen } from "@/lib/video-shader";
 import type { AnimeCard } from "@/lib/types";
 import { Poster } from "./Poster";
@@ -23,9 +23,8 @@ export function HeroSlider({ items }: { items: AnimeCard[] }) {
   const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
   /** Канвасы под WebGL-шейдер апскейла (по одному на ролик) */
   const canvasRefs = useRef<(HTMLCanvasElement | null)[]>([]);
-  /** Глобальное качество: оригинал выключает шейдер, HD/4K — включает */
-  const quality = useQuality();
-  const shaderStrength = SHADER_STRENGTH[quality];
+  /** Сила шейдера: было привязано к кнопке под плеером, теперь задано константой */
+  const shaderStrength = HERO_SHARPEN.strength;
 
   const slides = items.filter((i) => i.poster || i.screenshots?.length).slice(0, 6);
 
@@ -56,17 +55,14 @@ export function HeroSlider({ items }: { items: AnimeCard[] }) {
   // Апскейл активного ролика: шейдер забирает кадры у <video> (звук и
   // декодирование остаются там) и рисует результат поверх. Контекст один —
   // при перелистовании старый освобождается, новый навешивается на слайд.
-  // Без WebGL или при качестве «Оригинал» канвас остаётся прозрачным.
+  // Без WebGL канвас остаётся прозрачным, и виден исходный кадр.
   useEffect(() => {
     if (shaderStrength <= 0) return;
     const canvas = canvasRefs.current[index];
     const video = videoRefs.current[index];
     if (!canvas || !video) return;
-    return attachSharpen(canvas, video, {
-      strength: shaderStrength,
-      contrast: SHADER_CONTRAST[quality],
-    });
-  }, [index, quality, shaderStrength]);
+    return attachSharpen(canvas, video, HERO_SHARPEN);
+  }, [index, shaderStrength]);
 
   if (!slides.length) return null;
 
@@ -229,7 +225,7 @@ export function HeroSlider({ items }: { items: AnimeCard[] }) {
                 onClick={() => go(i)}
                 aria-label={`Слайд ${i + 1}`}
                 aria-current={i === index}
-                className="group h-6 w-7 sm:w-12"
+                className="group h-7 w-7 sm:w-12"
               >
                 <span className="block h-[3px] w-full overflow-hidden rounded-full bg-white/20 transition-colors group-hover:bg-white/40">
                   {i === index && (

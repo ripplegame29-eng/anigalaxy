@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useSyncExternalStore, useRef, useState } from "react";
+import { useCallback, useMemo, useSyncExternalStore, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import {
   getProfileDialogState,
@@ -24,18 +24,46 @@ import {
   isUnlocked,
   titleTag,
   type Rarity,
+  type TitleItem,
   type UnlockContext,
 } from "@/lib/cosmetics";
 import { IMAGE_LIMITS, readImageFile } from "@/lib/images";
+import { useMyReferrals } from "@/lib/referrals";
 import {
   exportBackup,
   hasPreimport,
   importBackup,
   parseBackup,
   rollbackImport,
-  storageStats,
+  storageEntries,
+  BACKUP_KEY_PREFIX,
 } from "@/lib/backup";
-import { isPremiumActive } from "@/lib/auth";
+import { isPremiumActive, changePassword } from "@/lib/auth";
+import {
+  ACCENTS,
+  NOTIFY_EVENTS,
+  QUALITIES,
+  SPEEDS,
+  updatePrefs,
+  usePrefs,
+  type Prefs,
+} from "@/lib/prefs";
+import {
+  eraseAccountData,
+  useSessions,
+  LINK_LABEL,
+  addDevice,
+  addFriend,
+  linkAccount,
+  removeDevice,
+  removeFriend,
+  unlinkAccount,
+  useDevices,
+  useFriends,
+  useLinks,
+  type LinkProvider,
+} from "@/lib/accounts";
+import { type ProfileScope } from "@/lib/profile";
 import { progressEmit, useLevelInfo, useProgress } from "@/lib/progression/events";
 import { useTagSelection, useTitleSelection } from "@/lib/selection";
 import { amountLabel, sourceLabel, typeLabel } from "@/lib/progression/labels";
@@ -43,9 +71,18 @@ import { PROGRESSION_CONFIG } from "@/lib/progression/progression.config";
 import { CFG_RARITY_CLASS, CFG_RARITY_LABEL } from "@/lib/progression/rarity-chips";
 import { AgTag } from "@/components/progression/AgTag";
 import { useAccount } from "@/lib/use-account";
+import { clearWatchHistory, timeAgo } from "@/lib/history";
 import { useModalBehaviour } from "@/lib/use-local-storage";
 import { cpuCores, ecoActive, ecoStore, setEco, weakCpu, type EcoMode } from "@/lib/eco";
-import { AvatarView } from "./AvatarView";
+import { AvatarFrame } from "./AvatarFrame";
+import { LevelCard } from "./ProfileSections";
+import { WidgetShowcase } from "@/components/WidgetShowcase";
+import {
+  EFFECT_LEVEL_LABEL,
+  EFFECT_LEVELS,
+  PARTICLE_EFFECTS,
+  STYLE_EFFECTS,
+} from "@/lib/profile-effects";
 
 /* --------------------------- Каркас модалки ----------------------------- */
 
@@ -54,12 +91,20 @@ function DialogShell({
   subtitle,
   onClose,
   wide = false,
+  full = false,
   children,
 }: {
   title: string;
   subtitle?: string;
   onClose: () => void;
   wide?: boolean;
+  /**
+   * Ширина колонки содержимого на настоящей странице профиля: контейнер
+   * 1152 px минус боковое меню 290 и зазор 22 — около 840 px. Предпросмотр
+   * берёт 896 (max-w-4xl), ближайший шаг: на 1152 блоки растягивались и
+   * выглядели заметно крупнее, чем их копии на странице.
+   */
+  full?: boolean;
   children: React.ReactNode;
 }) {
   const panelRef = useModalBehaviour(true, onClose);
@@ -78,10 +123,15 @@ function DialogShell({
         aria-label={title}
         tabIndex={-1}
         className={`relative w-full ${
-          wide ? "max-w-3xl" : "max-w-md"
+          full ? "max-w-4xl" : wide ? "max-w-3xl" : "max-w-md"
+        } ${
+          // Предпросмотр длинный: держим его прямоугольником во весь экран,
+          // прокручивается только содержимое. Иначе панель растёт выше
+          // вьюпорта, шапка с крестиком уезжает за край и закрыть её нечем.
+          full ? "flex max-h-[90vh] flex-col" : ""
         } overflow-hidden rounded-2xl border border-line bg-surface/95 p-5 shadow-[0_40px_100px_-30px_rgba(0,0,0,1)] ring-1 ring-white/10 outline-none animate-fade-in`}
       >
-        <div className="mb-4 flex items-start justify-between gap-3">
+        <div className="mb-4 flex shrink-0 items-start justify-between gap-3">
           <div className="min-w-0">
             <h2 className="text-base font-extrabold tracking-tight text-white">{title}</h2>
             {subtitle && <p className="mt-0.5 text-xs text-muted">{subtitle}</p>}
@@ -90,6 +140,7 @@ function DialogShell({
             type="button"
             onClick={onClose}
             aria-label="Закрыть"
+            title="Закрыть"
             className="-m-1 grid h-8 w-8 shrink-0 place-items-center rounded-lg text-muted ring-1 ring-transparent transition hover:bg-white/10 hover:text-white hover:ring-white/10"
           >
             <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.4">
@@ -97,7 +148,11 @@ function DialogShell({
             </svg>
           </button>
         </div>
-        {children}
+        {full ? (
+          <div className="min-h-0 flex-1 overflow-y-auto pr-1">{children}</div>
+        ) : (
+          children
+        )}
       </div>
     </div>
   );
@@ -146,11 +201,13 @@ function FilePicker({
 function useUnlockContext(): UnlockContext {
   const profile = useProfile();
   const account = useAccount();
+  const referrals = useMyReferrals();
   return {
     level: useLevelInfo().level,
     premium: isPremiumActive(account),
     claimed: profile.claimed,
     purchased: profile.purchased,
+    referrals: referrals.length,
   };
 }
 
@@ -166,6 +223,127 @@ function Note({ children, tone = "muted" }: { children: React.ReactNode; tone?: 
 }
 
 /* ----------------------------- Смена фона ------------------------------- */
+
+/**
+ * Вкладка «Эффекты» в гардеробе.
+ *
+ * Две независимые оси, как в макете: частица выбирается одна, стиль можно
+ * включать несколько сразу. Уровень I…III — множитель, он не продаётся и
+ * меняется свободно.
+ *
+ * Надеть можно только купленное: эффект, которого нет в покупках, показан
+ * замком и ведёт в магазин. Иначе стиль работал бы до оплаты.
+ */
+function EffectsPanel() {
+  const profile = useProfile();
+  const doc = useProgress();
+  const owned = new Set([...doc.purchases.map((item) => item.itemId), ...profile.purchased]);
+
+  const toggleStyle = (id: string) => {
+    const on = profile.styleFx.includes(id);
+    updateProfile({
+      styleFx: on ? profile.styleFx.filter((x) => x !== id) : [...profile.styleFx, id].slice(0, 4),
+    });
+  };
+
+  const cell = (active: boolean) =>
+    `flex flex-col items-center gap-2 rounded-xl px-2 py-3 text-center transition ${
+      active ? "ring-2 ring-accent-2" : "ring-1 ring-white/10 hover:ring-white/30"
+    }`;
+
+  return (
+    <div className="space-y-5">
+      <div>
+        <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.16em] text-muted">
+          Частица · одна на профиль
+        </p>
+        <div className="grid grid-cols-3 gap-2">
+          <button
+            type="button"
+            onClick={() => updateProfile({ particleFx: "" })}
+            className={`${cell(profile.particleFx === "")} bg-white/[0.04]`}
+          >
+            <span className="text-lg">—</span>
+            <span className="truncate text-[11px] font-bold text-white">Нет</span>
+          </button>
+          {PARTICLE_EFFECTS.map((item) => {
+            const has = owned.has(item.id);
+            const active = profile.particleFx === item.id;
+            return (
+              <button
+                key={item.id}
+                type="button"
+                disabled={!has}
+                onClick={() => updateProfile({ particleFx: item.id })}
+                className={`${cell(active)} bg-white/[0.04] disabled:cursor-not-allowed disabled:opacity-45`}
+              >
+                <span className="text-[11px] font-black text-muted">{has ? "" : "🔒"}</span>
+                <span className="truncate text-[11px] font-bold text-white">{item.name}</span>
+                <span className={`text-[10px] font-bold ${has ? "text-mint" : "text-accent-2"}`}>
+                  {has ? "надето" : `${item.price} AC`}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <div>
+        <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.16em] text-muted">
+          Стиль · можно сочетать
+        </p>
+        <div className="grid grid-cols-4 gap-2">
+          {STYLE_EFFECTS.map((item) => {
+            const has = owned.has(item.id);
+            const active = profile.styleFx.includes(item.id);
+            return (
+              <button
+                key={item.id}
+                type="button"
+                disabled={!has}
+                onClick={() => toggleStyle(item.id)}
+                className={`${cell(active)} bg-white/[0.04] disabled:cursor-not-allowed disabled:opacity-45`}
+              >
+                <span className="text-[11px] font-black text-muted">{has ? "" : "🔒"}</span>
+                <span className="truncate text-[11px] font-bold text-white">{item.name}</span>
+                <span className={`text-[10px] font-bold ${has ? "text-mint" : "text-accent-2"}`}>
+                  {has ? "стиль" : `${item.price} AC`}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <div>
+        <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.16em] text-muted">
+          Уровень эффекта
+        </p>
+        <div className="flex gap-2">
+          {EFFECT_LEVELS.map((value) => (
+            <button
+              key={value}
+              type="button"
+              onClick={() => updateProfile({ fxLevel: value })}
+              aria-pressed={profile.fxLevel === value}
+              className={`h-9 flex-1 rounded-xl text-xs font-bold transition ${
+                profile.fxLevel === value
+                  ? "bg-accent-deep text-white ring-1 ring-accent/50"
+                  : "bg-white/6 text-muted ring-1 ring-white/10 hover:text-white"
+              }`}
+            >
+              {EFFECT_LEVEL_LABEL[value]}
+            </button>
+          ))}
+        </div>
+        <p className="mt-2 text-xs leading-relaxed text-muted">
+          Уровень умножает количество частиц и амплитуду стилей. Покупается отдельно
+          и не расходуется.
+        </p>
+      </div>
+    </div>
+  );
+}
 
 function BackgroundDialog() {
   const profile = useProfile();
@@ -215,7 +393,7 @@ function BackgroundDialog() {
                 </span>
                 {!owned && (
                   <span className="absolute inset-x-0 bottom-8 bg-black/70 px-2 py-0.5 text-[10px] font-bold text-white/80">
-                    {item.unlock.price ? `${item.unlock.price} монет` : `уровень ${item.unlock.level ?? "?"}`}
+                    {item.unlock.price ? `${item.unlock.price} AC` : `уровень ${item.unlock.level ?? "?"}`}
                   </span>
                 )}
               </button>
@@ -235,7 +413,7 @@ function BackgroundDialog() {
       </div>
 
       <div className="mt-4 flex items-center justify-between gap-3 border-t border-line pt-3">
-        <span className="text-xs text-muted">Пресеты открываются по уровню и монетам</span>
+        <span className="text-xs text-muted">Пресеты открываются по уровню и AC</span>
         <button
           type="button"
           onClick={() => openProfileDialog("appearance")}
@@ -393,7 +571,7 @@ function TitleDialog() {
                     <AgTag tag={titleTag(item)} size="sm" locked />
                     <span className="shrink-0 text-right text-[11px] text-muted">
                       {item.unlock.price
-                        ? `${item.unlock.price} монет`
+                        ? `${item.unlock.price} AC`
                         : item.unlock.level
                           ? `уровень ${item.unlock.level}`
                           : item.unlock.premium
@@ -423,13 +601,14 @@ function TitleDialog() {
 
 /* ----------------------------- Внешний вид ------------------------------ */
 
-type WardrobeTab = "tag" | "background" | "title" | "frame" | "avatar";
+type WardrobeTab = "tag" | "background" | "title" | "frame" | "avatar" | "effects";
 
 const WARDROBE_TABS: { id: WardrobeTab; label: string }[] = [
   { id: "tag", label: "Теги" },
   { id: "background", label: "Фоны" },
   { id: "title", label: "Титулы" },
   { id: "frame", label: "Рамки" },
+  { id: "effects", label: "Эффекты" },
   { id: "avatar", label: "Аватар" },
 ];
 
@@ -449,6 +628,7 @@ const TAG_RARITY_FILTERS: { id: string; label: string }[] = [
 function tagSourceHint(tag: (typeof PROGRESSION_CONFIG.tags)[number]): string {
   if (tag.source === "level") return `Уровень ${tag.level ?? "?"}`;
   if (tag.source === "shop") return `${tag.price ?? 0} AC`;
+  if (tag.source === "referral") return `${tag.friends ?? 0} друзей`;
   if (tag.source === "achievement" || tag.source === "secret") {
     const achievement = PROGRESSION_CONFIG.achievements.find(
       (item) => item.id === tag.achievementId,
@@ -457,6 +637,32 @@ function tagSourceHint(tag: (typeof PROGRESSION_CONFIG.tags)[number]): string {
     return achievement.hidden ? "За «???»" : `За «${achievement.name}»`;
   }
   return "Событие";
+}
+
+/**
+ * Подсказка «как получить» для титула — по образцу tagSourceHint.
+ *
+ * Общий `unlockHint` из косметики отдаёт «за достижение» без названия:
+ * в карточке это ни о чём не говорит, у тегов же стоит «За «Первая
+ * серия»». Названия достижений берём из конфига прогрессии.
+ *
+ * Про «За тайное достижение»: id достижений у титулов сейчас не совпадают
+ * с конфигом (watch-1 против ach_episodes_1), поэтому названия нет. Формулировка
+ * намеренно общая — называть несуществующее достижение тайным значит врать;
+ * сам разрыв вынесен отдельным вопросом, а не замаскирован текстом.
+ */
+function titleSourceHint(item: TitleItem): string {
+  if (item.unlock.price) return `${item.unlock.price} AC`;
+  if (item.unlock.premium) return "нужен Premium";
+  if (item.unlock.achievement) {
+    const achievement = PROGRESSION_CONFIG.achievements.find(
+      (a) => a.id === item.unlock.achievement,
+    );
+    if (achievement) return achievement.hidden ? "За «???»" : `За «${achievement.name}»`;
+    return "за достижение";
+  }
+  if (item.unlock.level) return `Уровень ${item.unlock.level}`;
+  return "доступно всем";
 }
 
 const RARITIES: { id: Rarity | "any"; label: string }[] = [
@@ -504,6 +710,13 @@ function AppearanceDialog() {
     setMessage(wasSelected ? "Тег снят" : "Тег выбран");
   };
 
+  /** Титулы носятся так же, как теги, и подтверждаются так же */
+  const toggleTitle = (item: TitleItem, owned: boolean) => {
+    const wasSelected = titleSel.isSelected(item.id);
+    titleSel.toggle(item, owned);
+    setMessage(wasSelected ? "Титул снят" : "Титул выбран");
+  };
+
   const buyTag = (id: string, name: string, price: number) => {
     const res = progressEmit({ type: "SHOP_PURCHASED", itemId: id, kind: "tag", price });
     if (res.rejected) {
@@ -541,29 +754,23 @@ function AppearanceDialog() {
       {/* Примерочная */}
       <div className="rounded-2xl border border-line bg-gradient-to-b from-accent/12 to-transparent p-4">
         <div className="flex items-center gap-3">
-          <AvatarView
-            nickname={nickname}
-            avatar={profile.avatar || undefined}
-            frameCss={frame?.css}
-            frameImg={frame?.img}
-            className="h-14 w-14"
-            textClass="text-base"
-          />
+          <AvatarFrame
+  nickname={nickname}
+  avatar={profile.avatar || undefined}
+  frame={frame}
+  size="md"
+/>
           <div className="min-w-0">
             <p className="truncate text-lg font-black text-white">{nickname}</p>
             <p className="truncate text-xs text-muted">@{nickname.toLowerCase()}</p>
-            {/* выбранные теги и титулы: основной — крупный, остальные — sm,
-                служебные чипы строкой ниже */}
-            {(equippedTag || extraTags.length > 0 || title || extraTitles.length > 0) && (
+            {/* Значки у ника: один тег и один титул, оба классом `pf-badge`.
+                Раньше здесь выводились все надетые (до 30 штук) — строка
+                превращалась в простыню и переставала читаться. Масштаб тот
+                же, что в лидерборде: `.pf-badge` в ag-theme.css. */}
+            {(equippedTag || title) && (
               <div className="mt-1.5 flex flex-wrap items-center gap-2">
-                {equippedTag && <AgTag tag={equippedTag} size="md" />}
-                {extraTags.map((item) => (
-                  <AgTag key={item.id} tag={item} size="sm" />
-                ))}
-                {title && <AgTag tag={titleTag(title)} size="sm" />}
-                {extraTitles.map((item) => (
-                  <AgTag key={item.id} tag={titleTag(item)} size="sm" />
-                ))}
+                {equippedTag && <AgTag tag={equippedTag} size="md" className="pf-badge" />}
+                {title && <AgTag tag={titleTag(title)} size="md" className="pf-badge" />}
               </div>
             )}
             <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
@@ -571,6 +778,27 @@ function AppearanceDialog() {
                 УРОВЕНЬ {level.level}
               </span>
               <span className="rounded-md bg-white/8 px-1.5 py-0.5 text-[10px] font-bold text-muted">{level.era}</span>
+            </div>
+            {/* Загрузка аватара — прямо в блоке примерки: раньше кнопка жила
+                во вкладке «Аватар» и в неё приходилось заходить отдельно. */}
+            <div className="mt-2.5 flex flex-wrap items-center gap-2">
+              <FilePicker
+                label={profile.avatar ? "Заменить аватар" : "Загрузить аватар"}
+                onFile={(file) => void onAvatar(file)}
+              />
+              {profile.avatar && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    updateProfile({ avatar: "" });
+                    setMessage("Аватар сброшен");
+                  }}
+                  className="rounded-lg px-2.5 py-1.5 text-xs font-bold text-muted transition hover:text-white"
+                >
+                  Убрать
+                </button>
+              )}
+              <span className="text-[11px] text-muted">JPG, PNG, WebP, GIF · до {IMAGE_LIMITS.avatar} МБ</span>
             </div>
           </div>
         </div>
@@ -659,7 +887,7 @@ function AppearanceDialog() {
               ))}
             </div>
 
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+            <div data-wardrobe-grid="" className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
               {PROGRESSION_CONFIG.tags
                 .filter((tag) => tagRarity === "any" || tag.rarity === tagRarity)
                 .map((tag) => {
@@ -773,36 +1001,79 @@ function AppearanceDialog() {
         )}
 
         {tab === "title" && (
-          <div>
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+          <div className="space-y-3">
+            {/* Карточка титула устроена как карточка тега: капсула, имя,
+                редкость, условие открытия и отдельная кнопка действия.
+                Раньше титул был одной большой кнопкой без подписи и без
+                подсказки — выбрать его можно было, но нельзя было понять,
+                чем он отличается от соседних и почему некоторые закрыты. */}
+            {/* data-wardrobe-grid — общий крючок для гейтов: теги и титулы
+                проверяются одним селектором и должны выглядеть одинаково */}
+            <div data-wardrobe-grid="" className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
               {TITLES.filter((item) => passRarity(item.rarity)).map((item) => {
                 const owned = isUnlocked(item.unlock, ctx);
                 const main = titleSel.primary === item.id;
                 const extra = titleSel.extras.includes(item.id);
                 return (
-                  <button
+                  <div
                     key={item.id}
-                    type="button"
-                    disabled={!owned}
-                    onClick={() => titleSel.toggle(item, owned)}
-                    className={`flex flex-col items-center gap-2 rounded-xl bg-white/[0.04] px-3 py-3 text-center ring-1 transition disabled:cursor-not-allowed disabled:opacity-60 ${
-                      main ? "ring-2 ring-accent-2" : extra ? "ring-2 ring-mint/60" : "ring-white/10 hover:ring-white/30"
+                    className={`flex flex-col items-center gap-2 rounded-xl bg-white/[0.04] px-2.5 py-3 text-center ring-1 transition ${
+                      main ? "ring-2 ring-accent-2" : extra ? "ring-2 ring-mint/60" : "ring-white/10"
                     }`}
                   >
                     <AgTag tag={titleTag(item)} size="md" locked={!owned} />
-                    <span className={`inline-block rounded px-1.5 py-0.5 text-[10px] font-bold ring-1 ${RARITY_CLASS[item.rarity]}`}>
-                      {main ? "Основной" : extra ? "Выбран ✓" : RARITY_LABEL[item.rarity]}
+                    <span className="max-w-full truncate text-[11px] font-bold text-white">
+                      {item.name}
                     </span>
-                  </button>
+                    <span
+                      className={`rounded px-1.5 py-0.5 text-[10px] font-bold ring-1 ${RARITY_CLASS[item.rarity]}`}
+                    >
+                      {RARITY_LABEL[item.rarity]}
+                    </span>
+                    <span className="min-h-[14px] text-[10px] leading-tight text-muted">
+                      {titleSourceHint(item)}
+                    </span>
+                    {main ? (
+                      <button
+                        type="button"
+                        onClick={() => toggleTitle(item, owned)}
+                        className="w-full rounded-lg bg-white/10 px-2.5 py-1.5 text-[11px] font-bold text-white ring-1 ring-white/15 transition hover:bg-white/16"
+                      >
+                        Снять
+                      </button>
+                    ) : extra ? (
+                      <button
+                        type="button"
+                        onClick={() => toggleTitle(item, owned)}
+                        className="w-full rounded-lg bg-mint/15 px-2.5 py-1.5 text-[11px] font-bold text-mint ring-1 ring-mint/35 transition hover:bg-mint/25"
+                      >
+                        Выбран ✓
+                      </button>
+                    ) : owned ? (
+                      <button
+                        type="button"
+                        onClick={() => toggleTitle(item, owned)}
+                        className="btn-primary w-full rounded-lg px-2.5 py-1.5 text-[11px] font-bold text-white"
+                      >
+                        Экипировать
+                      </button>
+                    ) : (
+                      <span className="w-full rounded-lg bg-white/6 px-2.5 py-1.5 text-[10px] font-bold text-muted ring-1 ring-white/10">
+                        Не получен
+                      </span>
+                    )}
+                  </div>
                 );
               })}
             </div>
-            <p className="mt-2 text-xs leading-relaxed text-muted">
+            <p className="text-xs leading-relaxed text-muted">
               Титулы тоже носятся по несколько: первый выбранный — основной, остальные
               показываются рядом с ним. Повторный клик снимает.
             </p>
           </div>
         )}
+
+        {tab === "effects" && <EffectsPanel />}
 
         {tab === "frame" && (
           <div className="grid grid-cols-3 gap-2">
@@ -819,7 +1090,12 @@ function AppearanceDialog() {
                     active ? "ring-2 ring-accent-2" : "ring-white/10 hover:ring-white/30"
                   }`}
                 >
-                  <AvatarView nickname={nickname} avatar={profile.avatar || undefined} frameCss={item.css} frameImg={item.img} className="h-12 w-12" textClass="text-sm" />
+                  <AvatarFrame
+  nickname={nickname}
+  avatar={profile.avatar || undefined}
+  frame={item}
+  size="md"
+/>
                   <span className="truncate text-[11px] font-bold text-white">{item.name}</span>
                 </button>
               );
@@ -841,7 +1117,7 @@ function AppearanceDialog() {
           onClick={closeProfileDialog}
           className="btn-ghost inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-bold text-accent-2 hover:bg-accent-2/12"
         >
-          Магазин за монеты
+          Магазин за AC
         </Link>
       </div>
     </DialogShell>
@@ -850,14 +1126,60 @@ function AppearanceDialog() {
 
 /* ------------------------------ Настройки ------------------------------- */
 
-export type SettingsTab = "profile" | "looks" | "privacy" | "subscription" | "data";
+export type SettingsTab =
+  | "profile"
+  | "privacy"
+  | "looks"
+  | "notifications"
+  | "subscription"
+  | "player"
+  | "data";
 
 export const SETTINGS_TABS: { id: SettingsTab; label: string; description: string }[] = [
-  { id: "profile", label: "Профиль", description: "Описание, hex-подпись и аккаунт" },
-  { id: "looks", label: "Внешний вид", description: "Фото, баннер, витрина и анимации" },
+  { id: "profile", label: "Профиль", description: "Почта, пароль, привязки и описание" },
   { id: "privacy", label: "Приватность", description: "Кто видит профиль, статистику и историю" },
+  { id: "looks", label: "Внешний вид", description: "Тема, акцент, фото, баннер и звёзды" },
+  { id: "notifications", label: "Уведомления", description: "Что присылать и куда" },
   { id: "subscription", label: "Подписка", description: "Premium и его привилегии" },
-  { id: "data", label: "Данные", description: "Экспорт и импорт локальной базы" },
+  { id: "player", label: "Плеер", description: "Качество, скорость, субтитры, клавиши" },
+  { id: "data", label: "Данные", description: "Сессии, экспорт и удаление аккаунта" },
+];
+
+/** Темы оформления макета */
+const THEMES: { id: Prefs["theme"]; title: string }[] = [
+  { id: "dark", title: "Тёмная" },
+  { id: "light", title: "Светлая" },
+  { id: "system", title: "Системная" },
+];
+
+const THEME_ICONS: Record<Prefs["theme"], ReactNode> = {
+  dark: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z" />
+    </svg>
+  ),
+  light: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="4" />
+      <path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5L19 19M5 19l1.5-1.5M17.5 6.5L19 5" />
+    </svg>
+  ),
+  system: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="4" width="18" height="12" rx="2" />
+      <path d="M8 21h8M12 16v5" />
+    </svg>
+  ),
+};
+
+/** Горячие клавиши плеера: подписи в том виде, в каком их видит человек */
+const HOTKEYS: { id: keyof Prefs["keys"]; title: string; keys: string[] }[] = [
+  { id: "play", title: "Пауза / продолжить", keys: ["Space"] },
+  { id: "seek", title: "Перемотка ±10 сек", keys: ["←", "→"] },
+  { id: "volume", title: "Громкость", keys: ["↑", "↓"] },
+  { id: "fullscreen", title: "Полный экран", keys: ["F"] },
+  { id: "skip", title: "Пропустить опенинг", keys: ["S"] },
+  { id: "next", title: "Следующая серия", keys: ["N"] },
 ];
 
 /** Режим «экономия» (§14): ручной выбор переопределяет автоматику по ядрам */
@@ -866,6 +1188,160 @@ const ECO_OPTIONS: { id: EcoMode; label: string }[] = [
   { id: "on", label: "Всегда" },
   { id: "off", label: "Выкл" },
 ];
+
+/* --------------------- Примитивы страницы настроек --------------------- */
+
+/**
+ * Блок настроек: иконка, заголовок, пояснение — как в макете.
+ *
+ * Классы свои (`ag-set-*`), поэтому одинаково выглядят и на странице
+ * `/settings`, и в модалке, и не задевают ничего в остальном интерфейсе.
+ *
+ * Иконка принимается готовым штрихом (`<path>`, `<circle>`…), поэтому
+ * оборачиваем её в `<svg>` сами — иначе React выведет неизвестные теги
+ * прямо в DOM и страница упадёт.
+ */
+function SetBlock({
+  icon,
+  title,
+  hint,
+  aside,
+  children,
+}: {
+  icon: ReactNode;
+  title: string;
+  hint: string;
+  aside?: ReactNode;
+  children?: ReactNode;
+}) {
+  return (
+    <section className="ag-set">
+      <header className="ag-set-h">
+        <span className="ag-set-hi" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+            {icon}
+          </svg>
+        </span>
+        <div>
+          <h2>{title}</h2>
+          <p>{hint}</p>
+        </div>
+        {aside}
+      </header>
+      {children}
+    </section>
+  );
+}
+
+/**
+ * Строка блока: слева название и пояснение, справа управление.
+ *
+ * `icon` — всегда штрих SVG (оборачивается в `<svg>` здесь), `lead` —
+ * произвольный узел вместо иконки: кружок с буквой, логотип, значок.
+ */
+function SetRow({
+  icon,
+  lead,
+  title,
+  hint,
+  children,
+}: {
+  icon?: ReactNode;
+  lead?: ReactNode;
+  title: string;
+  hint: ReactNode;
+  children?: ReactNode;
+}) {
+  return (
+    <div className="ag-set-r">
+      <span className="ag-set-ri" aria-hidden="true">
+        {lead ?? (
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+            {icon}
+          </svg>
+        )}
+      </span>
+      <div className="ag-set-rx">
+        <b>{title}</b>
+        <small>{hint}</small>
+      </div>
+      {children}
+    </div>
+  );
+}
+
+/** Состояние разрешения браузера на уведомления */
+type PushState = "unsupported" | "default" | "granted" | "denied";
+
+/**
+ * Разрешение на уведомления читаем лениво: `Notification` на сервере нет,
+ * и обращение к нему в теле рендера уронило бы страницу при сборке.
+ */
+function initialPushState(): PushState {
+  if (typeof window === "undefined" || !("Notification" in window)) return "unsupported";
+  return Notification.permission as PushState;
+}
+
+/** Запрос разрешения делается в компоненте: ответ приходит асинхронно,
+ *  и показать его можно только через setState */
+
+/** Фраза, которую надо ввести для необратимого удаления */
+const ERASE_PHRASE = "УДАЛИТЬ";
+
+interface PaymentRow {
+  id: string;
+  title: string;
+  at: number;
+  amount: string;
+}
+
+/**
+ * История операций для блока «История платежей».
+ *
+ * Источник — журнал покупок движка (`doc.purchases`): покупки предметов за
+ * AC и покупки Premium. Это настоящие траты этого браузера, а не чеки:
+ * платёжных систем у сайта нет, имитировать их значило бы выдумать
+ * данные, которых не было.
+ */
+function buildPayments(doc: ReturnType<typeof useProgress>): PaymentRow[] {
+  return doc.purchases
+    .filter((item) => typeof item.at === "number" && item.at > 0)
+    .map((item) => {
+      const def = PROGRESSION_CONFIG.shop.find((entry) => entry.id === item.itemId);
+      return {
+        id: `${item.itemId}-${item.at}`,
+        title: def?.name ?? item.itemId,
+        at: item.at,
+        amount: `${item.price} AC`,
+      };
+    })
+    .sort((a, b) => b.at - a.at);
+}
+
+/** Значок-галочка для статуса «настроено» */
+const OK_ICON = (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M5 12l4.5 4.5L19 7" />
+  </svg>
+);
+
+/** Три уровня доступа к профилю — как в макете */
+const SCOPES: { id: ProfileScope; title: string; hint: string }[] = [
+  { id: "public", title: "Открытый", hint: "Профиль виден всем, активность и списки открыты." },
+  { id: "friends", title: "Только друзья", hint: "Профиль видят друзья, остальным — нет." },
+  { id: "private", title: "Приватный", hint: "Профиль скрыт, активность и списки не показываются." },
+];
+
+/** Иконки привязанных аккаунтов */
+const LINK_ICONS = {
+  google: <path strokeLinecap="round" strokeLinejoin="round" d="M3 5h18v14H3zM3 7l9 6 9-6" />,
+  telegram: (
+    <>
+      <path d="M21 3L3 10.5l6 2.5 2.5 6.5 3-4.5L19 19z" />
+      <path d="M9 13l12-10" />
+    </>
+  ),
+} as const;
 
 function Toggle({
   checked,
@@ -879,7 +1355,7 @@ function Toggle({
   hint: string;
 }) {
   return (
-    <div className="flex items-start justify-between gap-4 rounded-xl bg-white/[0.03] px-3.5 py-3">
+    <div className="ag-set-r">
       <span className="min-w-0">
         <span className="block text-sm font-bold text-white">{label}</span>
         <span className="mt-0.5 block text-xs leading-relaxed text-muted">{hint}</span>
@@ -890,11 +1366,9 @@ function Toggle({
         aria-checked={checked}
         aria-label={label}
         onClick={() => onChange(!checked)}
-        className={`relative h-6 w-11 shrink-0 rounded-full transition ${checked ? "bg-accent" : "bg-white/12"}`}
+        className={`ag-tg ${checked ? "on" : ""}`}
       >
-        <span
-          className={`absolute top-0.5 h-5 w-5 rounded-full bg-white transition-all ${checked ? "left-[22px]" : "left-0.5"}`}
-        />
+        <span />
       </button>
     </div>
   );
@@ -924,8 +1398,71 @@ export function SettingsPanel({
   const [draftSignature, setDraftSignature] = useState(profile.signature);
   const [message, setMessage] = useState<string | null>(null);
 
+  /* --------------------------- Новые настройки --------------------------- */
+
+  const prefs = usePrefs();
+  const doc = useProgress();
+  const links = useLinks();
+  const devices = useDevices();
+  const friends = useFriends();
+  const [pw, setPw] = useState({ current: "", next: "", confirm: "" });
+  const [pwError, setPwError] = useState<string | null>(null);
+  const [linkDraft, setLinkDraft] = useState<{ provider: LinkProvider; handle: string }>({
+    provider: "telegram",
+    handle: "",
+  });
+  const [linkError, setLinkError] = useState<string | null>(null);
+  const [deviceLabel, setDeviceLabel] = useState("");
+  const [deviceCode, setDeviceCode] = useState("");
+  const [deviceError, setDeviceError] = useState<string | null>(null);
+  const [friendDraft, setFriendDraft] = useState("");
+  const [friendMutual, setFriendMutual] = useState(true);
+  const [friendError, setFriendError] = useState<string | null>(null);
+  const [pushState, setPushState] = useState<PushState>(() => initialPushState());
+
+  /**
+   * Сессии и платежи — реальные записи этого браузера.
+   *
+   * Сессию различать нечем (сервера нет), поэтому она всегда одна; платежи
+   * берутся из журнала покупок движка — это настоящие траты, а не чеки.
+   */
+  const sessions = useSessions();
+  const payments = useMemo(() => buildPayments(doc), [doc]);
+
+  /** Браузер спрашивает сам; мы только запоминаем ответ */
+  const requestPush = useCallback(() => {
+    if (typeof window === "undefined" || !("Notification" in window)) return;
+    void Notification.requestPermission().then((permission) => {
+      setPushState(permission as PushState);
+    });
+  }, []);
+
   const premium = isPremiumActive(account);
   const initials = account?.nickname.slice(0, 2).toUpperCase() ?? "";
+
+  /**
+   * Пресеты приватности — три уровня доступа, как в макете. «Только
+   * друзья» в макете означает «видят взаимные подписчики»; друзей
+   * заводит сам пользователь (см. accounts.ts), потому что подтвердить
+   * заявку без сервера некому.
+   */
+  const setScope = useCallback(
+    (next: ProfileScope) => {
+      updateProfile({
+        privacy: {
+          ...profile.privacy,
+          scope: next,
+          profilePublic: next !== "private",
+          showStats: next === "public",
+          showAchievements: next !== "private",
+          showHistory: next !== "private",
+        },
+      });
+    },
+    [profile.privacy],
+  );
+
+  const scope = profile.privacy.scope ?? "public";
 
   const save = useCallback(() => {
     const bio = draftBio.slice(0, 300);
@@ -963,8 +1500,57 @@ export function SettingsPanel({
 
   /* ---------------------- Локальная «база данных» ---------------------- */
 
-  /** Снимок хранилища для карточки «Ключей/объём» — меняется только после импорта (reload) */
-  const [stats] = useState(() => storageStats());
+const EMPTY_STATS: { count: number; bytes: number } = { count: 0, bytes: 0 };
+
+/**
+ * Снимок объёма хранилища для плитки «Ключей / объём».
+ *
+ * Через `useSyncExternalStore`, а не `useState(() => storageStats())`: на
+ * сервере localStorage нет, и инициализатор useState на клиенте при
+ * гидратации уже посчитал бы настоящие 10 ключей против нулей в
+ * серверном HTML. React на такое отвечает перегенерацией дерева и
+ * предупреждением о расхождении — то есть страница «Данные» каждый раз
+ * ругалась бы в консоль. Серверный снимок здесь честно нулевой, а
+ * настоящие числа приходят вторым рендером.
+ */
+function useStorageStats(): { count: number; bytes: number } {
+  const cache = useRef<{ raw: string; stats: { count: number; bytes: number } } | null>(null);
+
+  const getSnapshot = useCallback(() => {
+    const entries = storageEntries();
+    let count = 0;
+    let bytes = 0;
+    const parts: string[] = [];
+    for (const [key, value] of entries ?? []) {
+      if (!key.startsWith(BACKUP_KEY_PREFIX)) continue;
+      count += 1;
+      bytes += key.length + value.length;
+      // Отпечаток для сравнения: сам объём stats меняется при каждом
+      // вызове, а useSyncExternalStore требует стабильную ссылку
+      parts.push(key, String(value.length));
+    }
+    const raw = parts.join("|");
+    if (!cache.current || cache.current.raw !== raw) {
+      cache.current = { raw, stats: { count, bytes } };
+    }
+    return cache.current.stats;
+  }, []);
+
+  const getServerSnapshot = useCallback(() => EMPTY_STATS, []);
+
+  const subscribe = useCallback((onChange: () => void) => {
+    const onStorage = (event: StorageEvent) => {
+      if (event.key === null || event.key.startsWith(BACKUP_KEY_PREFIX)) onChange();
+    };
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, []);
+
+  return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+}
+
+  /** Снимок хранилища для плитки «Ключей/объём» — обновляется при изменении базы */
+  const stats = useStorageStats();
   const [canRollback, setCanRollback] = useState(() => hasPreimport());
   const fileRef = useRef<HTMLInputElement | null>(null);
 
@@ -1037,254 +1623,1227 @@ export function SettingsPanel({
       <div className={inDialog ? "mt-4 max-h-[52vh] overflow-y-auto pr-1" : hideTabs ? "" : "mt-4"}>
         {tab === "profile" && (
           <div className="space-y-4">
-            <div className="flex items-center gap-3 rounded-xl bg-white/[0.03] px-3.5 py-3">
-              <span className="grid h-9 w-9 place-items-center rounded-full bg-gradient-to-br from-accent to-accent-2 text-xs font-black text-white">
-                {initials}
-              </span>
-              <span className="min-w-0">
-                <span className="block truncate text-sm font-bold text-white">{account?.nickname}</span>
-                <span className="block truncate text-xs text-muted">{account?.email}</span>
-              </span>
-            </div>
+            <SetBlock
+              icon={
+                <>
+                  <rect x="3" y="5" width="18" height="14" rx="2" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="m3.5 7 8.5 6 8.5-6" />
+                </>
+              }
+              title="Email адрес"
+              hint="Адрес для входа и восстановления доступа"
+              aside={<span className="ag-set-st ok">{OK_ICON} Почта подтверждена</span>}
+            >
+              <div className="ag-set-cur">
+                <small>Текущий адрес</small>
+                <b>{account?.email ?? "—"}</b>
+              </div>
+              <p className="ag-set-hint">
+                Подтверждение письмом устроить нечем — почта никуда не отправляется, поэтому
+                адрес меняется только вместе с аккаунтом.
+              </p>
+            </SetBlock>
 
-            <div>
-              <label htmlFor="bio" className="mb-1.5 block text-xs font-bold uppercase tracking-[0.14em] text-muted">
-                О себе
+            <SetBlock
+              icon={
+                <>
+                  <rect x="5" y="11" width="14" height="9" rx="2" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M8 11V8a4 4 0 0 1 8 0v3" />
+                </>
+              }
+              title="Смена пароля"
+              hint="Используйте надёжный пароль, который не применяете на других сайтах"
+            >
+              <p className="ag-set-warn">
+                После смены пароля выйдете из аккаунта на всех устройствах, включая это.
+                Войти заново нужно будет с новым паролем.
+              </p>
+              <label className="ag-set-fl" htmlFor="pw-current">
+                <span className="ag-set-lb">Текущий пароль</span>
+                <input
+                  id="pw-current"
+                  type="password"
+                  autoComplete="current-password"
+                  value={pw.current}
+                  onChange={(event) => setPw({ ...pw, current: event.target.value })}
+                />
               </label>
-              <textarea
-                id="bio"
-                value={draftBio}
-                onChange={(event) => setDraftBio(event.target.value)}
-                maxLength={300}
-                rows={3}
-                placeholder="Пара слов о вкусах и настроении"
-                className="w-full resize-none rounded-xl bg-card px-3 py-2.5 text-sm text-white ring-1 ring-white/10 transition placeholder:text-muted/60 focus:outline-none focus:ring-accent/60"
-              />
-              <p className="mt-1 text-right text-[11px] text-muted">{draftBio.length}/300</p>
-            </div>
-
-            <div>
-              <label htmlFor="signature" className="mb-1.5 block text-xs font-bold uppercase tracking-[0.14em] text-muted">
-                Hex-подпись
+              <label className="ag-set-fl" htmlFor="pw-next">
+                <span className="ag-set-lb">Новый пароль</span>
+                <input
+                  id="pw-next"
+                  type="password"
+                  autoComplete="new-password"
+                  value={pw.next}
+                  onChange={(event) => setPw({ ...pw, next: event.target.value })}
+                />
+                <span className="ag-set-hint">Минимум 8 символов, заглавная, строчная, цифра</span>
               </label>
-              <input
-                id="signature"
-                value={draftSignature}
-                onChange={(event) => setDraftSignature(event.target.value)}
-                maxLength={32}
-                spellCheck={false}
-                placeholder="Пусто — будет сгенерирована автоматически"
-                className="w-full rounded-xl bg-card px-3 py-2.5 font-mono text-sm uppercase tracking-[0.2em] text-white ring-1 ring-white/10 transition placeholder:normal-case placeholder:tracking-normal placeholder:text-muted/60 focus:outline-none focus:ring-accent/60"
-              />
-            </div>
+              <label className="ag-set-fl" htmlFor="pw-confirm">
+                <span className="ag-set-lb">Подтвердите пароль</span>
+                <input
+                  id="pw-confirm"
+                  type="password"
+                  autoComplete="new-password"
+                  value={pw.confirm}
+                  onChange={(event) => setPw({ ...pw, confirm: event.target.value })}
+                />
+              </label>
+              <div className="ag-set-acts">
+                <button
+                  type="button"
+                  className="ag-set-btn"
+                  onClick={() => {
+                    const result = changePassword(pw.current, pw.next, pw.confirm);
+                    if (!result.ok) {
+                      setPwError(result.error);
+                      return;
+                    }
+                    setPwError(null);
+                    setPw({ current: "", next: "", confirm: "" });
+                    setMessage("Пароль обновлён");
+                  }}
+                >
+                  Обновить пароль
+                </button>
+              </div>
+              {pwError && <p className="ag-set-warn">{pwError}</p>}
+            </SetBlock>
 
-            <button type="button" onClick={save} className="btn-primary rounded-xl px-5 py-2.5 text-sm font-bold text-white">
-              Сохранить
-            </button>
+            <SetBlock
+              icon={
+                <>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1" />
+                </>
+              }
+              title="Привязанные аккаунты"
+              hint="Управляйте способами входа в аккаунт"
+              aside={<span className="ag-set-st ok">{OK_ICON} {links.length} из 2</span>}
+            >
+              {links.map((link) => (
+                <SetRow
+                  key={link.provider}
+                  icon={LINK_ICONS[link.provider]}
+                  title={LINK_LABEL[link.provider]}
+                  hint={`${link.handle} · привязан ${timeAgo(link.at)}`}
+                >
+                  <button
+                    type="button"
+                    className="ag-set-btn danger"
+                    onClick={() => unlinkAccount(link.provider)}
+                  >
+                    Отвязать
+                  </button>
+                </SetRow>
+              ))}
+
+              <div className="ag-set-rowform">
+                <select
+                  className="ag-set-in"
+                  value={linkDraft.provider}
+                  onChange={(event) =>
+                    setLinkDraft({ ...linkDraft, provider: event.target.value as LinkProvider })
+                  }
+                  aria-label="Сервис"
+                >
+                  <option value="google">Google</option>
+                  <option value="telegram">Telegram</option>
+                </select>
+                <input
+                  value={linkDraft.handle}
+                  onChange={(event) => setLinkDraft({ ...linkDraft, handle: event.target.value })}
+                  placeholder={linkDraft.provider === "google" ? "почта Google" : "юзернейм Telegram"}
+                  aria-label="Аккаунт сервиса"
+                />
+                <button
+                  type="button"
+                  className="ag-set-btn"
+                  onClick={() => {
+                    const error = linkAccount(linkDraft.provider, linkDraft.handle);
+                    setLinkError(error);
+                    if (!error) setLinkDraft({ provider: linkDraft.provider, handle: "" });
+                  }}
+                >
+                  Привязать
+                </button>
+              </div>
+              {linkError && <p className="ag-set-warn">{linkError}</p>}
+              <p className="ag-set-hint">
+                OAuth у Google и Telegram требует сервера и секретов приложения, поэтому вход
+                по кнопке здесь невозможен. Привязка сохраняется локально и никуда не передаётся:
+                подтверждения от сервиса не было.
+              </p>
+            </SetBlock>
+
+            <SetBlock
+              icon={
+                <>
+                  <rect x="3" y="6" width="18" height="12" rx="2" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M8 21h8" />
+                </>
+              }
+              title="Телевизоры"
+              hint="Устройства, подключённые как второй экран"
+              aside={devices.length > 0 ? <span className="ag-set-st ok">{OK_ICON} {devices.length}</span> : undefined}
+            >
+              <div className="ag-set-rowform">
+                <input
+                  value={deviceLabel}
+                  onChange={(event) => setDeviceLabel(event.target.value)}
+                  placeholder="Название: Гостиная"
+                  aria-label="Название устройства"
+                  maxLength={32}
+                />
+                <input
+                  value={deviceCode}
+                  onChange={(event) => setDeviceCode(event.target.value.toUpperCase())}
+                  placeholder="XXXX-XXXX"
+                  aria-label="Код подключения"
+                  maxLength={9}
+                />
+                <button
+                  type="button"
+                  className="ag-set-btn"
+                  onClick={() => {
+                    const error = addDevice(deviceLabel, deviceCode);
+                    setDeviceError(error);
+                    if (!error) {
+                      setDeviceLabel("");
+                      setDeviceCode("");
+                    }
+                  }}
+                >
+                  Подключить
+                </button>
+              </div>
+              {deviceError && <p className="ag-set-warn">{deviceError}</p>}
+
+              {devices.length === 0 ? (
+                <div className="ag-set-empty">
+                  <b>Нет привязанных телевизоров</b>
+                  <small>
+                    Откройте AniGalaxy на телевизоре и введите его код подключения — устройство
+                    появится здесь.
+                  </small>
+                </div>
+              ) : (
+                <ul className="ag-set-list">
+                  {devices.map((device) => (
+                    <li key={device.code}>
+                      <b>{device.label}</b>
+                      <span className="ag-w-sub">{device.code}</span>
+                      <button
+                        type="button"
+                        className="ag-set-btn danger"
+                        onClick={() => removeDevice(device.code)}
+                      >
+                        Отключить
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              <p className="ag-set-hint">
+                Обмена кодами по сети нет — код вводится вручную с того же устройства.
+              </p>
+            </SetBlock>
+
+            <SetBlock
+              icon={
+                <>
+                  <circle cx="12" cy="8" r="3.6" />
+                  <path strokeLinecap="round" d="M4.5 20a7.5 7.5 0 0 1 15 0" />
+                </>
+              }
+              title="О себе"
+              hint="Описание и подпись — их видно в публичном профиле"
+            >
+              <SetRow
+                lead={<span className="ag-set-avatar">{initials}</span>}
+                title={account?.nickname ?? "Гость"}
+                hint={account?.email ?? "Аккаунт не создан"}
+              >
+                <span className="ag-set-note">Вход по почте и паролю</span>
+              </SetRow>
+              <label className="ag-set-fl" htmlFor="bio">
+                <span className="ag-set-lb">О себе</span>
+                <textarea
+                  id="bio"
+                  value={draftBio}
+                  onChange={(event) => setDraftBio(event.target.value)}
+                  maxLength={300}
+                  rows={3}
+                  placeholder="Пара слов о вкусах и настроении"
+                />
+                <span className="ag-set-cnt">{draftBio.length}/300</span>
+              </label>
+
+              <label className="ag-set-fl" htmlFor="signature">
+                <span className="ag-set-lb">Hex-подпись</span>
+                <input
+                  id="signature"
+                  value={draftSignature}
+                  onChange={(event) => setDraftSignature(event.target.value)}
+                  maxLength={32}
+                  spellCheck={false}
+                  placeholder="Пусто — будет сгенерирована автоматически"
+                />
+              </label>
+
+              <p className="ag-set-hint">
+                Подпись хранится рядом с профилем и показывается в шапке страницы тем же шрифтом,
+                что и остальные hex-коды достижений.
+              </p>
+
+              <div className="ag-set-acts">
+                <button type="button" onClick={save} className="ag-set-btn">Сохранить</button>
+              </div>
+            </SetBlock>
           </div>
         )}
 
         {tab === "looks" && (
           <div className="space-y-4">
-            <div className="rounded-xl border border-line bg-white/[0.02] p-4">
-              <p className="text-xs font-bold uppercase tracking-[0.14em] text-muted">Фото профиля</p>
-              <p className="mt-1 text-xs text-muted">Рекомендуется 400×400 px · GIF поддерживаются</p>
-              <div className="mt-3 flex flex-wrap items-center gap-2">
+            <SetBlock
+              icon={
+                <>
+                  <rect x="4" y="5" width="16" height="14" rx="2.5" />
+                  <circle cx="9" cy="10" r="1.5" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="m5.5 17.5 4-4 3 3 2.5-2.5 3.5 3.5" />
+                </>
+              }
+              title="Фото профиля"
+              hint="Показывается в профиле, в меню и в списках"
+            >
+              <div className="ag-set-acts">
                 <FilePicker label={profile.avatar ? "Заменить" : "Выбрать файл"} onFile={(file) => void onAvatar(file)} />
                 {profile.avatar && (
                   <button
                     type="button"
                     onClick={() => updateProfile({ avatar: "" })}
-                    className="btn-ghost rounded-xl bg-white/8 px-3.5 py-2.5 text-sm font-semibold text-rose-300 ring-1 ring-white/12 hover:bg-rose-400/12"
+                    className="ag-set-btn danger"
                   >
                     Удалить
                   </button>
                 )}
               </div>
-              <p className="mt-2 text-[11px] text-muted">Макс. {IMAGE_LIMITS.avatar} МБ · JPEG, PNG, WebP, GIF</p>
-            </div>
+              <p className="ag-set-hint">
+                Макс. {IMAGE_LIMITS.avatar} МБ · JPEG, PNG, WebP, GIF · рекомендуется 400×400 px
+              </p>
+            </SetBlock>
 
-            <div className="rounded-xl border border-line bg-white/[0.02] p-4">
-              <p className="text-xs font-bold uppercase tracking-[0.14em] text-muted">Баннер профиля</p>
-              <p className="mt-1 text-xs text-muted">Отображается вверху страницы · рекомендуется 1200×400 px</p>
-              <div className="mt-3 flex flex-wrap items-center gap-2">
+            <SetBlock
+              icon={
+                <>
+                  <rect x="3" y="4" width="18" height="12" rx="2" />
+                  <path strokeLinecap="round" d="M8 20h8" />
+                </>
+              }
+              title="Баннер профиля"
+              hint="Растянутая полоса во всю ширину вверху страницы профиля"
+            >
+              <div className="ag-set-acts">
                 <FilePicker label={profile.backgroundCustom ? "Заменить" : "Выбрать файл"} onFile={(file) => void onBanner(file)} />
                 {profile.backgroundCustom && (
                   <button
                     type="button"
                     onClick={() => updateProfile({ backgroundId: "preset-dusk", backgroundCustom: "" })}
-                    className="btn-ghost rounded-xl bg-white/8 px-3.5 py-2.5 text-sm font-semibold text-rose-300 ring-1 ring-white/12 hover:bg-rose-400/12"
+                    className="ag-set-btn danger"
                   >
                     Снять
                   </button>
                 )}
               </div>
-              <p className="mt-2 text-[11px] text-muted">Макс. {IMAGE_LIMITS.background} МБ · JPEG, PNG, WebP, GIF</p>
-            </div>
-
-            <div className="flex flex-wrap gap-2">
-              <button
-                type="button"
-                onClick={() => openProfileDialog("appearance")}
-                className="btn-ghost rounded-xl bg-white/8 px-4 py-2.5 text-sm font-semibold text-white ring-1 ring-white/12 hover:bg-white/14"
-              >
-                Открыть витрину
-              </button>
-              <button
-                type="button"
-                onClick={() => openProfileDialog("title")}
-                className="btn-ghost rounded-xl bg-white/8 px-4 py-2.5 text-sm font-semibold text-white ring-1 ring-white/12 hover:bg-white/14"
-              >
-                Выбрать титул
-              </button>
-            </div>
-
-            <div className="rounded-xl border border-line bg-white/[0.02] p-4">
-              <p className="text-xs font-bold uppercase tracking-[0.14em] text-muted">Режим экономии</p>
-              <p className="mt-1 text-xs text-muted">
-                Гасит декоративные анимации — как системная настройка «уменьшить движение». Автоматика включает его на
-                машинах с 4 ядрами и меньше{cpuCores() > 0 ? ` (ваша: ${cpuCores()})` : ""}.
+              <p className="ag-set-hint">
+                Макс. {IMAGE_LIMITS.background} МБ · JPEG, PNG, WebP, GIF · рекомендуется 1200×400 px
               </p>
-              <div className="mt-3 flex flex-wrap gap-1 rounded-xl bg-white/6 p-1 ring-1 ring-white/10">
+            </SetBlock>
+
+            <SetBlock
+              icon={
+                <>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 17a8 8 0 1 1 16 0M12 17l4-5" />
+                </>
+              }
+              title="Эффекты и производительность"
+              hint="Режим экономии гасит декоративные анимации — как системная настройка «уменьшить движение»"
+            >
+              <div className="ag-set-opts">
                 {ECO_OPTIONS.map((option) => (
                   <button
                     key={option.id}
                     type="button"
                     onClick={() => setEco(option.id)}
                     aria-pressed={eco === option.id}
-                    className={`rounded-lg px-3 py-1.5 text-xs font-bold transition ${
-                      eco === option.id ? "bg-accent-deep text-white" : "text-muted hover:text-white"
-                    }`}
+                    className={`ag-set-op ${eco === option.id ? "on" : ""}`}
                   >
-                    {option.label}
+                    <b>{option.label}</b>
+                    <small>
+                      {option.id === "auto"
+                        ? "Телефоны — упрощённые, ПК — полные"
+                        : option.id === "on"
+                          ? "Экономия батареи и нагрева"
+                          : "Максимум визуала, греет батарею"}
+                    </small>
+                    <i aria-hidden="true" />
                   </button>
                 ))}
               </div>
-              <p className="mt-2 text-[11px] text-muted" data-eco-status>
+              <p className="ag-set-hint">
                 Сейчас: {ecoActive() ? "экономия включена, анимации сокращены" : "полные анимации"}
                 {eco === "auto" ? (weakCpu() ? " · по автоматике" : " · автоматика не сработала") : " · вручную"}
+                {cpuCores() > 0 && ` · ядер: ${cpuCores()}`}
               </p>
-            </div>
+            </SetBlock>
+
+            <SetBlock
+              icon={
+                <>
+                  <rect x="3" y="4" width="18" height="16" rx="2.5" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 9h18M9 9v11" />
+                </>
+              }
+              title="Витрина и титул"
+              hint="Порядок блоков на странице профиля и подпись над ником"
+            >
+              <div className="ag-set-acts">
+                <button
+                  type="button"
+                  onClick={() => openProfileDialog("appearance")}
+                  className="ag-set-btn"
+                >
+                  Открыть витрину
+                </button>
+                <button
+                  type="button"
+                  onClick={() => openProfileDialog("title")}
+                  className="ag-set-btn"
+                >
+                  Выбрать титул
+                </button>
+              </div>
+              <p className="ag-set-hint">
+                Титулы и рамки покупаются за AC в магазине; здесь выбирается только то, что уже куплено.
+              </p>
+            </SetBlock>
+            <SetBlock
+              icon={
+                <>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 3a9 9 0 1 0 0 18c1.5 0 2-1 1.5-2s0-2.5 1.5-2.5H17a4 4 0 0 0 4-4C21 6.5 17 3 12 3z" />
+                  <circle cx="7.5" cy="11" r="1" />
+                  <circle cx="10" cy="7" r="1" />
+                  <circle cx="15" cy="7.5" r="1" />
+                </>
+              }
+              title="Тема оформления"
+              hint="Выберите, как выглядит AniGalaxy"
+            >
+              <div className="ag-set-opts">
+                {THEMES.map((item) => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    className={`ag-set-op is-icon ${prefs.theme === item.id ? "on" : ""}`}
+                    aria-pressed={prefs.theme === item.id}
+                    onClick={() => updatePrefs({ theme: item.id })}
+                  >
+                    <span className="ag-set-big">{THEME_ICONS[item.id]}</span>
+                    <b>{item.title}</b>
+                    <i aria-hidden="true" />
+                  </button>
+                ))}
+              </div>
+              <p className="ag-set-hint">
+                Тема красит страницы профиля, списка, настроек и магазина — те, что свёрстаны по
+                макетам. Шапка и остальной сайт остаются тёмными: их оформление задано отдельно.
+              </p>
+            </SetBlock>
+
+            <SetBlock
+              icon={
+                <>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 3a9 9 0 1 0 0 18c1.5 0 2-1 1.5-2s0-2.5 1.5-2.5H17a4 4 0 0 0 4-4C21 6.5 17 3 12 3z" />
+                  <circle cx="7.5" cy="11" r="1" />
+                  <circle cx="10" cy="7" r="1" />
+                  <circle cx="15" cy="7.5" r="1" />
+                </>
+              }
+              title="Акцентный цвет"
+              hint="Цвет интерфейса, используемый для кнопок и акцентов"
+            >
+              <div className="ag-set-swatches">
+                {ACCENTS.map((item) => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    className={`ag-set-sw ${prefs.accent === item.id ? "on" : ""}`}
+                    aria-pressed={prefs.accent === item.id}
+                    onClick={() => updatePrefs({ accent: item.id })}
+                    style={{ background: `linear-gradient(135deg, ${item.a}, ${item.b})` }}
+                  >
+                    <span aria-hidden="true" />
+                    <b>{item.name}</b>
+                  </button>
+                ))}
+              </div>
+              <p className="ag-set-hint">
+                Цвет применяется сразу — кнопки, рамки и подсветка перекрасятся по всему сайту.
+              </p>
+            </SetBlock>
+
+            <SetBlock
+              icon={
+                <>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z" />
+                </>
+              }
+              title="Звёздное небо"
+              hint="Фон AniGalaxy можно подстроить под себя"
+            >
+              <label className="ag-set-rng">
+                <b>Количество звёзд</b>
+                <input
+                  type="range"
+                  min={0}
+                  max={320}
+                  step={10}
+                  value={prefs.stars}
+                  onChange={(event) => updatePrefs({ stars: Number(event.target.value) })}
+                />
+                <output>{prefs.stars}</output>
+              </label>
+            </SetBlock>
+          </div>
+        )}
+
+        {tab === "notifications" && (
+          <div className="space-y-4">
+            <SetBlock
+              icon={
+                <>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 16v-5a6 6 0 0 1 12 0v5l2 2H4zM10 21h4" />
+                </>
+              }
+              title="Что присылать"
+              hint="Выберите, о чём сообщать и куда. Изменения сохраняются сразу."
+            >
+              <div className="ag-set-channels">
+                <span>В приложении</span>
+                <span>Telegram</span>
+                <span>Email</span>
+              </div>
+
+              {NOTIFY_EVENTS.map((item) => (
+                <div key={item.id} className="ag-set-nrow">
+                  <SetRow title={item.title} hint={<>{item.hint}{item.locked && <em className="ag-set-lock">{item.locked}</em>}</>}>
+                    <button
+                      type="button"
+                      role="switch"
+                      aria-checked={prefs.notify[item.id]}
+                      aria-label={item.title}
+                      className={`ag-tg ${prefs.notify[item.id] ? "on" : ""}`}
+                      onClick={() =>
+                        updatePrefs({ notify: { ...prefs.notify, [item.id]: !prefs.notify[item.id] } })
+                      }
+                    >
+                      <span />
+                    </button>
+                  </SetRow>
+                  <div className="ag-set-dash" aria-hidden>—</div>
+                  <div className="ag-set-dash" aria-hidden>—</div>
+                </div>
+              ))}
+
+              <div className="ag-set-sub">
+                <Toggle
+                  checked={prefs.notifyWatchingOnly}
+                  onChange={(value) => updatePrefs({ notifyWatchingOnly: value })}
+                  label="Только из списка «Смотрю»"
+                  hint="Не присылать новые серии тайтлов из списка «Запланировано»"
+                />
+                <Toggle
+                  checked={prefs.notifyFavouriteDubs}
+                  onChange={(value) => updatePrefs({ notifyFavouriteDubs: value })}
+                  label="Только любимые озвучки"
+                  hint="Присылать новую серию, только когда она вышла в одной из ваших любимых озвучек"
+                />
+              </div>
+            </SetBlock>
+
+            <SetBlock
+              icon={
+                <>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 16v-5a6 6 0 0 1 12 0v5l2 2H4zM10 21h4" />
+                </>
+              }
+              title="Уведомления на этом устройстве"
+              hint="Разрешение браузера на показ всплывающих плашек"
+            >
+              <SetRow
+                title="Всплывающие уведомления"
+                hint="Плашка «Получено достижение» во время просмотра и на сайте. Сами достижения засчитываются в любом случае."
+              >
+                <button
+                  type="button"
+                  className={`ag-set-btn ${pushState === "granted" ? "is-ok" : ""}`}
+                  disabled={pushState === "granted" || pushState === "unsupported"}
+                  onClick={requestPush}
+                >
+                  {pushState === "granted"
+                    ? "Разрешено"
+                    : pushState === "denied"
+                      ? "Запрещено в браузере"
+                      : pushState === "unsupported"
+                        ? "Не поддерживается"
+                        : "Разрешить"}
+                </button>
+              </SetRow>
+              <p className="ag-set-hint">
+                Сервера нет, поэтому приходят только события этого браузера: новое достижение,
+                серия, конец подписки. Telegram и Email отмечены прочерками — отправлять туда
+                нечем.
+              </p>
+            </SetBlock>
+          </div>
+        )}
+
+        {tab === "player" && (
+          <div className="space-y-4">
+            <SetBlock
+              icon={
+                <>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M7 4l13 8-13 8z" />
+                </>
+              }
+              title="Качество по умолчанию"
+              hint="Плеер сам выберет это разрешение, если оно есть у серии"
+            >
+              <div className="ag-set-opts">
+                {QUALITIES.map((item) => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    className={`ag-set-op is-icon ${prefs.quality === item.id ? "on" : ""}`}
+                    aria-pressed={prefs.quality === item.id}
+                    onClick={() => updatePrefs({ quality: item.id })}
+                  >
+                    <b>{item.label}</b>
+                    {item.premium && <em className="ag-set-soon">PREMIUM</em>}
+                    <i aria-hidden="true" />
+                  </button>
+                ))}
+              </div>
+              <p className="ag-set-hint">
+                Если выбранного качества нет — плеер возьмёт ближайшее меньшее.
+              </p>
+            </SetBlock>
+
+            <SetBlock
+              icon={
+                <>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M13 2L4 14h7l-1 8 9-12h-7z" />
+                </>
+              }
+              title="Поведение плеера"
+              hint="Как плеер ведёт себя во время просмотра"
+            >
+              <Toggle
+                checked={prefs.autoplayNext}
+                onChange={(value) => updatePrefs({ autoplayNext: value })}
+                label="Автопереход на следующую серию"
+                hint="Через 10 секунд после титров"
+              />
+              <Toggle
+                checked={prefs.skipOp}
+                onChange={(value) => updatePrefs({ skipOp: value })}
+                label="Пропускать опенинги"
+                hint="Кнопка «Пропустить» нажмётся сама"
+              />
+              <Toggle
+                checked={prefs.rememberDub}
+                onChange={(value) => updatePrefs({ rememberDub: value })}
+                label="Запоминать озвучку"
+                hint="Плеер продолжит с той озвучке, что вы выбрали последней"
+              />
+              <Toggle
+                checked={prefs.ambient}
+                onChange={(value) => updatePrefs({ ambient: value })}
+                label="Подсветка в кинозале"
+                hint="Свет от видео мягко заливает фон вокруг плеера"
+              />
+              <SetRow title="Скорость по умолчанию" hint="Применяется ко всем сериям">
+                <select
+                  className="ag-set-in sm"
+                  value={prefs.speed}
+                  onChange={(event) => updatePrefs({ speed: event.target.value as Prefs["speed"] })}
+                  aria-label="Скорость воспроизведения"
+                >
+                  {SPEEDS.map((value) => (
+                    <option key={value} value={value}>{value === "1" ? "1×" : `${value}×`}</option>
+                  ))}
+                </select>
+              </SetRow>
+            </SetBlock>
+
+            <SetBlock
+              icon={
+                <>
+                  <rect x="3" y="5" width="18" height="14" rx="2" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M7 14h4M13 14h4M7 10h2M12 10h5" />
+                </>
+              }
+              title="Субтитры"
+              hint="Размер и фон текста"
+            >
+              <div className="ag-set-subs">
+                <span
+                  style={{
+                    fontSize: `${Math.round(prefs.subtitleSize * 0.62)}px`,
+                    textShadow: prefs.subtitleBg ? "0 2px 6px rgba(0,0,0,.9)" : "none",
+                  }}
+                >
+                  Вот так будут выглядеть субтитры
+                </span>
+              </div>
+              <label className="ag-set-rng">
+                <b>Размер</b>
+                <input
+                  type="range"
+                  min={14}
+                  max={34}
+                  value={prefs.subtitleSize}
+                  onChange={(event) => updatePrefs({ subtitleSize: Number(event.target.value) })}
+                />
+                <output>{prefs.subtitleSize} px</output>
+              </label>
+              <Toggle
+                checked={prefs.subtitleBg}
+                onChange={(value) => updatePrefs({ subtitleBg: value })}
+                label="Фон под текстом"
+                hint="Полупрозрачная плашка улучшает читаемость"
+              />
+            </SetBlock>
+
+            <SetBlock
+              icon={
+                <>
+                  <rect x="2" y="6" width="20" height="12" rx="2" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10" />
+                </>
+              }
+              title="Горячие клавиши"
+              hint="Всё, что можно сделать, не касаясь мыши"
+            >
+              <div className="ag-set-keys">
+                {HOTKEYS.map((item) => (
+                  <div key={item.id} className="ag-set-key">
+                    <span>{item.title}</span>
+                    <span>
+                      {item.keys.map((key) => (
+                        <kbd key={key}>{key}</kbd>
+                      ))}
+                    </span>
+                    <button
+                      type="button"
+                      role="switch"
+                      aria-checked={prefs.keys[item.id]}
+                      aria-label={item.title}
+                      className={`ag-tg sm ${prefs.keys[item.id] ? "on" : ""}`}
+                      onClick={() =>
+                        updatePrefs({ keys: { ...prefs.keys, [item.id]: !prefs.keys[item.id] } })
+                      }
+                    >
+                      <span />
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <p className="ag-set-hint">
+                Клавиши работают на странице тайтла, когда фокус не в поле ввода.
+              </p>
+            </SetBlock>
           </div>
         )}
 
         {tab === "privacy" && (
-          <div className="space-y-2">
-            <Toggle
-              checked={profile.privacy.profilePublic}
-              onChange={(value) => updateProfile({ privacy: { ...profile.privacy, profilePublic: value } })}
-              label="Публичный профиль"
-              hint="Ссылку на профиль можно передавать другим"
-            />
-            <Toggle
-              checked={profile.privacy.showStats}
-              onChange={(value) => updateProfile({ privacy: { ...profile.privacy, showStats: value } })}
-              label="Показывать статистику"
-              hint="Минуты просмотра, тайтлы и серии в разделе «Основное»"
-            />
-            <Toggle
-              checked={profile.privacy.showAchievements}
-              onChange={(value) => updateProfile({ privacy: { ...profile.privacy, showAchievements: value } })}
-              label="Показывать достижения"
-              hint="Список открытых наград в публичном профиле"
-            />
-            <Toggle
-              checked={profile.privacy.showHistory}
-              onChange={(value) => updateProfile({ privacy: { ...profile.privacy, showHistory: value } })}
-              label="Показывать историю"
-              hint="Последние открытые серии в публичном профиле"
-            />
-            <p className="!mt-3 text-xs leading-relaxed text-muted">
-              Настройки действуют только для предпросмотра «Как видят другие»: сайта-сервера нет,
-              поэтому реальным гостям показывать профиль некому.
-            </p>
+          <div className="space-y-4">
+            <SetBlock
+              icon={
+                <>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z" />
+                </>
+              }
+              title="Быстрая настройка"
+              hint="Выберите готовый набор — точные настройки можно поправить ниже"
+            >
+              <div className="ag-set-opts">
+                {SCOPES.map((item) => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    className={`ag-set-op ${scope === item.id ? "on" : ""}`}
+                    aria-pressed={scope === item.id}
+                    onClick={() => setScope(item.id)}
+                  >
+                    <b>{item.title}</b>
+                    <small>{item.hint}</small>
+                    <i aria-hidden="true" />
+                  </button>
+                ))}
+              </div>
+              <p className="ag-set-hint">
+                В «Приватном» заявки в друзья остаются включёнными: иначе новых друзей
+                завести не выйдет, и уровень «Только друзья» станет недоступен.
+              </p>
+            </SetBlock>
+
+            <SetBlock
+              icon={
+                <>
+                  <circle cx="9" cy="8" r="4" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M2 20c0-3.5 3-5.5 7-5.5M18 14v6M15 17h6" />
+                </>
+              }
+              title="Друзья"
+              hint="Кому открыт профиль на уровне «Только друзья»"
+              aside={<span className="ag-set-st ok">{OK_ICON} {friends.length}</span>}
+            >
+              <div className="ag-set-rowform">
+                <input
+                  value={friendDraft}
+                  onChange={(event) => setFriendDraft(event.target.value)}
+                  placeholder="Никнейм друга"
+                  aria-label="Никнейм друга"
+                  maxLength={32}
+                />
+                <label className="ag-set-check">
+                  <input
+                    type="checkbox"
+                    checked={friendMutual}
+                    onChange={(event) => setFriendMutual(event.target.checked)}
+                  />
+                  взаимный
+                </label>
+                <button
+                  type="button"
+                  className="ag-set-btn"
+                  onClick={() => {
+                    const error = addFriend(friendDraft, friendMutual);
+                    setFriendError(error);
+                    if (!error) setFriendDraft("");
+                  }}
+                >
+                  Добавить
+                </button>
+              </div>
+              {friendError && <p className="ag-set-warn">{friendError}</p>}
+
+              {friends.length === 0 ? (
+                <div className="ag-set-empty">
+                  <b>Друзей пока нет</b>
+                  <small>
+                    Добавьте никнейм — и при уровне «Только друзья» профиль будет виден ему,
+                    а остальным нет.
+                  </small>
+                </div>
+              ) : (
+                <ul className="ag-set-list">
+                  {friends.map((friend) => (
+                    <li key={friend.nickname}>
+                      <b>{friend.nickname}</b>
+                      <span className="ag-w-sub">{friend.mutual ? "взаимный" : "односторонний"}</span>
+                      <button
+                        type="button"
+                        className="ag-set-btn danger"
+                        onClick={() => removeFriend(friend.nickname)}
+                      >
+                        Убрать
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              <p className="ag-set-hint">
+                Заявки подтверждать некому — сервера у сайта нет, поэтому список ведётся вручную
+                самим пользователем.
+              </p>
+            </SetBlock>
+
+            <SetBlock
+              icon={
+                <>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z" />
+                  <circle cx="12" cy="12" r="3" />
+                </>
+              }
+              title="Что видно в профиле"
+              hint="Блоки, которые показываются посетителям вашей страницы"
+            >
+              <SetRow
+                title="Профиль"
+                hint="Кто может открыть вашу страницу"
+              >
+                <select
+                  className="ag-set-in sm"
+                  value={scope}
+                  onChange={(event) => setScope(event.target.value as "public" | "friends" | "private")}
+                  aria-label="Кто видит профиль"
+                >
+                  <option value="public">Публичный</option>
+                  <option value="friends">Только друзья</option>
+                  <option value="private">Приватный</option>
+                </select>
+              </SetRow>
+              <Toggle
+                checked={profile.privacy.profilePublic}
+                onChange={(value) => setScope(value ? "public" : "private")}
+                label="Профиль по ссылке"
+                hint="Ссылку на страницу можно передавать другим"
+              />
+              <Toggle
+                checked={profile.privacy.showStats}
+                onChange={(value) => updateProfile({ privacy: { ...profile.privacy, showStats: value } })}
+                label="Статистика"
+                hint="Минуты просмотра, тайтлы и серии в разделе «Основное»"
+              />
+              <Toggle
+                checked={profile.privacy.showHistory}
+                onChange={(value) => updateProfile({ privacy: { ...profile.privacy, showHistory: value } })}
+                label="История просмотров"
+                hint="Последние открытые серии в публичном профиле"
+              />
+              <Toggle
+                checked={profile.privacy.showAchievements}
+                onChange={(value) => updateProfile({ privacy: { ...profile.privacy, showAchievements: value } })}
+                label="Достижения"
+                hint="Список открытых наград в публичном профиле"
+              />
+              <Toggle
+                checked={profile.privacy.showComments}
+                onChange={(value) => updateProfile({ privacy: { ...profile.privacy, showComments: value } })}
+                label="Комментарии к профилю"
+                hint="Записи, которые другие оставляют на вашей стене"
+              />
+              <Toggle
+                checked={profile.privacy.acceptFriends}
+                onChange={(value) => updateProfile({ privacy: { ...profile.privacy, acceptFriends: value } })}
+                label="Заявки в друзья"
+                hint="Могут ли другие добавлять вас в друзья"
+              />
+              <p className="ag-set-hint">Настройки приватности сохраняются автоматически.</p>
+            </SetBlock>
           </div>
         )}
 
         {tab === "subscription" && (
-          <div className="space-y-3">
-            <div className={`rounded-xl border px-4 py-3 ${premium ? "border-gold/40 bg-gold/10" : "border-line bg-white/[0.03]"}`}>
-              <p className={`text-sm font-extrabold ${premium ? "text-gold" : "text-white"}`}>
-                {premium ? "Premium активен" : "Premium не подключён"}
-              </p>
-              <p className="mt-1 text-xs text-muted">
-                {premium && account?.premiumUntil
-                  ? `Действует до ${new Date(account.premiumUntil).toLocaleDateString("ru-RU")}`
-                  : "Подписка открывает рамки, титулы и расширенные возможности"}
-              </p>
-            </div>
-            <Link
-              href="/premium"
-              onClick={closeProfileDialog}
-              className="btn-premium glow-ring flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-bold"
+          <div className="space-y-4">
+            <SetBlock
+              icon={
+                <>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 8.5 8 11.5 12 5l4 6.5 3.5-3-1.5 9.5h-12z" />
+                </>
+              }
+              title="Ваша подписка"
+              hint={premium ? "Спасибо, что поддерживаете AniGalaxy!" : "Подписка открывает рамки, титулы и привилегии"}
+              aside={
+                <span className={`ag-set-st ${premium ? "gold" : "warn"}`}>
+                  {premium ? "PREMIUM" : "! Не подключён"}
+                </span>
+              }
             >
-              {premium ? "Продлить подписку" : "Оформить Premium"}
-            </Link>
-            <p className="text-xs leading-relaxed text-muted">
-              Аккаунт и подписка хранятся только в этом браузере — это демо-режим без сервера.
-            </p>
+              <SetRow
+                icon={
+                  <>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 8.5 8 11.5 12 5l4 6.5 3.5-3-1.5 9.5h-12z" />
+                  </>
+                }
+                title={premium ? "Подписка активна" : "Подписки нет"}
+                hint={
+                  premium && account?.premiumUntil
+                    ? `Действует до ${new Date(account.premiumUntil).toLocaleDateString("ru-RU")}`
+                    : "Подписка открывает рамки, титулы и расширенные возможности"
+                }
+              >
+                <span className="ag-set-note">
+                  {account?.premiumUntil
+                    ? new Date(account.premiumUntil).toLocaleDateString("ru-RU")
+                    : "—"}
+                </span>
+              </SetRow>
+              <div className="ag-set-acts">
+                <Link
+                  href="/premium"
+                  onClick={closeProfileDialog}
+                  className="btn-premium glow-ring flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-bold"
+                >
+                  {premium ? "Продлить подписку" : "Оформить Premium"}
+                </Link>
+              </div>
+              <p className="ag-set-hint">
+                Аккаунт и подписка хранятся только в этом браузере — платёжных систем у сайта нет.
+              </p>
+            </SetBlock>
+
+            <SetBlock
+              icon={
+                <>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2zM4 19V5" />
+                </>
+              }
+              title="История платежей"
+              hint="Покупки в магазине и операции с подпиской"
+            >
+              {payments.length === 0 ? (
+                <div className="ag-set-empty">
+                  <b>Пока нет платежей</b>
+                  <small>Здесь появятся покупки Premium и купленные предметы</small>
+                </div>
+              ) : (
+                <ul className="ag-set-list">
+                  {payments.slice(0, 12).map((item) => (
+                    <li key={item.id}>
+                      <b>{item.title}</b>
+                      <span className="ag-w-sub">{new Date(item.at).toLocaleDateString("ru-RU")}</span>
+                      <span className="ag-set-sum">{item.amount}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              <p className="ag-set-hint">
+                Платёжных систем у сайта нет, поэтому здесь не чеки, а операции из этого
+                браузера: покупки предметов и покупки Premium.
+              </p>
+            </SetBlock>
+
+            <SetBlock
+              icon={
+                <>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z" />
+                </>
+              }
+              title="СБП — подарок к подписке"
+              hint="Система безопасного подключения — бесплатно на весь срок подписки"
+            >
+              <p className="ag-set-pt">
+                Система безопасного подключения выдаётся при оплате подписки и активируется
+                автоматически в течение нескольких минут. Если вы уже оплатили, а ссылка
+                не появилась — напишите в поддержку.
+              </p>
+              <div className="ag-set-acts">
+                <Link
+                  href="/premium"
+                  onClick={closeProfileDialog}
+                  className="btn-premium glow-ring flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-bold"
+                >
+                  Оформить подписку
+                </Link>
+              </div>
+            </SetBlock>
           </div>
         )}
 
         {tab === "data" && (
-          <div className="space-y-3">
-            <div className="rounded-xl border border-line bg-white/[0.03] px-4 py-3">
-              <p className="text-sm font-extrabold text-white">Локальная база данных</p>
-              <p className="mt-1 text-xs leading-relaxed text-muted">
-                Профиль, прогресс, покупки, история и чат хранятся в этом браузере.
-                Экспорт упакует всё в один JSON-файл — импорт вернёт данные обратно,
-                даже на другом устройстве.
+          <div className="space-y-4">
+            <SetBlock
+              icon={
+                <>
+                  <rect x="3" y="4" width="18" height="12" rx="2" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M8 21h8M12 16v5" />
+                </>
+              }
+              title="Активные сессии"
+              hint="Устройства, на которых выполнен вход в аккаунт"
+              aside={<span className="ag-set-st ok">{OK_ICON} {sessions.length}</span>}
+            >
+              {sessions.map((session) => (
+                <SetRow
+                  key={session.id}
+                  icon={
+                    <>
+                      <rect x="3" y="4" width="18" height="12" rx="2" />
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M8 21h8M12 16v5" />
+                    </>
+                  }
+                  title={`${session.browser} · ${session.os}`}
+                  hint={session.current ? "Сейчас онлайн · это устройство" : `Был ${timeAgo(session.at)}`}
+                >
+                  <span className="ag-set-note">{session.current ? "Это устройство" : ""}</span>
+                </SetRow>
+              ))}
+              <p className="ag-set-hint">
+                Сессии различаются на сервере, а сервера нет — здесь всегда одна строка,
+                это устройство. «Выйти на всех остальных» означала бы обещание, которое
+                механизм не выполняет, поэтому её нет.
               </p>
-              <p className="mt-2 text-[11px] font-bold text-muted">
-                Ключей: {stats.count} · объём:{" "}
-                {(stats.bytes / 1024).toFixed(1).replace(".", ",")} КБ
-              </p>
-            </div>
+            </SetBlock>
 
-            <div className="grid gap-2 sm:grid-cols-2">
-              <button
-                type="button"
-                onClick={onExport}
-                className="btn-primary rounded-xl px-4 py-2.5 text-sm font-bold text-white"
-              >
-                Экспорт бэкапа (.json)
-              </button>
-              <button
-                type="button"
-                onClick={() => fileRef.current?.click()}
-                className="rounded-xl bg-white/[0.06] px-4 py-2.5 text-sm font-bold text-white ring-1 ring-white/12 transition hover:bg-white/10"
-              >
-                Импорт из файла
-              </button>
-              {canRollback && (
+            <SetBlock
+              icon={
+                <>
+                  <ellipse cx="12" cy="6.5" rx="7" ry="3" />
+                  <path strokeLinecap="round" d="M5 6.5v11c0 1.7 3.1 3 7 3s7-1.3 7-3v-11" />
+                  <path strokeLinecap="round" d="M5 12c0 1.7 3.1 3 7 3s7-1.3 7-3" />
+                </>
+              }
+              title="Данные и перенос"
+              hint="Профиль, прогресс, покупки, история и чат хранятся в этом браузере"
+              aside={<span className="ag-set-st ok">{OK_ICON} Ключей: {stats.count}</span>}
+            >
+              <p className="ag-set-hint">
+                Объём базы: {(stats.bytes / 1024).toFixed(1).replace(".", ",")} КБ. Экспорт упакует всё в один
+                JSON-файл — импорт вернёт данные обратно, даже на другом устройстве.
+              </p>
+
+              <div className="ag-set-acts">
+                <button type="button" onClick={onExport} className="ag-set-btn">
+                  Экспорт бэкапа (.json)
+                </button>
                 <button
                   type="button"
-                  onClick={onRollback}
-                  className="rounded-xl bg-white/[0.06] px-4 py-2.5 text-sm font-bold text-accent-2 ring-1 ring-accent-2/40 transition hover:bg-accent-2/10 sm:col-span-2"
+                  onClick={() => fileRef.current?.click()}
+                  className="ag-set-btn"
                 >
-                  Откатить последний импорт
+                  Импорт из файла
                 </button>
-              )}
-            </div>
+                {canRollback && (
+                  <button type="button" onClick={onRollback} className="ag-set-btn">
+                    Откатить последний импорт
+                  </button>
+                )}
+              </div>
 
-            <input
-              ref={fileRef}
-              type="file"
-              accept="application/json,.json"
-              className="hidden"
-              aria-hidden
-              tabIndex={-1}
-              onChange={onImportFile}
-            />
+              <input
+                ref={fileRef}
+                type="file"
+                accept="application/json,.json"
+                className="hidden"
+                aria-hidden
+                tabIndex={-1}
+                onChange={onImportFile}
+              />
 
-            <p className="text-xs leading-relaxed text-muted">
-              Импорт заменяет данные сайта на содержимое файла, а текущее состояние
-              перед этим сохраняется в снимок — «Откатить последний импорт» вернёт его.
-            </p>
+              <p className="ag-set-hint">
+                Импорт заменяет данные сайта на содержимое файла, а текущее состояние
+                перед этим сохраняется в снимок — «Откатить последний импорт» вернёт его.
+              </p>
+            </SetBlock>
+
+            <SetBlock
+              icon={
+                <>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 3l10 18H2zM12 10v5M12 18v.5" />
+                </>
+              }
+              title="Опасная зона"
+              hint="Эти действия нельзя отменить"
+            >
+              <SetRow
+                icon={
+                  <>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 3l10 18H2zM12 10v5M12 18v.5" />
+                  </>
+                }
+                title="Очистить историю просмотров"
+                hint="Список аниме, оценки и прогресс останутся"
+              >
+                <button
+                  type="button"
+                  onClick={clearWatchHistory}
+                  className="ag-set-btn danger"
+                >
+                  Очистить
+                </button>
+              </SetRow>
+              <SetRow
+                icon={
+                  <>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 3l10 18H2zM12 10v5M12 18v.5" />
+                  </>
+                }
+                title="Удалить аккаунт"
+                hint="Профиль, прогресс и косметика будут удалены навсегда"
+              >
+                <button
+                  type="button"
+                  className="ag-set-btn danger solid"
+                  onClick={() => {
+                    setMessage(null);
+                    closeProfileDialog();
+                    openProfileDialog("erase");
+                  }}
+                >
+                  Удалить
+                </button>
+              </SetRow>
+              <p className="ag-set-hint">
+                Удаление стирает все ключи этого браузера. Восстановить данные после него
+                можно только импортом бэкапа — поэтому перед удалением имеет смысл
+                выгрузить копию.
+              </p>
+            </SetBlock>
           </div>
         )}
       </div>
     </div>
+  );
+}
+
+/**
+ * Модалка подтверждения удаления.
+ *
+ * Отдельная от панели, потому что действие необратимо: подтверждение
+ * вводом фразы не должно стоять рядом с кнопкой «Экспорт», где её
+ * легко нажать по привычке. Пока фраза не совпадает, кнопка неактивна.
+ */
+function EraseAccountDialog() {
+  const [phrase, setPhrase] = useState("");
+  const [result, setResult] = useState<string | null>(null);
+  const ok = phrase.trim().toUpperCase() === ERASE_PHRASE;
+
+  const erase = useCallback(() => {
+    const removed = eraseAccountData();
+    setResult(`Удалено ключей: ${removed}. Страница обновится.`);
+    // Перезагрузка обязательна: часть сторов держит снимок в памяти, и без
+    // неё на экране остались бы данные, которых на диске уже нет
+    setTimeout(() => window.location.reload(), 900);
+  }, []);
+
+  return (
+    <DialogShell title="Удалить аккаунт" subtitle="Действие необратимо" onClose={closeProfileDialog}>
+      <div className="space-y-3">
+        <Note tone="error">
+          Будут стёрты профиль, прогресс, покупки, история просмотров, списки и все
+          настройки этого браузера. Восстановление — только из бэкапа.
+        </Note>
+
+        {result ? (
+          <Note tone="ok">{result}</Note>
+        ) : (
+          <>
+            <label className="ag-set-fl">
+              <span className="ag-set-lb">
+                Введите <b>{ERASE_PHRASE}</b>, чтобы подтвердить
+              </span>
+              <input
+                value={phrase}
+                onChange={(event) => setPhrase(event.target.value)}
+                autoComplete="off"
+                spellCheck={false}
+                aria-label="Подтверждение удаления"
+              />
+            </label>
+            <div className="ag-set-acts">
+              <button type="button" disabled={!ok} onClick={erase} className="ag-set-btn danger solid">
+                Удалить навсегда
+              </button>
+              <button type="button" className="ag-set-btn" onClick={closeProfileDialog}>
+                Отмена
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+    </DialogShell>
   );
 }
 
@@ -1350,7 +2909,6 @@ function PreviewDialog() {
   const ctx = useUnlockContext();
 
   const nickname = account?.nickname ?? "Гость";
-  const level = useLevelInfo();
   const doc = useProgress();
   const unlockedCount = Object.values(doc.achievements).filter((item) => item.unlockedAt > 0).length;
   const frame = FRAMES.find((item) => item.id === profile.frameId);
@@ -1364,9 +2922,20 @@ function PreviewDialog() {
   const extraTitles = profile.extraTitleIds
     .map((id) => TITLES.find((item) => item.id === id))
     .filter((item): item is (typeof TITLES)[number] => Boolean(item));
+  /**
+   * Блок уровня с эмблемой показываем всем — ровно как на «Основном».
+   * Раньше он открывался только купившим услугу `svc_levelcard`, но в самом
+   * профиле блок и так виден бесплатно: предпросмотр расходился с реальной
+   * страницей и показывал гостю меньше, чем он увидит на самом деле.
+   */
 
   return (
-    <DialogShell title="Предпросмотр профиля" subtitle="Так вас видят другие пользователи" onClose={closeProfileDialog}>
+    <DialogShell
+      title="Предпросмотр профиля"
+      subtitle="Так вас видят другие пользователи"
+      onClose={closeProfileDialog}
+      full
+    >
       <div className="overflow-hidden rounded-2xl border border-line">
         <div
           className="h-24 w-full"
@@ -1377,32 +2946,40 @@ function PreviewDialog() {
           }
         />
         <div className="-mt-8 px-4 pb-4">
-          <AvatarView nickname={nickname} avatar={profile.avatar || undefined} frameCss={frame?.css} frameImg={frame?.img} className="h-16 w-16 ring-4 ring-surface" textClass="text-lg" />
+          <AvatarFrame
+  nickname={nickname}
+  avatar={profile.avatar || undefined}
+  frame={frame}
+  size="md"
+/>
           <p className="mt-2 truncate text-xl font-black text-white">{nickname}</p>
           <p className="truncate text-xs text-muted">@{nickname.toLowerCase()}</p>
 
-          <div className="mt-2 flex flex-wrap items-center gap-1.5">
-            {isPremiumActive(account) && (
-              <span className="rounded-md bg-gold/15 px-1.5 py-0.5 text-[10px] font-black text-gold">PREMIUM</span>
-            )}
-            <span className="rounded-md bg-accent-2/15 px-1.5 py-0.5 text-[10px] font-black text-accent-2">УРОВЕНЬ {level.level}</span>
-            <span className="rounded-md bg-white/8 px-1.5 py-0.5 text-[10px] font-bold text-muted">{level.era}</span>
-          </div>
+          {/* Плашки «PREMIUM / УРОВЕНЬ N / эра» убраны: ниже стоит блок
+              уровня, где уровень и эра уже показаны полными словами с
+              полосой прогресса. Дубль в двух видах путал. */}
 
-          {(equippedTag || extraTags.length > 0 || title || extraTitles.length > 0) && (
+          {(equippedTag || title) && (
             <div className="mt-3 flex flex-wrap items-center gap-2">
-              {equippedTag && <AgTag tag={equippedTag} size="md" />}
-              {extraTags.map((item) => (
-                <AgTag key={item.id} tag={item} size="sm" />
-              ))}
-              {title && <AgTag tag={titleTag(title)} size="sm" />}
-              {extraTitles.map((item) => (
-                <AgTag key={item.id} tag={titleTag(item)} size="sm" />
-              ))}
+              {equippedTag && <AgTag tag={equippedTag} size="md" className="pf-badge" />}
+              {title && <AgTag tag={titleTag(title)} size="md" className="pf-badge" />}
             </div>
           )}
 
           {profile.bio && <p className="mt-3 text-sm leading-relaxed text-white/85">{profile.bio}</p>}
+
+          {/* Блок уровня: тот же, что на «Основном», — без покупки */}
+          <div className="mt-3" data-preview-level-card="">
+            <LevelCard />
+          </div>
+
+          {/* Витрина виджетов — тоже как на «Основном»: предпросмотр должен
+              показывать ровно то, что увидит гость, иначе он не поймёт, как
+              он выглядит. `ag-root` обязателен — оформление виджетов в
+              ag-theme.css привязано к нему, и без него блоки выходят голыми. */}
+          <div className="ag-root mt-3" data-preview-widgets="">
+            <WidgetShowcase readOnly />
+          </div>
 
           <div className="mt-3 flex flex-wrap gap-1 font-mono text-[10px] tracking-[0.18em] text-muted">
             {signature.map((group) => (
@@ -1433,7 +3010,15 @@ function PreviewDialog() {
         {profile.privacy.profilePublic
           ? "Профиль публичный — ссылку можно передавать."
           : "Профиль скрыт настройками приватности."}{" "}
-        Предметы открыты: {ctx.purchased.length} куплено за монеты.
+        Предметы открыты: {ctx.purchased.length} куплено за AC.{" "}
+        {/* Быстрый просмотр остаётся здесь, а отдельная страница нужна для
+            длинного содержимого: в диалоге страница обрезана по высоте. */}
+        <a
+          href="/u/me"
+          className="font-bold text-accent-2 underline underline-offset-2 hover:text-white"
+        >
+          Открыть гостевую страницу целиком
+        </a>
       </Note>
     </DialogShell>
   );
@@ -1462,7 +3047,7 @@ function RewardsDialog() {
 
   const totals = [
     { label: "получено XP", value: `+${earnedXp}`, tone: "text-accent-2" },
-    { label: "получено AC", value: `+${earnedAc}`, tone: "text-gold" },
+    { label: "получено AC", value: `+${earnedAc}`, tone: "text-accent-2" },
     { label: "потрачено AC", value: `−${spentAc}`, tone: "text-muted" },
   ];
 
@@ -1515,8 +3100,8 @@ function RewardsDialog() {
                       : entry.amount < 0
                         ? "text-white/70"
                         : entry.currency === "AC"
-                          ? "text-gold"
-                          : "text-accent-2"
+                          ? "text-accent-2"
+                          : "text-mint"
                   }`}
                 >
                   {amountLabel(entry.currency, entry.amount)}
@@ -1566,6 +3151,9 @@ export function ProfileDialogHost() {
       break;
     case "rewards":
       dialog = <RewardsDialog />;
+      break;
+    case "erase":
+      dialog = <EraseAccountDialog />;
       break;
     default:
       dialog = null;

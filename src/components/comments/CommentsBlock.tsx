@@ -3,20 +3,19 @@
 /**
  * Блок комментариев — единый для страницы тайтла и стены профиля.
  *
- * Формат по референсу (animeon): заголовок со счётчиком и сортировкой,
- * композер со спойлером и Ctrl+Enter, карточки с аватаром-рамкой, бейджом
- * уровня, тегом автора, Premium, временем, голосами 👍/👎, ответом (один
- * уровень) и меню «⋮». Спойлер раскрывается по нажатию.
+ * Визуал перенесён из макета `ag-comments.html`: аврора и градиентная
+ * рамка, сегментированная сортировка, крупные аватары с уровнем,
+ * карточки с тегами, кликабельными тайм-кодами, меню действий и
+ * раскрывающимися ответами.
  *
- * Данные: тайтл — `lib/comments.ts` (со демо-посевом первого визита),
+ * Данные: тайтл — `lib/comments.ts` (с демо-посевом первого визита),
  * профиль — стена `profile.comments`. События движка (COMMENT_*) шлются
  * одинаково: качество/кулдаун решает сервис, реверс — движок. Голоса —
- * локальный декор без наград (ASSUMPTIONS §22). Всё честно подписано
- * сноской под композером.
+ * локальный декор без наград. Всё честно подписано сноской под композером.
  */
 
 import { useEffect, useRef, useState } from "react";
-import { AvatarView } from "@/components/profile/AvatarView";
+import { AvatarFrame } from "@/components/profile/AvatarFrame";
 import { AgTag } from "@/components/progression/AgTag";
 import { FRAMES } from "@/lib/cosmetics";
 import { isPremiumActive } from "@/lib/auth";
@@ -56,6 +55,14 @@ const REJECT_TEXT: Record<string, string> = {
   comment_cooldown: "Опубликовано без награды: между награждаемыми комментариями минута паузы.",
 };
 
+const SORTS: { value: CommentSort; label: string }[] = [
+  { value: "new", label: "Новые" },
+  { value: "old", label: "Старые" },
+  { value: "top", label: "Популярные" },
+];
+
+const PAGE_SIZE = 6;
+
 /** Стабильная ссылка scope профиля (объект в рендере менялся бы каждый кадр) */
 export const PROFILE_SCOPE = { kind: "profile" } as const;
 
@@ -82,7 +89,13 @@ function eraTone(level: number): string {
 
 /* -------------------------------- Иконки -------------------------------- */
 
-const ICON_CLASS = "h-3.5 w-3.5";
+const ICON_CLASS = "cmx-i";
+
+const ChatIcon = () => (
+  <svg viewBox="0 0 24 24" className={ICON_CLASS} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+    <path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z" />
+  </svg>
+);
 
 const SendIcon = () => (
   <svg viewBox="0 0 24 24" className={ICON_CLASS} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
@@ -93,21 +106,32 @@ const SendIcon = () => (
 
 const EyeOffIcon = () => (
   <svg viewBox="0 0 24 24" className={ICON_CLASS} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
-    <path d="M1 1l22 22" />
+    <path d="M3 3l18 18M10.6 6.2A9 9 0 0 1 12 6c5 0 8 6 8 6a14 14 0 0 1-2.6 3.4M6.5 7.5C4 9.2 3 12 3 12s3 6 9 6a9 9 0 0 0 3.5-.7M9.9 9.9a3 3 0 0 0 4.2 4.2" />
   </svg>
 );
 
 const ThumbIcon = () => (
   <svg viewBox="0 0 24 24" className={ICON_CLASS} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-    <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3" />
+    <path d="M7 11v9H4v-9zM7 11l4-8c1.6 0 2.6 1.1 2.2 2.7L12.8 9H19a2 2 0 0 1 2 2.4l-1.3 6.5A2 2 0 0 1 17.7 19H7" />
   </svg>
 );
 
 const ReplyIcon = () => (
   <svg viewBox="0 0 24 24" className={ICON_CLASS} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-    <path d="M9 17 4 12l5-5" />
-    <path d="M4 12h11a5 5 0 0 1 5 5v3" />
+    <path d="M9 14 4 9l5-5M4 9h10a6 6 0 0 1 6 6v3" />
+  </svg>
+);
+
+const ClockIcon = () => (
+  <svg viewBox="0 0 24 24" className={ICON_CLASS} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+    <circle cx="12" cy="12" r="9" />
+    <path d="M12 7v5l3 2" />
+  </svg>
+);
+
+const CrownIcon = () => (
+  <svg viewBox="0 0 24 24" className={ICON_CLASS} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+    <path d="M3 8l4 4 5-7 5 7 4-4-2 11H5z" />
   </svg>
 );
 
@@ -119,11 +143,79 @@ const DotsIcon = () => (
   </svg>
 );
 
-const ChevronIcon = () => (
-  <svg viewBox="0 0 24 24" className="pointer-events-none absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-    <path d="m6 9 6 6 6-6" />
+const CloseIcon = () => (
+  <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" aria-hidden>
+    <path d="M6 6l12 12M18 6 6 18" />
   </svg>
 );
+
+/* ------------------------------ Время видео ----------------------------- */
+
+function videoEl(): HTMLVideoElement | null {
+  if (typeof document === "undefined") return null;
+  return document.querySelector<HTMLVideoElement>("video");
+}
+
+function mmss(seconds: number): string {
+  const total = Math.max(0, Math.floor(seconds));
+  const h = Math.floor(total / 3600);
+  const m = Math.floor((total % 3600) / 60);
+  const s = total % 60;
+  const p = (n: number) => String(n).padStart(2, "0");
+  return h ? `${h}:${p(m)}:${p(s)}` : `${p(m)}:${p(s)}`;
+}
+
+/* ------------------------------ Rich-текст ------------------------------ */
+
+const TOKEN_RE = /@([\w-]+)|(?<![\d:])(\d{1,2}):([0-5]\d)(?::([0-5]\d))?(?![\d:])/g;
+
+function RichText({ text, onSeek }: { text: string; onSeek: (seconds: number, raw: string) => void }) {
+  const lines = text.split("\n");
+  return (
+    <div className="cmx-tx">
+      {lines.map((line, lineIndex) => {
+        const nodes: React.ReactNode[] = [];
+        let last = 0;
+        for (const match of line.matchAll(TOKEN_RE)) {
+          if (match.index > last) nodes.push(line.slice(last, match.index));
+          if (match[1]) {
+            nodes.push(
+              <span className="cmx-at" key={`m-${lineIndex}-${match.index}`}>
+                @{match[1]}
+              </span>,
+            );
+          } else {
+            const hours = match[4] !== undefined ? Number(match[2]) : 0;
+            const minutes = match[4] !== undefined ? Number(match[3]) : Number(match[2]);
+            const seconds = match[4] !== undefined ? Number(match[4]) : Number(match[3]);
+            const total = hours * 3600 + minutes * 60 + seconds;
+            const raw = match[0];
+            nodes.push(
+              <button
+                className="cmx-tcl"
+                type="button"
+                key={`t-${lineIndex}-${match.index}`}
+                onClick={() => onSeek(total, raw)}
+                title="Перемотать плеер"
+              >
+                <ClockIcon />
+                {raw}
+              </button>,
+            );
+          }
+          last = match.index + match[0].length;
+        }
+        if (last < line.length) nodes.push(line.slice(last));
+        return (
+          <span key={`l-${lineIndex}`}>
+            {lineIndex > 0 && <br />}
+            {nodes}
+          </span>
+        );
+      })}
+    </div>
+  );
+}
 
 /* ------------------------------ Карточка -------------------------------- */
 
@@ -137,15 +229,21 @@ interface AuthorMeta {
   premium: boolean;
 }
 
+/** `metaFor` — функция, но карточке нужен ещё и текущий ник для меню. */
+type MetaFor = ((author: string) => AuthorMeta) & { currentName?: string };
+
 interface CardProps {
   item: CommentMsg;
   replies: CommentMsg[];
   index: number;
   nested?: boolean;
-  metaFor: (author: string) => AuthorMeta;
+  metaFor: MetaFor;
   onReply: (item: CommentMsg) => void;
   onVote: (id: string, dir: "up" | "down") => void;
   onRemove: (id: string) => void;
+  onSeek: (seconds: number, raw: string) => void;
+  onNotify: (message: string) => void;
+  onReport: () => void;
 }
 
 function CommentCard({
@@ -157,166 +255,190 @@ function CommentCard({
   onReply,
   onVote,
   onRemove,
+  onSeek,
+  onNotify,
+  onReport,
 }: CardProps) {
   const [revealed, setRevealed] = useState(false);
   const [menu, setMenu] = useState(false);
+  const [repliesOpen, setRepliesOpen] = useState(false);
   const meta = metaFor(item.author);
+
+  const copyLink = () => {
+    setMenu(false);
+    const base = `${window.location.origin}${window.location.pathname}${window.location.search}`;
+    const href = `${base}#c-${encodeURIComponent(item.id)}`;
+    if (navigator.clipboard?.writeText) {
+      void navigator.clipboard.writeText(href).then(
+        () => onNotify("Ссылка на комментарий скопирована"),
+        () => onNotify("Не удалось скопировать ссылку"),
+      );
+    } else {
+      onNotify("Буфер обмена недоступен в этом браузере");
+    }
+  };
 
   return (
     <li
-      className="ag-cm-item group relative rounded-xl bg-white/[0.03] px-3 py-2.5 ring-1 ring-white/8 transition hover:bg-white/[0.055] hover:ring-accent/35 sm:px-3.5 sm:py-3"
-      style={{ animationDelay: `${Math.min(index, 8) * 45}ms` }}
+      className={`cmx-cc${nested ? " rep" : ""}`}
+      id={`c-${item.id}`}
+      style={{ ["--n" as string]: String(Math.min(index, 8)) }}
     >
-      <div className={`flex gap-3 ${nested ? "" : ""}`}>
-        <div className="flex shrink-0 flex-col items-center gap-1.5">
-          <AvatarView
+      <div className="cmx-ca">
+        <span className="cmx-av">
+          <AvatarFrame
             nickname={item.author}
             avatar={meta.avatar}
-            frameCss={meta.frameCss}
-            frameImg={meta.frameImg}
-            className={nested ? "h-7 w-7" : "h-10 w-10"}
-            textClass={nested ? "text-[9px]" : "text-xs"}
+            frame={meta.frameImg ? FRAMES.find((f) => f.img === meta.frameImg) : undefined}
+            size="xs"
           />
           {!nested && (
-            <span
-              className={`ag-cm-lvl rounded-md bg-gradient-to-br ${eraTone(meta.level)} px-1.5 py-0.5 text-[10px] font-black leading-none text-white shadow`}
+            <b
+              className={`cmx-lv bg-gradient-to-br ${eraTone(meta.level)}`}
               title={`Уровень ${meta.level} · эра «${eraName(meta.level)}»`}
             >
               {meta.level}
+            </b>
+          )}
+        </span>
+      </div>
+
+      <div className="cmx-cb">
+        <div className="cmx-ch">
+          <b className="cmx-nm">{item.author}</b>
+          {meta.tag && <AgTag tag={meta.tag} size="sm" />}
+          {meta.premium && (
+            <span className="cmx-pm">
+              <CrownIcon />
+              Premium
             </span>
           )}
-        </div>
+          {item.spoiler && <span className="cmx-st2">Только не вскрывать</span>}
+          <span className="cmx-tm">{timeAgo(item.at)}</span>
 
-        <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-            <span className="max-w-[40vw] truncate text-[13px] font-extrabold text-white sm:max-w-none">
-              {item.author}
-            </span>
-            {meta.tag && <AgTag tag={meta.tag} size="sm" className="shrink-0" />}
-            {meta.premium && (
-              <span className="shrink-0 rounded-md bg-gold/15 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-[0.1em] text-gold ring-1 ring-gold/35">
-                Premium
-              </span>
-            )}
-            <span className="shrink-0 text-[11px] text-muted">{timeAgo(item.at)}</span>
-
-            <span
-              className="relative ml-auto"
-              onBlur={(event) => {
-                if (!event.currentTarget.contains(event.relatedTarget)) setMenu(false);
+          <span
+            className="cmx-kw"
+            onBlur={(event) => {
+              if (!event.currentTarget.contains(event.relatedTarget)) setMenu(false);
+            }}
+          >
+            <button
+              type="button"
+              className="cmx-kb"
+              aria-label="Действия с комментарием"
+              aria-expanded={menu}
+              onClick={() => setMenu((open) => !open)}
+              onKeyDown={(event) => {
+                if (event.key === "Escape") setMenu(false);
               }}
             >
-              <button
-                type="button"
-                aria-label="Действия с комментарием"
-                aria-expanded={menu}
-                onClick={() => setMenu((open) => !open)}
-                onKeyDown={(event) => {
-                  if (event.key === "Escape") setMenu(false);
-                }}
-                className={`grid h-6 w-6 place-items-center rounded-md transition ${
-                  menu ? "bg-white/12 text-white" : "text-muted hover:bg-white/10 hover:text-white"
-                }`}
-              >
-                <DotsIcon />
-              </button>
-              {menu && (
-                <div className="absolute right-0 top-7 z-20 w-40 overflow-hidden rounded-lg bg-elevated py-1 ring-1 ring-white/15 shadow-xl">
+              <DotsIcon />
+            </button>
+            {menu && (
+              <div className="cmx-mnu" role="menu">
+                <button type="button" onClick={copyLink}>
+                  Скопировать ссылку
+                </button>
+                {item.author === metaFor.currentName && (
                   <button
                     type="button"
+                    className="rd"
                     onClick={() => {
                       setMenu(false);
                       onRemove(item.id);
                     }}
-                    className="block w-full px-3 py-2 text-left text-[11px] font-bold text-rose-300 transition hover:bg-rose-400/10 hover:text-rose-200"
                   >
                     Удалить
                   </button>
-                </div>
-              )}
-            </span>
-          </div>
-
-          {item.spoiler && !revealed ? (
-            <button
-              type="button"
-              onClick={() => setRevealed(true)}
-              className="mt-2 flex w-full items-center gap-2 rounded-lg bg-gold/10 px-3 py-2 text-left text-[11px] font-bold text-gold ring-1 ring-gold/30 transition hover:bg-gold/15 hover:ring-gold/50"
-            >
-              <EyeOffIcon />
-              Спойлер — нажмите, чтобы показать
-            </button>
-          ) : (
-            <p
-              className={`mt-1.5 break-words text-sm leading-relaxed text-white/85 ${
-                item.spoiler ? "ag-cm-reveal" : ""
-              }`}
-            >
-              {item.text}
-            </p>
-          )}
-
-          <div className="mt-2 flex flex-wrap items-center gap-1.5">
-            <button
-              type="button"
-              data-on={item.myVote === "up"}
-              aria-label="Нравится"
-              aria-pressed={item.myVote === "up"}
-              onClick={() => onVote(item.id, "up")}
-              className={`ag-cm-vote inline-flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-bold ring-1 transition ${
-                item.myVote === "up"
-                  ? "bg-accent/18 text-accent-2 ring-accent/45"
-                  : "bg-white/6 text-muted ring-white/10 hover:text-white hover:ring-white/30"
-              }`}
-            >
-              <ThumbIcon />
-              {item.likes ?? 0}
-            </button>
-            <button
-              type="button"
-              data-on={item.myVote === "down"}
-              aria-label="Не нравится"
-              aria-pressed={item.myVote === "down"}
-              onClick={() => onVote(item.id, "down")}
-              className={`ag-cm-vote inline-flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-bold ring-1 transition ${
-                item.myVote === "down"
-                  ? "bg-rose-500/18 text-rose-300 ring-rose-400/45"
-                  : "bg-white/6 text-muted ring-white/10 hover:text-white hover:ring-white/30"
-              }`}
-            >
-              <span className="rotate-180">
-                <ThumbIcon />
-              </span>
-              {item.dislikes ?? 0}
-            </button>
-            <button
-              type="button"
-              onClick={() => onReply(item)}
-              className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-[11px] font-bold text-muted ring-1 ring-transparent transition hover:bg-white/8 hover:text-white"
-            >
-              <ReplyIcon />
-              Ответить
-            </button>
-          </div>
-
-          {replies.length > 0 && (
-            <ul className="mt-3 space-y-2 border-l-2 border-accent/25 pl-3">
-              {replies.map((reply, replyIndex) => (
-                <CommentCard
-                  key={reply.id}
-                  item={reply}
-                  replies={[]}
-                  index={replyIndex}
-                  nested
-                  metaFor={metaFor}
-                  onReply={onReply}
-                  onVote={onVote}
-                  onRemove={onRemove}
-                />
-              ))}
-            </ul>
-          )}
+                )}
+                {item.author !== metaFor.currentName && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMenu(false);
+                      onReport();
+                    }}
+                  >
+                    Пожаловаться
+                  </button>
+                )}
+              </div>
+            )}
+          </span>
         </div>
+
+        {item.spoiler && !revealed ? (
+          <button type="button" className="cmx-spw" onClick={() => setRevealed(true)}>
+            <EyeOffIcon />
+            Спойлер — нажмите, чтобы показать
+          </button>
+        ) : (
+          <div className={item.spoiler ? "cmx-unb" : undefined}>
+            <RichText text={item.text} onSeek={onSeek} />
+          </div>
+        )}
+
+        <div className="cmx-ac">
+          <button
+            type="button"
+            data-on={item.myVote === "up"}
+            aria-label="Нравится"
+            aria-pressed={item.myVote === "up"}
+            onClick={() => onVote(item.id, "up")}
+            className={`cmx-vt${item.myVote === "up" ? " on" : ""}`}
+          >
+            <ThumbIcon />
+            <span>{item.likes ?? 0}</span>
+          </button>
+          <button
+            type="button"
+            data-on={item.myVote === "down"}
+            aria-label="Не нравится"
+            aria-pressed={item.myVote === "down"}
+            onClick={() => onVote(item.id, "down")}
+            className={`cmx-vt dn${item.myVote === "down" ? " on" : ""}`}
+          >
+            <ThumbIcon />
+            <span>{item.dislikes ?? 0}</span>
+          </button>
+          <button type="button" className="cmx-rb" onClick={() => onReply(item)}>
+            <ReplyIcon />
+            Ответить
+          </button>
+        </div>
+
+        {replies.length > 0 && (
+          <button
+            type="button"
+            className="cmx-sr"
+            onClick={() => setRepliesOpen((open) => !open)}
+            aria-expanded={repliesOpen}
+          >
+            <ReplyIcon />
+            {repliesOpen ? "Скрыть ответы" : `Показать ответы (${replies.length})`}
+          </button>
+        )}
+
+        {replies.length > 0 && repliesOpen && (
+          <ul className="cmx-rp">
+            {replies.map((reply, replyIndex) => (
+              <CommentCard
+                key={reply.id}
+                item={reply}
+                replies={[]}
+                index={replyIndex}
+                nested
+                metaFor={metaFor}
+                onReply={onReply}
+                onVote={onVote}
+                onRemove={onRemove}
+                onSeek={onSeek}
+                onNotify={onNotify}
+                onReport={onReport}
+              />
+            ))}
+          </ul>
+        )}
       </div>
     </li>
   );
@@ -344,18 +466,39 @@ export function CommentsBlock({ scope }: { scope: CommentsScope }) {
   const [draft, setDraft] = useState("");
   const [spoilerOn, setSpoilerOn] = useState(false);
   const [sort, setSort] = useState<CommentSort>("new");
+  const [shown, setShown] = useState(PAGE_SIZE);
   const [replyTo, setReplyTo] = useState<CommentMsg | null>(null);
   const [hint, setHint] = useState<string | null>(null);
+  const [toast, setToast] = useState<string | null>(null);
+  const [hasVideo, setHasVideo] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const toastTimer = useRef(0);
 
   // Демо-посев страницы тайтла: первый визит — локальные персоны
-  // (запись в стор, не setState: подписка useSyncExternalStore обновит UI)
   useEffect(() => {
     if (titleId) seedTitleComments(titleId);
   }, [titleId]);
 
+  // Кнопка «Время» нужна только там, где на странице есть видеоплеер.
+  useEffect(() => {
+    const check = () => setHasVideo(Boolean(videoEl()));
+    check();
+    const timer = window.setInterval(check, 1500);
+    return () => window.clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    return () => window.clearTimeout(toastTimer.current);
+  }, []);
+
+  const notify = (message: string) => {
+    setToast(message);
+    window.clearTimeout(toastTimer.current);
+    toastTimer.current = window.setTimeout(() => setToast(null), 3200);
+  };
+
   /** Мета автора: текущий аккаунт — реально, остальные — декор */
-  const metaFor = (author: string): AuthorMeta => {
+  const metaFor = ((author: string): AuthorMeta => {
     if (author === name) {
       return {
         avatar: profile.avatar || undefined,
@@ -372,6 +515,44 @@ export function CommentsBlock({ scope }: { scope: CommentsScope }) {
     }
     // гость/старое имя: детерминированный декор без выдумывания тегов
     return { level: 3 + (hashString(author) % 26), premium: false };
+  }) as MetaFor;
+  metaFor.currentName = name;
+
+  const seek = (seconds: number, raw: string) => {
+    const video = videoEl();
+    if (!video) {
+      notify("Плеер не найден на этой странице");
+      return;
+    }
+    try {
+      video.currentTime = Math.min(Math.max(0, seconds), video.duration || seconds);
+      notify(`Перемотка на ${raw}`);
+    } catch {
+      notify("Не удалось перемотать плеер");
+    }
+  };
+
+  const insertTime = () => {
+    const video = videoEl();
+    if (!video) {
+      notify("Плеер не найден на этой странице");
+      return;
+    }
+    const stamp = `[${mmss(video.currentTime)}] `;
+    const textarea = textareaRef.current;
+    if (!textarea) {
+      setDraft((value) => `${stamp}${value}`.slice(0, MAX_TEXT));
+      return;
+    }
+    const start = textarea.selectionStart ?? draft.length;
+    const end = textarea.selectionEnd ?? draft.length;
+    const next = `${draft.slice(0, start)}${stamp}${draft.slice(end)}`.slice(0, MAX_TEXT);
+    setDraft(next);
+    requestAnimationFrame(() => {
+      textarea.focus();
+      const caret = Math.min(start + stamp.length, next.length);
+      textarea.setSelectionRange(caret, caret);
+    });
   };
 
   const send = () => {
@@ -404,14 +585,25 @@ export function CommentsBlock({ scope }: { scope: CommentsScope }) {
       setHint(null);
     }
 
+    if (!parentId) {
+      setSort("new");
+      setShown((value) => Math.max(value, PAGE_SIZE));
+    }
     setDraft("");
     setSpoilerOn(false);
     setReplyTo(null);
+
+    window.setTimeout(() => {
+      document.getElementById(`c-${id}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 60);
   };
 
   const startReply = (item: CommentMsg) => {
     setReplyTo(item);
-    textareaRef.current?.focus();
+    window.setTimeout(() => {
+      textareaRef.current?.focus();
+      document.getElementById("cmx-compose")?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 40);
   };
 
   const vote = (id: string, dir: "up" | "down") => {
@@ -433,133 +625,145 @@ export function CommentsBlock({ scope }: { scope: CommentsScope }) {
     }
 
     if (replyTo && ids.includes(replyTo.id)) setReplyTo(null);
+    notify("Комментарий удалён");
   };
 
   const roots = rootsOf(list, sort);
+  const visible = roots.slice(0, shown);
   const headingId = titleId ? `cm-h-${titleId}` : "cm-h-profile";
+  const composerMeta = metaFor(name);
 
   return (
-    <section className="ag-cm rounded-2xl border border-line bg-card/70 p-4 sm:p-5" aria-label="Комментарии">
-      {/* Заголовок + счётчик + сортировка */}
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <h2 id={headingId} className="flex items-center gap-2.5 text-base font-extrabold tracking-tight text-white sm:text-lg">
-          <svg viewBox="0 0 24 24" className="h-5 w-5 text-accent-2" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-            <path d="M21 12a8 8 0 0 1-8 8H4l2.2-2.6A8 8 0 1 1 21 12Z" />
-          </svg>
-          Комментарии
-          <span className="rounded-full bg-accent/20 px-2 py-0.5 text-[11px] font-extrabold tracking-normal text-accent-2 ring-1 ring-accent/40">
-            {list.length}
-          </span>
+    <section className="cmx" aria-label="Комментарии" aria-labelledby={headingId}>
+      <span className="cmx-aur" aria-hidden />
+
+      <header className="cmx-hd">
+        <h2 id={headingId}>
+          <ChatIcon />
+          {titleId ? "Комментарии" : "Стена"}
+          <span className="cmx-cnt">{list.length}</span>
         </h2>
 
-        <label className="relative flex items-center gap-2">
-          <span className="hidden text-[11px] text-muted sm:inline">Порядок</span>
-          <select
-            value={sort}
-            onChange={(event) => setSort(event.target.value as CommentSort)}
-            aria-label="Сортировка комментариев"
-            className="appearance-none rounded-xl bg-white/8 py-2 pl-3 pr-8 text-[11px] font-bold text-white ring-1 ring-white/12 transition hover:bg-white/12 hover:ring-white/30 focus:outline-none focus:ring-accent/55"
-          >
-            <option value="new">Сначала новые</option>
-            <option value="old">Сначала старые</option>
-            <option value="top">Сначала популярные</option>
-          </select>
-          <ChevronIcon />
-        </label>
-      </div>
+        <div className="cmx-sg" role="group" aria-label="Порядок комментариев">
+          {SORTS.map((option) => (
+            <button
+              key={option.value}
+              type="button"
+              className={sort === option.value ? "on" : undefined}
+              aria-pressed={sort === option.value}
+              onClick={() => {
+                setSort(option.value);
+                setShown(PAGE_SIZE);
+              }}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+      </header>
 
       {/* Композер */}
-      <div className="rounded-xl bg-white/[0.03] p-3 ring-1 ring-white/8 transition focus-within:ring-accent/45">
-        {replyTo && (
-          <div className="mb-2 flex items-center justify-between gap-2 rounded-lg bg-accent/12 px-2.5 py-1.5 text-[11px] text-accent-2 ring-1 ring-accent/30">
-            <span className="truncate">
-              Ответ для <b className="font-extrabold">{replyTo.author}</b>
-            </span>
-            <button
-              type="button"
-              onClick={() => setReplyTo(null)}
-              aria-label="Отменить ответ"
-              className="grid h-5 w-5 shrink-0 place-items-center rounded text-accent-2 transition hover:bg-white/10"
-            >
-              <svg viewBox="0 0 24 24" className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" aria-hidden>
-                <path d="M6 6l12 12M18 6 6 18" />
-              </svg>
-            </button>
-          </div>
-        )}
+      <div className="cmx-cp" id="cmx-compose">
+        <div className="cmx-cpa">
+          <AvatarFrame
+            nickname={name}
+            avatar={composerMeta.avatar}
+            frame={FRAMES.find((f) => f.img === composerMeta.frameImg)}
+            size="xs"
+          />
+        </div>
 
-        <textarea
-          ref={textareaRef}
-          value={draft}
-          onChange={(event) => setDraft(event.target.value)}
-          onKeyDown={(event) => {
-            if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) {
-              event.preventDefault();
-              send();
-            }
-          }}
-          maxLength={MAX_TEXT}
-          rows={3}
-          placeholder={
-            titleId
-              ? "Поделитесь мнением об аниме..."
-              : `Комментарий от имени ${name}`
-          }
-          className="w-full resize-none bg-transparent text-sm text-white placeholder:text-muted/60 focus:outline-none"
-        />
+        <div className="cmx-cpb">
+          {replyTo && (
+            <div className="cmx-reply-note">
+              <span className="truncate">
+                Ответ для <b>{replyTo.author}</b>
+              </span>
+              <button type="button" onClick={() => setReplyTo(null)} aria-label="Отменить ответ">
+                <CloseIcon />
+              </button>
+            </div>
+          )}
 
-        <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
+          <textarea
+            ref={textareaRef}
+            value={draft}
+            onChange={(event) => setDraft(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) {
+                event.preventDefault();
+                send();
+              }
+              if (event.key === "Escape" && replyTo) setReplyTo(null);
+            }}
+            maxLength={MAX_TEXT}
+            rows={2}
+            placeholder={titleId ? "Поделитесь мнением об аниме…" : "Написать на стене…"}
+            aria-label="Текст комментария"
+            className="cmx-cpt"
+          />
+
+          <div className="cmx-cpbar">
             <button
               type="button"
               aria-pressed={spoilerOn}
               onClick={() => setSpoilerOn((on) => !on)}
-              className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11px] font-bold ring-1 transition ${
-                spoilerOn
-                  ? "bg-gold/15 text-gold ring-gold/40"
-                  : "bg-white/6 text-muted ring-white/12 hover:text-white hover:ring-white/30"
-              }`}
+              className={`cmx-tg${spoilerOn ? " on" : ""}`}
             >
               <EyeOffIcon />
               Спойлер
             </button>
-            <span className="text-[11px] tabular-nums text-muted">
-              {draft.length}/{MAX_TEXT}
+            {hasVideo && (
+              <button type="button" className="cmx-tg" onClick={insertTime} title="Вставить текущее время видео">
+                <ClockIcon />
+                Время
+              </button>
+            )}
+
+            <span className={`cmx-ctr${draft.length > MAX_TEXT * 0.9 ? " lim" : ""}`}>
+              <i
+                className="cmx-rg"
+                style={{ ["--p" as string]: String((draft.length / MAX_TEXT) * 100) }}
+                aria-hidden
+              />
+              <em>
+                {draft.length}/{MAX_TEXT}
+              </em>
             </span>
+            <span className="cmx-grow" />
+            {replyTo && (
+              <button type="button" className="cmx-gh" onClick={() => setReplyTo(null)}>
+                Отмена
+              </button>
+            )}
+            <button type="button" className="cmx-sd" onClick={send} disabled={!draft.trim()}>
+              <SendIcon />
+              {replyTo ? "Ответить" : "Отправить"}
+            </button>
           </div>
 
-          <button
-            type="button"
-            onClick={send}
-            disabled={!draft.trim()}
-            className="btn-primary inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-xs font-bold text-white disabled:opacity-45"
-          >
-            <SendIcon />
-            Отправить
-          </button>
+          <div className="cmx-ht">Ctrl+Enter — быстрая отправка</div>
+          {hint && <p className="cmx-hint">{hint}</p>}
         </div>
-
-        <p className="mt-2 text-[11px] text-muted">Ctrl+Enter — быстрая отправка</p>
-        {hint && <p className="mt-1 text-[11px] font-bold text-gold">{hint}</p>}
       </div>
 
-      <p className="mt-2 text-[11px] leading-relaxed text-muted">
+      <p className="cmx-note">
         {titleId
           ? "Комментарии локальные: видны только в этом браузере, на сервер не уходят. Часть комментариев — демо-посев, а не живые зрители."
           : "Стена локальная: комментарии видны только в этом браузере, на сервер они не уходят."}
       </p>
 
       {/* Лента */}
-      {roots.length === 0 ? (
-        <div className="mt-4 rounded-2xl border border-dashed border-line bg-white/[0.02] px-5 py-8 text-center">
-          <p className="text-sm font-bold text-white">Пока нет комментариев</p>
-          <p className="mx-auto mt-1.5 max-w-sm text-xs leading-relaxed text-muted">
+      {visible.length === 0 ? (
+        <div className="cmx-em">
+          <h3>Пока тихо</h3>
+          <p>
             Будьте первым — {titleId ? "поделитесь мнением об аниме" : "оставьте первый отзыв"}.
           </p>
         </div>
       ) : (
-        <ul className="mt-4 space-y-3">
-          {roots.map((root, index) => (
+        <ul className="cmx-feed">
+          {visible.map((root, index) => (
             <CommentCard
               key={root.id}
               item={root}
@@ -569,10 +773,23 @@ export function CommentsBlock({ scope }: { scope: CommentsScope }) {
               onReply={startReply}
               onVote={vote}
               onRemove={remove}
+              onSeek={seek}
+              onNotify={notify}
+              onReport={() => notify("Жалоба отмечена локально: отправки на сервер нет.")}
             />
           ))}
         </ul>
       )}
+
+      {roots.length > shown && (
+        <button type="button" className="cmx-mr" onClick={() => setShown((value) => value + PAGE_SIZE)}>
+          Показать ещё ({roots.length - shown})
+        </button>
+      )}
+
+      <div className={`cmx-toast${toast ? " on" : ""}`} role="status" aria-live="polite">
+        {toast}
+      </div>
     </section>
   );
 }

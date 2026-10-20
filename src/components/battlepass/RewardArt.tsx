@@ -20,7 +20,7 @@ import { useMemo } from "react";
 
 import { AE_RARITY } from "@/components/progression/AchievementEmblem";
 import { AgTag } from "@/components/progression/AgTag";
-import { AvatarView } from "@/components/profile/AvatarView";
+import { AvatarFrame } from "@/components/profile/AvatarFrame";
 import { FRAMES } from "@/lib/cosmetics";
 import type { BpRewardCard } from "@/components/battlepass/model";
 
@@ -138,13 +138,7 @@ export function RewardArt({
           <AgTag tag={card.view.tag} size={size === "sm" || size === "md" ? "sm" : "lg"} locked={locked} />
         )}
         {card.kind === "frame" && (
-          <AvatarView
-            nickname={nickname}
-            frameCss={frame?.css}
-            frameImg={frame?.img}
-            className={FRAME_SIZE[size]}
-            textClass={size === "sm" ? "text-base" : "text-2xl"}
-          />
+          <AvatarFrame nickname={nickname} frame={frame} size={size === "lg" ? "lg" : "sm"} />
         )}
       </span>
 

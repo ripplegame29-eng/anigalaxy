@@ -7,9 +7,19 @@
  * входа в демо-интерфейсе: реальную защиту данных такая схема не даёт.
  */
 
+import { captureReferralOnRegister } from "./referrals";
+import { displayNameError } from "./nickname";
+
 export interface Account {
   /** Никнейм — латиница, кириллица, цифры, `_` и `-` */
   nickname: string;
+  /**
+   * Отображаемое имя (услуга «Смена ника»). Пусто — показывается `nickname`.
+   *
+   * Отдельно от логина: по макету смена имени не трогает ни `@ник` для
+   * входа, ни ссылку на профиль, ни почту — только то, что видно другим.
+   */
+  displayName?: string;
   email: string;
   /** Хэш пароля (демо-проверка при входе, не шифрование) */
   passHash: string;
@@ -17,9 +27,32 @@ export interface Account {
   createdAt: number;
   /** До какой даты активна Premium-подписка, мс; 0 — подписки нет */
   premiumUntil?: number;
+  /** С какого момента считается текущий оплаченный период, мс */
+  premiumSince?: number;
+  /** Сколько дней оплачено в текущем периоде — нужно для прогресс-бара */
+  premiumTotalDays?: number;
 }
 
 export const ACCOUNT_KEY = "animehub:account:v1";
+
+/**
+ * Границы правдоподобной отметки времени для полей аккаунта.
+ *
+ * В localStorage могло попасть любое число, а `new Date(...)` превращал
+ * его в дату вплоть до года 275760 — страница показывала «С 9 ноября
+ * 55840 г.». Значения вне диапазона считаются мусором и заменяются
+ * нулём: подписки нет, а не «подписка до 55840 года».
+ */
+const PLAUSIBLE_MIN_MS = Date.UTC(1970, 0, 1);
+const PLAUSIBLE_MAX_MS = Date.UTC(2120, 0, 1);
+
+/** Отметка времени из хранилища, если она похожа на настоящую */
+function plausibleTime(value: unknown, fallback = 0): number {
+  return typeof value === "number" && Number.isFinite(value) &&
+    value >= PLAUSIBLE_MIN_MS && value <= PLAUSIBLE_MAX_MS
+    ? value
+    : fallback;
+}
 
 /** Событие, которое шлёт `saveAccount`/`clearAccount` внутри вкладки */
 export const ACCOUNT_EVENT = "animehub:account-changed";
@@ -63,10 +96,25 @@ export function parseAccount(raw: string | null): Account | null {
     }
     return {
       nickname: candidate.nickname,
+      /* Имя из хранилища может оказаться мусором: показываем его только
+         после проверки, иначе в прошлёк бы попал нечитаемый текст. */
+      displayName:
+        typeof candidate.displayName === "string" && displayNameError(candidate.displayName) === null
+          ? candidate.displayName.trim()
+          : "",
       email: candidate.email,
       passHash: candidate.passHash,
-      createdAt: typeof candidate.createdAt === "number" ? candidate.createdAt : Date.now(),
-      premiumUntil: typeof candidate.premiumUntil === "number" ? candidate.premiumUntil : 0,
+      /* createdAt без подстановки Date.now(): иначе при разборе битого
+         значения год в профиле «прыгал» бы при каждой перерисовке. */
+      createdAt: plausibleTime(candidate.createdAt, 0),
+      premiumUntil: plausibleTime(candidate.premiumUntil, 0),
+      premiumSince: plausibleTime(candidate.premiumSince, 0),
+      premiumTotalDays:
+        typeof candidate.premiumTotalDays === "number" &&
+        Number.isFinite(candidate.premiumTotalDays) &&
+        candidate.premiumTotalDays >= 0
+          ? candidate.premiumTotalDays
+          : 0,
     };
   } catch {
     return null;
@@ -110,6 +158,34 @@ export function validateNickname(value: string): string | null {
   if (!nick) return "Введите никнейм";
   if (nick.length < 3 || nick.length > 32) return "Никнейм должен быть от 3 до 32 символов";
   if (!NICKNAME_RE.test(nick)) return "Никнейм: буквы, цифры, `_` и `-`, без пробелов";
+  return null;
+}
+
+/* -------------------------- Отображаемое имя ---------------------------- */
+
+/** Имя, которое видно в интерфейсе: своё, если куплена смена, иначе логин */
+export function displayNameOf(account: Account | null | undefined): string {
+  const custom = account?.displayName?.trim();
+  return custom ? custom : (account?.nickname ?? "");
+}
+
+/**
+ * Записывает отображаемое имя в аккаунт.
+ *
+ * Списание AC к этому моменту уже прошло через движок: функция только
+ * сохраняет результат покупки. Возвращает текст ошибки, если имя не
+ * проходит правила макета, — тогда UI честно скажет, что покупка не
+ * применена (и вернёт имя в прежнее состояние).
+ */
+export function setDisplayName(value: string): string | null {
+  const account = readAccount();
+  if (!account) return "Аккаунт не найден";
+  const clean = value.trim();
+  if (displayNameError(clean)) return displayNameError(clean);
+  if (clean.toLowerCase() === displayNameOf(account).toLowerCase()) {
+    return "Это твой текущий ник";
+  }
+  saveAccount({ ...account, displayName: clean });
   return null;
 }
 
@@ -178,7 +254,12 @@ export function registerAccount(
     passHash: hashPassword(password),
     createdAt: Date.now(),
     premiumUntil: 0,
+    premiumSince: 0,
+    premiumTotalDays: 0,
   });
+  // Реферальный код из адресной строки: пригласившему уйдёт награду через
+  // движок (событие REFERRAL_REGISTERED), сам факт запоминается у новичка
+  captureReferralOnRegister(nickname.trim());
   return { ok: true };
 }
 
@@ -228,18 +309,80 @@ export function loginTelegramDemo(username: string): AuthResult {
     passHash: hashPassword(`telegram-demo:${clean}`),
     createdAt: Date.now(),
     premiumUntil: existing?.premiumUntil ?? 0,
+    premiumSince: existing?.premiumSince ?? 0,
+    premiumTotalDays: existing?.premiumTotalDays ?? 0,
   });
   return { ok: true };
 }
 
+/**
+ * Смена пароля.
+ *
+ * Проверяет текущий пароль по тому же хэшу, что и вход, и требует новый
+ * дважды — опечатку в одном поле пользователь заметит не сразу. Правила
+ * нового пароля на 4 символа длиннее, чем при регистрации: пароль, который
+ * годами стоял в демо-аккаунте, менять стоит на что-то посерьёзнее.
+ */
+export function changePassword(
+  current: string,
+  next: string,
+  confirm: string,
+): AuthResult {
+  const account = readAccount();
+  if (!account) return { ok: false, error: "Аккаунт не найден" };
+  if (account.passHash !== hashPassword(current)) {
+    return { ok: false, error: "Текущий пароль неверен" };
+  }
+  const error = validateStrongPassword(next);
+  if (error) return { ok: false, error };
+  if (next !== confirm) return { ok: false, error: "Пароли не совпадают" };
+  if (next === current) return { ok: false, error: "Новый пароль совпадает с текущим" };
+
+  saveAccount({ ...account, passHash: hashPassword(next) });
+  return { ok: true };
+}
+
+/**
+ * Правила нового пароля: 8+ символов, заглавная, строчная и цифра.
+ * Возвращает null, если пароль подходит.
+ */
+export function validateStrongPassword(value: string): string | null {
+  if (!value) return "Введите новый пароль";
+  if (value.length < STRONG_MIN_PASSWORD) {
+    return `Минимум ${STRONG_MIN_PASSWORD} символов, заглавная, строчная, цифра`;
+  }
+  if (value.length > MAX_PASSWORD) return `Пароль слишком длинный: максимум ${MAX_PASSWORD} символов`;
+  if (!/[A-Za-zА-Яа-я]/.test(value) || !/[a-zа-я]/.test(value) || !/[A-ZА-ЯЁ]/.test(value)) {
+    return "Нужны и заглавная, и строчная буквы";
+  }
+  if (!/\d/.test(value)) return "Нужна хотя бы одна цифра";
+  return null;
+}
+
+const STRONG_MIN_PASSWORD = 8;
+
 /* ----------------------------- Premium -------------------------------- */
 
-/** Активирует подписку на `days` дней от текущего момента */
+/**
+ * Активирует подписку на `days` дней.
+ *
+ * Продление активной подписки дописывает дни к текущему периоду — его начало и
+ * объём не меняются. Иначе «осталось 25 из 30 дней» после продления на год
+ * показывало бы 0%, хотя человек только что заплатил.
+ */
 export function activatePremium(days: number): Account | null {
   const account = readAccount();
   if (!account) return null;
-  const base = Math.max(Date.now(), account.premiumUntil ?? 0);
-  const next: Account = { ...account, premiumUntil: base + days * 86_400_000 };
+  const now = Date.now();
+  const active = isPremiumActive(account);
+  const base = active ? Math.max(now, account.premiumUntil ?? 0) : now;
+  const next: Account = {
+    ...account,
+    premiumUntil: base + days * 86_400_000,
+    premiumSince: active ? account.premiumSince || now : now,
+    // У аккаунтов, оформленных до появления полей, периода нет: берём остаток
+    premiumTotalDays: (active ? account.premiumTotalDays || premiumDaysLeft(account) : 0) + days,
+  };
   saveAccount(next);
   return next;
 }
@@ -258,4 +401,25 @@ export function formatPremiumUntil(account: Account | null): string {
 export function premiumDaysLeft(account: Account | null): number {
   if (!account?.premiumUntil) return 0;
   return Math.max(0, Math.ceil((account.premiumUntil - Date.now()) / 86_400_000));
+}
+
+/**
+ * Как «вы burnt» оплаченный период — для прогресс-бара на странице Premium.
+ *
+ * У старых аккаунтов полей нет, поэтому период берётся равным остатку: бар
+ * покажет 100%, а не выдуманные 7%. Честнее показать «не знаем», чем выдумать
+ * число, которое потом не сойдётся с продлением.
+ */
+export function premiumProgress(account: Account | null): {
+  /** Сколько процентов периода осталось, 0–100 */
+  percent: number;
+  /** Оплачено дней в периоде; 0 — данных нет */
+  totalDays: number;
+} {
+  if (!account?.premiumUntil) return { percent: 0, totalDays: 0 };
+  const totalDays = Math.max(0, Math.round(account.premiumTotalDays ?? 0));
+  if (!totalDays) return { percent: 100, totalDays: 0 };
+  const leftDays = Math.max(0, account.premiumUntil - Date.now()) / 86_400_000;
+  const percent = Math.max(0, Math.min(100, Math.round((leftDays / totalDays) * 100)));
+  return { percent, totalDays };
 }

@@ -1,0 +1,4952 @@
+/* ============================================================================
+   Общая тема макетов AniGalaxy.
+
+   Один источник правды для шести страниц, переводимых на новый дизайн.
+   Всё заскоплено под .ag-root: переменные живут только внутри перекрашенных
+   страниц и не задевают шапку, футер и остальные разделы сайта. Имена
+   переменных — как в макетах, чтобы переносить стили почти дословно.
+
+   Что здесь лежит:
+     • палитра и шрифты (--bg/--text/--muted/--line/--blue/--cyan/…)
+     • звёздное небо .sky / .stars
+     • карточка .card, кнопки .btn и .btn.g
+     • боковое меню .ag-nav с двумя скользящими плашками .hl и .act
+   ========================================================================== */
+
+:root {
+  --bg: #050810;
+  --text: #eef2fb;
+  --muted: #8d98b4;
+  --line: rgba(96, 150, 255, 0.16);
+  --blue: #2b7fff;
+  --cyan: #22d3ee;
+  --gold: #f5b74a;
+  --green: #34e0a1;
+  --red: #ff5d73;
+  --violet: #9b86ff;
+
+  /* Дисплейный шрифт — Montserrat 800 (--font-display), основной — Onest
+     (--font-body). Обе переменные приходят из next/font/google инлайном
+     в <html>. Если Google Fonts недоступен (нет сети, заблокирован CDN),
+     переменная не определена — поэтому в var() обязателен запасной
+     вариант: без него весь --disp становится невалидным, и КАЖДОЕ
+     `font: ... var(--font-display)` откатывается в наследование — заголовки и
+     ник в шапке профиля схлопываются в обычный текст. */
+  --disp: var(--font-display);
+  --body: var(--font-body);
+
+  /* Кольцо аватара в макете живёт на --ring и перекрашивается из «Внешнего
+     вида». По умолчанию золото — как на макете. */
+  --ring: var(--gold);
+}
+
+.ag-root {
+  color: var(--text);
+}
+
+/* ------------------------------ Звёздное небо ------------------------------
+   Фон живёт в layout, чтобы был один на весь сайт. Но показывается он только
+   на страницах, помеченных .ag-root: глобальное небо на каталоге и ленте
+   поменяло бы вид страниц, которые в рескине не участвуют.
+
+   Вне .ag-root фон лежит в DOM (иначе нечего переключать), но скрыт.
+   :has() — чтобы решение принимал CSS, а не лишний проп, который пришлось бы
+   тянуть через каждое дерево компонентов.
+   -------------------------------------------------------------------------- */
+
+body > .sky,
+body > .stars {
+  display: none;
+}
+
+/* Небо показывается там, где есть .ag-root — но не на главной: там витрина
+   профиля помечена .ag-home и фон ленты был бы лишним. */
+body:has(.ag-root:not(.ag-home)) > .sky,
+body:has(.ag-root:not(.ag-home)) > .stars {
+  display: block;
+}
+
+.sky {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      1000px 600px at 78% 5%,
+      color-mix(in srgb, var(--blue) 20%, transparent),
+      transparent 65%
+    ),
+    radial-gradient(800px 600px at 0 55%, rgba(124, 92, 255, 0.1), transparent 60%),
+    var(--bg);
+}
+
+/* Каждая звезда — свой элемент с абсолютной позицией и задержкой анимации.
+   Рисует компонент SkyBackdrop. */
+.stars {
+  position: fixed;
+  border-radius: 50%;
+  z-index: 0;
+  pointer-events: none;
+  background: #cfe4ff;
+  animation: ag-twinkle 6s ease-in-out infinite alternate;
+}
+
+@keyframes ag-twinkle {
+  from {
+    opacity: 0.25;
+  }
+  to {
+    opacity: 0.95;
+  }
+}
+
+/* --------------------------------- Карточка -------------------------------- */
+
+/* Карточка темы макетов.
+   Имя намеренно не `.card`: в level-emblem.css есть глобальный селектор
+   `.card{display:flex;gap:24px;align-items:center}` под блок уровня, и любой
+   новый элемент с классом `card` молча получал flex-строку вместо блока. */
+.ag-root .ag-card {
+  position: relative;
+  border-radius: 22px;
+  border: 1px solid var(--line);
+  background: linear-gradient(180deg, rgba(15, 24, 48, 0.7), rgba(8, 13, 26, 0.7));
+  box-shadow:
+    0 20px 50px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+/* --------------------------------- Кнопки --------------------------------- */
+
+.ag-root .btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 0;
+  border-radius: 12px;
+  padding: 10px 16px;
+  font: 700 14px var(--font-body);
+  color: #fff;
+  background: linear-gradient(135deg, var(--blue), var(--cyan));
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--blue) 45%, transparent);
+  transition: transform 0.15s;
+  white-space: nowrap;
+}
+
+.ag-root .btn:hover {
+  transform: translateY(-2px);
+}
+
+.ag-root .btn > svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* Вторая кнопка макета — стеклянная */
+.ag-root .btn.g {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--line);
+  box-shadow: none;
+}
+
+.ag-root .btn.g:hover {
+  background: color-mix(in srgb, var(--blue) 16%, transparent);
+  border-color: color-mix(in srgb, var(--blue) 55%, transparent);
+}
+
+.ag-root .btn[disabled] {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+/* --------------------------- Боковое меню профиля -------------------------- */
+
+/* Раскладка «колонка справа, лента слева» — как в макете. */
+.ag-root .ag-nav {
+  padding: 8px;
+  display: flex;
+  /* Колонка в макете: flex по умолчанию даёт строку, и пункты вылезали
+     за пределы своей колонки на всю ширину страницы */
+  flex-direction: column;
+  gap: 2px;
+  position: sticky;
+  top: 12px;
+  order: 2;
+}
+
+.ag-root .ag-nav > button {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 0;
+  background: none;
+  padding: 12px 14px;
+  border-radius: 14px;
+  font: 700 15px var(--font-body);
+  color: #aab4cc;
+  text-align: left;
+  transition:
+    color 0.2s,
+    padding-left 0.25s;
+}
+
+.ag-root .ag-nav > button > svg {
+  width: 18px;
+  height: 18px;
+  flex: none;
+  transition:
+    transform 0.25s,
+    color 0.2s;
+}
+
+.ag-root .ag-nav > button:hover {
+  color: #fff;
+  padding-left: 18px;
+}
+
+.ag-root .ag-nav > button:hover > svg {
+  transform: rotate(-8deg) scale(1.12);
+  color: var(--cyan);
+}
+
+.ag-root .ag-nav > button[aria-current="true"] {
+  color: #fff;
+}
+
+.ag-root .ag-nav > button[aria-current="true"] > svg {
+  color: var(--cyan);
+}
+
+/* Две скользящие плашки: .hl едет под курсором, .act — под активной вкладкой.
+   Обе живут отдельными <i>, потому что вложенные в кнопку элементы ломали бы
+   border-radius и перехват фокуса. */
+.ag-root .ag-nav .hl,
+.ag-root .ag-nav .act {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 0;
+  height: 0;
+  border-radius: 14px;
+  pointer-events: none;
+  opacity: 0;
+  z-index: 0;
+}
+
+.ag-root .ag-nav .hl {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.ag-root .ag-nav .act {
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--blue) 32%, transparent),
+    color-mix(in srgb, var(--cyan) 12%, transparent)
+  );
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--blue) 60%, transparent),
+    0 0 24px color-mix(in srgb, var(--blue) 25%, transparent);
+}
+
+/* Плавность включается после первой раскладки: иначе плашки приезжают из
+   нулевого размера и мигают. Ставится классом, а не :has — поддержка
+   :has есть, но лишняя зависимость от раскладки не нужна. */
+.ag-root .ag-nav.rdy .hl,
+.ag-root .ag-nav.rdy .act {
+  transition:
+    transform 0.32s cubic-bezier(0.3, 0.9, 0.3, 1.1),
+    width 0.32s,
+    height 0.32s,
+    opacity 0.2s;
+}
+
+/* Счётчик у пункта */
+.ag-root .ag-nav > button > i {
+  margin-left: auto;
+  font-style: normal;
+  font-size: 10.5px;
+  padding: 2px 7px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* Пометка NEW в узком меню не помещается — прячем вместе со счётчиком */
+.ag-root .ag-nav > button.is-new::after {
+  content: "NEW";
+  margin-left: auto;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: linear-gradient(135deg, var(--blue), var(--cyan));
+  color: #fff;
+}
+
+/* --------------------------- Панель вкладки -------------------------------- */
+
+/* Появление содержимого при смене вкладки. */
+.ag-root .ag-pane {
+  /* fill-mode именно backwards, а не both: при both анимация transform
+     держится и после конца, и transform (даже единичный) создаёт
+     containing block для position: fixed. Из-за этого окно достижения
+     (fixed inset-0) считало размеры от секции, а не от экрана, и уезжало
+     за пределы видимой области. */
+  animation: ag-pane-in 0.4s backwards;
+}
+
+@keyframes ag-pane-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+
+/* Заголовок вкладки: иконка + крупный дисплейный текст + подзаголовок */
+.ag-root .ag-h2 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font: 800 20px var(--font-display);
+  margin: 0 0 6px;
+  letter-spacing: -0.02em;
+}
+
+.ag-root .ag-h2 > svg {
+  width: 22px;
+  height: 22px;
+  color: var(--cyan);
+}
+
+.ag-root .ag-sub {
+  margin: 0 0 18px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+/* Заголовок карточки: компактный, в начертательном шрифте макета */
+.ag-root .ag-h3 {
+  margin: 0;
+  font: 800 15px var(--font-body);
+  color: var(--text);
+}
+
+/* Пустое состояние карточки */
+.ag-root .ag-empty {
+  display: grid;
+  place-items: center;
+  text-align: center;
+  color: var(--muted);
+  padding: 26px 10px;
+  border-radius: 14px;
+  background: rgba(3, 6, 14, 0.5);
+  border: 1px dashed var(--line);
+  font-size: 13.5px;
+  font-weight: 700;
+}
+
+.ag-root .ag-empty p {
+  margin: 0;
+  color: var(--text);
+  font-weight: 800;
+}
+
+.ag-root .ag-empty small {
+  display: block;
+  margin-top: 6px;
+  font-weight: 600;
+  font-size: 12px;
+  max-width: 42ch;
+  line-height: 1.45;
+}
+
+/* ============================== Каркас профиля ============================= */
+
+/* Баннер во всю ширину окна. 100vw шире видимой области на ширину полосы
+   прокрутки, поэтому body режется по горизонтали — иначе появилась бы
+   горизонтальная прокрутка страницы. */
+body {
+  overflow-x: clip;
+}
+
+.ag-root .ag-pf-full {
+  position: relative;
+  left: 50%;
+  right: 50%;
+  width: 100vw;
+  margin-left: -50vw;
+  margin-right: -50vw;
+}
+
+.ag-root .ag-pf-ban {
+  /* Баннер выше прежних 340px. Шапка двигается вместе с ним: см. margin
+     у .ag-pf-wrap — там та же доля от высоты баннера. */
+  height: 415px;
+  position: relative;
+  background-color: var(--bg);
+  background-repeat: no-repeat;
+  background-position: center;
+  transition: background 0.4s;
+}
+
+.ag-root .ag-pf-ban-glow {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    600px 200px at 70% 0,
+    color-mix(in srgb, var(--cyan) 35%, transparent),
+    transparent 70%
+  );
+}
+
+/* Затемнение к низу баннера: иначе ник и аватар теряются на светлом фото,
+   а сам фон не «входит» в страницу */
+.ag-root .ag-pf-ban-fade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(5, 8, 16, 0.55) 0%,
+    rgba(5, 8, 16, 0) 34%,
+    var(--bg) 100%
+  );
+}
+
+/* --------------------------- Реферальная карта ------------------------- */
+
+/* Хиро: бейдж, крупный заголовок с акцентным словом и пояснение */
+.ag-root .ag-ref-hero {
+  max-width: 620px;
+}
+
+.ag-root .ag-ref-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 13px;
+  border-radius: 99px;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--cyan);
+  background: color-mix(in srgb, var(--cyan) 12%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--cyan) 34%, transparent);
+}
+
+.ag-root .ag-ref-hero h1 {
+  margin-top: 14px;
+  font-family: var(--font-display);
+  font-size: clamp(32px, 5.4vw, 52px);
+  font-weight: 800;
+  line-height: 1.04;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+
+.ag-root .ag-ref-hero h1 em {
+  font-style: normal;
+  background: linear-gradient(120deg, var(--cyan), var(--blue));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.ag-root .ag-ref-hero p {
+  margin-top: 12px;
+  max-width: 58ch;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--muted);
+}
+
+/* Верхняя полоса: пропуск слева, карта орбит справа */
+.ag-root .ag-ref-top {
+  display: grid;
+  gap: 18px;
+  align-items: start;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+@media (min-width: 1024px) {
+  .ag-root .ag-ref-top {
+    grid-template-columns: minmax(0, 420px) minmax(0, 1fr);
+  }
+}
+
+/* «Пропуск» макета: билет 1fr | 138px, фольга и перфорация */
+.ag-root .ag-ticket {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 138px;
+  overflow: hidden;
+  border-radius: 22px;
+  border: 1px solid rgba(96, 150, 255, 0.3);
+  background: linear-gradient(135deg, #102252, #0a1430 60%, #0c1a3d);
+}
+
+@media (max-width: 560px) {
+  .ag-root .ag-ticket {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Фольга: диагональная полоса, идущая по билету (анимация из макета) */
+.ag-ticket-foil {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  background: linear-gradient(
+    115deg,
+    transparent 38%,
+    rgba(255, 255, 255, 0.09) 47%,
+    rgba(124, 192, 255, 0.16) 50%,
+    rgba(255, 255, 255, 0.05) 53%,
+    transparent 62%
+  );
+  background-size: 260% 260%;
+  animation: ag-foil 9s linear infinite;
+}
+
+@keyframes ag-foil {
+  from {
+    background-position: 140% 0;
+  }
+  to {
+    background-position: -40% 0;
+  }
+}
+
+/* Всё, кроме фольги, лежит слоем выше неё */
+.ag-root .ag-ticket > *:not(.ag-ticket-foil) {
+  position: relative;
+  z-index: 1;
+}
+
+.ag-root .ag-ticket-row,
+.ag-root .ag-ticket-code,
+.ag-root .ag-ticket-link,
+.ag-root .ag-ticket-share {
+  grid-column: 1;
+}
+
+.ag-root .ag-ticket-stub {
+  grid-column: 2;
+  grid-row: 1 / span 4;
+}
+
+.ag-ticket-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.ag-ticket-row > span:first-child {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.ag-ticket-live {
+  padding: 4px 10px;
+  border-radius: 99px;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  color: var(--green);
+  background: color-mix(in srgb, var(--green) 16%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--green) 36%, transparent);
+}
+
+.ag-ticket-code {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 10px 0 14px;
+  font-family: var(--font-display);
+  font-size: clamp(22px, 3vw, 30px);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0.04em;
+}
+
+.ag-ticket-code > span {
+  color: var(--text);
+}
+
+.ag-ticket-copy {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  flex: none;
+  border-radius: 10px;
+  color: #bcd6ff;
+  background: rgba(255, 255, 255, 0.07);
+  transition: background 0.2s;
+}
+
+.ag-ticket-copy:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.ag-ticket-copy svg {
+  width: 16px;
+  height: 16px;
+}
+
+.ag-ticket-link {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.ag-ticket-url {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex: 1;
+  min-width: 0;
+  padding: 9px 12px;
+  border-radius: 11px;
+  font-size: 12px;
+  color: var(--muted);
+  background: rgba(4, 8, 20, 0.5);
+  box-shadow: inset 0 0 0 1px var(--line);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ag-ticket-url svg {
+  width: 14px;
+  height: 14px;
+  flex: none;
+}
+
+.ag-ticket-share {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.ag-ticket-so {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 11px;
+  border: 1px solid var(--line);
+  color: #9fc4ff;
+  background: rgba(255, 255, 255, 0.04);
+  transition:
+    transform 0.15s,
+    background 0.2s,
+    box-shadow 0.2s,
+    color 0.2s;
+}
+
+.ag-ticket-so:hover {
+  transform: translateY(-2px);
+  color: #fff;
+  background: rgba(43, 127, 255, 0.2);
+  box-shadow: 0 8px 20px rgba(43, 127, 255, 0.3);
+}
+
+.ag-ticket-so svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* Перфорация: пунктир отделяет часть «другу» — вертикально, как на билете */
+.ag-ticket-stub {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+  padding: 18px 14px;
+  text-align: center;
+  border-left: 2px dashed rgba(96, 150, 255, 0.35);
+  border-radius: 0 22px 22px 0;
+  background: linear-gradient(180deg, rgba(34, 211, 238, 0.12), rgba(43, 127, 255, 0.06));
+}
+
+.ag-ticket-stub span {
+  font-size: 11px;
+  color: #9fb6e0;
+}
+
+.ag-ticket-stub b {
+  font-family: var(--font-display);
+  font-size: 30px;
+  font-weight: 800;
+  line-height: 1;
+  background: linear-gradient(180deg, #fff, #7cc0ff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.ag-ticket-stub span:nth-of-type(2),
+.ag-ticket-stub b:nth-of-type(2) {
+  margin-top: 6px;
+}
+
+@media (max-width: 560px) {
+  .ag-ticket-stub {
+    grid-column: 1;
+    grid-row: auto;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 4px 12px;
+    border-left: 0;
+    border-top: 2px dashed rgba(96, 150, 255, 0.35);
+    border-radius: 0 0 22px 22px;
+  }
+
+  .ag-ticket-stub span:nth-of-type(2),
+  .ag-ticket-stub b:nth-of-type(2) {
+    margin-top: 0;
+  }
+}
+
+/* Карта занимает правую половину блока — как в макете, а не узкой карточкой */
+@media (min-width: 1024px) {
+  .ag-root .ag-ref-top {
+    grid-template-columns: minmax(0, 460px) minmax(0, 1fr);
+  }
+}
+
+.ag-root .ag-ref-how {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  margin-top: 10px;
+  font-size: 11.5px;
+  color: var(--muted);
+}
+
+.ag-root .ag-ref-how b {
+  color: var(--text);
+}
+
+/* Карта орбит: строки перенесены из макета без изменений.
+   Размер — как в макете: квадрат ~430px, а не во всю ширину колонки.
+   Карта — рамка, а квадратный рисунок живёт в svg: так плашка под рубежом
+   остаётся обычным блоком и не ломает высоту контейнера. */
+.ag-root .ag-ref-map {
+  position: relative;
+  overflow: hidden;
+  width: min(430px, 100%);
+  margin-inline: auto;
+  padding-bottom: 12px;
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(43, 127, 255, 0.14), transparent 60%),
+    linear-gradient(180deg, rgba(10, 18, 40, 0.8), rgba(5, 8, 18, 0.85));
+}
+
+.ag-root .ag-ref-sv {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  overflow: visible;
+}
+
+.ag-root .ag-ring .base {
+  fill: none;
+  stroke: rgba(96, 150, 255, 0.22);
+  stroke-width: 1.4;
+  stroke-dasharray: 3 7;
+}
+
+.ag-root .ag-ring.done .base {
+  stroke: var(--rc, #2b7fff);
+  stroke-dasharray: none;
+  opacity: 0.5;
+}
+
+.ag-root .ag-ring .prog {
+  fill: none;
+  stroke: var(--rc, #2b7fff);
+  stroke-width: 3;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 5px var(--rc, #2b7fff));
+}
+
+.ag-root .ag-ring .hit {
+  fill: none;
+  stroke: transparent;
+  stroke-width: 22;
+  pointer-events: stroke;
+  cursor: pointer;
+}
+
+.ag-root .ag-ring.sel .base {
+  stroke: #fff;
+  opacity: 0.85;
+  stroke-dasharray: none;
+}
+
+.ag-root .ag-orb {
+  transform-box: view-box;
+  transform-origin: 50% 50%;
+  animation: ag-spin var(--d, 90s) linear infinite;
+}
+
+.ag-root .ag-orb.rv {
+  animation-direction: reverse;
+}
+
+@keyframes ag-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+@keyframes ag-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.ag-root .ag-pl {
+  cursor: pointer;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: ag-spin var(--d, 90s) linear infinite reverse;
+}
+
+.ag-root .ag-orb.rv .ag-pl {
+  animation-direction: normal;
+}
+
+.ag-root .ag-pl .pc {
+  fill: #0a1226;
+  stroke: var(--rc, #2b7fff);
+  stroke-width: 1.6;
+}
+
+.ag-root .ag-pl svg {
+  color: var(--rc, #2b7fff);
+  overflow: visible;
+}
+
+.ag-root .ag-pl svg > svg {
+  width: 16px;
+  height: 16px;
+}
+
+.ag-root .ag-pl.lk {
+  opacity: 0.6;
+}
+
+.ag-root .ag-pl:hover .pc,
+.ag-root .ag-pl.sel .pc {
+  fill: color-mix(in srgb, var(--rc, #2b7fff) 30%, #0a1226);
+  filter: drop-shadow(0 0 8px var(--rc, #2b7fff));
+}
+
+.ag-root .ag-pl:hover,
+.ag-root .ag-pl.sel {
+  opacity: 1;
+}
+
+.ag-root .ag-fs {
+  fill: #fff;
+  filter: drop-shadow(0 0 4px #7cc0ff);
+  animation: ag-tw 2.4s ease-in-out infinite alternate;
+}
+
+@keyframes ag-tw {
+  from {
+    opacity: 0.45;
+    r: 2.6px;
+  }
+  to {
+    opacity: 1;
+    r: 3.8px;
+  }
+}
+
+.ag-root .ag-core {
+  filter: drop-shadow(0 0 16px rgba(43, 127, 255, 0.8));
+}
+
+.ag-root .ag-core-nick {
+  font-family: var(--font-display);
+}
+
+/* Подпись рубежа на кольце: текст внутри SVG не наследует шрифт карточки */
+.ag-root .ag-tip-t {
+  font-family: var(--font-body);
+}
+
+.ag-root .ag-pulse {
+  fill: none;
+  stroke: rgba(34, 211, 238, 0.5);
+  stroke-width: 1.5;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: ag-pu 3.2s ease-out infinite;
+}
+
+@keyframes ag-pu {
+  from {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  to {
+    transform: scale(1.7);
+    opacity: 0;
+  }
+}
+
+.ag-root .ag-ref-hud {
+  position: absolute;
+  left: 14px;
+  top: 14px;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.ag-root .ag-ref-hc {
+  min-width: 112px;
+  padding: 8px 13px;
+  border-radius: 13px;
+  border: 1px solid var(--line);
+  background: rgba(6, 10, 22, 0.75);
+  backdrop-filter: blur(10px);
+}
+
+.ag-root .ag-ref-hc b {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 800;
+  line-height: 1.1;
+  color: var(--text);
+}
+
+.ag-root .ag-ref-hc span {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* Плашка выбранного рубежа — три колонки под орбитой, внутри рамки карты */
+.ag-root .ag-ref-mini {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 2px 12px;
+  margin: 0 12px;
+  padding: 10px 14px;
+  border-radius: 16px;
+  border: 1px solid color-mix(in srgb, var(--rc, #2b7fff) 45%, transparent);
+  background: rgba(6, 10, 22, 0.82);
+  animation: ag-rise 0.5s both;
+}
+
+.ag-root .ag-ref-mini b {
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.2;
+  color: var(--text);
+}
+
+.ag-root .ag-ref-mini small {
+  grid-column: 1;
+  font-size: 12px;
+  line-height: 1.3;
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ag-root .ag-ref-mini em {
+  grid-row: span 2;
+  font-size: 13px;
+  font-style: normal;
+  font-weight: 800;
+  color: var(--gold);
+  white-space: nowrap;
+}
+
+.ag-root .ag-ref-tip {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 2px 10px;
+  align-self: stretch;
+  padding: 10px 13px;
+  border-radius: 13px;
+  background: rgba(255, 255, 255, 0.04);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+
+.ag-root .ag-ref-tip b {
+  font-size: 12.5px;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.ag-root .ag-ref-tip span {
+  grid-column: 1;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.ag-root .ag-ref-tip em {
+  grid-row: span 2;
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 800;
+  color: var(--gold);
+  white-space: nowrap;
+}
+.ag-root .ag-ref-sec {
+  display: grid;
+  gap: 12px;
+  margin-top: 6px;
+}
+
+.ag-root .ag-ref-sec > .ag-w-sub,
+.ag-root .ag-ref-sechead .ag-w-sub {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.ag-root .ag-ref-sec h2 {
+  font-family: var(--font-display);
+  font-size: clamp(22px, 3.2vw, 30px);
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--text);
+}
+
+.ag-root .ag-ref-sechead {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.ag-root .ag-ref-count {
+  padding: 6px 12px;
+  border-radius: 99px;
+  font-size: 12px;
+  color: var(--muted);
+  background: rgba(255, 255, 255, 0.05);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+
+.ag-root .ag-ref-count b {
+  margin: 0 4px;
+  color: var(--cyan);
+}
+
+.ag-root .ag-ref-steps {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+.ag-root .ag-ref-step {
+  display: grid;
+  gap: 7px;
+  align-content: start;
+  padding: 18px;
+  border-radius: 18px;
+  border: 1px solid var(--line);
+  background: linear-gradient(180deg, rgba(23, 33, 66, 0.6), rgba(9, 14, 32, 0.6));
+}
+
+.ag-root .ag-ref-no {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 11px;
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--text);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--blue) 55%, transparent), transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--blue) 40%, transparent);
+}
+
+.ag-root .ag-ref-step b {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.ag-root .ag-ref-step span {
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+/* Хранилище наград: восемь карточек */
+.ag-root .ag-ref-vault {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(215px, 1fr));
+}
+
+.ag-root .ag-ref-card {
+  display: grid;
+  gap: 8px;
+  align-content: start;
+  padding: 12px;
+  border-radius: 18px;
+  border: 1px solid var(--line);
+  background: linear-gradient(180deg, rgba(23, 33, 66, 0.55), rgba(9, 14, 32, 0.68));
+}
+
+.ag-root .ag-ref-card.is-on {
+  border-color: color-mix(in srgb, var(--cyan) 45%, transparent);
+  box-shadow: 0 0 30px -18px rgba(34, 211, 238, 0.7);
+}
+
+.ag-root .ag-ref-cardtop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 900;
+  color: var(--muted);
+}
+
+.ag-root .ag-ref-cardtop em {
+  font-style: normal;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.ag-root .ag-ref-cardtop em[data-r="1"] { color: var(--cyan); }
+.ag-root .ag-ref-cardtop em[data-r="2"] { color: var(--violet, #9b86ff); }
+.ag-root .ag-ref-cardtop em[data-r="3"] { color: var(--gold); }
+.ag-root .ag-ref-cardtop em[data-r="4"] { color: var(--red); }
+
+.ag-root .ag-ref-cardvis {
+  position: relative;
+  display: grid;
+  place-items: center;
+  height: 84px;
+  border-radius: 14px;
+  color: var(--muted);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.ag-root .ag-ref-card.is-on .ag-ref-cardvis {
+  color: var(--cyan);
+  background: radial-gradient(120% 100% at 50% 0%, rgba(34, 211, 238, 0.16), transparent 70%);
+}
+
+.ag-root .ag-ref-cardvis svg {
+  width: 34px;
+  height: 34px;
+}
+
+.ag-root .ag-ref-lock {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  color: var(--muted);
+  background: rgba(0, 0, 0, 0.5);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+
+.ag-root .ag-ref-lock svg {
+  width: 13px;
+  height: 13px;
+}
+
+.ag-root .ag-ref-card > b {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.ag-root .ag-ref-card ul {
+  display: grid;
+  gap: 3px;
+}
+
+.ag-root .ag-ref-card li {
+  font-size: 11.5px;
+  color: var(--muted);
+}
+
+.ag-root .ag-ref-card li::before {
+  content: "• ";
+  color: var(--cyan);
+}
+
+.ag-root .ag-ref-needs {
+  padding-top: 8px;
+  border-top: 1px solid var(--line);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.ag-root .ag-ref-card.is-on .ag-ref-needs {
+  color: var(--green);
+}
+
+/* Экипаж и созвездия */
+.ag-root .ag-ref-crew {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  align-items: start;
+}
+
+.ag-root .ag-ref-panel {
+  overflow: hidden;
+  border-radius: 18px;
+  border: 1px solid var(--line);
+  background: linear-gradient(180deg, rgba(23, 33, 66, 0.6), rgba(9, 14, 32, 0.66));
+}
+
+.ag-root .ag-ref-panel > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 13px 16px;
+  border-bottom: 1px solid var(--line);
+}
+
+.ag-root .ag-ref-panel > header b {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.ag-root .ag-ref-panel > header em {
+  padding: 3px 9px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 800;
+  color: var(--muted);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.ag-root .ag-ref-crewempty {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  padding: 26px 18px;
+  text-align: center;
+}
+
+.ag-root .ag-ref-crewempty svg {
+  width: 30px;
+  height: 30px;
+  color: var(--muted);
+  opacity: 0.6;
+}
+
+.ag-root .ag-ref-crewempty span {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.ag-root .ag-ref-crewempty small {
+  max-width: 40ch;
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+.ag-root .ag-ref-crewlist {
+  display: grid;
+  max-height: 380px;
+  overflow-y: auto;
+}
+
+.ag-root .ag-ref-crewlist > li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 16px;
+  font-size: 12.5px;
+  color: var(--text);
+}
+
+.ag-root .ag-ref-crewlist > li + li {
+  border-top: 1px solid var(--line);
+}
+
+.ag-root .ag-ref-rank {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  flex: none;
+  border-radius: 7px;
+  font-size: 10px;
+  font-weight: 900;
+  color: var(--muted);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.ag-root .ag-ref-crewlist b {
+  flex: 1;
+  min-width: 0;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* «Мой список» — своя ширина: страница в макете читается широкой лентой,
+   профильная колонка для неё узкая и оставляет половину экрана пустой */
+.ag-root .ag-list-wrap {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: clamp(16px, 3vw, 32px) clamp(14px, 3vw, 28px) 90px;
+}
+
+/* Иконка вместо постера: размер задаёт контейнер, а не сама иконка —
+   иначе svg без размеров растягивается на всю карточку */
+.ag-root .ag-list-poster.is-icon {
+  display: grid;
+  place-items: center;
+  background: linear-gradient(140deg, rgba(43, 127, 255, 0.2), rgba(10, 17, 38, 0.9));
+}
+
+.ag-root .ag-list-poster.is-icon svg {
+  width: 26px;
+  height: 26px;
+  color: var(--cyan);
+}
+
+.ag-root .ag-pf-wrap {
+  /* На animeon.cc колонка 1288px: на 1600 экране отступ от края 156,
+     а при 1180 было 210 — блок висел ближе к центру, чем нужно. */
+  max-width: 1288px;
+  /* Шапка наезжает на баннер и держит одну и ту же долю его высоты:
+     при 340px было 340 − 110 = 230px от верха (67,6%), при 415px —
+     столько же пропорцией, 415 × 0,676 ≈ 281, то есть −134px.
+     Правится только вместе с .ag-pf-ban, иначе ник либо залезает
+     на фото, либо отрывается от обложки. */
+  margin: -134px auto 0;
+  padding: 0 clamp(14px, 3vw, 24px) 90px;
+  position: relative;
+}
+
+/* Строка чипов в шапке — как на animeon.cc/user/ayaa:
+   одна линия слева, интервал 8px, перенос при нехватке места. */
+.ag-root .ag-pf-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.ag-root .ag-pf-hero {
+  display: flex;
+  /* Интервал между аватаром и ником: на референсе отступ заметно шире,
+     чем 14px — ник не прилипает к кругу. */
+  gap: 26px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* Аватар: кольцо-конус, как в макете. Рамка косметики, если она надета,
+   рисуется поверх: обе живут на одном элементе, но конус — фоном, рамка —
+   вложенным слоем AvatarView, поэтому друг друга не затирают. */
+/* Аватар в шапке профиля: размер задан одной переменной.
+   Раньше число 150 писалось в трёх местах (коробка, коробка рамки и
+   подстановка в --av), и рассинхрон между ними и есть тот самый баг с
+   рамками. Теперь --ag-pf-av-size управляет и коробкой, и рамкой, а
+   --av считается от неё же: широкая рамка (scale 2.5) получает круг целиком
+   и пропорционально меньший аватар, узкая (1.3) — крупный. */
+.ag-root {
+  --ag-pf-av-size: 186px;
+}
+
+.ag-root .ag-pf-av {
+  /* Как до перехода на токены: круг, аватар занимает его целиком, рамка —
+     вокруг. Кольца-подложки нет: и тёмное, и коническое читались
+     вторым кругом поверх аватара. */
+  width: var(--ag-pf-av-size);
+  height: var(--ag-pf-av-size);
+  border-radius: 50%;
+  position: relative;
+  flex: none;
+  overflow: visible;
+}
+
+/* Рамка в шапке профиля — всегда того же размера, что и круг, аватар —
+   размер / scale. Так шапка не разъезжается при смене рамки. */
+.ag-root .ag-pf-av .ag-frame {
+  width: var(--ag-pf-av-size);
+  height: var(--ag-pf-av-size);
+  --av: calc(var(--ag-pf-av-size) / var(--scale, 1.3));
+}
+
+
+
+/* Бейдж уровня на аватаре убран: по референсу уровень живёт в строке чипов,
+   а на круге он перекрывал рамку косметики и читался как лишний элемент. */
+
+.ag-root .ag-pf-hi {
+  flex: 1;
+  min-width: 260px;
+  padding-bottom: 6px;
+}
+
+.ag-root .ag-pf-hi h1 {
+  margin: 0;
+  font: 800 clamp(30px, 5vw, 54px) / 1 var(--font-display);
+  letter-spacing: -0.03em;
+  text-shadow: 0 4px 30px rgba(0, 0, 0, 0.6);
+  overflow-wrap: anywhere;
+}
+
+.ag-root .ag-pf-hi h1 em {
+  font-style: normal;
+  background: linear-gradient(100deg, #fff, #7cc0ff 60%, var(--cyan));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.ag-root .ag-pf-tag {
+  color: var(--muted);
+  font-weight: 700;
+  margin: 6px 0 12px;
+  overflow-wrap: anywhere;
+}
+
+.ag-root .ag-pf-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.ag-root .ag-pf-chips {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.ag-root .ag-pf-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 11px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 800;
+  border: 1px solid var(--line);
+  background: rgba(8, 13, 26, 0.7);
+  color: var(--text);
+  transition: border-color 0.2s;
+}
+
+.ag-root button.ag-pf-chip {
+  cursor: pointer;
+}
+
+.ag-root button.ag-pf-chip:hover {
+  border-color: color-mix(in srgb, var(--blue) 55%, transparent);
+}
+
+.ag-root .ag-pf-chip svg {
+  width: 14px;
+  height: 14px;
+}
+
+.ag-root .ag-pf-chip.is-gold {
+  color: var(--gold);
+  border-color: rgba(245, 183, 74, 0.4);
+  background: rgba(245, 183, 74, 0.1);
+}
+
+.ag-root .ag-pf-chip.is-violet {
+  color: #c9bcff;
+  border-color: rgba(155, 134, 255, 0.5);
+  background: rgba(155, 134, 255, 0.14);
+}
+
+.ag-root .ag-pf-chip.is-blue {
+  color: #7cc0ff;
+  border-color: rgba(43, 127, 255, 0.45);
+  background: rgba(43, 127, 255, 0.12);
+}
+
+.ag-root .ag-pf-sig {
+  display: flex;
+  gap: 18px;
+  margin-top: 14px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  color: var(--muted);
+  flex-wrap: wrap;
+}
+
+.ag-root .ag-pf-acts {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 20px 0 22px;
+}
+
+.ag-root .ag-pf-lay {
+  display: grid;
+  /* Вторая колонка по умолчанию 290px: столько занимает блок навигации в
+     своём профиле. У гостя там же стоит боковая колонка из макета
+     «профиль и подписки», и ей нужно 400px — ширина задаётся ниже,
+     отдельным правилом, чтобы не растягивать навигацию. */
+  grid-template-columns: minmax(0, 1fr) 290px;
+  gap: 22px;
+  align-items: start;
+}
+
+.ag-root.is-guest .ag-pf-lay {
+  grid-template-columns: minmax(0, 1fr) 400px;
+}
+
+.ag-root .ag-pf-main {
+  min-width: 0;
+}
+
+.ag-root .ag-pf-side {
+  min-width: 0;
+  max-width: 100%;
+}
+
+/* Сводка под меню */
+.ag-root .ag-pf-sum {
+  margin-top: 16px;
+  padding: 16px;
+}
+
+.ag-root .ag-pf-sum p {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.ag-root .ag-pf-sum-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  margin: 12px 0;
+  text-align: center;
+}
+
+.ag-root .ag-pf-sum-grid > div {
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  padding: 6px 4px;
+  border: 1px solid var(--line);
+}
+
+.ag-root .ag-pf-sum-grid b {
+  display: block;
+  color: #fff;
+}
+
+.ag-root .ag-pf-sum-grid b.is-gold {
+  color: var(--gold);
+}
+
+/* AC — всегда синие: золото осталось Premium и достижениям. Тот же градиент,
+   что у баланса в магазине и квестах. */
+.ag-root .ag-pf-sum-grid b.is-blue {
+  background: linear-gradient(100deg, #1d4ed8, #38bdf8 30%, #7dd3fc 55%, #bae6fd 70%, #1d4ed8);
+  background-size: 220% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.ag-root .ag-pf-sum-grid span {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+@media (max-width: 900px) {
+  .ag-root .ag-pf-ban {
+    height: 275px;
+  }
+
+  .ag-root .ag-pf-wrap {
+    /* та же доля, что и на десктопе: 275 − 96 = 179px от верха баннера */
+    margin-top: -96px;
+  }
+
+  .ag-root .ag-pf-lay {
+    grid-template-columns: 1fr;
+  }
+
+  /* Мобильный аватар уменьшен, но рамка должна уменьшиться вместе с ним:
+     раньше здесь менялся только круг, а .ag-frame продолжал оставаться
+     150px и вылезал из коробки (overflow: visible её не срезал). */
+  .ag-root {
+    --ag-pf-av-size: 136px;
+  }
+}
+
+/* Блок пропуска боевого пропуска в «Квестах» */
+.ag-root .ag-q-pass {
+  padding: 16px 18px;
+  margin-bottom: 14px;
+  background: linear-gradient(100deg, rgba(155, 134, 255, 0.2), rgba(43, 127, 255, 0.08));
+}
+
+.ag-root .ag-q-pass-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.ag-root .ag-q-pass-ic {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(135deg, #9b86ff, #c084fc);
+  box-shadow: 0 0 24px rgba(155, 134, 255, 0.6);
+  color: #fff;
+  flex: none;
+}
+
+.ag-root .ag-q-pass-ic svg {
+  width: 22px;
+  height: 22px;
+}
+
+.ag-root .ag-q-pass-head b {
+  display: block;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.ag-root .ag-q-pass-head small {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.ag-root .ag-q-on {
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 7px;
+  border-radius: 6px;
+  margin-left: 6px;
+  background: rgba(52, 224, 161, 0.15);
+  color: var(--green);
+}
+
+/* Пропуск квеста (заморозка серии) */
+.ag-root .ag-q-frozen {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 14px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: rgba(3, 6, 14, 0.5);
+  font-size: 12.5px;
+  font-weight: 700;
+  flex-wrap: wrap;
+}
+
+.ag-root .ag-q-frozen svg {
+  width: 16px;
+  height: 16px;
+  color: var(--muted);
+  flex: none;
+}
+
+.ag-root .ag-q-frozen small {
+  color: var(--muted);
+  font-weight: 600;
+}
+
+/* Заголовок группы внутри вкладки квестов */
+.ag-root .ag-sh {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 22px 0 10px;
+}
+
+.ag-root .ag-sh h3 {
+  margin: 0;
+  font: 800 17px var(--font-display);
+}
+
+.ag-root .ag-sh span {
+  color: var(--muted);
+  font-size: 12.5px;
+  font-weight: 700;
+}
+
+/* ------------------------------- Квесты --------------------------------- */
+
+.ag-root .ag-q-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 22px;
+  padding: 22px;
+  align-items: center;
+}
+
+.ag-root .ag-q-reset {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+.ag-root .ag-q-reset i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 10px var(--green);
+  animation: ag-pulse 2s ease-in-out infinite;
+}
+
+@keyframes ag-pulse {
+  50% {
+    opacity: 0.35;
+  }
+}
+
+.ag-root .ag-q-reset b {
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Уровень в герое: номер, эра и полоса */
+.ag-root .ag-q-lv {
+  margin-top: 16px;
+  max-width: 420px;
+}
+
+.ag-root .ag-q-lv-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 12.5px;
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.ag-root .ag-q-bar {
+  height: 10px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.07);
+  overflow: hidden;
+  margin-top: 7px;
+}
+
+.ag-root .ag-q-bar i {
+  display: block;
+  height: 100%;
+  border-radius: 10px;
+  background: linear-gradient(90deg, var(--blue), var(--cyan));
+  box-shadow: 0 0 14px color-mix(in srgb, var(--blue) 60%, transparent);
+  transition: width 1.2s cubic-bezier(0.2, 0.9, 0.2, 1);
+}
+
+/* Заголовок «Квесты галактики» — по макету «Квесты — AniGalaxy»:
+   `800 clamp(26px, 4vw, 40px)/1.05` акцентным начертанием (теперь это
+   Montserrat 800, --font-display). Гарнитура прописана явно. */
+.ag-root .ag-h1.ag-q-h1 {
+  font: 800 clamp(26px, 4vw, 40px) / 1.05 var(--font-display);
+  letter-spacing: -0.03em;
+}
+
+/* Баланс галактики монет: тот же синий, что и в магазине, и настоящая
+   монетка из общего набора вместо нарисованного кружка. */
+.ag-root .ag-q-bal {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+  font: 800 18px var(--font-display);
+  color: #7cc0ff;
+}
+
+.ag-root .ag-q-coin {
+  width: 20px;
+  height: 20px;
+  flex: none;
+  filter: drop-shadow(0 2px 6px rgba(59, 130, 246, 0.5));
+}
+
+.ag-root .ag-q-bal b {
+  font: inherit;
+  background: linear-gradient(100deg, #1d4ed8, #38bdf8 30%, #7dd3fc 55%, #bae6fd 70%, #1d4ed8);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.ag-root .ag-q-bal small {
+  color: var(--muted);
+  font: 600 12px var(--font-body);
+}
+
+/* Серия дней: семь квадратов */
+.ag-root .ag-q-streak {
+  display: grid;
+  gap: 8px;
+  justify-items: center;
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--line);
+}
+
+.ag-root .ag-q-streak b {
+  font: 800 20px var(--font-display);
+}
+
+.ag-root .ag-q-days {
+  display: flex;
+  gap: 6px;
+}
+
+.ag-root .ag-q-days i {
+  width: 28px;
+  height: 28px;
+  border-radius: 9px;
+  display: grid;
+  place-items: center;
+  font: 800 11px var(--font-body);
+  font-style: normal;
+  color: var(--muted);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.ag-root .ag-q-days i[data-on] {
+  color: #fff;
+  background: linear-gradient(135deg, var(--blue), var(--cyan));
+  box-shadow: 0 0 14px color-mix(in srgb, var(--blue) 45%, transparent);
+}
+
+/* Вкладки ежедневных и недельных */
+.ag-root .ag-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 5px;
+  border-radius: 16px;
+  background: rgba(3, 6, 14, 0.5);
+  border: 1px solid var(--line);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.ag-root .ag-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.ag-root .ag-tabs > button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 0;
+  background: none;
+  padding: 10px 16px;
+  border-radius: 12px;
+  white-space: nowrap;
+  font: 800 13px var(--font-body);
+  color: var(--muted);
+  transition:
+    color 0.2s,
+    background 0.2s;
+}
+
+.ag-root .ag-tabs > button:hover {
+  color: var(--text);
+}
+
+.ag-root .ag-tabs > button.is-on {
+  color: #fff;
+  background: color-mix(in srgb, var(--blue) 25%, transparent);
+  box-shadow: inset 0 0 0 1px var(--blue);
+}
+
+.ag-root .ag-tabs > button > i {
+  font-style: normal;
+  font-size: 10.5px;
+  padding: 2px 7px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.ag-root .ag-tabs > button.is-on > i {
+  background: var(--blue);
+}
+
+/* Строка «Прогресс дня» */
+.ag-root .ag-q-prog {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.ag-root .ag-q-prog h3 {
+  margin: 0;
+  font: 800 16px var(--font-display);
+}
+
+.ag-root .ag-q-prog span {
+  font-size: 13px;
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.ag-root .ag-q-prog b {
+  color: var(--text);
+}
+
+@media (max-width: 760px) {
+  .ag-root .ag-q-hero {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Поле ссылки-приглашения: как .ag-fld, но без иконки и без переноса строки */
+.ag-root .ag-fld-input {
+  flex: 1;
+  min-width: 220px;
+  height: 46px;
+  padding: 0 14px;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: rgba(3, 6, 14, 0.6);
+  color: var(--text);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12.5px;
+}
+
+.ag-root .ag-fld-input:focus-visible {
+  border-color: var(--blue);
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--blue) 20%, transparent);
+}
+
+/* Реферальный код в заголовке панели */
+.ag-root .ag-ref-code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: var(--gold);
+  padding: 4px 9px;
+  border-radius: 9px;
+  background: rgba(245, 183, 74, 0.12);
+  border: 1px solid rgba(245, 183, 74, 0.4);
+}
+
+/* Карточки истории просмотров (макет «Мой список») */
+.ag-root .ag-hist {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 14px;
+}
+
+.ag-root .ag-hist-card {
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  background: #0a1126;
+  display: flex;
+  flex-direction: column;
+  transition:
+    transform 0.3s,
+    border-color 0.3s,
+    box-shadow 0.3s;
+}
+
+.ag-root .ag-hist-card:hover {
+  transform: translateY(-5px);
+  border-color: var(--blue);
+  box-shadow:
+    0 14px 36px rgba(0, 0, 0, 0.5),
+    0 0 26px color-mix(in srgb, var(--blue) 30%, transparent);
+}
+
+/* Обложка в карточке истории: без неё карточка была безликой строкой с
+   названием — постер лежит в самой записи истории, а у старых записей берётся
+   из кэша тайтлов. */
+.ag-root .ag-hist-poster {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background: linear-gradient(180deg, #16203f, #0a1126);
+}
+
+.ag-root .ag-hist-poster::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(180deg, transparent 40%, rgba(10, 17, 38, 0.92));
+}
+
+.ag-root .ag-hist-poster.is-icon {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 16 / 6;
+  font-size: 28px;
+  font-weight: 900;
+  color: #4a5c8c;
+  text-shadow: 0 0 18px rgba(124, 192, 255, 0.45);
+}
+
+.ag-root .ag-hist-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 10px;
+}
+
+.ag-root .ag-hist-ep,
+.ag-root .ag-hist-when {
+  font-size: 11px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 8px;
+  background: rgba(5, 8, 16, 0.8);
+}
+
+.ag-root .ag-hist-when {
+  color: #7cc0ff;
+  background: var(--blue);
+}
+
+.ag-root .ag-hist-body {
+  margin-top: auto;
+  padding: 12px;
+  display: grid;
+  gap: 10px;
+}
+
+.ag-root .ag-hist-title {
+  margin: 0;
+  font-size: 13.5px;
+  font-weight: 800;
+  color: #fff;
+  text-shadow: 0 2px 8px #000;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.ag-root .ag-hist-btn {
+  display: block;
+  text-align: center;
+  padding: 8px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.05);
+  font-size: 12px;
+  font-weight: 800;
+  transition:
+    background 0.2s,
+    color 0.2s;
+}
+
+.ag-root .ag-hist-btn:hover {
+  background: rgba(43, 127, 255, 0.22);
+  color: #fff;
+}
+
+/* Постер в карточке истории: растягивается на всю ширину карточки.
+   position: relative обязателен — Poster рисует картинку через
+   next/image с fill, а fill берёт ближайшего позиционированного предка.
+   Без relative здесь картинка уезжала от позиционирования всей страницы
+   и растягивалась во весь экран. */
+.ag-root .ag-hist-poster {
+  position: relative;
+  height: 120px;
+  overflow: hidden;
+  background: linear-gradient(180deg, rgba(43, 127, 255, 0.28), rgba(10, 17, 38, 0.9));
+}
+
+.ag-root .ag-hist-poster > * {
+  height: 100%;
+}
+
+/* Пять витринных слотов «Любимого» */
+.ag-root .ag-slots {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.ag-root .ag-slot {
+  position: relative;
+  aspect-ratio: 2/3;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #0a1126;
+  border: 1px solid var(--line);
+  display: flex;
+  align-items: flex-end;
+  transition:
+    transform 0.25s,
+    border-color 0.25s;
+}
+
+.ag-root .ag-slot:hover {
+  transform: translateY(-4px);
+  border-color: var(--cyan);
+}
+
+.ag-root .ag-slot.is-empty {
+  display: grid;
+  place-items: center;
+  align-items: center;
+  border-style: dashed;
+  background: rgba(3, 6, 14, 0.5);
+  color: var(--muted);
+}
+
+.ag-root .ag-slot.is-empty:hover {
+  background: rgba(34, 211, 238, 0.08);
+  color: #fff;
+}
+
+.ag-root .ag-slot.is-empty > div {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  font-weight: 800;
+}
+
+.ag-root .ag-slot.is-empty svg {
+  width: 20px;
+}
+
+.ag-root .ag-slot-name {
+  position: absolute;
+  inset: auto 0 0 0;
+  padding: 18px 10px 9px;
+  font-size: 12.5px;
+  font-weight: 800;
+  color: #fff;
+  background: linear-gradient(transparent, rgba(3, 6, 14, 0.92));
+  text-shadow: 0 2px 8px #000;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* --------------------------- Страница «Мой список» ------------------------ */
+
+/* Заголовки страницы — ровно по макету «Мой список — AniGalaxy»:
+   h1 `800 clamp(26px, 3.6vw, 38px)/1`, раздел `700 20px`, иконка раздела
+   22px. Гарнитура прописана явно (--font-display = Montserrat 800).
+   Общие `.ag-h1`/`.ag-h2` работают ещё и
+   в профиле, магазине и разделе достижений, поэтому правила только здесь.
+   Селектор с двумя классами: общее правило `.ag-h1` объявлено ниже по
+   файлу и при равной специфичности перебило бы это. */
+.ag-root .ag-h1.ag-list-h1 {
+  font: 800 clamp(26px, 3.6vw, 38px) / 1 var(--font-display);
+  letter-spacing: -0.03em;
+}
+
+.ag-root .ag-h2.ag-list-h2 {
+  font: 800 20px var(--font-display);
+  gap: 12px;
+}
+
+.ag-root .ag-h2.ag-list-h2 > svg {
+  width: 22px;
+  height: 22px;
+}
+
+/* Плитка иконки в заголовке страницы: 46×46 по макету. Общий `.ag-lg`
+   живёт ещё в разделах профиля, поэтому правило только здесь. */
+.ag-root .ag-list-h1 .ag-lg {
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  background: rgba(43, 127, 255, 0.14);
+  border: 1px solid rgba(43, 127, 255, 0.45);
+  color: #7cc0ff;
+  box-shadow: 0 0 24px rgba(43, 127, 255, 0.3);
+}
+
+.ag-root .ag-list-h1 .ag-lg svg {
+  width: 24px;
+  height: 24px;
+}
+
+.ag-root .ag-list-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin: 26px 0 20px;
+}
+
+.ag-root .ag-list-sub {
+  display: block;
+  color: var(--muted);
+  font: 600 14px var(--font-body);
+  margin-top: 6px;
+}
+
+.ag-root .ag-list-acts {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.ag-root .ag-ls-card {
+  padding: 16px;
+}
+
+.ag-root .ag-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+.ag-root .ag-list-card {
+  display: flex;
+  gap: 12px;
+  padding: 12px;
+  align-items: center;
+  transition:
+    transform 0.25s,
+    border-color 0.25s;
+}
+
+.ag-root .ag-list-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--blue);
+}
+
+/* ВАЖНО: у контейнеров постеров обязателен position: relative.
+   Poster рисует картинку через next/image с fill, а fill позиционирует её
+   относительно ближайшего позиционированного предка. Без relative здесь
+   картинка уезжала позиционироваться от main и растягивалась на весь экран. */
+.ag-root .ag-list-poster {
+  position: relative;
+  width: 64px;
+  height: 88px;
+  border-radius: 12px;
+  overflow: hidden;
+  flex: none;
+  background: #0a1126;
+}
+
+/* Мозаика подборки: четыре обложки в сетке вместо общей иконки */
+.ag-root .ag-list-poster.is-mosaic {
+  display: grid;
+  grid-template: 1fr 1fr / 1fr 1fr;
+  gap: 1px;
+  background: #0a1126;
+}
+
+.ag-root .ag-list-poster.is-mosaic > * {
+  min-width: 0;
+  min-height: 0;
+}
+
+.ag-root .ag-list-info {
+  min-width: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.ag-root .ag-list-title {
+  font-size: 13.5px;
+  font-weight: 800;
+  color: #fff;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  transition: color 0.2s;
+}
+
+.ag-root .ag-list-title:hover {
+  color: var(--cyan);
+}
+
+.ag-root .ag-list-title.is-muted {
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.ag-root .ag-list-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.ag-root .ag-list-btn {
+  padding: 5px 10px;
+  border-radius: 9px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.05);
+  font-size: 11.5px;
+  font-weight: 800;
+  cursor: pointer;
+  transition:
+    background 0.2s,
+    border-color 0.2s;
+}
+
+.ag-root .ag-list-btn:hover {
+  background: rgba(255, 95, 115, 0.16);
+  border-color: var(--red);
+  color: #fff;
+}
+
+/* Крупное пустое состояние */
+.ag-root .ag-big {
+  padding: 44px 20px;
+  text-align: center;
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+}
+
+.ag-root .ag-big-ic {
+  width: 64px;
+  height: 64px;
+  margin-bottom: 14px;
+  border-radius: 18px;
+  display: grid;
+  place-items: center;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--line);
+  color: #9fb4e0;
+}
+
+.ag-root .ag-big-ic svg {
+  width: 28px;
+  height: 28px;
+}
+
+.ag-root .ag-big b {
+  display: block;
+  font-size: 17px;
+}
+
+.ag-root .ag-big p {
+  color: var(--muted);
+  margin: 6px 0 16px;
+  font-size: 13.5px;
+}
+
+/* ---------------------------- Внешний вид ------------------------------ */
+
+/* Акцентный цвет: applyPrefs ставит --ag-accent-rgb на <html>, а палитра
+   макетов читает именно его. Один источник правды — иначе пятью кнопками
+   пришлось бы перекрашивать пять наборов переменных вручную. */
+:root {
+  --blue: rgb(var(--ag-accent-rgb, 43, 127, 255));
+  --accent-rgb: var(--ag-accent-rgb, 43, 127, 255);
+}
+
+/* Светлая тема красит только свёрстанные по макетам страницы: шапка и
+   остальной сайт живут на своих переменных и в этот макет не входят. */
+[data-ag-theme="light"] .ag-root {
+  --bg: #f2f5fb;
+  --text: #10182b;
+  --muted: #5b6784;
+  --line: rgba(30, 60, 120, 0.16);
+}
+
+[data-ag-theme="light"] .ag-root .sky {
+  opacity: 0;
+}
+
+/* «Системная» — тёмная или светлая по настройкам ОС браузера */
+@media (prefers-color-scheme: light) {
+  [data-ag-theme="system"] .ag-root {
+    --bg: #f2f5fb;
+    --text: #10182b;
+    --muted: #5b6784;
+    --line: rgba(30, 60, 120, 0.16);
+  }
+
+  [data-ag-theme="system"] .ag-root .sky {
+    opacity: 0;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  [data-ag-theme="system"] .ag-root {
+    --bg: #050810;
+    --text: #eef2fb;
+    --muted: #8d98b4;
+    --line: rgba(96, 150, 255, 0.16);
+  }
+}
+
+/* Падающие звёзды-метеоры убраны: на тёмном фоне профиля полосы читались
+   как царапины, а не как эффект. Звёзды (.stars) остались — их количество
+   по-прежнему настраивается ползунком. */
+
+/* Подсветка кинозала */
+.ag-ambient {
+  box-shadow:
+    0 0 120px 20px rgba(var(--accent-rgb), 0.18),
+    0 40px 80px -40px rgba(0, 0, 0, 1);
+}
+
+/* ------------------------- Новые блоки настроек ------------------------ */
+
+/* Палитра акцентных цветов */
+.ag-set-swatches {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(92px, 1fr));
+  gap: 10px;
+}
+
+.ag-set-sw {
+  display: grid;
+  gap: 7px;
+  justify-items: center;
+  padding: 10px 8px;
+  border-radius: 13px;
+  background: rgba(255, 255, 255, 0.04);
+  box-shadow: inset 0 0 0 1px var(--line);
+  transition: box-shadow 0.18s;
+}
+
+.ag-set-sw > span {
+  width: 28px;
+  height: 28px;
+  border-radius: 9px;
+  background: inherit;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.22);
+}
+
+.ag-set-sw b {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.ag-set-sw.on {
+  box-shadow: inset 0 0 0 2px rgb(var(--accent-rgb));
+}
+
+.ag-set-sw.on b {
+  color: var(--text);
+}
+
+/* Ползунок: количество звёзд и размер субтитров */
+.ag-set-rng {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+}
+
+.ag-set-rng b {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.ag-set-rng input[type="range"] {
+  width: 100%;
+  accent-color: rgb(var(--accent-rgb));
+}
+
+.ag-set-rng output {
+  min-width: 48px;
+  text-align: right;
+  font-family: ui-monospace, monospace;
+  font-size: 12px;
+  color: var(--text);
+}
+
+/* Форма в одну строку: поле + кнопка (друг, привязка, устройство) */
+.ag-set-rowform {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ag-set-rowform input,
+.ag-set-rowform select,
+.ag-set-in {
+  flex: 1;
+  min-width: 120px;
+  padding: 9px 12px;
+  border-radius: 11px;
+  font-size: 13px;
+  color: var(--text);
+  background: rgba(4, 8, 20, 0.6);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+
+.ag-set-rowform input:focus,
+.ag-set-in:focus {
+  outline: none;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--blue) 65%, transparent);
+}
+
+.ag-set-in.sm {
+  flex: none;
+  width: auto;
+  min-width: 120px;
+}
+
+.ag-set-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.ag-set-check input {
+  flex: none;
+  width: auto;
+  min-width: 0;
+  accent-color: rgb(var(--accent-rgb));
+}
+
+/* Пустое состояние внутри блока */
+.ag-set-empty {
+  display: grid;
+  justify-items: center;
+  gap: 5px;
+  padding: 22px 14px;
+  text-align: center;
+  border-radius: 13px;
+  border: 1px dashed rgba(255, 255, 255, 0.14);
+}
+
+.ag-set-empty b {
+  font-size: 13px;
+  color: var(--text);
+}
+
+.ag-set-empty small {
+  max-width: 46ch;
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+/* Список строк внутри блока: друзья, устройства, платежи */
+.ag-set-list {
+  display: grid;
+  gap: 8px;
+}
+
+.ag-set-list > li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 13px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.ag-set-list > li > b {
+  flex: 1;
+  min-width: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ag-set-sum {
+  font-family: ui-monospace, monospace;
+  font-size: 12px;
+  color: var(--gold);
+}
+
+/* Текущее значение: адрес почты */
+/* Масштаб значков у ника — тот же, что в лидерборде (.lb-tag).
+ *
+ * Внутри обычный `AgTag`: дизайн, анимации и эффекты не тронуты, уменьшены
+ * только габариты. Показывается один тег и один титул (см. ProfileDialogs),
+ * а не все надетые — раньше строка разрасталась на десятки капсул.
+ *
+ * Класс висит на самом теге, а не на обёртке: с zoom на обёртке её бокс и
+ * бокс тега расходятся (у капсулы есть позиционированные слои эффектов).
+ * max-content по ширине — чтобы длинное имя не обрезалось. */
+.pf-badge {
+  zoom: 0.7;
+  width: max-content;
+  max-width: none;
+}
+
+.ag-set-cur {
+  padding: 11px 13px;
+  border-radius: 12px;
+  background: rgba(4, 8, 20, 0.5);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+
+.ag-set-cur small {
+  display: block;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.ag-set-cur b {
+  display: block;
+  margin-top: 3px;
+  font-size: 14px;
+  color: var(--text);
+}
+
+.ag-set-pt {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+/* Уведомления: три канала заголовком и прочерками в строках */
+.ag-set-channels {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 12px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--line);
+}
+
+.ag-set-channels span {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.ag-set-channels span:not(:first-child) {
+  min-width: 58px;
+  text-align: center;
+}
+
+.ag-set-nrow {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 58px 58px;
+  align-items: center;
+  gap: 12px;
+}
+
+.ag-set-dash {
+  text-align: center;
+  color: var(--muted);
+}
+
+.ag-set-lock {
+  display: block;
+  margin-top: 5px;
+  padding-left: 16px;
+  font-size: 11px;
+  font-style: normal;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+.ag-set-sub {
+  display: grid;
+  gap: 8px;
+  margin-top: 4px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+
+/* Субтитры: образец */
+.ag-set-subs {
+  display: grid;
+  place-items: center;
+  min-height: 74px;
+  padding: 14px;
+  border-radius: 12px;
+  background: linear-gradient(180deg, #10182c, #05070f);
+}
+
+.ag-set-subs span {
+  color: #fff;
+  font-weight: 700;
+}
+
+/* Горячие клавиши */
+.ag-set-keys {
+  display: grid;
+  gap: 8px;
+}
+
+.ag-set-key {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 10px;
+}
+
+.ag-set-key > span:first-child {
+  font-size: 12.5px;
+  color: var(--text);
+}
+
+.ag-set-key kbd {
+  display: inline-block;
+  margin-left: 4px;
+  padding: 3px 7px;
+  border-radius: 7px;
+  font-family: ui-monospace, monospace;
+  font-size: 11px;
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.07);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+
+/* Карточка опции с крупной иконкой: темы оформления, качество видео */
+.ag-set-op.is-icon {
+  justify-items: center;
+  text-align: center;
+}
+
+.ag-set-big {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  color: var(--muted);
+}
+
+.ag-set-big svg {
+  width: 22px;
+  height: 22px;
+}
+
+.ag-set-op.on .ag-set-big {
+  color: var(--cyan);
+}
+
+.ag-set-soon {
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  color: var(--gold);
+}
+
+.ag-set-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.ag-set-btn.is-ok {
+  color: var(--green);
+  background: color-mix(in srgb, var(--green) 14%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--green) 34%, transparent);
+}
+
+.ag-set-btn.danger.solid {
+  color: #fff;
+  background: linear-gradient(135deg, #e0384f, #ff5d73);
+}
+
+/* Мелкий тумблер в строках таблиц */
+.ag-tg.sm {
+  width: 38px;
+  height: 22px;
+}
+
+.ag-tg.sm > span {
+  width: 16px;
+  height: 16px;
+  top: 3px;
+}
+
+.ag-tg.sm.on > span {
+  transform: translateX(16px);
+}
+
+/* ---------------------------- Настройки ------------------------------- */
+
+/* Четыре плитки под шапкой страницы */
+.ag-set-tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.ag-set-tile {
+  padding: 11px 13px;
+  border-radius: 13px;
+  background: rgba(4, 8, 20, 0.42);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+
+.ag-set-tile small {
+  display: block;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.ag-set-tile b {
+  display: block;
+  margin-top: 3px;
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Карточка пользователя над списком разделов */
+.ag-set-user {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.04);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+
+.ag-set-user b {
+  display: block;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.ag-set-user small {
+  display: block;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.ag-set-crown {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  flex: none;
+  margin-left: auto;
+  border-radius: 9px;
+  color: var(--gold);
+  background: color-mix(in srgb, var(--gold) 14%, transparent);
+}
+
+.ag-set-crown svg {
+  width: 15px;
+  height: 15px;
+}
+
+/* Примитивы панели настроек. Селекторы без .ag-root — их использует и
+   страница /settings, и модалка настроек в шапке. Имена свои (ag-set-*),
+   поэтому чужие классы они не задевают. */
+
+.ag-set {
+  border-radius: 18px;
+  border: 1px solid var(--line);
+  background: linear-gradient(180deg, rgba(23, 33, 66, 0.72), rgba(9, 14, 32, 0.72));
+  padding: 16px;
+}
+
+.ag-set > * + * {
+  margin-top: 12px;
+}
+
+.ag-set-h {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.ag-set-hi {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  flex: none;
+  border-radius: 11px;
+  color: var(--cyan);
+  background: color-mix(in srgb, var(--blue) 16%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--cyan) 26%, transparent);
+}
+
+.ag-set-hi svg {
+  width: 18px;
+  height: 18px;
+}
+
+.ag-set-h > div {
+  min-width: 0;
+  flex: 1;
+}
+
+.ag-set-h h2 {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.ag-set-h p {
+  margin-top: 3px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+/* Плашка статуса справа в шапке блока */
+.ag-set-st {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+  padding: 5px 11px;
+  border-radius: 99px;
+  font-size: 11px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.ag-set-st svg {
+  width: 13px;
+  height: 13px;
+}
+
+.ag-set-st.ok {
+  color: var(--green);
+  background: color-mix(in srgb, var(--green) 14%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--green) 34%, transparent);
+}
+
+.ag-set-st.gold {
+  color: var(--gold);
+  background: color-mix(in srgb, var(--gold) 16%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--gold) 36%, transparent);
+}
+
+.ag-set-st.warn {
+  color: var(--gold);
+  background: color-mix(in srgb, var(--gold) 10%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--gold) 24%, transparent);
+}
+
+/* Строка блока */
+.ag-set-r {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 13px;
+  border-radius: 13px;
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.ag-set-ri {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  flex: none;
+  border-radius: 10px;
+  color: var(--muted);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.ag-set-ri svg {
+  width: 16px;
+  height: 16px;
+}
+
+.ag-set-avatar {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  font-size: 11px;
+  font-weight: 900;
+  color: #fff;
+  background: linear-gradient(135deg, var(--blue), var(--cyan));
+}
+
+.ag-set-rx {
+  flex: 1;
+  min-width: 0;
+}
+
+.ag-set-rx b {
+  display: block;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.ag-set-rx small {
+  display: block;
+  margin-top: 2px;
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+.ag-set-note {
+  flex: none;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.ag-set-hint {
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.ag-set-warn {
+  padding: 10px 13px;
+  border-radius: 12px;
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: var(--gold);
+  background: color-mix(in srgb, var(--gold) 10%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--gold) 22%, transparent);
+}
+
+.ag-set-acts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.ag-set-btn {
+  padding: 10px 16px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 800;
+  color: #fff;
+  background: linear-gradient(135deg, var(--blue), var(--cyan));
+  transition: filter 0.18s;
+}
+
+.ag-set-btn:hover {
+  filter: brightness(1.1);
+}
+
+.ag-set-btn.danger {
+  color: var(--red);
+  background: color-mix(in srgb, var(--red) 12%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--red) 32%, transparent);
+}
+
+/* Поля ввода внутри блока */
+.ag-set-fl {
+  display: grid;
+  gap: 6px;
+}
+
+.ag-set-lb {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.ag-set-fl input,
+.ag-set-fl textarea {
+  width: 100%;
+  padding: 11px 13px;
+  border-radius: 12px;
+  font-size: 13px;
+  color: var(--text);
+  background: rgba(4, 8, 20, 0.6);
+  box-shadow: inset 0 0 0 1px var(--line);
+  resize: none;
+}
+
+.ag-set-fl input:focus,
+.ag-set-fl textarea:focus {
+  outline: none;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--blue) 65%, transparent);
+}
+
+.ag-set-fl input {
+  font-family: ui-monospace, monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+}
+
+.ag-set-fl input::placeholder {
+  font-family: inherit;
+  text-transform: none;
+  letter-spacing: normal;
+  color: color-mix(in srgb, var(--muted) 70%, transparent);
+}
+
+.ag-set-cnt {
+  justify-self: end;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+/* Сегментированные карточки выбора (режим экономии, пресеты приватности) */
+.ag-set-opts {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+}
+
+.ag-set-op {
+  position: relative;
+  display: grid;
+  gap: 4px;
+  padding: 12px 14px;
+  border-radius: 13px;
+  text-align: left;
+  background: rgba(255, 255, 255, 0.035);
+  box-shadow: inset 0 0 0 1px var(--line);
+  transition: background 0.18s, box-shadow 0.18s;
+}
+
+.ag-set-op b {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.ag-set-op small {
+  font-size: 11px;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+/* Полоса выбора снизу — как у макета */
+.ag-set-op i {
+  position: absolute;
+  inset: auto 14px 0;
+  height: 2px;
+  border-radius: 99px;
+  background: transparent;
+}
+
+.ag-set-op:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.ag-set-op.on {
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--blue) 26%, transparent),
+    color-mix(in srgb, var(--cyan) 9%, transparent)
+  );
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--blue) 55%, transparent);
+}
+
+.ag-set-op.on i {
+  background: linear-gradient(90deg, var(--blue), var(--cyan));
+}
+
+/* Тумблер настроек */
+.ag-tg {
+  position: relative;
+  flex: none;
+  width: 44px;
+  height: 26px;
+  border-radius: 99px;
+  background: rgba(255, 255, 255, 0.12);
+  transition: background 0.2s;
+}
+
+.ag-tg > span {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.2s;
+}
+
+.ag-tg.on {
+  background: linear-gradient(135deg, var(--blue), var(--cyan));
+}
+
+.ag-tg.on > span {
+  transform: translateX(18px);
+}
+
+/* Разделы настроек: та же карточка и та же подсветка активного пункта,
+   что в меню профиля, но без скользящей плашки — здесь список
+   перерисовывается целиком при смене раздела, и ездить ему не по чему */
+.ag-root .ag-set-nav > button {
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.ag-root .ag-set-nav > button:hover {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.ag-root .ag-set-nav > button[aria-current="true"] {
+  color: #fff;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--blue) 32%, transparent),
+    color-mix(in srgb, var(--cyan) 12%, transparent)
+  );
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--blue) 60%, transparent);
+}
+
+.ag-root .ag-set-ic {
+  width: 16px;
+  height: 16px;
+  flex: none;
+}
+
+.ag-root .ag-set-nav > button[aria-current="true"] .ag-set-ic {
+  color: var(--cyan);
+}
+
+/* ------------------------------- Магазин -------------------------------- */
+
+/* Герой витрины: аватар, ник, уровень с полосой XP */
+.ag-root .ag-shop-hero {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+  padding: 18px;
+  border-radius: 20px;
+  border: 1px solid var(--line);
+  background: linear-gradient(135deg, rgba(43, 127, 255, 0.16), rgba(9, 14, 32, 0.7) 62%);
+}
+
+.ag-root .ag-shop-av {
+  width: 78px;
+  height: 78px;
+  flex: none;
+}
+
+.ag-root .ag-shop-hm {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 5px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.ag-root .ag-shop-xp {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+}
+
+.ag-root .ag-shop-xpbar {
+  flex: 1;
+  min-width: 90px;
+  height: 7px;
+  border-radius: 99px;
+  background: rgba(255, 255, 255, 0.09);
+  overflow: hidden;
+}
+
+.ag-root .ag-shop-xpbar > i {
+  display: block;
+  height: 100%;
+  border-radius: 99px;
+  background: linear-gradient(90deg, var(--blue), var(--cyan));
+  transition: width 0.6s ease-out;
+}
+
+.ag-root .ag-shop-xp b {
+  color: var(--text);
+}
+
+/* Коллекция: сколько косметики собрано */
+.ag-root .ag-shop-coll {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 18px;
+  border-radius: 18px;
+  border: 1px solid var(--line);
+  background: rgba(9, 14, 32, 0.6);
+}
+
+.ag-root .ag-shop-coll > div:first-child > span {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.ag-root .ag-shop-collbig {
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--text);
+  line-height: 1.1;
+}
+
+.ag-root .ag-shop-collbig em {
+  font-size: 15px;
+  font-style: normal;
+  color: var(--muted);
+}
+
+.ag-root .ag-shop-collbar {
+  height: 8px;
+  border-radius: 99px;
+  background: rgba(255, 255, 255, 0.07);
+  overflow: hidden;
+}
+
+.ag-root .ag-shop-collbar > i {
+  display: block;
+  height: 100%;
+  border-radius: 99px;
+  background: linear-gradient(90deg, var(--gold), var(--cyan));
+  transition: width 0.6s ease-out;
+}
+
+/* Панель: вкладки категорий и поиск */
+.ag-root .ag-shop-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.ag-root .ag-shop-tabs {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scrollbar-width: none;
+}
+
+.ag-root .ag-shop-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.ag-root .ag-shop-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 14px;
+  border-radius: 99px;
+  font-size: 13px;
+  font-weight: 800;
+  white-space: nowrap;
+  color: var(--muted);
+  background: rgba(255, 255, 255, 0.04);
+  box-shadow: inset 0 0 0 1px var(--line);
+  transition: color 0.18s, background 0.18s;
+}
+
+.ag-root .ag-shop-tab em {
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 700;
+  opacity: 0.7;
+}
+
+.ag-root .ag-shop-tab:hover {
+  color: var(--text);
+}
+
+.ag-root .ag-shop-tab.on {
+  color: #fff;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--blue) 42%, transparent),
+    color-mix(in srgb, var(--cyan) 16%, transparent)
+  );
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--blue) 62%, transparent);
+}
+
+.ag-root .ag-shop-bar .ag-fld {
+  margin-left: auto;
+  min-width: 220px;
+}
+
+/* Строка: счётчик, фильтры редкости */
+.ag-root .ag-shop-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.ag-root .ag-dot {
+  width: 6px;
+  height: 6px;
+  flex: none;
+  border-radius: 1px;
+  transform: rotate(45deg);
+}
+
+/* Сетка и панель примерки */
+.ag-root .ag-shop-main {
+  display: grid;
+  gap: 16px;
+  align-items: start;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+@media (min-width: 1080px) {
+  .ag-root .ag-shop-main {
+    grid-template-columns: minmax(0, 1fr) 312px;
+  }
+}
+
+.ag-root .ag-shop-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+}
+
+.ag-root .ag-shop-item {
+  display: grid;
+  gap: 5px;
+  padding: 8px 8px 10px;
+  text-align: left;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.03);
+  box-shadow: inset 0 0 0 1px var(--line);
+  transition: box-shadow 0.18s, transform 0.18s;
+}
+
+.ag-root .ag-shop-item:hover {
+  transform: translateY(-2px);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--rc, #2b7fff) 55%, transparent);
+}
+
+.ag-root .ag-shop-item.is-sel {
+  box-shadow: inset 0 0 0 2px var(--rc, #2b7fff);
+}
+
+/* Превью предмета: контейнер задаёт пропорции, картинка их заполняет */
+.ag-root .ag-shop-vis {
+  position: relative;
+  display: block;
+  aspect-ratio: 3 / 2;
+  overflow: hidden;
+  border-radius: 11px;
+}
+
+/* Премиум-рамки рисуются шире аватара (195–247%, см. FrameItem.scale),
+   поэтому коробка превью у них квадратная, а обрезки нет: рамка вместе со
+   свечением выходит за коробку на карточку. С обрезкой glow упирался в
+   прямоугольник превью и читался как светлый квадрат за аватаром. */
+.ag-root .ag-shop-vis.ag-shop-vis-frame {
+  aspect-ratio: 1 / 1;
+  overflow: visible;
+}
+
+/* Превью предмета: контейнер задаёт пропорции, картинка их заполняет.
+   `display: block` — только для одиночной картинки. Обёрткам с flex
+   центрирование (`items-center justify-center`) он ломал: перебивал display,
+   и теги с рамками прилипали к левому краю вместо середины. */
+.ag-root .ag-shop-vis > svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.ag-root .ag-shop-vis > span:first-child:not([class*="flex"]) {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.ag-root .ag-shop-badge {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+}
+
+.ag-root .ag-shop-nm {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ag-root .ag-shop-rt {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--rc, var(--muted));
+}
+
+.ag-root .ag-shop-ft {
+  display: block;
+  min-height: 24px;
+  margin-top: 2px;
+}
+
+/* Правая панель: как предмет будет выглядеть */
+.ag-root .ag-shop-panel {
+  position: sticky;
+  top: 80px;
+  overflow: hidden;
+  border-radius: 18px;
+  border: 1px solid var(--line);
+  background: linear-gradient(180deg, rgba(23, 33, 66, 0.72), rgba(9, 14, 32, 0.78));
+}
+
+.ag-root .ag-shop-panelban {
+  height: 96px;
+  background: linear-gradient(135deg, rgba(43, 127, 255, 0.34), rgba(9, 14, 32, 0.9));
+  background-position: center;
+}
+
+.ag-root .ag-shop-panelbody {
+  display: grid;
+  gap: 8px;
+  padding: 14px;
+}
+
+.ag-root .ag-shop-pnm {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.ag-root .ag-shop-panelvis {
+  margin-top: 6px;
+  overflow: hidden;
+  border-radius: 13px;
+}
+
+.ag-root .ag-shop-pname {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--text);
+}
+
+/* Заголовок страницы магазина: дисплейный шрифт макетов вместо системного
+   кегля — иначе он выбивается из перекрашенных страниц профиля */
+.ag-root h1.ag-shop-h1 {
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
+  font-weight: 800;
+}
+
+/* --------------------- Заголовок страницы и списки ----------------------- */
+
+/* Заголовок раздела вне карточки: иконка в круге + крупный текст с
+   выделенным словом + подпись */
+.ag-root .ag-h1 {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  font: 800 clamp(24px, 3.4vw, 34px) / 1.1 var(--font-display);
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.ag-root .ag-h1 > small {
+  flex-basis: 100%;
+  color: var(--muted);
+  font: 600 14px var(--font-body);
+  letter-spacing: 0;
+}
+
+.ag-root .ag-h1 > em {
+  font-style: normal;
+  background: linear-gradient(100deg, #fff, #7cc0ff 60%, var(--cyan));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.ag-root .ag-lg {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 13px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--line);
+  color: var(--cyan);
+  flex: none;
+}
+
+.ag-root .ag-lg svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Панель поиска и сортировки */
+.ag-root .ag-ls-bar {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.ag-root .ag-fld {
+  flex: 1;
+  min-width: 220px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 46px;
+  padding: 0 14px;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: rgba(3, 6, 14, 0.6);
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+}
+
+.ag-root .ag-fld:focus-within {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--blue) 20%, transparent);
+}
+
+.ag-root .ag-fld svg {
+  width: 17px;
+  color: var(--muted);
+  flex: none;
+}
+
+.ag-root .ag-fld input {
+  flex: 1;
+  min-width: 0;
+  background: none;
+  border: 0;
+  outline: 0;
+  color: var(--text);
+  font: 600 14px var(--font-body);
+}
+
+.ag-root .ag-fld input::placeholder {
+  color: var(--muted);
+}
+
+/* Системный крестик у поиска серый и выбивается из темы — перекрашиваем */
+.ag-root .ag-fld input[type="search"]::-webkit-search-cancel-button {
+  filter: invert(1) opacity(0.5);
+  cursor: pointer;
+}
+
+.ag-root .ag-sel {
+  height: 46px;
+  padding: 0 14px;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: rgba(3, 6, 14, 0.6);
+  color: var(--text);
+  font: 700 13.5px var(--font-body);
+  cursor: pointer;
+}
+
+.ag-root .ag-sel:focus-visible {
+  border-color: var(--blue);
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--blue) 20%, transparent);
+}
+
+/* Сетка плиток тайтлов */
+.ag-root .ag-tiles {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 14px;
+}
+
+@media (max-width: 1100px) {
+  .ag-root .ag-tiles {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .ag-root .ag-tiles {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* ============================ Виджеты профиля ============================= */
+
+.ag-root .ag-wp-tool {
+  padding: 14px 16px;
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.ag-root .ag-wp-sp {
+  flex: 1;
+}
+
+.ag-root .ag-wp-static {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 800;
+}
+
+.ag-root .ag-wp-static svg {
+  width: 18px;
+  height: 18px;
+  display: inline;
+  vertical-align: -4px;
+}
+
+/* Переключатель-тумблер из макета */
+.ag-root .ag-wp-tg {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #c3cadb;
+  cursor: pointer;
+}
+
+.ag-root .ag-wp-tg input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.ag-root .ag-wp-sw {
+  width: 42px;
+  height: 24px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.12);
+  position: relative;
+  transition: background 0.2s;
+  flex: none;
+}
+
+.ag-root .ag-wp-sw::after {
+  content: "";
+  position: absolute;
+  left: 3px;
+  top: 3px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  transition: left 0.2s;
+}
+
+.ag-root .ag-wp-tg input:checked + .ag-wp-sw {
+  background: linear-gradient(135deg, var(--blue), var(--cyan));
+}
+
+.ag-root .ag-wp-tg input:checked + .ag-wp-sw::after {
+  left: 21px;
+}
+
+/* Фокус виден и на самом переключателе, а не только на невидимом input */
+.ag-root .ag-wp-tg input:focus-visible + .ag-wp-sw {
+  outline: 2px solid var(--cyan);
+  outline-offset: 2px;
+}
+
+/* --------------------------------- Сетка --------------------------------- */
+
+.ag-root .ag-w-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.ag-root .ag-w {
+  grid-column: span 1;
+  padding: 18px;
+  min-height: 150px;
+  animation: ag-pane-in 0.4s both;
+  transition:
+    box-shadow 0.2s,
+    border-color 0.2s,
+    transform 0.2s;
+}
+
+.ag-root .ag-w.is-wide {
+  grid-column: span 2;
+}
+
+.ag-root .ag-w.is-drag {
+  opacity: 0.35;
+  transform: scale(0.98);
+}
+
+/* В редакторе блоки обводятся пунктиром — видно, что их можно брать мышью */
+.ag-root .ag-w-grid.is-edit .ag-w {
+  border-style: dashed;
+  border-color: color-mix(in srgb, var(--blue) 45%, transparent);
+}
+
+.ag-root .ag-w-grid.is-edit .ag-w:hover {
+  box-shadow:
+    0 0 0 1px var(--blue),
+    0 20px 50px rgba(0, 0, 0, 0.4);
+}
+
+.ag-root .ag-w-grid.is-sep .ag-w {
+  border-color: rgba(255, 255, 255, 0.14);
+}
+
+.ag-root .ag-w-head {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 14px;
+}
+
+.ag-root .ag-w-head h3 {
+  margin: 0;
+  font: 800 15px var(--font-body);
+}
+
+.ag-root .ag-w-ico {
+  width: 18px;
+  height: 18px;
+  color: var(--cyan);
+  flex: none;
+}
+
+.ag-root .ag-w-lock {
+  margin-left: 6px;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 7px;
+  border-radius: 6px;
+  color: var(--gold);
+  border: 1px solid rgba(245, 183, 74, 0.4);
+  background: rgba(245, 183, 74, 0.1);
+}
+
+/* Панель управления блоком: видна только в редакторе */
+.ag-root .ag-w-tools {
+  margin-left: auto;
+  display: none;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 12px;
+  background: rgba(3, 6, 14, 0.8);
+  border: 1px solid var(--line);
+  align-items: center;
+}
+
+.ag-root .ag-w-grid.is-edit .ag-w-tools {
+  display: flex;
+}
+
+.ag-root .ag-w-tools button,
+.ag-root .ag-w-handle {
+  border: 0;
+  background: none;
+  color: #aab4cc;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 5px 8px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+}
+
+.ag-root .ag-w-tools button:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.ag-root .ag-w-tools button.is-on {
+  background: color-mix(in srgb, var(--blue) 35%, transparent);
+  color: #fff;
+}
+
+.ag-root .ag-w-tools svg {
+  width: 14px;
+  height: 14px;
+}
+
+.ag-root .ag-w-handle {
+  cursor: grab;
+}
+
+.ag-root .ag-w-tools .ag-w-del:hover {
+  color: var(--red);
+}
+
+/* ------------------------------- Содержимое ------------------------------ */
+
+.ag-root .ag-w-cap {
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+  font-weight: 800;
+}
+
+.ag-root .ag-w-sub {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* Статистика в виджете: та же сетка карточек в один ряд, как на странице
+   профиля. Раньше здесь стояло принудительное repeat(2, …) — карточки
+   вставали лесенкой 2×2 и блок выглядел не так, как его близнец. */
+.ag-root .ag-w-stats .stat-card {
+  --pad: 12px;
+  min-height: 74px;
+}
+
+.ag-root .ag-w-stats .stat-num {
+  font-size: 22px;
+}
+
+.ag-root .ag-w-stats .stat-lb {
+  font-size: 9.5px;
+  letter-spacing: 0.06em;
+}
+
+/* Витрина виджетов на «Основном» профиля: те же блоки, что в разделе
+   «Виджеты», но в общей сетке. Оформление блоков привязано к `.ag-root`,
+   а «Основное» живёт внутри профиля, так что префикс оставлен. */
+.ag-root .ag-wv-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.ag-root .ag-wv-card {
+  position: relative;
+  padding: 16px 16px 18px;
+  border-radius: 18px;
+  border: 1px solid var(--line);
+  background: linear-gradient(180deg, rgba(18, 20, 34, 0.72), rgba(10, 11, 20, 0.82));
+  overflow: hidden;
+}
+
+.ag-root .ag-wv-wide {
+  grid-column: 1 / -1;
+}
+
+.ag-root .ag-wv-card-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  font: 800 12px var(--font-body);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.ag-root .ag-wv-note {
+  margin: 12px 0 0;
+  font-size: 11.5px;
+  color: var(--muted);
+}
+
+@media (max-width: 640px) {
+  .ag-root .ag-wv-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Виджет достижений — по макету 1:1 (герой, разделитель, «самое редкое») */
+.ag-root .ag-aw {
+  position: relative;
+  isolation: isolate;
+  border-radius: 18px;
+  padding: 20px 24px 22px;
+  background:
+    radial-gradient(120% 90% at 50% -20%, rgba(var(--aw-glow, 255, 106, 82), 0.16), transparent 60%),
+    linear-gradient(180deg, rgba(16, 14, 28, 0.92), rgba(9, 8, 16, 0.96));
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+/* редкие искры на фоне */
+.ag-root .ag-aw-stars {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.5;
+  background:
+    radial-gradient(1px 1px at 52% 27%, #fff, transparent),
+    radial-gradient(1.2px 1.2px at 66% 12%, #fff, transparent),
+    radial-gradient(1px 1px at 79% 33%, #fff, transparent),
+    radial-gradient(1.4px 1.4px at 91% 18%, #fff, transparent),
+    radial-gradient(1px 1px at 14% 62%, #fff, transparent),
+    radial-gradient(1.2px 1.2px at 86% 56%, #fff, transparent);
+  -webkit-mask-image: linear-gradient(180deg, #000, transparent 65%);
+  mask-image: linear-gradient(180deg, #000, transparent 65%);
+  animation: ag-aw-tw 5s ease-in-out infinite;
+}
+
+.ag-root .ag-aw > *:not(.ag-aw-stars) {
+  position: relative;
+  z-index: 1;
+}
+
+/* шапка */
+.ag-root .ag-aw-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ag-root .ag-aw-trophy {
+  display: grid;
+  place-items: center;
+  color: rgb(var(--aw-glow, 255, 106, 82));
+  filter: drop-shadow(0 0 8px rgba(var(--aw-glow, 255, 106, 82), 0.8));
+}
+
+.ag-root .ag-aw-trophy svg {
+  width: 18px;
+  height: 18px;
+}
+
+.ag-root .ag-aw-head h4 {
+  margin: 0;
+  font: 800 17px var(--font-body);
+  letter-spacing: 0.01em;
+  color: #fff;
+}
+
+.ag-root .ag-aw-count {
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+/* герой: знак | инфо | счёт */
+.ag-root .ag-aw-hero {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 30px;
+  align-items: center;
+  padding: 26px 0;
+}
+
+.ag-root .ag-aw-badge {
+  padding: 6px;
+}
+
+.ag-root .ag-aw-eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  color: rgba(255, 255, 255, 0.42);
+}
+
+.ag-root .ag-aw-rank {
+  margin: 2px 0 6px;
+  font: 800 30px var(--font-display);
+  line-height: 1.05;
+  color: #fff;
+}
+
+.ag-root .ag-aw-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.ag-root .ag-aw-meta b {
+  color: #fff;
+}
+
+.ag-root .ag-aw-prog {
+  display: grid;
+  gap: 7px;
+  margin-top: 12px;
+}
+
+.ag-root .ag-aw-next {
+  font-size: 12.5px;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.ag-root .ag-aw-next b {
+  color: #fff;
+  font-weight: 800;
+}
+
+.ag-root .ag-aw-next em {
+  font-style: normal;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+/* трофейный счёт */
+.ag-root .ag-aw-scorebox {
+  text-align: right;
+}
+
+.ag-root .ag-aw-score {
+  font: 800 38px var(--font-display);
+  line-height: 1;
+  color: #ffd66b;
+  background: linear-gradient(100deg, #ffe9a8, #ffb43c 40%, #fff3c4 60%, #ffb43c);
+  background-size: 220% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: ag-aw-gold 4s ease-in-out infinite;
+}
+
+.ag-root .ag-aw-score-label {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  margin-top: 6px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  color: rgba(255, 212, 107, 0.75);
+}
+
+.ag-root .ag-aw-score-label svg {
+  width: 12px;
+  height: 12px;
+}
+
+/* разделитель */
+.ag-root .ag-aw-div {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.14), transparent);
+}
+
+/* «самое редкое» */
+.ag-root .ag-aw-rare-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 0 12px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.ag-root .ag-aw-rare-head i {
+  flex: 1;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.ag-root .ag-aw-all {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 11px;
+  border-radius: 99px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: rgba(255, 255, 255, 0.72);
+  cursor: pointer;
+  transition:
+    color 0.2s,
+    border-color 0.2s,
+    background 0.2s;
+}
+
+.ag-root .ag-aw-all:hover {
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.28);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.ag-root .ag-aw-all svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* сетка медалей */
+.ag-root .ag-aw-rare {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+}
+
+.ag-root .ag-aw-card {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  padding: 14px 10px 12px;
+  border-radius: 16px;
+  text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  background: rgba(255, 255, 255, 0.03);
+  transition:
+    transform 0.25s,
+    border-color 0.25s;
+}
+
+.ag-root .ag-aw-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.ag-root .ag-aw-medal {
+  width: 56px;
+  height: 56px;
+}
+
+.ag-root .ag-aw-title {
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.35;
+  color: #fff;
+}
+
+/* римская цифра в коде — выделена, как `.aw-rom` в макете */
+.ag-root .ag-aw-rom {
+  color: var(--gold);
+}
+
+.ag-root .ag-aw-rar {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 4px 11px;
+  border-radius: 99px;
+  font-size: 11.5px;
+  color: rgba(255, 255, 255, 0.62);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+}
+
+.ag-root .ag-aw-rar i {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--gold);
+  box-shadow: 0 0 7px 1px rgba(255, 212, 107, 0.9);
+}
+
+.ag-root .ag-aw-rar b {
+  color: #fff;
+  font-weight: 700;
+}
+
+@keyframes ag-aw-tw {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+@keyframes ag-aw-gold {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+/* Узкий виджет: герой перестаёт быть в три колонки (как в макете) */
+@media (max-width: 720px) {
+  .ag-root .ag-aw {
+    padding: 18px 16px 20px;
+  }
+
+  .ag-root .ag-aw-hero {
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 22px;
+  }
+
+  .ag-root .ag-aw-scorebox {
+    grid-column: 1 / -1;
+    text-align: left;
+    padding-top: 18px;
+    border-top: 1px dashed rgba(255, 255, 255, 0.1);
+  }
+
+  .ag-root .ag-aw-score-label {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 480px) {
+  .ag-root .ag-aw-hero {
+    grid-template-columns: 1fr;
+    justify-items: start;
+  }
+
+  .ag-root .ag-aw-rank {
+    font-size: 26px;
+  }
+
+  .ag-root .ag-aw-rare {
+    grid-template-columns: 1fr;
+  }
+
+  .ag-root .ag-aw-next {
+    white-space: normal;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ag-root .ag-aw-stars,
+  .ag-root .ag-aw-score {
+    animation: none;
+  }
+}
+
+/* Ранг */
+.ag-root .ag-w-rank {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.ag-root .ag-w-rank-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 18px;
+  display: grid;
+  place-items: center;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--line);
+  color: #b6c4e6;
+  flex: none;
+}
+
+.ag-root .ag-w-rank-icon svg {
+  width: 30px;
+  height: 30px;
+}
+
+.ag-root .ag-w-rank h4 {
+  margin: 0;
+  font: 800 26px var(--font-display);
+}
+
+.ag-root .ag-w-score {
+  margin-left: auto;
+  text-align: right;
+  font: 800 40px var(--font-display);
+  color: var(--gold);
+  line-height: 1;
+}
+
+.ag-root .ag-w-score small {
+  display: block;
+  color: var(--gold);
+  font: 800 10px var(--font-body);
+  margin-top: 4px;
+}
+
+/* Сегменты ранга */
+.ag-root .ag-w-seg {
+  display: flex;
+  gap: 3px;
+  margin: 14px 0 4px;
+}
+
+.ag-root .ag-w-seg i {
+  flex: 1;
+  height: 5px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.ag-root .ag-w-seg i[data-f] {
+  background: linear-gradient(90deg, var(--blue), var(--cyan));
+  box-shadow: 0 0 8px var(--blue);
+}
+
+/* Редкие достижения */
+.ag-root .ag-w-rare {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.ag-root .ag-w-rare-card {
+  padding: 14px 8px;
+  border-radius: 16px;
+  text-align: center;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.03);
+  transition:
+    transform 0.25s,
+    border-color 0.25s;
+}
+
+.ag-root .ag-w-rare-card:hover {
+  transform: translateY(-4px) rotate(-1deg);
+  border-color: var(--cyan);
+}
+
+.ag-root .ag-w-rare-card > div {
+  margin: 0 auto 8px;
+}
+
+.ag-root .ag-w-rare-card b {
+  font-size: 13px;
+  display: block;
+}
+
+.ag-root .ag-w-rare-card span {
+  color: var(--gold);
+  font-weight: 800;
+  font-size: 12px;
+}
+
+/* Тепловая карта */
+.ag-root .ag-w-heat {
+  display: grid;
+  grid-auto-flow: column;
+  grid-template-rows: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.ag-root .ag-w-heat i {
+  aspect-ratio: 1;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.ag-root .ag-w-heat i[data-l="1"] {
+  background: color-mix(in srgb, var(--blue) 35%, transparent);
+}
+
+.ag-root .ag-w-heat i[data-l="2"] {
+  background: color-mix(in srgb, var(--blue) 65%, transparent);
+}
+
+.ag-root .ag-w-heat i[data-l="3"] {
+  background: var(--blue);
+}
+
+.ag-root .ag-w-heat i[data-l="4"] {
+  background: var(--cyan);
+  box-shadow: 0 0 8px var(--cyan);
+}
+
+/* Столбцы недели */
+.ag-root .ag-w-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  height: 110px;
+}
+
+.ag-root .ag-w-bars > div {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  height: 100%;
+  justify-content: flex-end;
+  font-size: 11px;
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.ag-root .ag-w-bars i {
+  width: 100%;
+  border-radius: 8px 8px 3px 3px;
+  background: linear-gradient(180deg, var(--cyan), var(--blue));
+  box-shadow: 0 0 14px color-mix(in srgb, var(--blue) 50%, transparent);
+  min-height: 2px;
+}
+
+/* Слоты любимого */
+.ag-root .ag-w-slots {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+}
+
+/* Фильтры «Моего списка»: статусы, жанр, год, рейтинг */
+.ag-root .ag-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ag-root .ag-chip {
+  padding: 7px 13px;
+  border-radius: 99px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+  background: rgba(255, 255, 255, 0.04);
+  box-shadow: inset 0 0 0 1px var(--line);
+  transition: color 0.18s, background 0.18s, box-shadow 0.18s;
+}
+
+.ag-root .ag-chip:hover {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.ag-root .ag-chip.is-on {
+  color: #fff;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--blue) 38%, transparent),
+    color-mix(in srgb, var(--cyan) 14%, transparent)
+  );
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--blue) 65%, transparent);
+}
+
+.ag-root .ag-ls-extra {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 12px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+
+.ag-root .ag-sel-wrap {
+  display: grid;
+  gap: 5px;
+  min-width: 132px;
+}
+
+.ag-root .ag-ls-reset {
+  margin-left: auto;
+}
+
+/* Теги под названием в карточке списка */
+.ag-root .ag-list-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.ag-root .ag-list-tag {
+  padding: 3px 9px;
+  border-radius: 99px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.ag-root .ag-list-tag.is-gold {
+  color: var(--gold);
+  background: color-mix(in srgb, var(--gold) 14%, transparent);
+}
+
+/* --------------------- Полосы распределения (студии) --------------------- */
+
+.ag-root .ag-w-bars {
+  display: grid;
+  gap: 8px;
+}
+
+.ag-root .ag-w-bars > li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 88px 40px;
+  align-items: center;
+  gap: 10px;
+}
+
+.ag-root .ag-w-bars > li > span:first-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ag-root .ag-w-bar {
+  height: 8px;
+  border-radius: 99px;
+  background: rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+}
+
+.ag-root .ag-w-bar > i {
+  display: block;
+  height: 100%;
+  border-radius: 99px;
+  background: linear-gradient(90deg, var(--blue), var(--cyan));
+}
+
+.ag-root .ag-w-bars > li > b {
+  text-align: right;
+  font-size: 12px;
+  color: var(--text);
+}
+
+.ag-root .ag-w-note {
+  margin-top: 10px;
+  font-size: 11px;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+/* ---------------------------- Совместимость ------------------------------ */
+
+.ag-root .ag-w-compat {
+  display: grid;
+  gap: 8px;
+}
+
+.ag-root .ag-w-compat > li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 4px 10px;
+  padding: 9px 12px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.ag-root .ag-w-compat > li > b {
+  grid-row: span 2;
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--cyan);
+}
+
+/* Слот виджета: та же причина — relative обязателен для next/image fill */
+.ag-root .ag-w-slot {
+  position: relative;
+  aspect-ratio: 2/3;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #0a1126;
+}
+
+.ag-root .ag-w-slot.is-empty {
+  display: grid;
+  place-items: center;
+  border: 1px dashed var(--line);
+  background: rgba(3, 6, 14, 0.5);
+  color: var(--muted);
+  font-weight: 800;
+}
+
+/* Подборки и подарки */
+.ag-root .ag-w-coll {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ag-root .ag-w-coll li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: baseline;
+  font-size: 13.5px;
+}
+
+/* Обо мне */
+.ag-root .ag-w-about {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #cfd7ea;
+}
+
+/* Хронология */
+.ag-root .ag-w-tl {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0 0 0 16px;
+  list-style: none;
+  border-left: 2px solid var(--line);
+}
+
+.ag-root .ag-w-tl li {
+  position: relative;
+  font-size: 13.5px;
+  font-weight: 700;
+}
+
+.ag-root .ag-w-tl li::before {
+  content: "";
+  position: absolute;
+  left: -23px;
+  top: 5px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--cyan);
+  box-shadow: 0 0 10px var(--cyan);
+}
+
+.ag-root .ag-w-tl small {
+  display: block;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+/* Трофейная полка */
+.ag-root .ag-w-shelf {
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+  padding-bottom: 10px;
+  border-bottom: 4px solid rgba(255, 255, 255, 0.08);
+  min-height: 90px;
+}
+
+/* Пустое состояние */
+.ag-root .ag-w-empty {
+  display: grid;
+  place-items: center;
+  text-align: center;
+  color: var(--muted);
+  padding: 22px 10px;
+  border-radius: 14px;
+  background: rgba(3, 6, 14, 0.5);
+  border: 1px dashed var(--line);
+  font-size: 13.5px;
+  font-weight: 700;
+}
+
+.ag-root .ag-w-empty small {
+  display: block;
+  margin-top: 6px;
+  font-weight: 600;
+  font-size: 12px;
+  max-width: 40ch;
+  line-height: 1.4;
+}
+
+/* -------------------------------- Палитра -------------------------------- */
+
+.ag-root .ag-wp-pal {
+  margin-top: 22px;
+}
+
+.ag-root .ag-wp-pal h4 {
+  margin: 0 0 10px;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+}
+
+.ag-root .ag-wp-pal-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ag-root .ag-wp-add {
+  border-style: dashed;
+  border-color: color-mix(in srgb, var(--blue) 50%, transparent);
+  background: rgba(43, 127, 255, 0.06);
+}
+
+.ag-root .ag-wp-add:hover {
+  background: rgba(43, 127, 255, 0.2);
+  transform: translateY(-2px);
+}
+
+.ag-root .ag-wp-add.is-locked {
+  border-color: rgba(245, 183, 74, 0.4);
+  background: rgba(245, 183, 74, 0.06);
+}
+
+.ag-root .ag-wp-add em {
+  font-style: normal;
+  color: var(--gold);
+  font-size: 12px;
+}
+
+/* --------------------------------- Адаптив -------------------------------- */
+
+@media (max-width: 900px) {
+  .ag-root .ag-w-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ag-root .ag-w.is-wide {
+    grid-column: span 1;
+  }
+
+  .ag-root .ag-w-slots {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ag-root .ag-w,
+  .ag-root .ag-w-rare-card,
+  .ag-root .ag-wp-sw,
+  .ag-root .ag-wp-sw::after {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+@media (max-width: 900px) {
+  /* Меню уходит наверх и становится горизонтальной лентой.
+     position: relative, а не static: плашка .act позиционируется по
+     offsetLeft активного пункта, и без позиционированного контекста она
+     ищет предка выше ленты и уезжает вбек — страница получалась шире
+     экрана ровно настолько, насколько лента проскроллена. */
+  .ag-root .ag-nav {
+    order: 0;
+    position: relative;
+    flex-direction: row;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .ag-root .ag-nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .ag-root .ag-nav > button {
+    white-space: nowrap;
+  }
+
+  /* На телефоне плашка едет по горизонтали, а hover-плашка бессмысленна */
+  .ag-root .ag-nav > button > i,
+  .ag-root .ag-nav > button.is-new::after {
+    display: none;
+  }
+
+  .ag-root .ag-nav .hl {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stars {
+    animation: none;
+    opacity: 0.6;
+  }
+
+  .ag-root .ag-pane {
+    animation: none;
+  }
+
+  .ag-root .ag-nav.rdy .hl,
+  .ag-root .ag-nav.rdy .act,
+  .ag-root .btn,
+  .ag-root .ag-nav > button {
+    transition-duration: 0.01ms !important;
+  }
+}

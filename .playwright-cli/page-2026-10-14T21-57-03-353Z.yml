@@ -1,0 +1,451 @@
+- generic [ref=e3]:
+  - generic [ref=e4] [cursor=pointer]:
+    - checkbox "показать как «не получено»" [ref=e5]
+    - text: показать как «не получено»
+  - generic [ref=e6]:
+    - heading "Старт 3" [level=3] [ref=e7]
+    - generic [ref=e8]:
+      - generic [ref=e9]:
+        - generic [ref=e12] [cursor=pointer]
+        - generic [ref=e28]: Новичок
+        - generic [ref=e29]: создать аккаунт
+        - generic [ref=e30]: Обычный
+      - generic [ref=e31]:
+        - generic [ref=e34] [cursor=pointer]
+        - generic [ref=e52]: Добро пожаловать
+        - generic [ref=e53]: профиль заполнен на 100%
+        - generic [ref=e54]: Редкий
+      - generic [ref=e55]:
+        - generic [ref=e58] [cursor=pointer]
+        - generic [ref=e72]: Первый шаг
+        - generic [ref=e73]: начать 1 серию
+        - generic [ref=e74]: Обычный
+  - generic [ref=e75]:
+    - heading "Серии 6" [level=3] [ref=e76]
+    - generic [ref=e77]:
+      - generic [ref=e78]:
+        - generic [ref=e81] [cursor=pointer]
+        - generic [ref=e96]: Первый просмотр
+        - generic [ref=e97]: 1 серия
+        - generic [ref=e98]: Обычный
+      - generic [ref=e99]:
+        - generic [ref=e102] [cursor=pointer]
+        - generic [ref=e127]: Разогрев
+        - generic [ref=e128]: 10 серий
+        - generic [ref=e129]: Обычный
+      - generic [ref=e130]:
+        - generic [ref=e133] [cursor=pointer]
+        - generic [ref=e148]: Уже интересно
+        - generic [ref=e149]: 50 серий
+        - generic [ref=e150]: Редкий
+      - generic [ref=e151]:
+        - img [ref=e155] [cursor=pointer]:
+          - generic [ref=e164]: "100"
+        - generic [ref=e168]: Сотня
+        - generic [ref=e169]: 100 серий
+        - generic [ref=e170]: Редкий
+      - generic [ref=e171]:
+        - generic [ref=e174] [cursor=pointer]
+        - generic [ref=e191]: Хардкор
+        - generic [ref=e192]: 500 серий
+        - generic [ref=e193]: Эпический
+      - generic [ref=e194]:
+        - generic [ref=e197] [cursor=pointer]
+        - generic [ref=e215]: Без остановки
+        - generic [ref=e216]: 2000 серий
+        - generic [ref=e217]: Легендарный
+  - generic [ref=e218]:
+    - heading "Тайтлы 3" [level=3] [ref=e219]
+    - generic [ref=e220]:
+      - generic [ref=e221]:
+        - generic [ref=e224] [cursor=pointer]
+        - generic [ref=e245]: Любитель финалов
+        - generic [ref=e246]: 10 тайтлов
+        - generic [ref=e247]: Редкий
+      - generic [ref=e248]:
+        - generic [ref=e251] [cursor=pointer]
+        - generic [ref=e268]: Архивариус
+        - generic [ref=e269]: 50 тайтлов
+        - generic [ref=e270]: Эпический
+      - generic [ref=e271]:
+        - generic [ref=e274] [cursor=pointer]
+        - generic [ref=e292]: Энциклопедия
+        - generic [ref=e293]: 100 тайтлов
+        - generic [ref=e294]: Легендарный
+  - generic [ref=e295]:
+    - heading "Дни 4" [level=3] [ref=e296]
+    - generic [ref=e297]:
+      - generic [ref=e298]:
+        - img [ref=e302] [cursor=pointer]:
+          - generic [ref=e311]: "7"
+        - generic [ref=e318]: Постоянный
+        - generic [ref=e319]: 7 дней на сайте
+        - generic [ref=e320]: Редкий
+      - generic [ref=e321]:
+        - generic [ref=e324] [cursor=pointer]
+        - generic [ref=e354]: Привычка
+        - generic [ref=e355]: 30 дней
+        - generic [ref=e356]: Редкий
+      - generic [ref=e357]:
+        - generic [ref=e360] [cursor=pointer]
+        - generic [ref=e376]: Свой человек
+        - generic [ref=e377]: 100 дней
+        - generic [ref=e378]: Эпический
+      - generic [ref=e379]:
+        - generic [ref=e382] [cursor=pointer]
+        - generic [ref=e401]: Здесь навсегда
+        - generic [ref=e402]: 365 дней
+        - generic [ref=e403]: Легендарный
+  - generic [ref=e404]:
+    - heading "Серии входа подряд 5" [level=3] [ref=e405]
+    - generic [ref=e406]:
+      - generic [ref=e407]:
+        - img [ref=e411] [cursor=pointer]:
+          - generic [ref=e420]: "3"
+        - generic [ref=e426]: Три дня
+        - generic [ref=e427]: серия 3
+        - generic [ref=e428]: Обычный
+      - generic [ref=e429]:
+        - generic [ref=e432] [cursor=pointer]
+        - generic [ref=e456]: Неделя
+        - generic [ref=e457]: серия 7
+        - generic [ref=e458]: Редкий
+      - generic [ref=e459]:
+        - generic [ref=e462] [cursor=pointer]
+        - generic [ref=e482]: Две недели
+        - generic [ref=e483]: серия 14
+        - generic [ref=e484]: Редкий
+      - generic [ref=e485]:
+        - img [ref=e489] [cursor=pointer]:
+          - generic [ref=e499]: "30"
+        - generic [ref=e506]: Месяц
+        - generic [ref=e507]: серия 30
+        - generic [ref=e508]: Эпический
+      - generic [ref=e509]:
+        - generic [ref=e512] [cursor=pointer]
+        - generic [ref=e530]: Железная воля
+        - generic [ref=e531]: серия 100
+        - generic [ref=e532]: Легендарный
+  - generic [ref=e533]:
+    - heading "Подборки 5" [level=3] [ref=e534]
+    - generic [ref=e535]:
+      - generic [ref=e536]:
+        - generic [ref=e539] [cursor=pointer]
+        - generic [ref=e553]: Первая закладка
+        - generic [ref=e554]: 1 тайтл в списках
+        - generic [ref=e555]: Обычный
+      - generic [ref=e556]:
+        - generic [ref=e559] [cursor=pointer]
+        - generic [ref=e577]: Собиратель
+        - generic [ref=e578]: 25 тайтлов в списках
+        - generic [ref=e579]: Редкий
+      - generic [ref=e580]:
+        - generic [ref=e583] [cursor=pointer]
+        - generic [ref=e600]: Коллекционер
+        - generic [ref=e601]: 100 тайтлов в списках
+        - generic [ref=e602]: Редкий
+      - generic [ref=e603]:
+        - generic [ref=e606] [cursor=pointer]
+        - generic [ref=e624]: Хранитель
+        - generic [ref=e625]: 500 тайтлов в списках
+        - generic [ref=e626]: Эпический
+      - generic [ref=e627]:
+        - generic [ref=e630] [cursor=pointer]
+        - generic [ref=e649]: Архив
+        - generic [ref=e650]: 1000 тайтлов в списках
+        - generic [ref=e651]: Легендарный
+  - generic [ref=e652]:
+    - heading "Оценки 3" [level=3] [ref=e653]
+    - generic [ref=e654]:
+      - generic [ref=e655]:
+        - generic [ref=e658] [cursor=pointer]
+        - generic [ref=e674]: Критик
+        - generic [ref=e675]: 10 оценок
+        - generic [ref=e676]: Редкий
+      - generic [ref=e677]:
+        - generic [ref=e680] [cursor=pointer]
+        - generic [ref=e697]: Рецензент
+        - generic [ref=e698]: 50 оценок
+        - generic [ref=e699]: Редкий
+      - generic [ref=e700]:
+        - generic [ref=e703] [cursor=pointer]
+        - generic [ref=e719]: Эксперт
+        - generic [ref=e720]: 100 оценок
+        - generic [ref=e721]: Эпический
+  - generic [ref=e722]:
+    - heading "Комментарии 4" [level=3] [ref=e723]
+    - generic [ref=e724]:
+      - generic [ref=e725]:
+        - img [ref=e729] [cursor=pointer]:
+          - generic [ref=e738]: "!"
+        - generic [ref=e742]: Первый голос
+        - generic [ref=e743]: 1 комментарий
+        - generic [ref=e744]: Обычный
+      - generic [ref=e745]:
+        - generic [ref=e748] [cursor=pointer]
+        - generic [ref=e764]: Болтун
+        - generic [ref=e765]: 50 комментариев
+        - generic [ref=e766]: Редкий
+      - generic [ref=e767]:
+        - generic [ref=e770] [cursor=pointer]
+        - generic [ref=e787]: Комментатор
+        - generic [ref=e788]: 500 комментариев
+        - generic [ref=e789]: Эпический
+      - generic [ref=e790]:
+        - generic [ref=e793] [cursor=pointer]
+        - generic [ref=e810]: Легенда комментариев
+        - generic [ref=e811]: 1000 комментариев
+        - generic [ref=e812]: Легендарный
+  - generic [ref=e813]:
+    - heading "Уровни 5" [level=3] [ref=e814]
+    - generic [ref=e815]:
+      - generic [ref=e816]:
+        - img [ref=e820] [cursor=pointer]:
+          - generic [ref=e829]: "5"
+        - generic [ref=e833]: Уровень 5
+        - generic [ref=e834]: 5 уровень
+        - generic [ref=e835]: Обычный
+      - generic [ref=e836]:
+        - img [ref=e840] [cursor=pointer]:
+          - generic [ref=e849]: "10"
+        - generic [ref=e854]: Уровень 10
+        - generic [ref=e855]: 10 уровень
+        - generic [ref=e856]: Редкий
+      - generic [ref=e857]:
+        - img [ref=e861] [cursor=pointer]:
+          - generic [ref=e870]: "25"
+        - generic [ref=e873]: Уровень 25
+        - generic [ref=e874]: 25 уровень
+        - generic [ref=e875]: Редкий
+      - generic [ref=e876]:
+        - img [ref=e880] [cursor=pointer]:
+          - generic [ref=e890]: "50"
+        - generic [ref=e901]: Уровень 50
+        - generic [ref=e902]: 50 уровень
+        - generic [ref=e903]: Эпический
+      - generic [ref=e904]:
+        - img [ref=e908] [cursor=pointer]:
+          - generic [ref=e920]: "100"
+        - generic [ref=e926]: Бог уровня
+        - generic [ref=e927]: 100 уровень
+        - generic [ref=e928]: Мифический
+  - generic [ref=e929]:
+    - heading "Ночные просмотры 1" [level=3] [ref=e930]
+    - generic [ref=e932]:
+      - generic [ref=e935] [cursor=pointer]
+      - generic [ref=e956]: Ночной дозор
+      - generic [ref=e957]: 100 ночных серий
+      - generic [ref=e958]: Редкий
+  - generic [ref=e959]:
+    - heading "Жанры 3" [level=3] [ref=e960]
+    - generic [ref=e961]:
+      - generic [ref=e962]:
+        - img [ref=e966] [cursor=pointer]:
+          - generic [ref=e975]: "?"
+        - generic [ref=e980]: Любопытный
+        - generic [ref=e981]: 5 жанров
+        - generic [ref=e982]: Обычный
+      - generic [ref=e983]:
+        - generic [ref=e986] [cursor=pointer]
+        - generic [ref=e1000]: Без границ
+        - generic [ref=e1001]: 15 жанров
+        - generic [ref=e1002]: Редкий
+      - generic [ref=e1003]:
+        - generic [ref=e1006] [cursor=pointer]
+        - generic [ref=e1024]: Всеядный
+        - generic [ref=e1025]: 25 жанров
+        - generic [ref=e1026]: Эпический
+  - generic [ref=e1027]:
+    - heading "Лайки (выключены) 3" [level=3] [ref=e1028]
+    - generic [ref=e1029]:
+      - generic [ref=e1030]:
+        - generic [ref=e1033] [cursor=pointer]
+        - generic [ref=e1046]: Заметный
+        - generic [ref=e1047]: 10 лайков
+        - generic [ref=e1048]: Редкий
+      - generic [ref=e1049]:
+        - generic [ref=e1052] [cursor=pointer]
+        - generic [ref=e1066]: Звезда комментариев
+        - generic [ref=e1067]: 100 лайков
+        - generic [ref=e1068]: Редкий
+      - generic [ref=e1069]:
+        - generic [ref=e1072] [cursor=pointer]
+        - generic [ref=e1098]: Голос толпы
+        - generic [ref=e1099]: 1000 лайков
+        - generic [ref=e1100]: Эпический
+  - generic [ref=e1101]:
+    - heading "Квесты 3" [level=3] [ref=e1102]
+    - generic [ref=e1103]:
+      - generic [ref=e1104]:
+        - generic [ref=e1107] [cursor=pointer]
+        - generic [ref=e1121]: Исполнитель
+        - generic [ref=e1122]: 10 квестов
+        - generic [ref=e1123]: Редкий
+      - generic [ref=e1124]:
+        - generic [ref=e1127] [cursor=pointer]
+        - generic [ref=e1145]: Контрактник
+        - generic [ref=e1146]: 50 квестов
+        - generic [ref=e1147]: Редкий
+      - generic [ref=e1148]:
+        - generic [ref=e1151] [cursor=pointer]
+        - generic [ref=e1168]: Ветеран гильдии
+        - generic [ref=e1169]: 200 квестов
+        - generic [ref=e1170]: Эпический
+  - generic [ref=e1171]:
+    - heading "Теги 3" [level=3] [ref=e1172]
+    - generic [ref=e1173]:
+      - generic [ref=e1174]:
+        - generic [ref=e1177] [cursor=pointer]
+        - generic [ref=e1191]: Гардероб
+        - generic [ref=e1192]: 5 тегов
+        - generic [ref=e1193]: Редкий
+      - generic [ref=e1194]:
+        - generic [ref=e1197] [cursor=pointer]
+        - generic [ref=e1215]: Витрина
+        - generic [ref=e1216]: 15 тегов
+        - generic [ref=e1217]: Эпический
+      - generic [ref=e1218]:
+        - generic [ref=e1221] [cursor=pointer]
+        - generic [ref=e1238]: Полный комплект
+        - generic [ref=e1239]: 29 тегов
+        - generic [ref=e1240]: Легендарный
+  - generic [ref=e1241]:
+    - heading "Время у плеера 4" [level=3] [ref=e1242]
+    - generic [ref=e1243]:
+      - generic [ref=e1244]:
+        - generic [ref=e1247] [cursor=pointer]
+        - generic [ref=e1265]: Первый час
+        - generic [ref=e1266]: 60 минут
+        - generic [ref=e1267]: Обычный
+      - generic [ref=e1268]:
+        - generic [ref=e1271] [cursor=pointer]
+        - generic [ref=e1288]: Три часа
+        - generic [ref=e1289]: 300 минут
+        - generic [ref=e1290]: Редкий
+      - generic [ref=e1291]:
+        - generic [ref=e1294] [cursor=pointer]
+        - generic [ref=e1318]: Полдень у экрана
+        - generic [ref=e1319]: 1000 минут
+        - generic [ref=e1320]: Редкий
+      - generic [ref=e1321]:
+        - img [ref=e1325] [cursor=pointer]:
+          - generic [ref=e1335]: 24ч
+        - generic [ref=e1364]: Суточный марафон
+        - generic [ref=e1365]: 3000 минут
+        - generic [ref=e1366]: Эпический
+  - generic [ref=e1367]:
+    - heading "Секретные 7" [level=3] [ref=e1368]
+    - generic [ref=e1369]:
+      - generic [ref=e1370]:
+        - generic [ref=e1373] [cursor=pointer]
+        - generic [ref=e1389]: Вернулся из бездны
+        - generic [ref=e1390]: секрет «Бездна»
+        - generic [ref=e1391]: Секретный
+      - generic [ref=e1392]:
+        - generic [ref=e1395] [cursor=pointer]
+        - generic [ref=e1410]: Перегрузка
+        - generic [ref=e1411]: 1000 XP за день
+        - generic [ref=e1412]: Секретный
+      - generic [ref=e1413]:
+        - generic [ref=e1416] [cursor=pointer]
+        - generic [ref=e1433]: Жатва
+        - generic [ref=e1434]: 3 тайтла за день
+        - generic [ref=e1435]: Секретный
+      - generic [ref=e1436]:
+        - generic [ref=e1439] [cursor=pointer]
+        - generic [ref=e1459]: Хранитель пасхалок
+        - generic [ref=e1460]: 7 пасхалок
+        - generic [ref=e1461]: Секретный
+      - generic [ref=e1462]:
+        - generic [ref=e1465] [cursor=pointer]
+        - generic [ref=e1488]: Ранняя пташка
+        - generic [ref=e1489]: 7 ранних входов
+        - generic [ref=e1490]: Секретный
+      - generic [ref=e1491]:
+        - generic [ref=e1494] [cursor=pointer]
+        - generic [ref=e1511]: Редкая коллекция
+        - generic [ref=e1512]: 7 редкостей тегов
+        - generic [ref=e1513]: Секретный
+      - generic [ref=e1514]:
+        - generic [ref=e1517] [cursor=pointer]
+        - generic [ref=e1541]: Смена облика
+        - generic [ref=e1542]: 10 смен тега за день
+        - generic [ref=e1543]: Секретный
+  - generic [ref=e1544]:
+    - heading "Медали 15" [level=3] [ref=e1545]
+    - generic [ref=e1546]:
+      - generic [ref=e1547]:
+        - generic [ref=e1550] [cursor=pointer]
+        - generic [ref=e1571]: Первый сезон I — Новичок I
+        - generic [ref=e1572]: 1 тайтл
+        - generic [ref=e1573]: Мифический
+      - generic [ref=e1574]:
+        - generic [ref=e1577] [cursor=pointer]
+        - generic [ref=e1596]: Ночной дозор II — Страж II
+        - generic [ref=e1597]: 30 ночных серий
+        - generic [ref=e1598]: Мифический
+      - generic [ref=e1599]:
+        - generic [ref=e1602] [cursor=pointer]
+        - generic [ref=e1619]: Сэнпай III — Наставник III
+        - generic [ref=e1620]: 100 комментариев
+        - generic [ref=e1621]: Мифический
+      - generic [ref=e1622]:
+        - generic [ref=e1625] [cursor=pointer]
+        - generic [ref=e1643]: Лисья печать IV — Кицунэ IV
+        - generic [ref=e1644]: пасхалка 04.04
+        - generic [ref=e1645]: Секретный
+      - generic [ref=e1646]:
+        - generic [ref=e1649] [cursor=pointer]
+        - generic [ref=e1673]: Клинок тысячи серий V — Мастер V
+        - generic [ref=e1674]: 1000 серий
+        - generic [ref=e1675]: Мифический
+      - generic [ref=e1676]:
+        - generic [ref=e1679] [cursor=pointer]
+        - generic [ref=e1698]: Клятва воина V — Рыцарь V
+        - generic [ref=e1699]: 50 тайтлов сёнэн
+        - generic [ref=e1700]: Мифический
+      - generic [ref=e1701]:
+        - generic [ref=e1704] [cursor=pointer]
+        - generic [ref=e1737]: Хроноритм IV — Повелитель времени IV
+        - generic [ref=e1738]: 1440 минут за сутки
+        - generic [ref=e1739]: Мифический
+      - generic [ref=e1740]:
+        - generic [ref=e1743] [cursor=pointer]
+        - generic [ref=e1771]: Небесный эфир VI — Серафим VI
+        - generic [ref=e1772]: 500 оценок
+        - generic [ref=e1773]: Мифический
+      - generic [ref=e1774]:
+        - generic [ref=e1777] [cursor=pointer]
+        - generic [ref=e1801]: Звёздный странник VII — Пилигрим VII
+        - generic [ref=e1802]: 30 фэнтези
+        - generic [ref=e1803]: Мифический
+      - generic [ref=e1804]:
+        - generic [ref=e1807] [cursor=pointer]
+        - generic [ref=e1826]: Врата ёкай VIII — Император VIII
+        - generic [ref=e1827]: все секреты
+        - generic [ref=e1828]: Секретный
+      - generic [ref=e1829]:
+        - generic [ref=e1832] [cursor=pointer]
+        - generic [ref=e1856]: Пламя феникса IX — Возрождённый IX
+        - generic [ref=e1857]: 365 дней подряд
+        - generic [ref=e1858]: Мифический
+      - generic [ref=e1859]:
+        - generic [ref=e1862] [cursor=pointer]
+        - generic [ref=e1880]: Хранитель врат IX — Привратник IX
+        - generic [ref=e1881]: все сезоны
+        - generic [ref=e1882]: Мифический
+      - generic [ref=e1883]:
+        - generic [ref=e1886] [cursor=pointer]
+        - generic [ref=e1904]: Лунная владычица X — Королева ночи X
+        - generic [ref=e1905]: 500 ночных серий
+        - generic [ref=e1906]: Мифический
+      - generic [ref=e1907]:
+        - generic [ref=e1910] [cursor=pointer]
+        - generic [ref=e1928]: Вечный зритель X — Бессмертный X
+        - generic [ref=e1929]: 10000 минут
+        - generic [ref=e1930]: Мифический
+      - generic [ref=e1931]:
+        - generic [ref=e1934] [cursor=pointer]
+        - generic [ref=e1956]: Император аниме X — Абсолют X
+        - generic [ref=e1957]: все 76 достижений
+        - generic [ref=e1958]: Мифический

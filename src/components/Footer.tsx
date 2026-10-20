@@ -18,6 +18,7 @@ const NAV = [
   { href: "/catalog?status=ongoing", label: "Онгоинги" },
   { href: "/manga", label: "Каталог манги" },
   { href: "/clans", label: "Кланы" },
+  { href: "/events", label: "Ивенты" },
   { href: "/catalog?sort=rating", label: "Топ рейтинга" },
   { href: "/catalog?type=movie", label: "Аниме-фильмы" },
   { href: "/premium", label: "Premium-подписка" },
@@ -56,7 +57,7 @@ export function Footer() {
                 <li key={item.href}>
                   <Link
                     href={item.href}
-                    className="btn-ghost text-sm text-muted hover:text-white"
+                    className="btn-ghost inline-flex min-h-10 items-center text-sm text-muted hover:text-white"
                   >
                     {item.label}
                   </Link>
@@ -75,7 +76,7 @@ export function Footer() {
                 <Link
                   key={g}
                   href={`/catalog?genre=${encodeURIComponent(g)}`}
-                  className="btn-ghost rounded-lg bg-white/6 px-3 py-1.5 text-xs font-semibold text-muted ring-1 ring-white/10 hover:bg-accent/15 hover:text-white hover:ring-accent/40"
+                  className="btn-ghost inline-flex min-h-10 items-center rounded-lg bg-white/6 px-3 text-xs font-semibold text-muted ring-1 ring-white/10 hover:bg-accent/15 hover:text-white hover:ring-accent/40"
                 >
                   {g}
                 </Link>

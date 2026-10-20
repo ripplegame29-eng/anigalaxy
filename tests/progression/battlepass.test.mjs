@@ -272,9 +272,17 @@ test("100-й уровень премиум: тег + AC + лучшая рамк�
   assert.equal(res.rejected, undefined);
 
   assert.ok(res.doc.tags.tag_shogun, "«Шогун» выдан");
-  assert.equal(res.doc.progress.acBalance, 2500);
+  // 2 500 — награда пакета; сверху набегают достижения, открытые попутно.
+  // Раньше сумма совпадала с наградой, теперь нет: доведя пропуск до
+  // последнего уровня, игрок проходит сезон и получает «Хранителя врат».
+  // Поэтому сверяем по вкладу пакета, а не по итоговому балансу.
   const effect = res.effects.find((item) => item.type === "BATTLEPASS_CLAIMED");
   assert.equal(effect.ac, 2500);
+  assert.ok(res.doc.progress.acBalance >= 2500, "баланс не меньше награды пакета");
+  assert.ok(
+    res.doc.achievements.ach_seasons_all?.unlockedAt,
+    "100 уровней пропуска = пройденный сезон",
+  );
   const frame = effect.items.find((item) => item.kind === "frame");
   assert.equal(frame?.id, "frame-18", "выбрана лучшая невыданная рамка");
   assert.equal(effect.items.filter((item) => item.kind === "tag").length, 1);

@@ -1,0 +1,646 @@
+/* ==========================================================================
+   AniGalaxy PREMIUM: единый стиль всех тегов, титулов и чипов шапки.
+
+   Слой ПОВЕРХ `ag-tag.css`, подключается после него. Загружается последним,
+   поэтому побеждает базу по Source Order там, где специфичности равны.
+
+   Эталон — `Теги_и_титулы_premium.html` (дизайнерский блок `ag-tag-premium.css`).
+   Перенесено дословно: геометрия через переменные, двухслойный фон
+   `padding-box / border-box`, палитры, тайминги, правила редкостей.
+
+   СВЕДЕНИЯ С ЭТАЛОНА (это единственное, что здесь не один в один):
+
+   1. Маппинг «редкость → форма». В эталоне формы висят на
+      `.card:nth-child(6n+k)` — это демонстрация, в продукте так нельзя: порядок
+      в каталоге меняется от фильтра и поиска, и тег скакал бы между
+      силуэтами. Согласовано: привязка к `data-r`.
+
+        COMMON   UNCOMMON → капсула        --br:999px
+        RARE                 → мягкий прямоугольник   --br:9px
+        EPIC                 → лист                   --br:15px 3px 15px 3px
+        LEGENDARY            → ровные края + уголки   --br:2px
+        MYTHIC               → фаска (clip-path)
+        SECRET               → встречный лист         --br:3px 16px 3px 16px
+
+      Шесть форм на семь редкостей: COMMON и UNCOMMON делят капсулу — это 14
+      тегов, самые частые, и различаются они палитрой и свечением, а не
+      силуэтом.
+
+   2. Переменные `--bh/--br/--bfs/--bls` заданы не на `:root`, а на самих
+      компонентах: глобальные `--br` и подобные в `:root` цепляются к
+      посторонним блокам, а здесь они нужны только этим четырём.
+
+   3. `.prof .ag-tag` из эталона выброшен: класса `.prof` в проекте нет.
+
+   СОЗНАТЕЛЬНО УБРАНО (из ТЗ): бегущая рамка, блики-проходы, лезвие по
+   контуру, белая полоска сверху, анимации у PREMIUM, глитч у Гуля.
+   ======================================================================== */
+
+/* ------------------------- общая геометрия ------------------------------ */
+
+.ag-tag,
+.an-tag,
+.ag-premium,
+.p-chip {
+  --bh: 28px;
+  --br: 9px;
+  --bfs: 10.5px;
+  --bls: 0.09em;
+
+  --tag-fs: var(--bfs);
+  --tag-ls: var(--bls);
+  --edge-size: 100% 100%;
+
+  position: relative;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55em;
+  height: var(--bh);
+  padding: 0 0.95em 0 0.7em;
+  border: 1px solid transparent;
+  border-radius: var(--br);
+  font: 800 var(--bfs) / 1 var(--font-body);
+  letter-spacing: var(--bls);
+  text-transform: uppercase;
+  white-space: nowrap;
+  vertical-align: middle;
+  color: #eaf4ff;
+  background: var(--fill) padding-box, var(--edge) border-box;
+  background-size: 100% 100%, var(--edge-size);
+  box-shadow: 0 0 1.5em -0.55em var(--glow);
+  text-shadow: 0 0 0.9em color-mix(in srgb, var(--glow) 60%, transparent);
+}
+
+.ag-tag--sm {
+  --bh: 24px;
+  --bfs: 10px;
+}
+
+.ag-tag--lg {
+  --bh: 34px;
+  --bfs: 12px;
+}
+
+/* ---------------------------- теги и титулы ----------------------------- */
+
+.ag-tag {
+  --fill: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--c) 20%, #0a1026),
+    color-mix(in srgb, var(--c2) 26%, #060a1a)
+  );
+  --edge: linear-gradient(
+    120deg,
+    var(--c),
+    color-mix(in srgb, var(--c) 50%, #fff),
+    color-mix(in srgb, var(--c2) 55%, var(--c)),
+    var(--c)
+  );
+  --glow: color-mix(in srgb, var(--c) 80%, transparent);
+}
+
+/* наведение без подъёма: в новом стиле капсула не прыгает */
+.ag-tag:not(.ag-tag--locked):hover {
+  transform: none;
+  filter: brightness(1.14);
+}
+
+/* рамка fx-border остаётся, но в 1px и без вращения */
+.ag-tag.fx-border::before {
+  inset: -1px;
+  padding: 1px;
+  animation: none;
+}
+
+/* служебные слои, которые новый стиль не рисует */
+.ag-tag .bk,
+.ag-tag .sp,
+.ag-tag .ag-runes,
+.ag-tag .sh,
+.ag-tag .ag-over {
+  display: none;
+}
+
+.ag-tag.fx-double {
+  outline: 0;
+}
+
+.ag-tag .ag-ico {
+  width: 1.3em;
+  height: 1.3em;
+  stroke-width: 1.8;
+  color: color-mix(in srgb, var(--c) 70%, #fff);
+}
+
+.ag-tag b {
+  letter-spacing: inherit;
+}
+
+/* ------------------------- ФОРМЫ: редкость → силуэт --------------------- */
+
+.ag-tag[data-r="COMMON"],
+.ag-tag[data-r="UNCOMMON"] {
+  --br: 999px;
+  padding: 0 1.05em 0 0.8em;
+}
+
+.ag-tag[data-r="RARE"] {
+  --br: 9px;
+}
+
+.ag-tag[data-r="EPIC"] {
+  --br: 15px 3px 15px 3px;
+}
+
+.ag-tag[data-r="LEGENDARY"] {
+  --br: 2px;
+}
+
+.ag-tag[data-r="MYTHIC"] {
+  --br: 3px;
+  clip-path: polygon(
+    9px 0,
+    calc(100% - 9px) 0,
+    100% 9px,
+    100% calc(100% - 9px),
+    calc(100% - 9px) 100%,
+    9px 100%,
+    0 calc(100% - 9px),
+    0 9px
+  );
+}
+
+/* У фаски `clip-path` срезает box-shadow, поэтому свечение уезжает в filter.
+   Обёртки-`.pill`, как в эталоне, в продукте нет — фильтр на самой капсуле.
+   У невыданного тега filter уже занят приглушением, поэтому вариант
+   приглушённой фаски задан отдельно, а не поверх. */
+.ag-tag[data-r="MYTHIC"]:not(.ag-tag--locked) {
+  filter: drop-shadow(0 0 7px color-mix(in srgb, var(--c) 45%, transparent));
+}
+
+.ag-tag[data-r="MYTHIC"].ag-tag--locked {
+  filter: saturate(0.7) brightness(0.72) drop-shadow(0 0 7px color-mix(in srgb, var(--c) 45%, transparent));
+}
+
+.ag-tag[data-r="MYTHIC"] .ag-ico {
+  margin-left: 0.15em;
+}
+
+.ag-tag[data-r="SECRET"] {
+  --br: 3px 16px 3px 16px;
+}
+
+/* прицельные уголки — только у «таблички» с ровными краями и только если
+   тег помечен fx-brackets: иначе получится четыре лишние чёрточки */
+.ag-tag[data-r="LEGENDARY"].fx-brackets .bk {
+  display: block;
+  width: 7px;
+  height: 7px;
+}
+
+.ag-tag[data-r="LEGENDARY"].fx-brackets .bk.tl {
+  top: 2px;
+  left: 3px;
+}
+
+.ag-tag[data-r="LEGENDARY"].fx-brackets .bk.tr {
+  top: 2px;
+  right: 3px;
+}
+
+.ag-tag[data-r="LEGENDARY"].fx-brackets .bk.bl {
+  bottom: 2px;
+  left: 3px;
+}
+
+.ag-tag[data-r="LEGENDARY"].fx-brackets .bk.br {
+  bottom: 2px;
+  right: 3px;
+}
+
+/* ------------------------------- эффекты -------------------------------- */
+
+/* статичный блик-слой: у экрана идёт на 150% ширины и никуда не едет */
+.ag-tag::after {
+  display: block;
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(105deg, transparent 38%, rgba(255, 255, 255, 0.3) 50%, transparent 62%);
+  background-size: 250% 100%;
+  background-position: 150% 0;
+  opacity: 1;
+  transform: none;
+  animation: none;
+}
+
+.ag-tag.fx-aura::after,
+.ag-tag:hover::after {
+  animation: none;
+}
+
+.ag-tag[data-r="LEGENDARY"]::after,
+.ag-tag[data-r="MYTHIC"]::after,
+.ag-tag[data-r="SECRET"]::after {
+  animation: none;
+}
+
+/* шире градиент рамки у старших редкостей — без движения, статично */
+.ag-tag[data-r="EPIC"],
+.ag-tag[data-r="LEGENDARY"],
+.ag-tag[data-r="SECRET"] {
+  --edge-size: 300% 100%;
+}
+
+/* на корне анимаций нет вовсе */
+.ag-tag[data-r="EPIC"]:not(.fx-enter),
+.ag-tag[data-r="LEGENDARY"]:not(.fx-enter),
+.ag-tag[data-r="SECRET"]:not(.fx-enter),
+.ag-tag[data-r="MYTHIC"]:not(.fx-enter) {
+  animation: none;
+}
+
+/* появление при выдаче оставлено: это не «бегущий» эффект */
+.ag-tag[data-r="MYTHIC"].fx-enter,
+.ag-tag[data-r="MYTHIC"].fx-enter.fx-pulse {
+  --edge-size: 300% 100%;
+  animation: ag-enter 0.75s cubic-bezier(0.2, 0.9, 0.3, 1) backwards;
+}
+
+/* искры — только у двух старших редкостей, в sm скрыты (мелко) */
+.ag-tag[data-r="LEGENDARY"] .sp,
+.ag-tag[data-r="MYTHIC"] .sp {
+  display: block;
+}
+
+.ag-tag--sm .sp {
+  display: none !important;
+}
+
+/* мягкая подложка редких: тонкая цветная кайма сверху и снизу */
+.ag-tag[data-r="RARE"],
+.ag-tag[data-r="EPIC"],
+.ag-tag[data-r="LEGENDARY"],
+.ag-tag[data-r="MYTHIC"] {
+  box-shadow:
+    0 0 1.5em -0.55em var(--glow),
+    0 0 0.1em rgba(255, 255, 255, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    inset 0 -0.9em 1.2em -1em color-mix(in srgb, var(--c) 55%, transparent);
+}
+
+.ag-tag[data-r="SECRET"] {
+  box-shadow:
+    0 0 1.5em -0.5em var(--glow),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+}
+
+/* ------------------------------ PREMIUM --------------------------------- */
+
+.ag-premium {
+  overflow: hidden;
+  --fill: linear-gradient(135deg, #0c2150, #071030);
+  --edge: linear-gradient(120deg, #22d3ee, #60a5fa, #2563eb, #22d3ee);
+  --edge-size: 100% 100%;
+  --glow: rgba(56, 189, 248, 0.85);
+  color: #e3f7ff;
+}
+
+.ag-premium::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(105deg, transparent 40%, rgba(255, 255, 255, 0.5) 50%, transparent 60%);
+  opacity: 0;
+  animation: none;
+}
+
+.ag-premium svg {
+  width: 1.35em;
+  height: 1.35em;
+  flex: none;
+  fill: none;
+  stroke: #7dd3fc;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 0.4em rgba(56, 189, 248, 0.95));
+}
+
+/* ------------- чипы шапки профиля: стрик и ТОП XP ---------------------- */
+
+.p-chip {
+  --c: #a78bfa;
+  --c2: #312e81;
+  --fill: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--c) 14%, #0a1026),
+    color-mix(in srgb, var(--c2) 40%, #060a1a)
+  );
+  --edge: linear-gradient(120deg, color-mix(in srgb, var(--c) 70%, transparent), color-mix(in srgb, var(--c2) 80%, var(--c)));
+  --glow: color-mix(in srgb, var(--c) 55%, transparent);
+  color: color-mix(in srgb, var(--c) 55%, #fff);
+}
+
+.p-chip.fire {
+  --c: #f59e0b;
+  --c2: #7c2d12;
+}
+
+.p-chip b {
+  font-size: 1.1em;
+  color: #fff;
+  letter-spacing: 0.02em;
+}
+
+.p-chip svg {
+  width: 1.35em;
+  height: 1.35em;
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* ------------------- аниме-коллекция: тот же стиль ---------------------- */
+/* Данных таких тегов в проекте нет (в эталоне они живут в самом каталоге),
+   поэтому блок перенесён как есть: стиль готов, а рендерить его нечем.
+   Формы привязаны к классам редкости каталога: an-e / an-l / an-m. */
+
+.an-tag {
+  --fill: linear-gradient(135deg, color-mix(in srgb, var(--tb) 16%, var(--ta)), var(--ta));
+  --edge: linear-gradient(
+    120deg,
+    var(--tb),
+    color-mix(in srgb, var(--tb) 50%, #fff),
+    color-mix(in srgb, var(--ta) 30%, var(--tb)),
+    var(--tb)
+  );
+  --glow: var(--tb);
+}
+
+.an-tag::before {
+  inset: -1px;
+}
+
+.an-tag svg {
+  width: 1.3em;
+  height: 1.3em;
+}
+
+.an-tag .an-br {
+  display: none;
+}
+
+.an-tag::after {
+  display: block;
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(105deg, transparent 38%, rgba(255, 255, 255, 0.3) 50%, transparent 62%);
+  background-size: 250% 100%;
+  background-position: 150% 0;
+}
+
+.an-tag:hover::after,
+.an-tag.an-m {
+  animation: none;
+}
+
+.an-tag.an-e {
+  --br: 15px 3px 15px 3px;
+}
+
+.an-tag.an-l {
+  --br: 2px;
+}
+
+.an-tag.an-l .an-br {
+  display: block;
+  width: 6px;
+  height: 6px;
+}
+
+.an-tag.an-l .an-br.tl {
+  top: 2px;
+  left: 3px;
+}
+
+.an-tag.an-l .an-br.tr {
+  top: 2px;
+  right: 3px;
+}
+
+.an-tag.an-l .an-br.bl {
+  bottom: 2px;
+  left: 3px;
+}
+
+.an-tag.an-l .an-br.bb {
+  bottom: 2px;
+  right: 3px;
+}
+
+.an-tag.an-m {
+  --br: 3px;
+  clip-path: polygon(
+    9px 0,
+    calc(100% - 9px) 0,
+    100% 9px,
+    100% calc(100% - 9px),
+    calc(100% - 9px) 100%,
+    9px 100%,
+    0 calc(100% - 9px),
+    0 9px
+  );
+}
+
+/* =========================== Гуль: без глитча =========================== */
+/* Тёмная плашка с алой кагуне-рамкой, срезанные углы, ничего не движется. */
+
+.ag-tag[data-tag="tag_ghoul"],
+.ag-tag[data-tag="tag_ghoul"]::before,
+.ag-tag[data-tag="tag_ghoul"]::after,
+.ag-tag[data-tag="tag_ghoul"] *,
+.ag-tag[data-tag="tag_ghoul"] *::before,
+.ag-tag[data-tag="tag_ghoul"] *::after {
+  animation: none !important;
+}
+
+.ag-tag[data-tag="tag_ghoul"]::after {
+  opacity: 0;
+}
+
+.ag-tag[data-tag="tag_ghoul"] b::before,
+.ag-tag[data-tag="tag_ghoul"] b::after {
+  content: none !important;
+  display: none !important;
+}
+
+.ag-tag[data-tag="tag_ghoul"] b {
+  animation: none !important;
+  transform: none !important;
+  text-shadow: 0 0 0.9em color-mix(in srgb, var(--c) 60%, transparent) !important;
+}
+
+.ag-tag[data-tag="tag_ghoul"],
+.card .ag-tag[data-tag="tag_ghoul"] {
+  --br: 3px;
+  --fill: radial-gradient(120% 160% at 18% 0%, rgba(255, 23, 68, 0.38), transparent 55%),
+    linear-gradient(135deg, #1c0309, #08020a 70%);
+  --edge: linear-gradient(110deg, #ff1744 0%, #ff5c7c 38%, #7a0c26 62%, #00e5ff 100%);
+  --glow: rgba(255, 23, 68, 0.7);
+  color: #fff1f4;
+  clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+  box-shadow:
+    inset 0 -1.1em 1.2em -1em rgba(255, 23, 68, 0.55),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+}
+
+.ag-tag[data-tag="tag_ghoul"] .ag-ico {
+  color: #ff4d6d;
+  filter: drop-shadow(0 0 0.45em rgba(255, 23, 68, 0.95));
+}
+
+.ag-tag[data-tag="tag_ghoul"] b {
+  letter-spacing: 0.16em;
+}
+
+.ag-tag[data-tag="tag_ghoul"] .bk {
+  display: none;
+}
+
+/* ===================== окошко с описанием =============================== */
+/* Обёртка нужна из-за clip-path: у фаски и Гуля силуэт режется по контуру, и
+   подсказка внутри капсулы обрезалась бы. Наружу она выходит свободно. */
+
+.ag-tag-wrap {
+  position: relative;
+  display: inline-flex;
+  vertical-align: middle;
+  max-width: 100%;
+}
+
+.ag-tip {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 9px);
+  translate: -50% 0;
+  z-index: 40;
+  width: max-content;
+  max-width: min(280px, 60vw);
+  padding: 9px 12px;
+  border-radius: 10px;
+  font: 600 12.5px/1.45 var(--font-body);
+  letter-spacing: 0;
+  text-transform: none;
+  text-align: left;
+  text-wrap: pretty;
+  white-space: normal;
+  color: #eef2ff;
+  background: linear-gradient(180deg, rgba(20, 26, 51, 0.98), rgba(10, 15, 31, 0.98));
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.09),
+    0 18px 40px -18px #000,
+    0 0 34px -18px var(--c, #4f7dff);
+  opacity: 0;
+  visibility: hidden;
+  translate: -50% 5px;
+  transition:
+    opacity 0.16s ease,
+    translate 0.16s ease,
+    visibility 0.16s;
+  pointer-events: none;
+}
+
+/* Носик. Рисуется на том же фоне, что и панель, поэтому цвета совпадают. */
+.ag-tip::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  translate: -50% -1px;
+  width: 10px;
+  height: 10px;
+  rotate: 45deg;
+  background: rgba(10, 15, 31, 0.98);
+  box-shadow: inset -1px -1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.ag-tag-wrap:hover .ag-tip,
+.ag-tag-wrap:focus-within .ag-tip {
+  opacity: 1;
+  visibility: visible;
+  translate: -50% 0;
+}
+
+/* Ближний край капсулы подсвечивает окошко палитрой тега */
+.ag-tip::before {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  translate: -50% -4px;
+  width: 26px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--c, #4f7dff);
+  box-shadow: 0 0 10px var(--c, #4f7dff);
+  opacity: 0.9;
+}
+
+/* Мышь не должна ловить окошко: иначе при переходе на него подсказка мигает */
+.ag-tag-wrap:hover .ag-tip,
+.ag-tag-wrap:focus-within .ag-tip {
+  pointer-events: none;
+}
+
+/* ====================== производительность и эко ======================= */
+
+@media (prefers-reduced-motion: reduce) {
+  .ag-premium,
+  .ag-premium::after,
+  .ag-tag,
+  .ag-tag::after,
+  .ag-tag::before,
+  .an-tag,
+  .an-tag::after,
+  .p-chip {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+html[data-eco="on"] .ag-premium,
+html[data-eco="on"] .ag-premium::after,
+html[data-eco="on"] .ag-tag,
+html[data-eco="on"] .ag-tag::after,
+html[data-eco="on"] .ag-tag::before,
+html[data-eco="on"] .an-tag,
+html[data-eco="on"] .an-tag::after,
+html[data-eco="on"] .p-chip {
+  animation: none !important;
+}
+
+.perf-lite .ag-tag,
+.perf-lite .ag-tag::after,
+.perf-lite .ag-tag::before,
+.perf-lite .ag-tag *,
+.perf-lite .an-tag,
+.perf-lite .p-chip {
+  animation: none !important;
+}
+
+.perf-lite .ag-tag .sp,
+html[data-eco="on"] .ag-tag .sp {
+  display: none !important;
+}

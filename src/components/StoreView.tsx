@@ -22,24 +22,21 @@ const CHIP =
  */
 export function StoreView() {
   const account = useAccount();
-  const info = useLevelInfo();
   const progress = useProgress();
-  const premium = isPremiumActive(account);
 
   return (
-    <div className="space-y-6">
+    <div className="ag-root space-y-6">
       {/* --------------------------- Герой витрины --------------------------- */}
-      <section className="relative overflow-hidden rounded-3xl border border-line bg-card/60">
+      {/* Ник, Premium, уровень и полосу XP показывает каталог ниже — здесь
+          только то, чего в нём нет: название витрины и пояснение. Держать
+          одно и то же дважды на странице незачем. */}
+      <section className="ag-card relative overflow-hidden">
         <div
           className="pointer-events-none absolute inset-0 bg-gradient-to-r from-accent/18 via-accent-2/8 to-gold/10"
           aria-hidden
         />
         <div
           className="pointer-events-none absolute -right-20 -top-24 h-64 w-64 rounded-full bg-accent/16 blur-3xl"
-          aria-hidden
-        />
-        <div
-          className="pointer-events-none absolute -left-24 bottom-[-40%] h-56 w-56 rounded-full bg-gold/10 blur-3xl"
           aria-hidden
         />
 
@@ -49,29 +46,28 @@ export function StoreView() {
               <span className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-accent-2 to-accent px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-white shadow-[0_12px_28px_-14px_rgba(31,123,255,1)]">
                 Витрина AniGalaxy
               </span>
-              <h1 className="mt-3 text-2xl font-black tracking-tight text-white sm:text-3xl">Магазин</h1>
+              <h1 className="ag-shop-h1 mt-3 text-3xl font-black tracking-tight text-white sm:text-4xl">
+                Косметика
+              </h1>
               <p className="mt-1.5 max-w-xl text-sm leading-relaxed text-muted">
-                Теги, титулы, фоны, рамки и эффекты за Anime Coins. AC копятся за вход, квесты и
+                Теги, титулы, фоны, рамки и эффекты за AC. AC копятся за вход, квесты и
                 активность — покупки списываются только движком прогресса.
               </p>
             </div>
 
-            {/* Баланс вынесен в отдельную плашку ниже */}
+            {/* Гость без аккаунта: вход и регистрация, для владельца — ссылки */}
             <div className="flex flex-col items-start gap-2.5 sm:items-end">
               {account ? (
                 <div className="flex flex-wrap gap-2">
                   <Link href="/profile" className={`${CHIP} bg-white/8 text-muted ring-white/15 hover:text-white`}>
-                    Уровень {info.level}
+                    Мой профиль
                   </Link>
-                  <span className={`${CHIP} bg-accent-2/12 text-accent-2 ring-accent-2/35`}>
-                    {info.into} / {info.need} XP
-                  </span>
-                  <span className={`${CHIP} bg-white/8 text-muted ring-white/15`}>
-                    Серия {progress.progress.streakCurrent} дн.
-                  </span>
-                  {premium && (
-                    <span className={`${CHIP} border-gold/40 bg-gold/15 text-gold`}>Premium</span>
-                  )}
+                  <Link href="/profile?tab=quests" className={`${CHIP} bg-mint/12 text-mint ring-mint/35 hover:bg-mint/20`}>
+                    Квесты дня
+                  </Link>
+                  <Link href="/premium" className={`${CHIP} border-gold/40 bg-gold/10 text-gold hover:bg-gold/18`}>
+                    Premium
+                  </Link>
                 </div>
               ) : (
                 <div className="flex flex-wrap gap-2">
@@ -92,29 +88,6 @@ export function StoreView() {
                 </div>
               )}
             </div>
-          </div>
-
-          {/* Быстрые переходы */}
-          <div className="mt-4 flex flex-wrap items-center gap-2">
-            <Link
-              href="/profile?tab=quests"
-              className={`${CHIP} bg-mint/12 text-mint ring-mint/35 transition hover:bg-mint/20`}
-            >
-              Квесты дня
-            </Link>
-            <Link
-              href="/premium"
-              className={`${CHIP} border-gold/40 bg-gold/10 text-gold transition hover:bg-gold/18`}
-            >
-              Premium
-            </Link>
-            <Link
-              href="/profile"
-              className={`${CHIP} bg-white/8 text-muted ring-white/15 transition hover:text-white`}
-            >
-              Мой профиль
-            </Link>
-            <span className={`${CHIP} bg-white/6 text-muted ring-white/12`}>{info.era}</span>
           </div>
         </div>
       </section>
@@ -550,7 +523,10 @@ function CoinPackBanner() {
                 aria-hidden
                 width={680}
                 height={680}
-                priority={false}
+                /* Кот — самый крупный элемент над сгибом, поэтому Next
+                   просит грузить его сразу: без priority идёт предупреждение
+                   про LCP в консоли */
+                priority
                 className="ag-cat-anim h-auto w-56 max-w-[340px] drop-shadow-[0_0_44px_rgba(0,160,255,0.3)] sm:w-64 lg:w-full"
               />
               <SparkleField spots={CAT_SPARKLES} />
@@ -629,7 +605,7 @@ function CoinPacks() {
               <path d="M3 11h18M12 7v13M7.5 7C5 7 5 3.5 7.5 3.5S10 7 12 7M16.5 7c-2.5 0-2.5-3.5 0-3.5S19 7 12 7" />
             </svg>
           </span>
-          Пакеты монет
+          Пакеты AC
         </h2>
         <span className="text-[11px] font-black uppercase tracking-[0.14em] text-muted">
           Цены в рублях · оплата подключится позже
@@ -697,7 +673,7 @@ function CoinPacks() {
                 onClick={() => setPicked(pack)}
                 className="shrink-0 rounded-lg bg-accent/15 px-2.5 py-1.5 text-[11px] font-black text-accent-2 ring-1 ring-accent/35 transition hover:bg-accent/25 hover:text-white"
               >
-                Купить →
+                Купить (демо) →
               </button>
             </div>
           </article>
@@ -708,7 +684,7 @@ function CoinPacks() {
       <p aria-live="polite" className="min-h-4 text-xs font-bold text-muted">
         {picked ? (
           <span className="text-mint">
-            💰 {picked.name} ({fmt(picked.price)} ₽) — выбор отмечен, оплата подключится позже.
+            💰 {picked.name} ({fmt(picked.price)} ₽) — выбор отмечен, оплата не подключена: AC не начислены.
           </span>
         ) : null}
       </p>

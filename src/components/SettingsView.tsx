@@ -10,12 +10,34 @@ import { useProfile } from "@/lib/profile";
 import { useLevelInfo, useProgress } from "@/lib/progression/events";
 import { FRAMES } from "@/lib/cosmetics";
 import { SETTINGS_TABS, SettingsPanel, type SettingsTab } from "@/components/profile/ProfileDialogs";
-import { AvatarView } from "@/components/profile/AvatarView";
+import { AvatarFrame } from "@/components/profile/AvatarFrame";
 
 const TAB_IDS: string[] = SETTINGS_TABS.map((item) => item.id);
 
 const CHIP =
   "inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-[11px] font-black uppercase tracking-wide ring-1";
+
+/** Подпись плитки «Приватность»: все четыре тумблера согласованы или нет */
+const PRIVACY_LABEL: Record<"open" | "private" | "custom", string> = {
+  open: "Открытый",
+  private: "Приватный",
+  custom: "Пользовательский",
+};
+
+/**
+ * Сколько дней осталось до конца Premium.
+ *
+ * Считаем через `Math.ceil` от текущего момента: подписка, истекающая
+ * сегодня в 23:50, ещё сегодня действует, поэтому для неё выходит 1, а не 0.
+ *
+ * Функция на уровне модуля, а не внутри компонента: правило react-hooks/purity
+ * запрещает читать Date.now() прямо в теле рендера (у нас уже так сделано
+ * для таймеров квестов — см. resetIn() в ProfileSections).
+ */
+function premiumDaysLeft(until: number | undefined): number {
+  if (!until) return 0;
+  return Math.max(0, Math.ceil((until - Date.now()) / 86400000));
+}
 
 /** Иконки разделов настроек (штрих 24×24) — навигация как на эталоне */
 const TAB_ICONS: Record<SettingsTab, ReactNode> = {
@@ -33,11 +55,13 @@ const TAB_ICONS: Record<SettingsTab, ReactNode> = {
     </>
   ),
   privacy: (
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M12 3.5 5.5 6.1v5.2c0 4.2 2.8 7.7 6.5 8.9 3.7-1.2 6.5-4.7 6.5-8.9V6.1z"
-    />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z" />
+  ),
+  notifications: (
+    <path strokeLinecap="round" strokeLinejoin="round" d="M6 16v-5a6 6 0 0 1 12 0v5l2 2H4zM10 21h4" />
+  ),
+  player: (
+    <path strokeLinecap="round" strokeLinejoin="round" d="M7 4l13 8-13 8z" />
   ),
   subscription: (
     <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 8.5 8 11.5 12 5l4 6.5 3.5-3-1.5 9.5h-12z" />
@@ -78,10 +102,32 @@ export function SettingsView() {
   const frame = FRAMES.find((item) => item.id === profile.frameId);
   const pct = Math.max(0, Math.min(100, Math.round((info.into / Math.max(1, info.need)) * 100)));
 
+  /**
+   * Сколько дней осталось до конца Premium.
+   *
+   * Считаем от полуночи сегодня: подписка, истекающая сегодня в 23:50, ещё
+   * сегодня действует, поэтому `Math.ceil` даёт для неё 1, а не 0.
+   */
+  const daysLeft = premiumDaysLeft(account?.premiumUntil);
+
+  /** Итог четырёх переключателей приватности — для плитки в шапке */
+  const privacyPreset: "open" | "private" | "custom" =
+    profile.privacy.profilePublic &&
+    profile.privacy.showStats &&
+    profile.privacy.showAchievements &&
+    profile.privacy.showHistory
+      ? "open"
+      : !profile.privacy.profilePublic &&
+          !profile.privacy.showStats &&
+          !profile.privacy.showAchievements &&
+          !profile.privacy.showHistory
+        ? "private"
+        : "custom";
+
   return (
-    <div className="space-y-5">
+    <div className="ag-root space-y-5">
       {/* ---------------------------- Шапка-саммари --------------------------- */}
-      <section className="relative overflow-hidden rounded-3xl border border-line bg-card/60">
+      <section className="ag-card relative overflow-hidden">
         <div
           className="pointer-events-none absolute inset-0 bg-gradient-to-r from-accent/16 via-accent-2/6 to-transparent"
           aria-hidden
@@ -95,14 +141,12 @@ export function SettingsView() {
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div className="flex min-w-0 items-center gap-4">
               {account ? (
-                <AvatarView
-                  nickname={account.nickname}
-                  avatar={profile.avatar || undefined}
-                  frameCss={frame?.css}
-                  frameImg={frame?.img}
-                  className="h-16 w-16 ring-4 ring-card/80"
-                  textClass="text-xl"
-                />
+                <AvatarFrame
+  nickname={account.nickname}
+  avatar={profile.avatar || undefined}
+  frame={frame}
+  size="md"
+/>
               ) : (
                 <span className="grid h-16 w-16 place-items-center rounded-2xl bg-gradient-to-br from-accent to-accent-2 text-white shadow-[0_16px_34px_-16px_rgba(31,123,255,1)]">
                   <svg viewBox="0 0 24 24" className="h-7 w-7" fill="none" stroke="currentColor" strokeWidth="2">
@@ -114,11 +158,13 @@ export function SettingsView() {
 
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
-                  <h1 className="truncate text-2xl font-black tracking-tight text-white">Настройки</h1>
+                  <h1 className="ag-shop-h1 truncate text-2xl font-black tracking-tight text-white sm:text-3xl">
+                    Настройки
+                  </h1>
                   {premium && <span className={`${CHIP} border-gold/40 bg-gold/15 text-gold`}>Premium</span>}
                 </div>
-                <p className="mt-0.5 truncate text-sm text-muted">
-                  {account ? `${account.nickname} · ${account.email}` : "Всё локально: данные не покидают этот браузер"}
+                <p className="mt-1 text-sm text-muted">
+                  Твоя орбита, твои правила — профиль, внешний вид, приватность и подписка
                 </p>
               </div>
             </div>
@@ -131,9 +177,28 @@ export function SettingsView() {
               <span className={`${CHIP} bg-white/8 text-muted ring-white/15`}>
                 Серия {progress.progress.streakCurrent} дн.
               </span>
-              <span className={`${CHIP} bg-gold/12 text-gold ring-gold/35`}>
-                {progress.progress.acBalance} AC
-              </span>
+            </div>
+          </div>
+
+          {/* Четыре плитки как в макете: монеты, Premium, рамка, приватность */}
+          <div className="ag-set-tiles">
+            <div className="ag-set-tile">
+              <small>AC</small>
+              <b>{progress.progress.acBalance} AC</b>
+            </div>
+            <div className="ag-set-tile">
+              <small>Premium</small>
+              <b>
+                {premium && account?.premiumUntil ? `ещё ${daysLeft} дн.` : "не подключён"}
+              </b>
+            </div>
+            <div className="ag-set-tile">
+              <small>Рамка</small>
+              <b>{frame ? frame.name : "нет"}</b>
+            </div>
+            <div className="ag-set-tile">
+              <small>Приватность</small>
+              <b>{PRIVACY_LABEL[privacyPreset]}</b>
             </div>
           </div>
 
@@ -197,14 +262,37 @@ export function SettingsView() {
       </section>
 
       {/* ------------------------- Разделы + панель -------------------------- */}
-      <section className="rounded-3xl border border-line bg-card/70 p-4 sm:p-5">
+      <section className="ag-card p-4 sm:p-5">
         <div className="grid gap-5 lg:grid-cols-[300px_minmax(0,1fr)]">
           {/* min-w-0: лента разделов не должна растягивать колонку грида,
               иначе на телефоне страница скроллится вбок (см. ProfileView) */}
           <nav
             aria-label="Разделы настроек"
-            className="flex min-w-0 gap-2 overflow-x-auto pb-1 lg:flex-col lg:overflow-visible lg:pb-0"
+            className="ag-set-nav flex min-w-0 gap-2 overflow-x-auto pb-1 lg:flex-col lg:overflow-visible lg:pb-0"
           >
+            {/* Карточка пользователя над списком разделов — как в макете */}
+            {account && (
+              <div className="ag-set-user">
+                <AvatarFrame
+  nickname={account.nickname}
+  avatar={profile.avatar || undefined}
+  frame={frame}
+  size="md"
+/>
+                <div className="min-w-0">
+                  <b className="truncate">{account.nickname}</b>
+                  <small className="truncate">{account.email}</small>
+                </div>
+                {premium && (
+                  <span className="ag-set-crown" title="Premium активен">
+                    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                      <path d="M3 8l4 4 5-7 5 7 4-4-2 11H5z" />
+                    </svg>
+                  </span>
+                )}
+              </div>
+            )}
+
             {SETTINGS_TABS.map((item) => {
               const active = tab === item.id;
               return (
@@ -213,16 +301,13 @@ export function SettingsView() {
                   type="button"
                   onClick={() => onTabChange(item.id)}
                   aria-pressed={active}
-                  className={`min-w-[230px] shrink-0 rounded-xl px-4 py-3 text-left transition-colors duration-200 lg:min-w-0 ${
-                    active
-                      ? "bg-white/[0.07] text-white ring-1 ring-white/10"
-                      : "text-muted hover:bg-white/[0.04] hover:text-white"
-                  }`}
+                  aria-current={active ? "true" : undefined}
+                  className="min-w-[230px] shrink-0 rounded-xl px-4 py-3 text-left transition-colors duration-200 lg:min-w-0"
                 >
                   <span className="flex items-center gap-2 text-sm font-bold">
                     <svg
                       viewBox="0 0 24 24"
-                      className={`h-4 w-4 shrink-0 ${active ? "text-accent-2" : ""}`}
+                      className="ag-set-ic"
                       fill="none"
                       stroke="currentColor"
                       strokeWidth="1.8"

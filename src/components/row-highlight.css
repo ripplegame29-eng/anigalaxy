@@ -1,0 +1,107 @@
+/*
+ * Подсветка карточек в горизонтальных рядах (главная, профиль, разделы).
+ *
+ * Плашка едет внутри прокручиваемой ленты, поэтому position: relative и
+ * вертикальные отступы — у самой ленты: без них плашка и подъём карточки
+ * обрезались бы её overflow.
+ *
+ * Карточкам задан свой transition, потому что у них уже есть свои hover-эффекты
+ * (масштаб постерa, затемнение, кнопка play) — transform поднимает только
+ * обёртка .hl-card, их не задевая.
+ */
+
+.hl-row {
+  position: relative;
+  /* запас снизу и сверху, чтобы плашка и подъём не резались overflow ленты */
+  padding-top: 10px;
+  padding-bottom: 16px;
+}
+
+/* карточки и прочее содержимое — над плашкой */
+.hl-row > *:not(.hl-pill) {
+  position: relative;
+  z-index: 1;
+}
+
+.hl-pill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 0;
+  height: 0;
+  z-index: 0;
+  pointer-events: none;
+  /* Плашка не должна быть snap-точкой. Селектор .rail > * в globals.css
+   * раздаёт scroll-snap-align всем детям ленты, включая плашку, а она едет
+   * transform-ом вместе с наведением. Браузер считает каждую её новую позицию
+   * snap-точкой и дотягивает ленту: ряд уезжал на сотни и тысячи пикселей
+   * просто от движения мыши по карточкам. Проверено в браузере — с этим
+   * правилом scrollLeft при наведении не меняется. */
+  scroll-snap-align: none;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 12px 40px rgba(43, 127, 255, 0.22);
+  opacity: 0;
+  transition:
+    transform 0.28s cubic-bezier(0.3, 0.9, 0.3, 1),
+    width 0.28s cubic-bezier(0.3, 0.9, 0.3, 1),
+    height 0.28s cubic-bezier(0.3, 0.9, 0.3, 1),
+    opacity 0.2s;
+}
+
+/*
+ * Селектор удвоен намеренно: в globals.css есть `.rail > *` со
+ * scroll-snap-align: start (специфичность 0,1,0), и он подключён раньше
+ * этого файла, а при равной специфичности решает порядок — правило из
+ * globals.css перебивало одиночный класс и плашка снова становилась
+ * snap-точкой. С `.hl-row > .hl-pill` (0,2,0) наш выигрывает всегда.
+ */
+.hl-row > .hl-pill {
+  scroll-snap-align: none;
+}
+
+.hl-pill.on {
+  opacity: 1;
+}
+
+/*
+ * Подъём карточки сделан на ВНУТРЕННЕМ элементе, а не на самой .hl-card.
+ *
+ * Лента помечена scroll-snap-type: x mandatory, и если двигать transform-ом
+ * сам snap-элемент, браузер пересчитывает привязку и «притягивает» ленту:
+ * ряд дёргался на тысячи пикселей при движении мыши по карточкам.
+ * Проверено в браузере: transform на .hl-card — лента уезжает на 2505px;
+ * на .hl-card > * — не двигается, а подъём на 4px виден.
+ * Свойство translate вместо transform не помогает: для snap это та же геометрия.
+ *
+ * Это полдела: вторая половина бага была в плашке, см. scroll-snap-align
+ * в .hl-pill выше.
+ */
+.hl-card > * {
+  transition: transform 0.28s cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+
+.hl-card:hover > *,
+.hl-card:focus-within > * {
+  transform: translateY(-4px);
+}
+
+/* на тач-устройствах плашка бессмысленна — там нет курсора */
+@media (hover: none) {
+  .hl-pill {
+    display: none;
+  }
+  .hl-card:hover > *,
+  .hl-card:focus-within > * {
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hl-pill,
+  .hl-card {
+    transition-duration: 0.01ms !important;
+    transition-delay: 0s !important;
+  }
+}
