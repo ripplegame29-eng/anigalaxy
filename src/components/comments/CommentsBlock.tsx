@@ -19,6 +19,7 @@ import { useEffect, useRef, useState } from "react";
 import { AvatarView } from "@/components/profile/AvatarView";
 import { AgTag } from "@/components/progression/AgTag";
 import { ReportButton } from "@/components/ReportButton";
+import { PremiumChip } from "@/components/profile/PremiumChip";
 import { FRAMES } from "@/lib/cosmetics";
 import { isPremiumActive } from "@/lib/auth";
 import { useAccount } from "@/lib/use-account";
@@ -169,7 +170,7 @@ function CommentCard({
 
   return (
     <li
-      className="ag-cm-item group relative rounded-xl bg-white/[0.03] px-3 py-2.5 ring-1 ring-white/8 transition hover:bg-white/[0.055] hover:ring-accent/35 sm:px-3.5 sm:py-3"
+      className="ag-cm-item group relative rounded-2xl px-3.5 py-3 transition sm:px-4 sm:py-3.5"
       style={{ animationDelay: `${Math.min(index, 8) * 45}ms` }}
     >
       <div className={`flex gap-3 ${nested ? "" : ""}`}>
@@ -179,7 +180,7 @@ function CommentCard({
             avatar={meta.avatar}
             frameCss={meta.frameCss}
             frameImg={meta.frameImg}
-            className={nested ? "h-7 w-7" : "h-10 w-10"}
+            className={nested ? "h-8 w-8" : "h-11 w-11"}
             textClass={nested ? "text-[9px]" : "text-xs"}
           />
           {!nested && (
@@ -198,11 +199,7 @@ function CommentCard({
               {item.author}
             </span>
             {meta.tag && <AgTag tag={meta.tag} size="sm" className="shrink-0" />}
-            {meta.premium && (
-              <span className="shrink-0 rounded-md bg-gold/15 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-[0.1em] text-gold ring-1 ring-gold/35">
-                Premium
-              </span>
-            )}
+            {meta.premium && <PremiumChip />}
             <span className="shrink-0 text-[11px] text-muted">{timeAgo(item.at)}</span>
 
             <span
@@ -262,7 +259,7 @@ function CommentCard({
             <button
               type="button"
               onClick={() => setRevealed(true)}
-              className="mt-2 flex w-full items-center gap-2 rounded-lg bg-gold/10 px-3 py-2 text-left text-[11px] font-bold text-gold ring-1 ring-gold/30 transition hover:bg-gold/15 hover:ring-gold/50"
+              className="ag-cm-spoil mt-2 flex w-full items-center gap-2 rounded-xl bg-accent/10 px-3.5 py-2.5 text-left text-xs font-bold text-accent-2 ring-1 ring-accent/35 transition hover:bg-accent/15 hover:ring-accent/55"
             >
               <EyeOffIcon />
               Спойлер — нажмите, чтобы показать
@@ -471,15 +468,15 @@ export function CommentsBlock({ scope }: { scope: CommentsScope }) {
   const headingId = titleId ? `cm-h-${titleId}` : "cm-h-profile";
 
   return (
-    <section className="ag-cm rounded-2xl border border-line bg-card/70 p-4 sm:p-5" aria-label="Комментарии">
+    <section className="ag-cm" aria-label="Комментарии">
       {/* Заголовок + счётчик + сортировка */}
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <h2 id={headingId} className="flex items-center gap-2.5 text-base font-extrabold tracking-tight text-white sm:text-lg">
-          <svg viewBox="0 0 24 24" className="h-5 w-5 text-accent-2" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+        <h2 id={headingId} className="ag-cm-h flex items-center gap-3 text-2xl font-extrabold tracking-tight text-white sm:text-[32px]">
+          <svg viewBox="0 0 24 24" className="h-6 w-6 text-accent sm:h-7 sm:w-7" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
             <path d="M21 12a8 8 0 0 1-8 8H4l2.2-2.6A8 8 0 1 1 21 12Z" />
           </svg>
           Комментарии
-          <span className="rounded-full bg-accent/20 px-2 py-0.5 text-[11px] font-extrabold tracking-normal text-accent-2 ring-1 ring-accent/40">
+          <span className="ag-cm-count text-base font-bold tracking-normal text-muted sm:text-lg">
             {list.length}
           </span>
         </h2>
@@ -490,7 +487,7 @@ export function CommentsBlock({ scope }: { scope: CommentsScope }) {
             value={sort}
             onChange={(event) => setSort(event.target.value as CommentSort)}
             aria-label="Сортировка комментариев"
-            className="appearance-none rounded-xl bg-white/8 py-2 pl-3 pr-8 text-[11px] font-bold text-white ring-1 ring-white/12 transition hover:bg-white/12 hover:ring-white/30 focus:outline-none focus:ring-accent/55"
+            className="ag-cm-sel appearance-none rounded-xl py-2 pl-3.5 pr-9 text-xs font-bold text-white transition focus:outline-none"
           >
             <option value="new">Сначала новые</option>
             <option value="old">Сначала старые</option>
@@ -501,7 +498,7 @@ export function CommentsBlock({ scope }: { scope: CommentsScope }) {
       </div>
 
       {/* Композер */}
-      <div className="rounded-xl bg-white/[0.03] p-3 ring-1 ring-white/8 transition focus-within:ring-accent/45">
+      <div className="ag-cm-compose rounded-2xl p-4 transition">
         {replyTo && (
           <div className="mb-2 flex items-center justify-between gap-2 rounded-lg bg-accent/12 px-2.5 py-1.5 text-[11px] text-accent-2 ring-1 ring-accent/30">
             <span className="truncate">
@@ -540,7 +537,7 @@ export function CommentsBlock({ scope }: { scope: CommentsScope }) {
           className="w-full resize-none bg-transparent text-sm text-white placeholder:text-muted/60 focus:outline-none"
         />
 
-        <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
+        <div className="ag-cm-bar mt-3 flex flex-wrap items-center justify-between gap-2 pt-3">
           <div className="flex items-center gap-2">
             <button
               type="button"
@@ -548,7 +545,7 @@ export function CommentsBlock({ scope }: { scope: CommentsScope }) {
               onClick={() => setSpoilerOn((on) => !on)}
               className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11px] font-bold ring-1 transition ${
                 spoilerOn
-                  ? "bg-gold/15 text-gold ring-gold/40"
+                  ? "bg-accent/18 text-accent-2 ring-accent/45"
                   : "bg-white/6 text-muted ring-white/12 hover:text-white hover:ring-white/30"
               }`}
             >
@@ -564,7 +561,7 @@ export function CommentsBlock({ scope }: { scope: CommentsScope }) {
             type="button"
             onClick={send}
             disabled={!draft.trim()}
-            className="btn-primary inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-xs font-bold text-white disabled:opacity-45"
+            className="btn-primary ag-cm-send inline-flex items-center gap-1.5 rounded-full px-5 py-2.5 text-xs font-bold text-white disabled:opacity-45"
           >
             <SendIcon />
             Отправить
@@ -572,7 +569,7 @@ export function CommentsBlock({ scope }: { scope: CommentsScope }) {
         </div>
 
         <p className="mt-2 text-[11px] text-muted">Ctrl+Enter — быстрая отправка</p>
-        {hint && <p className="mt-1 text-[11px] font-bold text-gold">{hint}</p>}
+        {hint && <p className="mt-1 text-[11px] font-bold text-accent-2">{hint}</p>}
       </div>
 
       <p className="mt-2 text-[11px] leading-relaxed text-muted">
@@ -590,7 +587,7 @@ export function CommentsBlock({ scope }: { scope: CommentsScope }) {
           </p>
         </div>
       ) : (
-        <ul className="mt-4 space-y-3">
+        <ul className="mt-5 space-y-3">
           {roots.map((root, index) => (
             <CommentCard
               key={root.id}

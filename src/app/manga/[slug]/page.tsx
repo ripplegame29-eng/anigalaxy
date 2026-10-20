@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { Poster } from "@/components/Poster";
 import { Reveal } from "@/components/Reveal";
-import { mangaDetail } from "@/lib/mangadex";
+import { mangaDetail } from "@/lib/senku";
 
 /** Данные тайтла кэшируются на 15 минут */
 export const revalidate = 900;
@@ -192,13 +192,6 @@ export default async function MangaTitlePage({ params }: PageProps) {
           </ul>
         )}
       </Reveal>
-
-      {/* Атрибуция источнику — текстом, без ссылки: чтение полностью на сайте,
-          уводить на сторонний ресурс не предлагаем */}
-      <p className="mt-8 text-xs text-muted">
-        Описание, обложка, рейтинг и главы — с MangaDex. Переводы принадлежат
-        командам переводчиков, права на главы — правообладателям.
-      </p>
     </div>
   );
 }

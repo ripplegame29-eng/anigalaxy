@@ -117,8 +117,9 @@ svg.frame{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
    выглядела как просто обрезанный баннер.
 
    Что здесь добавлено:
-   • полоса прокрутки в стиле виджета — на телефоне она появляется при
-     свайпе и сразу показывает, что справа есть продолжение;
+   • стрелки по краям ленты — на телефоне полосы прокрутки не видно (у
+     iframe она своей не показывает), и без стрелок кнопка справа
+     выглядела просто обрезанным баннером;
    • затемнение у правого края .stack — оно не едет вместе с контентом,
      потому что .stack позиционирован, а тень живёт поверх .wrap;
    • невидимая зона нажатия 180×44 у CTA: нарисованная кнопка на 390px
@@ -130,7 +131,12 @@ svg.frame{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
     overflow-x:auto;
     -webkit-overflow-scrolling:touch;
     overscroll-behavior-x:contain;
+    /* Системная полоса под баннером — серые «блинчики» посреди картинки.
+       Листание показывают стрелки по краям, полоса тут только вредит */
+    scrollbar-width:none;
+    -ms-overflow-style:none;
   }
+  .wrap::-webkit-scrollbar{display:none}
   .cta::before{
     content:"";position:absolute;top:50%;right:0;translate:0 -50%;
     width:180px;height:44px;

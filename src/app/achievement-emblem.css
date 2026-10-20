@@ -1,4 +1,20 @@
 /* ===== AchievementEmblem ===== */
+/* Переодетые достижения: вместо круглой эмблемы — медаль из макетов.
+   Обёртка держит квадратный бокс, сама медаль рисует свой контур 96×104. */
+.ae-md{
+  --s:120px;
+  position:relative;width:var(--s);height:calc(var(--s)*104/96);
+  margin:0 auto calc(var(--s)*.1);flex:none;isolation:isolate;
+  display:grid;place-items:center;
+  filter:drop-shadow(0 0 10px rgba(var(--md-g,255,255,255),.35));
+  transition:filter .25s
+}
+.ae-md:hover{filter:drop-shadow(0 0 18px rgba(var(--md-g,255,255,255),.6))}
+.ae-md .md{animation:ae-md-float 4.5s ease-in-out infinite}
+.ae-md-dim{filter:grayscale(.6);opacity:.55}
+.ae-md.ae-still .md,.ae-md.ae-still .md *{animation:none!important}
+@keyframes ae-md-float{0%,100%{translate:0 0}50%{translate:0 -5px}}
+
 .ae{--s:120px;--go:.5;position:relative;width:var(--s);height:var(--s);margin:0 auto calc(var(--s)*.2);flex:none;isolation:isolate;transform:perspective(700px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg));transition:transform .15s}
 .ae svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
 .ae>i{position:absolute}

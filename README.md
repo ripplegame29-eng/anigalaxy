@@ -125,6 +125,8 @@ SHIKIMORI_API_URL=https://shikimori.io   # опционально; иначе п
 ```
 
 Токен используется только в `src/lib/kodik.ts` (серверные Route Handlers и Server Components).
+В коде его значения нет: без `KODIK_TOKEN` запросы к Kodik завершаются понятной ошибкой.
+Шаблон переменных лежит в `.env.example` — скопируйте его в `.env.local`.
 
 ## Структура
 

@@ -1,6 +1,8 @@
 "use client";
 
 import { createLocalStore, localId } from "./store";
+import { emit } from "./progression/service";
+import { purchaseItem } from "./profile";
 
 /**
  * Кланы: игроки объединяются, копят очки и поднимаются в общем топе.
@@ -287,11 +289,12 @@ export const CLAN_LEVELS: ClanLevelInfo[] = Array.from({ length: 15 }, (_, i) =>
         ? {
             ac: 600 + level * 120,
             points: 900 + level * 160,
-            item:
-              level >= 10
-                ? { kind: "frame" as const, id: `frame-${11 + level}` }
-                : { kind: "title" as const, id: `clan-l${level}` },
-            label: level >= 10 ? "Рамка клана" : "Титул клана",
+            // Титулов `clan-lN` в каталоге косметики нет — не обещаем их.
+            // Рамки frame-21/frame-26 существуют и выдаются по-настоящему.
+            ...(level >= 10
+              ? { item: { kind: "frame" as const, id: `frame-${11 + level}` } }
+              : {}),
+            label: level >= 10 ? "Рамка клана" : "Валюта и очки",
           }
         : { ac: 150 + level * 40, points: 200 + level * 60, label: "Валюта и очки" },
   };
@@ -701,6 +704,16 @@ export function contribute(ac: number, cellIndex = 0): DonateResult {
     return plan;
   }
 
+  /* Вклад стоит AC: списываем ровно столько, сколько поместилось в клетки.
+     Движок — единственный источник баланса, поэтому при отказе (баланс
+     успел измениться) клан не двигается. */
+  const spent = investedIn(plan.cells) - investedIn(clan.cells);
+  if (spent <= 0) return { points: 0, levelsUp: [], cells: [...clan.cells] };
+  const paid = emit({ type: "CLAN_CONTRIBUTED", amount: spent });
+  if (!paid.effects.some((effect) => effect.type === "AC_SPENT")) {
+    return { points: 0, levelsUp: [], cells: [...clan.cells] };
+  }
+
   store.update((state) => {
     if (!state.own) return state;
     const earned = plan.levelsUp.reduce((sum, level) => sum + (levelInfo(level).reward.points ?? 0), 0);
@@ -862,9 +875,16 @@ export function claimLevelReward(level: number): ClanLevelReward | null {
   if (clan.claimed.includes(level)) return null;
 
   const reward = levelInfo(level).reward;
+  /* AC начисляет движок (журнал + идемпотентность по номеру уровня), а не
+     локальный стор клана: иначе баланс в шапке и в клане разъезжался. */
+  if (reward.ac) {
+    emit({ type: "CLAN_REWARD_CLAIMED", level, amount: reward.ac });
+  }
   store.update((state) =>
     state.own ? { ...state, own: { ...state.own, claimed: [...state.own.claimed, level] } } : state,
   );
+  /* Рамка уровня клана теперь действительно попадает в гардероб. */
+  if (reward.item?.kind === "frame") purchaseItem(reward.item.id, 0);
   return reward;
 }
 

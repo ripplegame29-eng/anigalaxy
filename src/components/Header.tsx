@@ -4,8 +4,8 @@ import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { openBonusDialog } from "@/lib/bonus-dialog";
-import type { FeatureKey } from "@/lib/features";
-import { AccountCard, AccountMenu, MenuItem, useAccountItems } from "./AccountMenu";
+import { ProfileMenu, ProfileMenuPremium } from "./ProfileMenu";
+import { MenuItem, useAccountItems } from "./AccountMenu";
 import { useAccount } from "@/lib/use-account";
 import { HeaderIconButton } from "./HeaderIconButton";
 import { Logo } from "./Logo";
@@ -15,38 +15,20 @@ import { SearchBox } from "./SearchBox";
 interface NavItem {
   href: string;
   label: string;
-  /** Пункт скрывается, если выключен соответствующий флаг в панели */
-  feature?: FeatureKey;
 }
 
 const NAV: NavItem[] = [
   { href: "/", label: "Главная" },
   { href: "/catalog", label: "Каталог" },
-  { href: "/catalog?status=ongoing", label: "Онгоинги" },
-  { href: "/manga", label: "Манга", feature: "manga" },
-  { href: "/catalog?sort=rating", label: "Топ" },
-  { href: "/releases", label: "Релизы", feature: "releases" as const },
+  { href: "/aniswipe", label: "AniSwipe" },
+  { href: "/manga", label: "Манга" },
 ];
 
 /**
- * Флаги приходят из layout (серверный компонент): читать базу из клиентского
- * кода нельзя. Если проп не передан — показываем всё: лишний пункт меня
- * лучше, чем навигация, молча потерявшая разделы.
+ * Плашка PREMIUM в шапке рисует ProfileMenu.premiumButton (см.
+ * components/ProfileMenu.tsx) — так она выглядит и ведёт себя как меню
+ * профиля, а не как отдельная кнопка.
  */
-export type FeatureFlags = Partial<Record<FeatureKey, boolean>>;
-
-function visible(items: NavItem[], features?: FeatureFlags): NavItem[] {
-  return items.filter((item) => !item.feature || features?.[item.feature] !== false);
-}
-
-/** Иконка короны для кнопки PREMIUM */
-function CrownIcon({ className = "h-4 w-4" }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" className={className} fill="currentColor" aria-hidden>
-      <path d="M3 7.6a1 1 0 0 1 .72-.96l3.2-.92a1 1 0 0 1 1.27.63l.77 2.1a1 1 0 0 0 1.62.4l1.7-1.65a1 1 0 0 1 1.42 0l1.7 1.65a1 1 0 0 0 1.62-.4l.77-2.1a1 1 0 0 1 1.27-.63l3.2.92a1 1 0 0 1 .72.96c.14 1.36.28 2.73-.46 4.03A6.8 6.8 0 0 1 17.6 16H6.4a6.8 6.8 0 0 1-4.3-4.37c-.74-1.3-.6-2.67-.46-4.03ZM6 18h12a1 1 0 1 1 0 2H6a1 1 0 1 1 0-2Z" />
-    </svg>
-  );
-}
 
 /** Иконка щита со звездой — кнопка «Боевой пропуск» */
 function ShieldIcon({ className = "h-[18px] w-[18px]" }: { className?: string }) {
@@ -118,7 +100,7 @@ function GiftIcon({ className = "h-[18px] w-[18px]" }: { className?: string }) {
  * Пока пользователь вверху страницы — фон почти прозрачный (видео слайдера
  * видно сквозь стекло), после прокрутки стекло уплотняется.
  */
-export function Header({ features }: { features?: FeatureFlags }) {
+export function Header() {
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -192,7 +174,7 @@ export function Header({ features }: { features?: FeatureFlags }) {
 
         {/* Десктопная навигация */}
         <nav className="hidden items-center gap-1 md:flex" aria-label="Основная навигация">
-          {visible(NAV, features).map((item) => (
+          {NAV.map((item) => (
             <Link
               key={item.href}
               href={item.href}
@@ -219,27 +201,23 @@ export function Header({ features }: { features?: FeatureFlags }) {
               с клавиатуры) — маленькое окошко с описанием. Начиная с lg,
               чтобы на md не сжимать поиск до нуля */}
           <div className="hidden items-center gap-2 lg:flex">
-            {features?.battlePass !== false ? (
-              <HeaderIconButton
-                href="/battlepass"
-                label="Боевой пропуск"
-                hint="Сезонные награды, задания и уровни"
-                ariaLabel="Боевой пропуск"
-              >
-                <ShieldIcon />
-              </HeaderIconButton>
-            ) : null}
+            <HeaderIconButton
+              href="/battlepass"
+              label="Боевой пропуск"
+              hint="Сезонные награды, задания и уровни"
+              ariaLabel="Боевой пропуск"
+            >
+              <ShieldIcon />
+            </HeaderIconButton>
 
-            {features?.watchTogether !== false ? (
-              <HeaderIconButton
-                href="/watch-together"
-                label="Совместный просмотр"
-                hint="Смотрите аниме вместе с друзьями в реальном времени"
-                ariaLabel="Совместный просмотр"
-              >
-                <TogetherIcon />
-              </HeaderIconButton>
-            ) : null}
+            <HeaderIconButton
+              href="/watch-together"
+              label="Совместный просмотр"
+              hint="Смотрите аниме вместе с друзьями в реальном времени"
+              ariaLabel="Совместный просмотр"
+            >
+              <TogetherIcon />
+            </HeaderIconButton>
 
             <HeaderIconButton
               label="Ежедневный бонус"
@@ -251,18 +229,9 @@ export function Header({ features }: { features?: FeatureFlags }) {
             </HeaderIconButton>
           </div>
 
-          {features?.premium !== false ? (
-            <Link
-              href="/premium"
-              aria-label="Premium-подписка"
-              className="btn-premium glow-ring"
-              aria-current={isActive("/premium") ? "page" : undefined}
-            >
-              <CrownIcon />
-              Premium
-            </Link>
-          ) : null}
-          <AccountMenu />
+          {/* Плашка PREMIUM — из того же компонента, что и меню профиля */}
+          <ProfileMenuPremium />
+          <ProfileMenu />
         </div>
 
         {/* Поиск (mobile) */}
@@ -350,16 +319,19 @@ export function Header({ features }: { features?: FeatureFlags }) {
 
             {/* Скролл: список длинный, а экран телефонный */}
             <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pb-6">
+{/* То же меню профиля, что в шапке: на мобильном дропдаун в шапке не
+                помещается, поэтому он живёт в шторке. После выбора пункта
+                шторку закрываем — иначе она остаётся поверх перехода */}
               <div className="px-4">
-                <AccountCard onNavigate={closeMenu} />
+                <ProfileMenu onAfterSelect={closeMenu} />
               </div>
 
               {/* Разделы сайта */}
-              <p className="mb-1.5 mt-5 px-5 text-[10px] font-bold uppercase tracking-[0.16em] text-[#6e6e78]">
+              <p className="mb-1.5 mt-5 px-5 text-[10px] font-bold uppercase tracking-[0.16em] text-muted">
                 Разделы
               </p>
               <nav className="grid gap-0.5 px-2" aria-label="Разделы сайта">
-                {visible(NAV, features).map((item) => (
+                {NAV.map((item) => (
                   <Link
                     key={item.href}
                     href={item.href}
@@ -377,29 +349,25 @@ export function Header({ features }: { features?: FeatureFlags }) {
                 {/* Кланы — раздел первого класса, но в шапке его нет:
                     кнопка живёт рядом с чатом. В меню он нужен, иначе
                     с телефона до него не дойти */}
-                {features?.clans !== false ? (
-                  <Link
-                    href="/clans"
-                    onClick={closeMenu}
-                    aria-current={isActive("/clans") ? "page" : undefined}
-                    className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors ${
-                      isActive("/clans")
-                        ? "bg-accent/15 text-white ring-1 ring-accent/30"
-                        : "text-[#c6c6cb] hover:bg-white/6 hover:text-white"
-                    }`}
-                  >
-                    Кланы
-                  </Link>
-                ) : null}
-                {features?.battlePass !== false ? (
-                  <Link
-                    href="/battlepass"
-                    onClick={closeMenu}
-                    className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-[#c6c6cb] transition-colors hover:bg-white/6 hover:text-white"
-                  >
-                    Боевой пропуск
-                  </Link>
-                ) : null}
+                <Link
+                  href="/clans"
+                  onClick={closeMenu}
+                  aria-current={isActive("/clans") ? "page" : undefined}
+                  className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors ${
+                    isActive("/clans")
+                      ? "bg-accent/15 text-white ring-1 ring-accent/30"
+                      : "text-[#c6c6cb] hover:bg-white/6 hover:text-white"
+                  }`}
+                >
+                  Кланы
+                </Link>
+                <Link
+                  href="/battlepass"
+                  onClick={closeMenu}
+                  className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-[#c6c6cb] transition-colors hover:bg-white/6 hover:text-white"
+                >
+                  Боевой пропуск
+                </Link>
                 <Link
                   href="/watch-together"
                   onClick={closeMenu}
@@ -414,7 +382,7 @@ export function Header({ features }: { features?: FeatureFlags }) {
                   обещал разделы, которых у него нет */}
               {hasAccount && (
                 <>
-                  <p className="mb-1.5 mt-5 px-5 text-[10px] font-bold uppercase tracking-[0.16em] text-[#6e6e78]">
+                  <p className="mb-1.5 mt-5 px-5 text-[10px] font-bold uppercase tracking-[0.16em] text-muted">
                     Сообщество
                   </p>
                   <nav className="grid gap-0.5 px-2" aria-label="Разделы аккаунта">
@@ -430,7 +398,7 @@ export function Header({ features }: { features?: FeatureFlags }) {
                 а выдуманные страницы в меню — это тупики, поэтому здесь только
                 та же строка, что в футере сайта */}
             <div className="shrink-0 border-t border-line px-5 py-3">
-              <p className="text-[11px] leading-relaxed text-[#55555e]">
+              <p className="text-[11px] leading-relaxed text-muted">
                 © 2026 AniGalaxy. Все права на контент принадлежат правообладателям.
               </p>
             </div>

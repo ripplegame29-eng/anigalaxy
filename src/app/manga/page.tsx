@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { AnimeGrid } from "@/components/AnimeRow";
 import { Reveal } from "@/components/Reveal";
-import { mangaCatalogPage, type MangaSort } from "@/lib/mangadex";
+import { mangaCatalogPage, type MangaSort } from "@/lib/senku";
 import { requireFeature } from "@/lib/features";
 
 export const metadata: Metadata = {
@@ -100,7 +100,7 @@ export default async function MangaCatalogPage({ searchParams }: PageProps) {
           ) : cards.length > 0 ? (
             <>
               {page > 1 && <span>{shownFrom}–{shownTo} · </span>}
-              {cards.length} тайтлов с русским переводом — читается прямо на сайте
+              {cards.length} тайтлов с русским переводом — читается прямо на сайте{hasMore && <> · ≈ всего {total}</>}
             </>
           ) : (
             "Каталог временно недоступен — попробуйте позже"

@@ -22,6 +22,8 @@ export interface LocalStore<T> {
   getServer(): T;
   set(next: T): void;
   update(fn: (current: T) => T): void;
+  /** Убрать ключ из хранилища совсем (а не записать в него пустое значение) */
+  remove(): void;
   /** Хук для компонента: подписан на изменения стора */
   useStore(): T;
 }
@@ -90,9 +92,21 @@ export function createLocalStore<T>(
 
   const update = (fn: (current: T) => T): void => set(fn(get()));
 
+  const remove = (): void => {
+    if (typeof window === "undefined") return;
+    cached = undefined;
+    loaded = false;
+    try {
+      window.localStorage.removeItem(key);
+    } catch {
+      /* приватный режим — ключ и так не записался */
+    }
+    emit();
+  };
+
   const useStore = (): T => useSyncExternalStore(subscribe, get, getServer);
 
-  return { key, subscribe, get, getServer, set, update, useStore };
+  return { key, subscribe, get, getServer, set, update, remove, useStore };
 }
 
 /** Сегодняшняя дата в формате `YYYY-MM-DD` (ключ дневных квестов) */

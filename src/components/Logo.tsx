@@ -5,8 +5,7 @@ import { LogoMark } from "@/components/LogoMark";
 import { progressEmit } from "@/lib/progression/events";
 
 /**
- * Логотип AniGalaxy: знак-монограмма (инлайн-SVG, без растра и рамок) + вордмарк.
- * Свечение — drop-shadow по альфа-силуэту знака, на hover усиливается.
+ * Логотип AniGalaxy: маскот (LogoMark) + вордмарк.
  *
  * Пасхалка (§12.7): каждый клик по знаку шлёт EASTER_EGG — движок считает
  * их в `flags["egg:logo"]`, седьмой открывает секрет «Хранитель пасхалок».
@@ -24,7 +23,10 @@ export function Logo({ compact = false }: { compact?: boolean }) {
       className="group flex items-center gap-2.5"
       aria-label="AniGalaxy — на главную"
     >
-      <LogoMark className="h-9 w-[62px] shrink-0 drop-shadow-[0_0_10px_rgba(31,123,255,.35)] transition-transform duration-300 ease-[cubic-bezier(.22,1,.36,1)] group-hover:scale-110 group-hover:drop-shadow-[0_0_14px_rgba(0,200,255,.7)]" />
+      {/* Знак пропорционален картинке (192×128, кадр по голове): задаём
+          высоту, ширина считается сама, иначе распорола бы высота строки
+          шапки. h-11 = 44px — на h-9 кот читался, но вяло */}
+      <LogoMark className="h-11 w-auto shrink-0 object-contain drop-shadow-[0_0_10px_rgba(31,123,255,.35)] transition-transform duration-300 ease-[cubic-bezier(.22,1,.36,1)] group-hover:scale-110 group-hover:drop-shadow-[0_0_14px_rgba(0,200,255,.7)]" />
       {!compact && (
         <span className="font-accent text-lg font-extrabold tracking-tight">
           <span className="text-white">Ani</span>

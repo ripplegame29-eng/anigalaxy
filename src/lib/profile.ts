@@ -1,8 +1,10 @@
 "use client";
 
 import { createLocalStore, dayKey, localId } from "./store";
+import { isEffectLevel } from "./profile-effects";
 import { levelInfo } from "./levels";
 import { applyVote, normalizeCommentText, type CommentMsg } from "./comments";
+import { DEFAULT_NICK_STYLE, normalizeNickStyle, type NickStyle } from "./nickname";
 
 /**
  * Настройки профиля и локальная «геймификация»: XP, монеты, достижения,
@@ -35,12 +37,31 @@ export interface ProfileNotice {
   read: boolean;
 }
 
+/** Кому открыт профиль целиком */
+export type ProfileScope = "public" | "friends" | "private";
+
+export const SCOPE_LABEL: Record<ProfileScope, string> = {
+  public: "Публичный",
+  friends: "Только друзья",
+  private: "Приватный",
+};
+
 export interface PrivacySettings {
   /** Профиль доступен по ссылке */
   profilePublic: boolean;
   showStats: boolean;
   showAchievements: boolean;
   showHistory: boolean;
+  /** Стена комментариев на странице профиля */
+  showComments: boolean;
+  /** Принимаются ли заявки в друзья */
+  acceptFriends: boolean;
+  /**
+   * Кому открыт профиль целиком. Для уровня «friends» список друзей
+   * лежит в отдельном сторе (`animehub:friends:v1`): записи заводятся
+   * вручную, потому что подтверждать их некому — сервера у сайта нет.
+   */
+  scope: ProfileScope;
 }
 
 export interface ProfileState {
@@ -58,9 +79,17 @@ export interface ProfileState {
   extraTagIds: string[];
   /** id рамки вокруг аватара */
   frameId: string;
+  /** id эффекта-частицы, "" — без частиц (одна на профиль) */
+  particleFx: string;
+  /** id включённых стилей оформления: сочетаются между собой */
+  styleFx: string[];
+  /** Уровень эффекта I…III — множитель количества частиц и амплитуды */
+  fxLevel: 1 | 2 | 3;
   bio: string;
   /** Hex-подпись под ником (как у референса), пусто — генерируется сама */
   signature: string;
+  /** Оформление отображаемого ника (услуга «Цвет ника») */
+  nickStyle: NickStyle;
   /** id тайтлов на витрине */
   showcase: string[];
   xp: number;
@@ -90,8 +119,12 @@ const EMPTY: ProfileState = {
   extraTitleIds: [],
   extraTagIds: [],
   frameId: "",
+  particleFx: "",
+  styleFx: [],
+  fxLevel: 1,
   bio: "",
   signature: "",
+  nickStyle: DEFAULT_NICK_STYLE,
   showcase: [],
   xp: 0,
   coins: 0,
@@ -110,6 +143,9 @@ const EMPTY: ProfileState = {
     showStats: true,
     showAchievements: true,
     showHistory: true,
+    showComments: true,
+    acceptFriends: true,
+    scope: "public",
   },
 };
 
@@ -125,6 +161,14 @@ function parse(raw: string): ProfileState | null {
       showcase: list<string>(parsed.showcase).filter((id) => typeof id === "string").slice(0, 6),
       extraTitleIds: list<string>(parsed.extraTitleIds).filter((id) => typeof id === "string").slice(0, 11),
       extraTagIds: list<string>(parsed.extraTagIds).filter((id) => typeof id === "string").slice(0, 28),
+      particleFx: typeof parsed.particleFx === "string" ? parsed.particleFx : "",
+      /* Стили сочетаются, но список всё равно ограничен: иначе в разметку
+         попадёт мусор из старого хранилища, а classes не ограничены. */
+      styleFx: list<string>(parsed.styleFx).filter((id) => typeof id === "string").slice(0, 4),
+      fxLevel: isEffectLevel(parsed.fxLevel) ? parsed.fxLevel : 1,
+      /* Оформление ника нормализуется: из старого хранилища могли остаться
+         кривые цвета или скорость 0 — и градиент просто не рисовался бы. */
+      nickStyle: normalizeNickStyle(parsed.nickStyle),
       claimed: list<string>(parsed.claimed),
       quests: list<string>(parsed.quests),
       gifts: list<ProfileGift>(parsed.gifts),
@@ -137,6 +181,16 @@ function parse(raw: string): ProfileState | null {
         showStats: privacy.showStats ?? true,
         showAchievements: privacy.showAchievements ?? true,
         showHistory: privacy.showHistory ?? true,
+        showComments: privacy.showComments ?? true,
+        acceptFriends: privacy.acceptFriends ?? true,
+        scope:
+          privacy.scope === "friends" || privacy.scope === "private"
+            ? privacy.scope
+            : privacy.scope === "public" || privacy.scope === undefined
+              ? privacy.profilePublic === false
+                ? "private"
+                : "public"
+              : "public",
       },
     };
   } catch {

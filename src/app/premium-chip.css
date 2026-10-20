@@ -1,0 +1,89 @@
+/* ==========================================================================
+   PREMIUM-тег — перенесён из макета «AniGalaxy — PREMIUM тег» дословно.
+
+   Отступы, радиусы и размер иконки заданы в em, поэтому масштабируется тег
+   целиком: меняется только font-size. Ничего не «подгонял» под проект —
+   var(--font-body) в проекте есть (globals.css, --font-sans), остальные гарнитуры в
+   перечислении макета остаются запасными.
+
+   Селектор не привязан к .ag-root: тег показывается и в шапке профиля, и в
+   других местах с подпиской.
+   ========================================================================== */
+
+.ag-premium {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55em;
+  overflow: hidden;
+  vertical-align: middle;
+  flex: none;
+  font: 800 10px/1 var(--font-display), var(--font-body), sans-serif;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  padding: 0.55em 1em 0.55em 0.75em;
+  border: 1.5px solid transparent;
+  border-radius: 1.1em;
+  /* Как кнопка PREMIUM в шапке: тёмно-синее стекло, градиентная рамка
+     синий → циан, градиентный текст и мягкое свечение. */
+  color: #a9d8ff;
+  background:
+    linear-gradient(135deg, #08101f, #0a1428) padding-box,
+    linear-gradient(135deg, rgba(43, 127, 255, 0.9), rgba(34, 211, 238, 0.55) 55%, rgba(43, 127, 255, 0.35)) border-box;
+  box-shadow:
+    0 0 1.8em -0.3em rgba(43, 127, 255, 0.35),
+    inset 0 0 1.4em rgba(43, 127, 255, 0.14);
+}
+
+/* Блик, пробегающий по тегу. */
+.ag-premium::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    105deg,
+    transparent 40%,
+    rgba(255, 255, 255, 0.5) 50%,
+    transparent 60%
+  );
+  transform: translateX(-130%);
+  animation: ag-shine 4s ease-in-out infinite;
+}
+
+.ag-premium svg {
+  width: 1.2em;
+  height: 1.2em;
+  flex: none;
+  fill: none;
+  stroke: #7cc8ff;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 0.35em rgba(43, 127, 255, 0.7));
+}
+
+@keyframes ag-flow {
+  to {
+    background-position: 0 0, 300% 0;
+  }
+}
+
+@keyframes ag-shine {
+  0%,
+  60% {
+    transform: translateX(-130%);
+  }
+  90%,
+  100% {
+    transform: translateX(130%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ag-premium,
+  .ag-premium::after {
+    animation: none;
+  }
+}

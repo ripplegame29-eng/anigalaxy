@@ -65,10 +65,12 @@
 .card{--mut:#8b90a8;display:flex;gap:24px;align-items:center;border:1px solid color-mix(in srgb,var(--c) 35%,transparent);border-radius:22px;padding:26px;transition:.4s;
  background:radial-gradient(560px 240px at 6% 50%,color-mix(in srgb,var(--c) 28%,transparent),transparent 70%),#0d0a14;box-shadow:0 0 40px color-mix(in srgb,var(--c) 14%,transparent)}
 .card .b{flex:1;min-width:0}
-.card h1{margin:0;font-size:clamp(24px,3.4vw,38px);font-weight:900;letter-spacing:.02em;display:flex;gap:12px;align-items:baseline;flex-wrap:wrap;background:linear-gradient(90deg,#fff,var(--c) 50%,var(--c2));-webkit-background-clip:text;background-clip:text;color:transparent}
-.card h1 small{font-size:14px;color:var(--mut);-webkit-text-fill-color:var(--mut);font-weight:600}
-.card h1 em{margin-left:auto;font-style:normal;font-size:22px;-webkit-text-fill-color:var(--c2)}
-/* Строка уровня — служебный статус-бар, не заголовок: остаётся на основном шрифте */
-.card h1{font-family:var(--font-sans)}
+/* Строка уровня — служебный статус-бар, а не заголовок страницы: раньше это
+   был h1, из-за чего на профиле оказывалось два h1. Теперь h2, поэтому в
+   селекторах стоят оба тега. */
+.card h1,.card h2{margin:0;font-size:clamp(24px,3.4vw,38px);font-weight:900;letter-spacing:.02em;display:flex;gap:12px;align-items:baseline;flex-wrap:wrap;background:linear-gradient(90deg,#fff,var(--c) 50%,var(--c2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.card h1 small,.card h2 small{font-size:14px;color:var(--mut);-webkit-text-fill-color:var(--mut);font-weight:600}
+.card h1 em,.card h2 em{margin-left:auto;font-style:normal;font-size:22px;-webkit-text-fill-color:var(--c2)}
+.card h1,.card h2{font-family:var(--font-body)}
 .era{font-size:13px;color:var(--mut)}
 @media(prefers-reduced-motion:reduce){.le,.le *,.le *::before,.le *::after{animation:none!important}}

@@ -1,0 +1,100 @@
+/* Кольцо статусов списков — блок гостевого профиля (образец: animeon.cc) */
+.ag-root .ag-ls {
+  padding: 16px;
+}
+
+.ag-root .ag-ls-top {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.ag-root .ag-ls-ring {
+  position: relative;
+  width: 104px;
+  height: 104px;
+  flex-shrink: 0;
+}
+
+.ag-root .ag-ls-ring svg {
+  width: 100%;
+  height: 100%;
+  /* кольцо начинается сверху, как на круговой диаграмме */
+  transform: rotate(-90deg);
+}
+
+.ag-root .ag-ls-track {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.08);
+  stroke-width: 13;
+}
+
+.ag-root .ag-ls-arc {
+  fill: none;
+  stroke-width: 13;
+  stroke-linecap: butt;
+}
+
+.ag-root .ag-ls-hole {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 1px;
+  text-align: center;
+}
+
+.ag-root .ag-ls-hole b {
+  font-size: 26px;
+  font-weight: 800;
+  line-height: 1;
+  color: #fff;
+}
+
+.ag-root .ag-ls-hole span {
+  font-size: 10px;
+  color: #8b93a7;
+  text-transform: lowercase;
+}
+
+.ag-root .ag-ls-legend {
+  display: grid;
+  gap: 7px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  min-width: 0;
+  flex: 1;
+}
+
+.ag-root .ag-ls-legend li {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #cfd6e4;
+}
+
+.ag-root .ag-ls-legend i {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+.ag-root .ag-ls-legend span {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ag-root .ag-ls-legend b {
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+}

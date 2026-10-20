@@ -233,6 +233,9 @@ function StatCardImpl({
   const iconName =
     typeof icon === "string" && icon in ICONS ? (icon as StatIcon) : null;
   const finalText = format(value);
+  // Призраки глитча берут содержимое отсюда, поэтому у счётчика должен быть
+  // ровно тот же текст, что нарисован на экране — иначе копия «плывёт».
+  const shownText = shown === null ? finalText : format(shown);
 
   return (
     <div
@@ -291,8 +294,8 @@ function StatCardImpl({
       {loading ? (
         <span className="stat-skel" aria-hidden="true" />
       ) : (
-        <span className="stat-num" aria-hidden="true">
-          {shown === null ? finalText : format(shown)}
+        <span className="stat-num" data-text={shownText} aria-hidden="true">
+          {shownText}
         </span>
       )}
       <span className="stat-lb">{label}</span>

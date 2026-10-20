@@ -24,9 +24,7 @@ export function AnimeCard({
   const kind = kindLabel(card.kind);
   const status = statusLabel(card.status);
   // Манга приходит из MangaDex — там id это uuid, они не пересекаются с Kodik
-  const isManga = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
-    card.id,
-  );
+  const isManga = card.manga === true || /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(card.id);
   const rootClass = `group relative block focus:outline-none ${className}`;
 
   // Тело карточки общее для обеих обёрток: у манги свой id и своя ссылка
@@ -91,25 +89,41 @@ export function AnimeCard({
 
       {/* Титул */}
       <div className="mt-3 px-0.5">
-        <h3 className="line-clamp-2 text-[13.5px] font-semibold leading-snug text-bright/90 transition-colors duration-200 group-hover:text-white sm:text-sm">
+        {/* min-h резервирует вторую строку под line-clamp-2: без неё
+            метаданные карточек с коротким и длинным названием оказываются
+            на разной высоте, и ряд расползается «лесенкой».
+            2 × leading-snug (1.375) = 2.75em; em считается от font-size
+            самого заголовка, поэтому на 13.5px и на 14px пропорция одна. */}
+        <h3 className="line-clamp-2 min-h-[2.75em] text-[13.5px] font-semibold leading-snug text-bright/90 transition-colors duration-200 group-hover:text-white sm:text-sm">
           {card.title}
         </h3>
-        <p className="mt-1 flex items-center gap-1.5 text-xs text-muted">
+        {/* flex-wrap переносит строку, но только между смысловыми
+            группами: каждая группа помечена whitespace-nowrap, а точка
+            входит в следующую группу. Поэтому перенос приходится на
+            границу «год · тип · оценок», а не рвёт «ТВ Сериал» на
+            «ТВ» + «Сериал» и не оставляет точку в конце строки. */}
+        <p className="mt-1 flex flex-wrap items-center gap-x-1.5 text-xs text-muted">
           {isManga ? (
             // У манги год и тип аниме не применимы — показываем жанры
-            card.genres.slice(0, 2).join(" · ")
+            <span className="whitespace-nowrap">{card.genres.slice(0, 2).join(" · ")}</span>
           ) : (
             <>
-              {card.year}
-              {kind && <span className="h-1 w-1 rounded-full bg-white/25" />}
-              {kind}
+              <span className="whitespace-nowrap">{card.year}</span>
+              {kind && (
+                <span className="flex items-center gap-1.5 whitespace-nowrap">
+                  <span className="h-1 w-1 rounded-full bg-white/25" />
+                  {kind}
+                </span>
+              )}
             </>
           )}
           {card.ratingVotes && card.ratingVotes > 0 && (
-            <>
+            <span className="flex items-center gap-1.5 whitespace-nowrap">
               <span className="h-1 w-1 rounded-full bg-white/25" />
-              <span className="tabular-nums">{card.ratingVotes.toLocaleString("ru-RU")} оценок</span>
-            </>
+              <span className="tabular-nums">
+                {card.ratingVotes.toLocaleString("ru-RU")} оценок
+              </span>
+            </span>
           )}
         </p>
       </div>

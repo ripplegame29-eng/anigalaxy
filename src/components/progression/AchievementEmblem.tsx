@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, type CSSProperties, type JSX } from "react";
+import { MedalArt, medalOf } from "./medals";
 
 /* ==== Палитра редкостей: точно как в эталоне ==== */
 export const AE_RARITY = {
@@ -484,6 +485,23 @@ export function AchievementEmblem({
     <b key={i} className={i < lit ? "on" : ""} />
   ));
   const dim = !unlocked;
+
+  /* Девять достижений переодеты в медали из макетов: у них своя форма,
+     свой объём и своя иконка, а не цвет редкости. Их рисуем отдельно —
+     иначе пришлось бы подгонять круглую эмблему под шестиугольник. */
+  const medal = medalOf(a.id);
+  if (medal) {
+    return (
+      <div
+        className={["ae-md", dim ? "ae-md-dim" : "", anim ? "" : "ae-still"].filter(Boolean).join(" ")}
+        role="img"
+        aria-label={`${medal.code}. ${medal.description}. ${unlocked ? "получено" : `прогресс ${p}%`}`}
+        style={{ "--s": `${size}px` } as CSSProperties}
+      >
+        <MedalArt medal={medal} size={size} dimmed={dim} />
+      </div>
+    );
+  }
 
   return (
     <div

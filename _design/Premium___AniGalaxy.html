@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Premium — AniGalaxy</title>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Unbounded:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{box-sizing:border-box;color-scheme:dark;--bg:#050810;--text:#eef2fb;--muted:#8d98b4;--line:rgba(96,150,255,.16);--blue:#2b7fff;--cyan:#22d3ee;--gold:#f5b74a;--green:#34e0a1;--red:#ff5d73;--violet:#9b86ff;--disp:"Unbounded","Manrope",sans-serif}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.45 Manrope,system-ui,sans-serif;overflow-x:hidden}
+a{color:inherit;text-decoration:none}button{font:inherit;color:inherit;cursor:pointer}svg{display:block}
+:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+.sky{position:fixed;inset:0;z-index:-2;background:radial-gradient(900px 560px at 50% -5%,rgba(43,127,255,.26),transparent 65%),radial-gradient(1000px 600px at 80% 10%,rgba(43,127,255,.18),transparent 65%),radial-gradient(800px 600px at 0 60%,rgba(124,92,255,.12),transparent 60%),var(--bg)}
+.stars{position:fixed;border-radius:50%;z-index:-1;background:#cfe4ff;animation:tw 6s ease-in-out infinite alternate}
+@keyframes tw{from{opacity:.25}to{opacity:.95}}
+.wrap{max-width:780px;margin:0 auto;padding:44px clamp(14px,3vw,24px) 90px}
+.card{position:relative;border-radius:22px;border:1px solid var(--line);background:linear-gradient(180deg,rgba(15,24,48,.7),rgba(8,13,26,.7));box-shadow:0 20px 50px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.04)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;border:0;border-radius:14px;padding:15px 22px;font-weight:800;color:#fff;background:linear-gradient(135deg,var(--blue),var(--cyan));box-shadow:0 10px 30px rgba(43,127,255,.45),inset 0 1px 0 rgba(255,255,255,.3);transition:.15s;position:relative;overflow:hidden;white-space:nowrap}
+.btn:hover{transform:translateY(-2px);box-shadow:0 14px 36px rgba(43,127,255,.6)}.btn svg{width:18px;height:18px}
+.btn::after{content:"";position:absolute;inset:0;background:linear-gradient(105deg,transparent 35%,rgba(255,255,255,.3) 50%,transparent 65%);transform:translateX(-120%);animation:sh 3.4s ease-in-out infinite}@keyframes sh{50%,100%{transform:translateX(120%)}}
+.btn.g{background:rgba(255,255,255,.05);border:1px solid var(--line);box-shadow:none}.btn.g::after{display:none}.btn.g:hover{background:rgba(43,127,255,.14);border-color:rgba(43,127,255,.5)}
+.btn.gd{background:linear-gradient(135deg,var(--gold),#ff8a3d);color:#1a1000;box-shadow:0 8px 24px rgba(245,183,74,.4);padding:9px 16px;border-radius:12px}
+/* hero */
+.hero{text-align:center;animation:up .6s both}@keyframes up{from{opacity:0;transform:translateY(16px)}}
+.crown{width:104px;height:104px;margin:0 auto 22px;border-radius:30px;display:grid;place-items:center;background:linear-gradient(135deg,#2b7fff,#22d3ee 70%,#9b86ff);box-shadow:0 0 70px rgba(43,127,255,.6),inset 0 2px 0 rgba(255,255,255,.4);animation:fl 4s ease-in-out infinite;position:relative}
+.crown svg{width:54px;color:#fff;filter:drop-shadow(0 4px 8px rgba(0,0,0,.3))}
+.crown::before{content:"";position:absolute;inset:-14px;border-radius:40px;border:1px solid rgba(34,211,238,.4);animation:pu 2.8s ease-out infinite}
+@keyframes fl{50%{transform:translateY(-8px) rotate(-2deg)}}@keyframes pu{from{opacity:.9;transform:scale(.92)}to{opacity:0;transform:scale(1.25)}}
+.pill{display:inline-flex;align-items:center;gap:8px;padding:8px 18px;border-radius:30px;font-weight:800;font-size:13px;letter-spacing:.1em;color:#cfe4ff;border:1px solid rgba(43,127,255,.55);background:rgba(43,127,255,.12)}.pill svg{width:16px}
+.pill i{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 10px var(--green)}
+h1{font:800 clamp(28px,5.5vw,46px)/1.15 var(--disp);letter-spacing:-.03em;margin:22px 0 12px}
+h1 em{font-style:normal;background:linear-gradient(100deg,#7cc0ff,#22d3ee 50%,#9b86ff);-webkit-background-clip:text;background-clip:text;color:transparent}
+.until{color:var(--muted);font-size:16px}.until b{color:#fff}
+/* warn */
+.warn{display:none;gap:14px;align-items:center;padding:16px 18px;margin-top:34px;background:linear-gradient(100deg,rgba(245,183,74,.16),rgba(245,183,74,.04));border-color:rgba(245,183,74,.4)}.warn.o{display:flex;animation:up .5s both}
+.warn .ic{width:44px;height:44px;border-radius:13px;display:grid;place-items:center;background:rgba(245,183,74,.15);border:1px solid rgba(245,183,74,.4);color:var(--gold);flex:none}.warn .ic svg{width:22px}
+.warn b{display:block;color:var(--gold)}.warn small{color:var(--muted)}.warn .btn{margin-left:auto}
+/* left */
+.left{padding:22px 24px;margin-top:16px}
+.lr{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:14px}.lr span{color:#c3cadb;font-weight:700}
+.lr b{font:800 34px var(--disp);background:linear-gradient(100deg,#7cc0ff,#22d3ee);-webkit-background-clip:text;background-clip:text;color:transparent;line-height:1}.lr small{color:var(--muted);font-weight:700;margin-left:6px}
+.bar{height:12px;border-radius:12px;background:rgba(255,255,255,.07);overflow:hidden}.bar i{display:block;height:100%;width:0;border-radius:12px;background:linear-gradient(90deg,#2b7fff,#22d3ee 70%,#9b86ff);box-shadow:0 0 16px rgba(43,127,255,.7);transition:width 1.3s cubic-bezier(.2,.9,.2,1);position:relative;overflow:hidden}
+.bar i::after{content:"";position:absolute;inset:0;background:linear-gradient(105deg,transparent 40%,rgba(255,255,255,.5) 50%,transparent 60%);animation:sh 2.6s linear infinite}
+.bar.low i{background:linear-gradient(90deg,var(--red),#ff8a3d);box-shadow:0 0 16px rgba(255,93,115,.7)}
+.lf{display:flex;justify-content:space-between;color:var(--muted);font-size:12px;font-weight:700;margin-top:10px}
+.cd{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:18px}
+.cd div{padding:12px 6px;border-radius:14px;text-align:center;background:rgba(3,6,14,.55);border:1px solid var(--line)}.cd b{display:block;font:800 22px var(--disp)}.cd span{font-size:10.5px;letter-spacing:.12em;color:var(--muted);font-weight:800}
+/* auto */
+.auto{display:flex;align-items:center;gap:14px;padding:16px 20px;margin-top:16px}.auto b{display:block}.auto small{color:var(--muted)}
+.tg{margin-left:auto;width:48px;height:28px;border-radius:20px;border:0;background:rgba(255,255,255,.12);position:relative;transition:.2s;flex:none}.tg::after{content:"";position:absolute;left:3px;top:3px;width:22px;height:22px;border-radius:50%;background:#fff;transition:.2s}.tg[aria-pressed=true]{background:linear-gradient(135deg,var(--blue),var(--cyan))}.tg[aria-pressed=true]::after{left:23px}
+.auto .ic{width:42px;height:42px;border-radius:13px;display:grid;place-items:center;background:rgba(43,127,255,.14);border:1px solid rgba(43,127,255,.4);color:#7cc0ff;flex:none}.auto .ic svg{width:20px}
+/* perks */
+.perks{padding:22px 24px;margin-top:16px}.perks h4{margin:0 0 14px;font-size:12px;letter-spacing:.14em;color:var(--muted)}
+.pg{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px}
+.pk{display:flex;align-items:center;gap:12px;padding:12px;border-radius:15px;border:1px solid var(--line);background:rgba(255,255,255,.03);font-weight:700;transition:.25s;animation:up .5s both}
+.pk:hover{transform:translateY(-4px);border-color:var(--c);box-shadow:0 12px 30px rgba(0,0,0,.4),0 0 24px color-mix(in srgb,var(--c) 30%,transparent)}
+.pk .ic{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;background:color-mix(in srgb,var(--c) 16%,transparent);border:1px solid color-mix(in srgb,var(--c) 45%,transparent);color:var(--c);flex:none;transition:.25s}.pk:hover .ic{transform:rotate(-8deg) scale(1.1)}.pk .ic svg{width:19px}
+.pk small{display:block;color:var(--muted);font-weight:600;font-size:12px}
+.acts{display:grid;grid-template-columns:1.35fr 1fr;gap:12px;margin-top:20px}
+.toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,30px);opacity:0;z-index:99;padding:12px 20px;border-radius:14px;background:#0d1730;border:1px solid var(--blue);font-weight:800;transition:.3s;pointer-events:none}.toast.o{opacity:1;transform:translate(-50%,0)}
+@media(max-width:560px){.acts{grid-template-columns:1fr}.warn{flex-wrap:wrap}.warn .btn{width:100%}.cd b{font-size:18px}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+<div class="sky"></div><div id="st"></div>
+<main class="wrap">
+  <section class="hero">
+    <div class="crown" id="crown"></div>
+    <span class="pill" id="pill"></span>
+    <h1><span id="nm"></span>, <em>ты Premium!</em></h1>
+    <div class="until">Подписка активна до <b id="un"></b></div>
+  </section>
+
+  <section class="card warn" id="warn">
+    <div class="ic" id="wi"></div>
+    <div><b id="wt"></b><small>Продлите, чтобы не потерять бонусы</small></div>
+    <button class="btn gd" data-t="Продление подписки — оформляется в разделе оплаты">Продлить</button>
+  </section>
+
+  <section class="card left">
+    <div class="lr"><span>Осталось</span><div><b id="dl">0</b><small id="du">дней</small></div></div>
+    <div class="bar" id="bar"><i id="bi"></i></div>
+    <div class="lf"><span id="ps"></span><span id="pc"></span></div>
+    <div class="cd"><div><b id="c1">0</b><span>ДНЕЙ</span></div><div><b id="c2">0</b><span>ЧАСОВ</span></div><div><b id="c3">0</b><span>МИНУТ</span></div><div><b id="c4">0</b><span>СЕКУНД</span></div></div>
+  </section>
+
+  <section class="card auto">
+    <div class="ic" id="ai"></div>
+    <div><b>Автопродление</b><small id="as"></small></div>
+    <button class="tg" id="tg" aria-pressed="true" aria-label="Автопродление"></button>
+  </section>
+
+  <section class="card perks"><h4>ТВОИ ПРИВИЛЕГИИ</h4><div class="pg" id="pg"></div></section>
+
+  <div class="acts">
+    <button class="btn" id="ren"></button>
+    <a class="btn g" href="/profile" id="prof"></a>
+  </div>
+</main>
+<div class="toast" id="toast"></div>
+<script>
+/* ===== Настройки: заменить реальными данными пользователя ===== */
+const PREM={
+  name:'ripplegame28',
+  until:'2027-01-06',      // дата окончания подписки
+  total:90,                // длительность оплаченного периода, дней
+  profileUrl:'/profile'
+};
+/* привилегии: подставьте реальные из проекта (текст + подпись) */
+const PERKS=[['bolt','Без рекламы','','#f5b74a'],['crown','4K качество','','#9b86ff'],['dl','Скачивание','','#22d3ee'],['star','x2 опыт','XP за активность','#ff7ab8'],['img','Рамки аватара','8 шт.','#2b7fff'],['spark','Титулы и бейджи','2 шт.','#34e0a1'],['pal','Фоны профиля','все пресеты','#c084fc'],['up','Уровни','без лимита','#7cc0ff'],['shield','Поддержка 24/7','','#ff8a3d']];
+/* ============================================================ */
+const $=s=>document.querySelector(s);
+const I=p=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
+const P={crown:'<path d="M3 8l4 4 5-7 5 7 4-4-2 11H5z"/>',bolt:'<path d="M13 2L4 14h7l-1 8 9-12h-7z"/>',dl:'<path d="M12 4v11m-4-4l4 4 4-4M5 20h14"/>',star:'<path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/>',img:'<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-8 8"/>',spark:'<path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8zM19 16l.7 2.3L22 19l-2.3.7L19 22l-.7-2.3L16 19l2.3-.7z"/>',pal:'<path d="M12 3a9 9 0 1 0 0 18c1.5 0 2-1 1.5-2s0-2 1.5-2h2a3 3 0 0 0 3-3A9 9 0 0 0 12 3z"/><circle cx="8" cy="11" r="1"/><circle cx="12" cy="7.5" r="1"/><circle cx="16" cy="11" r="1"/>',up:'<path d="M12 19V5M6 11l6-6 6 6"/>',shield:'<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/>',cal:'<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/>',ref:'<path d="M20 12a8 8 0 1 1-2.3-5.6L20 8M20 3v5h-5"/>',arr:'<path d="M5 12h14M13 6l6 6-6 6"/>'};
+const ic=n=>I(P[n]);
+const toast=t=>{const e=$('#toast');e.textContent=t;e.classList.add('o');clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove('o'),2400)};
+document.addEventListener('click',e=>{const t=e.target.closest('[data-t]');if(t)toast(t.dataset.t)});
+/* звёзды */
+$('#st').outerHTML=Array.from({length:60},()=>`<i class="stars" style="left:${Math.random()*100}vw;top:${Math.random()*100}vh;width:${1+Math.random()*2}px;height:${1+Math.random()*2}px;animation-delay:${Math.random()*6}s"></i>`).join('');
+/* данные; ?days=5 в адресе — предпросмотр «скоро истечёт» */
+const q=new URLSearchParams(location.search).get('days');
+const end=q!==null?new Date(Date.now()+q*864e5):new Date(PREM.until+'T23:59:59');
+const fmt=d=>d.toLocaleDateString('ru-RU',{day:'numeric',month:'long',year:'numeric'});
+const plural=(n,a)=>a[n%10==1&&n%100!=11?0:n%10>=2&&n%10<=4&&(n%100<10||n%100>=20)?1:2];
+$('#crown').innerHTML=ic('crown');$('#pill').innerHTML='<i></i>'+ic('crown')+'PREMIUM АКТИВЕН';
+$('#nm').textContent=PREM.name;$('#un').textContent=fmt(end)+' г.';
+$('#wi').innerHTML=ic('cal');$('#ai').innerHTML=ic('ref');
+$('#ren').innerHTML=ic('ref')+'Продлить подписку';$('#ren').dataset.t='Продление подписки — оформляется в разделе оплаты';
+$('#prof').innerHTML='Мой профиль'+ic('arr');$('#prof').href=PREM.profileUrl;
+$('#pg').innerHTML=PERKS.map((p,i)=>`<div class="pk" style="--c:${p[3]};animation-delay:${i*50}ms"><div class="ic">${ic(p[0])}</div><div>${p[1]}${p[2]?`<small>${p[2]}</small>`:''}</div></div>`).join('');
+function tick(){
+  const ms=Math.max(0,end-Date.now()),d=Math.ceil(ms/864e5),pc=Math.min(100,Math.round(ms/864e5/PREM.total*100));
+  $('#c1').textContent=Math.floor(ms/864e5);$('#c2').textContent=Math.floor(ms/36e5%24);$('#c3').textContent=Math.floor(ms/6e4%60);$('#c4').textContent=Math.floor(ms/1e3%60);
+  $('#dl').textContent=d;$('#du').textContent=plural(d,['день','дня','дней']);
+  $('#bi').style.width=pc+'%';$('#pc').textContent=pc+'% осталось';$('#ps').textContent=fmt(end)+' г.';
+  const low=d<=7;$('#bar').classList.toggle('low',low);$('#warn').classList.toggle('o',low);
+  if(low)$('#wt').textContent='Подписка истекает через '+d+' '+plural(d,['день','дня','дней']);
+}
+tick();setInterval(tick,1000);
+/* автопродление */
+let auto=true;try{auto=localStorage.getItem('ag_autorenew')!=='0'}catch(e){}
+const setAuto=()=>{$('#tg').setAttribute('aria-pressed',auto);$('#as').textContent=auto?'Включено — подписка продлится автоматически':'Выключено — подписка закончится '+fmt(end)};
+$('#tg').onclick=()=>{auto=!auto;try{localStorage.setItem('ag_autorenew',auto?'1':'0')}catch(e){}setAuto();toast(auto?'Автопродление включено':'Автопродление выключено')};setAuto();
+</script>
+</body>
+</html>

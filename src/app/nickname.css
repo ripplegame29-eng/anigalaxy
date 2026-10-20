@@ -1,0 +1,843 @@
+/* ==========================================================================
+   Отображаемое имя и услуги «Смена ника» / «Цвет ника».
+
+   Транскрипция макета «AniGalaxy — смена ника и цвет ника»: размеры, цвета,
+   радиусы, градиенты и тайминги — как в макете.
+
+   Отличия от макета:
+   • префикс `nk-` — в макете классы generic (.dg, .bn, .sw, .tog), такими
+     именами окно забрало бы стили всего интерфейса;
+   • шрифты макета: Unbounded → --font-display, Manrope → --font-body;
+   • переменные из :root макета живут на самом `.nk` и на `.nickname`.
+   ========================================================================== */
+
+/* ------------------------------- Имя ------------------------------------ */
+
+.nickname {
+  display: inline-block;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.nickname.nick-grad {
+  background-image: linear-gradient(90deg, var(--c1), var(--c2));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.nickname.nick-flow {
+  background-image: linear-gradient(90deg, var(--c1), var(--c2), var(--c1));
+  background-size: 200% 100%;
+  animation: nk-flow var(--sp) linear infinite;
+}
+
+.nickname.nick-glow {
+  filter: drop-shadow(0 0 7px var(--c1));
+}
+
+@keyframes nk-flow {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+/* ------------------------------- Окно ----------------------------------- */
+
+.nk {
+  /* значения из :root макета — окно всегда тёмное, сине-фиолетовое */
+  --ln: rgba(255, 255, 255, 0.09);
+  --tx: #eef2ff;
+  --mut: #8792b4;
+  --card: #0b1124;
+  --fld: rgba(255, 255, 255, 0.05);
+  --ok: #34d399;
+  --bad: #fb7185;
+  --grad: linear-gradient(115deg, #6d28d9, #2563eb 50%, #22d3ee, #2563eb);
+
+  border: 0;
+  padding: 0;
+  background: none;
+  color: var(--tx);
+  width: min(520px, calc(100vw - 20px));
+  max-width: none;
+  max-height: calc(100vh - 20px);
+  margin: auto;
+  overflow: visible;
+  font-family: var(--font-body);
+}
+
+.nk::backdrop {
+  background: rgba(3, 6, 16, 0.72);
+  backdrop-filter: blur(10px);
+}
+
+.nk[open] {
+  animation: nk-pop 0.35s cubic-bezier(0.2, 0.9, 0.3, 1.1);
+}
+
+@keyframes nk-pop {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.97);
+  }
+}
+
+.nk-sh {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 20px);
+  border-radius: 26px;
+  overflow: hidden;
+  background:
+    radial-gradient(65% 30% at 92% -4%, rgba(139, 92, 246, 0.42), transparent 70%),
+    radial-gradient(45% 28% at 0 0, rgba(37, 99, 235, 0.22), transparent 70%),
+    radial-gradient(60% 30% at 50% 120%, rgba(34, 211, 238, 0.14), transparent 70%),
+    linear-gradient(180deg, #0f1530, #060918);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.07),
+    0 50px 120px -30px #000,
+    0 0 90px -40px #6366f1;
+}
+
+/* бегущая обводка по макету */
+@property --ba {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+.nk-sh::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1.5px;
+  pointer-events: none;
+  z-index: 5;
+  background: conic-gradient(
+    from var(--ba),
+    transparent 0 58%,
+    rgba(34, 211, 238, 0.95) 76%,
+    rgba(139, 92, 246, 0.95) 91%,
+    transparent
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: nk-bd 9s linear infinite;
+}
+
+@keyframes nk-bd {
+  to {
+    --ba: 360deg;
+  }
+}
+
+/* мерцающие точки макета */
+.nk-sh::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.7;
+  animation: nk-tw 7s ease-in-out infinite alternate;
+  background:
+    radial-gradient(1px 1px at 8% 12%, #fff, transparent),
+    radial-gradient(1.5px 1.5px at 32% 5%, #cfe8ff, transparent),
+    radial-gradient(1px 1px at 55% 20%, #fff, transparent),
+    radial-gradient(1px 1px at 76% 9%, #cfe, transparent),
+    radial-gradient(1.5px 1.5px at 93% 28%, #fff, transparent),
+    radial-gradient(1px 1px at 14% 58%, #fff, transparent),
+    radial-gradient(1px 1px at 90% 66%, #cfe8ff, transparent),
+    radial-gradient(1px 1px at 62% 90%, #fff, transparent);
+}
+
+@keyframes nk-tw {
+  to {
+    opacity: 0.25;
+  }
+}
+
+.nk-body,
+.nk-foot,
+.nk-done {
+  position: relative;
+  z-index: 1;
+}
+
+.nk-body {
+  overflow: auto;
+  padding: 26px 24px 8px;
+  scrollbar-width: thin;
+}
+
+.nk-x {
+  all: unset;
+  cursor: pointer;
+  position: absolute;
+  right: 16px;
+  top: 16px;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--fld);
+}
+
+.nk-x:hover {
+  filter: brightness(1.3);
+}
+
+.nk h2,
+.nk .nk-done h3 {
+  margin: 0 40px 6px 0;
+  font: 800 22px/1.15 var(--font-display);
+  background-image: linear-gradient(100deg, #fff 35%, #a5e8ff 50%, #fff 65%);
+  background-size: 250% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: nk-hs 7s linear infinite;
+}
+
+@keyframes nk-hs {
+  to {
+    background-position: -250% 0;
+  }
+}
+
+.nk-lead {
+  margin: 0 0 18px;
+  color: var(--mut);
+}
+
+.nk-lead b {
+  color: var(--tx);
+}
+
+/* ------------------------------ Превью ---------------------------------- */
+
+.nk-pv {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+  border-radius: 18px;
+  background: linear-gradient(160deg, rgba(139, 92, 246, 0.18), rgba(255, 255, 255, 0.03));
+  box-shadow: inset 0 0 0 1px rgba(167, 139, 250, 0.3);
+}
+
+.nk-l1 {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.nk-av {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  font: 800 15px var(--font-display);
+  color: #fff;
+  background: linear-gradient(140deg, #22d3ee, #2563eb);
+}
+
+.nk-pv small {
+  display: block;
+  color: var(--mut);
+  font-weight: 600;
+  font-size: 12px;
+}
+
+.nk-pv .nickname {
+  font-size: 22px;
+}
+
+.nk-l2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--ln);
+}
+
+.nk-l2 .nk-av {
+  width: 26px;
+  height: 26px;
+  font-size: 10px;
+}
+
+.nk-l2 .nickname {
+  font-size: 13.5px;
+}
+
+.nk-l2 .t {
+  color: var(--mut);
+}
+
+.nk-pt {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 2px 8px;
+  border-radius: 7px;
+  font: 800 10px/1.3 var(--font-body);
+  letter-spacing: 0.08em;
+  color: #dff6ff;
+  vertical-align: middle;
+  border: 1px solid transparent;
+  background:
+    linear-gradient(#0c2150, #071030) padding-box,
+    linear-gradient(120deg, #22d3ee, #2563eb) border-box;
+}
+
+/* ------------------------------ Бонус ----------------------------------- */
+
+.nk-bn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+  padding: 11px 14px;
+  border-radius: 14px;
+  font-size: 12.5px;
+  color: var(--mut);
+  background: var(--fld);
+  box-shadow: inset 0 0 0 1px var(--ln);
+}
+
+.nk-bn b {
+  display: block;
+  color: var(--tx);
+}
+
+.nk-bn .i {
+  width: 22px;
+  height: 22px;
+  color: #7dd3fc;
+}
+
+.nk-bn.on {
+  background: linear-gradient(115deg, rgba(37, 99, 235, 0.22), rgba(34, 211, 238, 0.1));
+  box-shadow: inset 0 0 0 1px rgba(56, 189, 248, 0.5);
+}
+
+.nk-bn.on .i {
+  filter: drop-shadow(0 0 5px #22d3ee);
+}
+
+/* --------------------------- Поле и правила ------------------------------ */
+
+.nk-lb {
+  display: flex;
+  justify-content: space-between;
+  margin: 16px 0 8px;
+  font-weight: 800;
+  font-size: 13px;
+}
+
+.nk-lb span {
+  color: var(--mut);
+  font-weight: 600;
+}
+
+.nk-fld {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 14px;
+  border-radius: 14px;
+  background: var(--fld);
+  box-shadow: inset 0 0 0 1px var(--ln);
+}
+
+.nk-fld:focus-within {
+  box-shadow:
+    inset 0 0 0 1.5px #a78bfa,
+    0 0 28px -8px #8b5cf6;
+}
+
+.nk-fld.ok {
+  box-shadow: inset 0 0 0 1.5px var(--ok);
+}
+
+.nk-fld.bad {
+  box-shadow: inset 0 0 0 1.5px var(--bad);
+}
+
+.nk-fld input {
+  all: unset;
+  flex: 1;
+  min-width: 0;
+  padding: 12px 0;
+  font: 700 15px var(--font-body);
+  color: var(--tx);
+}
+
+.nk-dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  flex: none;
+  background: var(--ln);
+}
+
+.nk-fld.ok .nk-dot {
+  background: var(--ok);
+}
+
+.nk-fld.bad .nk-dot {
+  background: var(--bad);
+}
+
+.nk-hint {
+  min-height: 20px;
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--mut);
+}
+
+.nk-hint.ok {
+  color: var(--ok);
+}
+
+.nk-hint.bad {
+  color: var(--bad);
+}
+
+.nk-info {
+  margin-top: 16px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  color: var(--mut);
+  font-size: 12.5px;
+  background: var(--fld);
+  box-shadow: inset 0 0 0 1px var(--ln);
+}
+
+.nk-info b {
+  display: block;
+  margin-bottom: 2px;
+  color: var(--tx);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+}
+
+/* ------------------------------ Палитра --------------------------------- */
+
+.nk-seg {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  padding: 4px;
+  border-radius: 14px;
+  background: var(--fld);
+  box-shadow: inset 0 0 0 1px var(--ln);
+}
+
+.nk-seg button {
+  all: unset;
+  cursor: pointer;
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  padding: 10px;
+  font-weight: 800;
+  color: var(--mut);
+  transition: color 0.25s;
+}
+
+.nk-seg button[aria-selected="true"] {
+  color: #fff;
+}
+
+.nk-seg i {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 4px;
+  width: calc(50% - 4px);
+  border-radius: 10px;
+  background: var(--grad);
+  background-size: 200% 100%;
+  transition: transform 0.35s cubic-bezier(0.3, 1.2, 0.4, 1);
+}
+
+.nk-seg.g i {
+  transform: translateX(100%);
+}
+
+.nk-sws {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.nk-sw {
+  all: unset;
+  cursor: pointer;
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  /* цвет приходит инлайном из палитры */
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.25);
+  transition: transform 0.2s;
+}
+
+.nk-sw[aria-checked="true"] {
+  transform: scale(1.12);
+  box-shadow:
+    0 0 0 2px var(--card),
+    0 0 0 4px #a78bfa;
+}
+
+.nk-sw-w {
+  width: auto;
+  min-width: 92px;
+  padding: 0 12px;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font: 800 11.5px var(--font-body);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+.nk-cu {
+  position: relative;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  background: conic-gradient(#f43f5e, #f59e0b, #22c55e, #06b6d4, #6366f1, #d946ef, #f43f5e);
+  color: #fff;
+  font-weight: 800;
+}
+
+.nk-cu input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+  width: 100%;
+  height: 100%;
+}
+
+.nk-pk {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.nk-pk label {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: var(--fld);
+  box-shadow: inset 0 0 0 1px var(--ln);
+  font-size: 12.5px;
+  color: var(--mut);
+}
+
+.nk-pk input {
+  width: 34px;
+  height: 26px;
+  border: 0;
+  padding: 0;
+  background: none;
+  cursor: pointer;
+}
+
+/* ------------------------- Переключатели -------------------------------- */
+
+.nk-tog {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: var(--fld);
+  box-shadow: inset 0 0 0 1px var(--ln);
+  cursor: pointer;
+}
+
+.nk-tog p {
+  margin: 0;
+  flex: 1;
+  font-weight: 700;
+}
+
+.nk-tog small {
+  display: block;
+  color: var(--mut);
+  font-weight: 600;
+}
+
+.nk-tog i {
+  position: relative;
+  width: 44px;
+  height: 25px;
+  border-radius: 99px;
+  background: var(--ln);
+  transition: 0.25s;
+}
+
+.nk-tog i::after {
+  content: "";
+  position: absolute;
+  left: 3px;
+  top: 3px;
+  width: 19px;
+  height: 19px;
+  border-radius: 50%;
+  background: #fff;
+  transition: 0.25s;
+}
+
+.nk-tog[aria-checked="true"] i {
+  background: #6366f1;
+}
+
+.nk-tog[aria-checked="true"] i::after {
+  transform: translateX(19px);
+}
+
+.nk-tog[aria-disabled="true"] {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.nk-spd {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.nk-spd button {
+  all: unset;
+  cursor: pointer;
+  text-align: center;
+  padding: 9px;
+  border-radius: 12px;
+  font-weight: 800;
+  font-size: 12.5px;
+  color: var(--mut);
+  box-shadow: inset 0 0 0 1px var(--ln);
+}
+
+.nk-spd button[aria-pressed="true"] {
+  color: #fff;
+  background: var(--grad);
+  background-size: 200% 100%;
+  box-shadow: none;
+}
+
+.nk-spd.off {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+/* ------------------------------ Подвал ---------------------------------- */
+
+.nk-bk {
+  margin-top: 14px;
+  font-size: 12.5px;
+  color: var(--mut);
+}
+
+.nk-bk div {
+  display: flex;
+  justify-content: space-between;
+  padding: 3px 0;
+}
+
+.nk-bk b {
+  color: var(--tx);
+}
+
+.nk-bk b.minus {
+  color: var(--ok);
+}
+
+.nk-foot {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 24px 20px;
+  border-top: 1px solid var(--ln);
+  background: linear-gradient(180deg, rgba(5, 8, 16, 0.35), rgba(5, 8, 16, 0.88));
+  backdrop-filter: blur(10px);
+}
+
+.nk-tot small {
+  display: block;
+  color: var(--mut);
+  font-size: 12px;
+}
+
+.nk-tot b {
+  font: 800 24px/1.1 var(--font-display);
+}
+
+.nk-tot .nk-free {
+  color: var(--ok);
+}
+
+.nk-tot s {
+  margin-left: 6px;
+  color: var(--mut);
+  font: 600 13px var(--font-body);
+}
+
+.nk-buy {
+  all: unset;
+  cursor: pointer;
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 52px;
+  padding: 0 26px;
+  border-radius: 15px;
+  font: 800 14.5px var(--font-body);
+  color: #fff;
+  background: var(--grad);
+  background-size: 200% 100%;
+  box-shadow:
+    0 16px 38px -12px #3b82f6,
+    inset 0 1px 0 rgba(255, 255, 255, 0.45);
+  animation: nk-bsh 6s linear infinite;
+}
+
+@keyframes nk-bsh {
+  to {
+    background-position: 200% 0;
+  }
+}
+
+.nk-buy:hover {
+  filter: brightness(1.1);
+}
+
+.nk-buy[disabled] {
+  opacity: 0.4;
+  cursor: not-allowed;
+  filter: none;
+}
+
+/* ------------------------------ Готово ---------------------------------- */
+
+.nk-done {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 50px 24px 30px;
+}
+
+.nk-fin .nk-body,
+.nk-fin .nk-foot {
+  display: none;
+}
+
+.nk-fin .nk-done {
+  display: flex;
+}
+
+.nk-done h3 {
+  margin: 20px 0 6px;
+}
+
+.nk-done p {
+  margin: 0 0 16px;
+  color: var(--mut);
+}
+
+.nk-done .nk-pv {
+  width: 100%;
+  margin: 6px 0 20px;
+  align-items: center;
+}
+
+.nk-done-btn {
+  width: 100%;
+  margin: 0;
+  animation: none;
+}
+
+.nk-orb {
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: #7dd3fc;
+  background: radial-gradient(circle, rgba(34, 211, 238, 0.3), rgba(37, 99, 235, 0.12) 70%);
+  box-shadow: 0 0 70px -8px #22d3ee;
+  animation: nk-pl 2s ease-in-out infinite;
+}
+
+.nk-orb .i {
+  width: 38px;
+  height: 38px;
+}
+
+@keyframes nk-pl {
+  50% {
+    transform: scale(1.07);
+  }
+}
+
+/* ------------------------------- Прочее --------------------------------- */
+
+.nk .i {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  flex: none;
+}
+
+.nk :focus-visible {
+  outline: 2px solid #22d3ee;
+  outline-offset: 2px;
+}
+
+@media (max-width: 480px) {
+  .nk-pk {
+    flex-direction: column;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nk *,
+  .nk *::before,
+  .nk *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .nickname.nick-flow {
+    animation: none;
+  }
+}

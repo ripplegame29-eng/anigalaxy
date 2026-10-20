@@ -13,7 +13,8 @@ export type ProfileDialogKind =
   | "settings"
   | "share"
   | "preview"
-  | "rewards";
+  | "rewards"
+  | "erase";
 
 export interface ProfileDialogState {
   open: boolean;

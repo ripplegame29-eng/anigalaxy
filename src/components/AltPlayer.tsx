@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import type Hls from "hls.js";
 import type { AniSearchCard, AniTitleDetail } from "@/lib/anilibria";
-import { qualityNeedsPremium, usePremium } from "@/lib/premium";
+import { FREE_HQ_EPISODES, hqFreeForEpisode, usePremium } from "@/lib/premium";
 
 /**
  * Альтернативный плеер блока просмотра — каталог AniLiberty.
@@ -29,13 +29,33 @@ type StreamQuality = "480" | "720" | "1080";
  * и потоки AniLiberty. «1080» доступно всегда — без потока апскейлится
  * с меньшей силой.
  *
- * «2160» и «1440» — только Premium: это цели апскейла лучшего потока,
- * и шейдерный проход Anime4K реально грузит GPU и батарею, поэтому
- * выдавать его всем бесплатно было нечестно. Страница Premium обещает
- * «4K» — теперь обещание выполняется, и замок в меню качества это видно.
+ * «2160» и «1440» — витрина подписки: это цели апскейла лучшего потока,
+ * шейдерный проход Anime4K реально грузит GPU и батарею, поэтому всю серию
+ * выдавать его всем было бы нечестно. Первые FREE_HQ_EPISODES серий он
+ * открыт всем — посмотреть, что покупается, можно без подписки; дальше
+ * пункт закрыт и вместо переключения качества открывает окно с предложением.
  */
 const QUALITIES = ["auto", "2160", "1440", "1080", "720", "480", "360"] as const;
 type Quality = (typeof QUALITIES)[number];
+
+/** 2K/4K открыты всем: замок по подписке снят по решению владельца сайта */
+const qualityNeedsPremium_ = (...args: unknown[]): boolean => args.length < 0;
+const SHOW_HQ_NOTE = false;
+
+/** Длина опенинга для кнопки «Пропустить» (сек) */
+const OP_LEN = 85;
+/** Ключ «где у этого тайтла начинается опенинг» — запоминается по первому пропуску */
+const OP_KEY = "ag:op";
+const GLOW_KEY = "ag:glow";
+
+function readNum(key: string): number | null {
+  try {
+    const v = Number(localStorage.getItem(key));
+    return Number.isFinite(v) && v > 0 ? v : null;
+  } catch {
+    return null;
+  }
+}
 
 /** Скорости воспроизведения (цикл на чипе скорости) */
 const SPEEDS = [0.5, 1, 1.25, 1.5, 2];
@@ -49,11 +69,11 @@ const CHIP =
 
 /** Кнопка-чип в нижней панели управления (крупная, как в референсе) */
 const CBAR_CHIP =
-  "rounded-full bg-white/10 px-4 py-2 text-xs font-black text-white ring-1 ring-white/15 transition hover:bg-white/18";
+  "rounded-full bg-white/10 px-3 py-1.5 text-xs font-black sm:px-4 sm:py-2 text-white ring-1 ring-white/15 transition hover:bg-white/18";
 
 /** Иконочная кнопка в нижней панели управления (крупная, как в референсе) */
 const CBAR_BTN =
-  "grid h-11 w-11 place-items-center rounded-full text-white ring-1 ring-transparent transition hover:bg-white/12";
+  "grid h-9 w-9 place-items-center rounded-full text-white ring-1 ring-transparent sm:h-11 sm:w-11 transition hover:bg-white/12";
 
 /** Тонкие SVG-иконки: stroke currentColor, как во всём интерфейсе */
 const PATHS: Record<string, string[]> = {
@@ -81,6 +101,11 @@ const PATHS: Record<string, string[]> = {
   chevron: ["m9 6 6 6-6 6"],
   back: ["m12 19-7-7 7-7", "M19 12H5"],
   check: ["m5 13 4 4L19 7"],
+  back10: ["M3 12a9 9 0 1 0 3-6.7", "M3 4v5h5"],
+  fwd10: ["M21 12a9 9 0 1 1-3-6.7", "M21 4v5h-5"],
+  next: ["M6 5l9 7-9 7z", "M19 5v14"],
+  skip: ["M5 5l8 7-8 7z", "M13 5l8 7-8 7z"],
+  glow: ["M12 3v2", "M12 19v2", "M3 12h2", "M19 12h2", "M5.6 5.6 7 7", "M17 17l1.4 1.4", "M5.6 18.4 7 17", "M17 7l1.4-1.4", "M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8z"],
 };
 
 function Icon({ d, className = "h-5 w-5" }: { d: string[]; className?: string }) {
@@ -244,9 +269,13 @@ export function AltPlayer({
   year,
   episode,
   titleId,
-  poster,
+  backend = "anilibria",
+  kodikId,
+  season = 1,
   onBack,
   onNextEpisode,
+  hasNext: hasNextProp,
+  malId,
 }: {
   /** Название тайтла — запрос поиска AniLiberty и заголовок в оверлее */
   query: string;
@@ -258,15 +287,39 @@ export function AltPlayer({
   episode: number;
   /** Id тайтла (Kodik) — ключ позиций просмотра в localStorage */
   titleId: string;
-  /** Постер Kodik — виден, пока тайтл ищется */
-  poster?: string;
+  /**
+   * Откуда берём поток: «anilibria» — поиск по каталогу AniLiberty,
+   * «kodik» — прямые HLS-манифесты Kodik (плеер AniGalaxy). Панель
+   * управления, качество, скорости и позиции — одни и те же.
+   */
+  backend?: "anilibria" | "kodik";
+  /** Id тайтла Kodik («serial-3566») — обязателен для backend="kodik" */
+  kodikId?: string;
+  /** Сезон Kodik; по умолчанию первый */
+  season?: number;
   /** «Не нашли» → вернуть исходный плеер */
   onBack: () => void;
   /** Авто-переключение: вызывается, если в AniLiberty есть следующая серия */
   onNextEpisode?: () => void;
+  /** Есть ли следующая серия (для режима Kodik, где списка серий у плеера нет) */
+  hasNext?: boolean;
+  /** MAL-id (= shikimori_id Kodik): по нему берём точные тайм-коды опенинга и эндинга */
+  malId?: number;
 }) {
   const [detail, setDetail] = useState<AniTitleDetail | null>(null);
   const [status, setStatus] = useState<"loading" | "ok" | "empty">("loading");
+  /**
+   * Потоки Kodik для текущей серии: качество → HLS-манифест.
+   * Наполняется вместо `detail` в режиме backend="kodik" — плеер дальше
+   * работает с тем же набором «качество → ссылка», что и у AniLiberty.
+   */
+  const [kodikLinks, setKodikLinks] = useState<Record<string, string> | null>(null);
+  /**
+   * Настоящая причина неудачи в режиме Kodik. Раньше всё сводилось к
+   * «не нашли», хотя на самом деле могла не ответить сеть или сам Kodik —
+   * по такому тексту непонятно, что делать.
+   */
+  const [kodikError, setKodikError] = useState<string | null>(null);
   /** Что выбрал пользователь. Действующее качество — выведено ниже:
       подписка может кончиться, и тогда цель апскейла сама откатывается
       на «Авто», без записи в состояние из эффекта. */
@@ -287,7 +340,30 @@ export function AltPlayer({
   const [rate, setRate] = useState(1);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [qualityOpen, setQualityOpen] = useState(false);
+  /** Окно «2K/4K — по подписке»: замкнуто на текущую серию, не серию из localStorage */
+  const [hqModal, setHqModal] = useState(false);
   const [autoNext, setAutoNext] = useState(true);
+  /** Фоновая подсветка: цвет кадра льётся за рамку плеера */
+  const [glow, setGlow] = useState(() => {
+    try {
+      return localStorage.getItem(GLOW_KEY) !== "0";
+    } catch {
+      return true;
+    }
+  });
+  /** Вспышка перемотки: сторона, шаг и счётчик для перезапуска анимации */
+  /** Тайм-коды пропуска из AniSkip; null — ещё грузятся или для серии их нет */
+  const [skips, setSkips] = useState<{ op: [number, number] | null; ed: [number, number] | null } | null>(null);
+  /** Авто-пропуск опенинга без нажатия (настройка плеера) */
+  const [autoSkip, setAutoSkip] = useState(() => {
+    try {
+      return localStorage.getItem("ag:autoskip") === "1";
+    } catch {
+      return false;
+    }
+  });
+  const autoSkippedRef = useRef<string | null>(null);
+  const [flash, setFlash] = useState<{ side: "l" | "r"; sec: number; n: number } | null>(null);
   const [isFs, setIsFs] = useState(false);
   /** Anime4K не запустился (нет WebGL / canvas заблокирован CORS) */
   const [a4kFailed, setA4kFailed] = useState(false);
@@ -295,6 +371,8 @@ export function AltPlayer({
   const videoRef = useRef<HTMLVideoElement>(null);
   /** Канвас поверх видео: на нём Anime4K рисует апскейленные кадры */
   const a4kCanvasRef = useRef<HTMLCanvasElement>(null);
+  /** Диалог «2K/4K по подписке» — на него ставим фокус при открытии */
+  const hqDialogRef = useRef<HTMLDivElement>(null);
   /** true, пока управление ошибками у hls.js (чтобы onError не дублировал) */
   const hlsActiveRef = useRef(false);
   /** Отложенные перемотка/воспроизведение при смене качества */
@@ -310,6 +388,63 @@ export function AltPlayer({
   /* ---------------------- Поиск тайтла и серий ---------------------- */
   useEffect(() => {
     let alive = true;
+
+    // Режим Kodik (AniGalaxy): серию мы знаем точно — поиск по каталогу не
+    // нужен, сразу берём подписанные HLS-манифесты у /api/kodik/stream.
+    if (backend === "kodik") {
+      (async () => {
+        setKodikLinks(null);
+        setKodikError(null);
+        try {
+          if (!kodikId) {
+            if (alive) {
+              setKodikError("Не указан id тайтла Kodik");
+              setStatus("empty");
+            }
+            return;
+          }
+          const query_ =
+            `id=${encodeURIComponent(kodikId)}&season=${season}&episode=${episode}`;
+          const res = await fetch(`/api/kodik/stream?${query_}`);
+
+          // Сервер отдаёт { error } с кодом 404/502/500 — разбираем его,
+          // чтобы показать причину, а не «не нашли»
+          const data = (await res.json().catch(() => null)) as {
+            links?: Record<string, { Src?: string }>;
+            error?: string;
+          } | null;
+
+          if (!alive) return;
+
+          if (!res.ok) {
+            setKodikError(data?.error ?? `Сервер ответил ${res.status}`);
+            setStatus("empty");
+            return;
+          }
+
+          const links: Record<string, string> = {};
+          for (const [q, value] of Object.entries(data?.links ?? {})) {
+            if (value?.Src) links[q] = value.Src;
+          }
+          if (Object.keys(links).length) {
+            setKodikLinks(links);
+            setStatus("ok");
+          } else {
+            setKodikError("Kodik не отдал ни одной ссылки на поток");
+            setStatus("empty");
+          }
+        } catch {
+          if (alive) {
+            setKodikError("Не удалось связаться с сервером");
+            setStatus("empty");
+          }
+        }
+      })();
+      return () => {
+        alive = false;
+      };
+    }
+
     const names = [query, altQuery].filter((name): name is string => Boolean(name));
     (async () => {
       try {
@@ -345,10 +480,13 @@ export function AltPlayer({
     return () => {
       alive = false;
     };
-  }, [query, altQuery, year]);
+  }, [backend, kodikId, season, episode, query, altQuery, year]);
 
   const router = useRouter();
   const { active: premiumActive } = usePremium();
+
+  /** Название источника в статусах: свой плеер Kodik — AniGalaxy, каталог — AniLiberty */
+  const brand = backend === "kodik" ? "AniGalaxy" : "AniLiberty";
 
   /* ------------------------ Текущая серия и src --------------------- */
   // Фильм/серии с другими номерами: для первого эпизода берём первый
@@ -356,7 +494,13 @@ export function AltPlayer({
   const current =
     detail?.episodes.find((ep) => ep.number === episode) ??
     (episode === 1 ? detail?.episodes[0] : undefined);
-  const sources = current?.sources;
+  /**
+   * Набор «качество → ссылка на поток». В режиме Kodik он приходит
+   * готовым из /api/kodik/stream (серия известна заранее, искать нечего),
+   * в режиме AniLiberty — из найденной серии каталога.
+   */
+  const sources: Record<string, string> | undefined =
+    backend === "kodik" ? (kodikLinks ?? undefined) : current?.sources;
   /** Лучший поток серии: база для апскейла 4K/2K и фоллбэка без потока */
   const bestSrc = sources?.["1080"] ?? sources?.["720"] ?? sources?.["480"];
   /** Мельчайший поток — цель 360p (апскейл не нужен, уменьшает дисплей) */
@@ -369,8 +513,11 @@ export function AltPlayer({
     if (q === "480") return sources?.["480"] ?? bestSrc;
     return lowSrc;
   };
+  // Действующее качество выведено: подписка может кончиться, а серия
+  // уехать за пределы бесплатных — цель сама откатывается на «Авто»,
+  // без записи в состояние из эффекта.
   const quality: Quality =
-    qualityNeedsPremium(qualityPref) && !premiumActive ? "auto" : qualityPref;
+    qualityNeedsPremium_(qualityPref, episode) && !premiumActive ? "auto" : qualityPref;
   const src = srcFor(quality);
   const mediaFailed = Boolean(src) && failedSrc === src;
   /** Фактически играющий поток (апскейл рисуется поверх) */
@@ -547,6 +694,21 @@ export function AltPlayer({
     };
   }, [settingsOpen, qualityOpen]);
 
+  /**
+   * Окно «2K/4K по подписке»: закрывается по Escape, по клику по подложке
+   * и по кнопке. Фокус уводим внутрь окна — иначе он остаётся на пункте
+   * качества под подложкой, и с клавиатуры до «Оформить» не дойти.
+   */
+  useEffect(() => {
+    if (!hqModal) return;
+    const onEsc = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setHqModal(false);
+    };
+    document.addEventListener("keydown", onEsc);
+    hqDialogRef.current?.focus();
+    return () => document.removeEventListener("keydown", onEsc);
+  }, [hqModal]);
+
   /* ---------------------------- Действия ---------------------------- */
   const clearHideTimer = () => {
     if (hideTimerRef.current !== null) {
@@ -574,8 +736,12 @@ export function AltPlayer({
   const pickQuality = (next: Quality) => {
     setQualityOpen(false);
     if (next === quality) return;
-    // Подстраховка к замку в меню: цели апскейла без подписки не включаем
-    if (qualityNeedsPremium(next) && !premiumActive) return;
+    // Замок: за пределами бесплатных серий цель 2K/4K не включаем, а
+    // показываем окно. На первых сериях замка нет — замку там неоткуда взяться.
+    if (qualityNeedsPremium_(next, episode) && !premiumActive) {
+      setHqModal(true);
+      return;
+    }
     // Апскейл-цели (4K/2K) играют лучший поток — src обычно не меняется,
     // слой апскейла просто включается/выключается поверх без перезапуска
     const nextSrc = srcFor(next);
@@ -646,6 +812,182 @@ export function AltPlayer({
     }
   };
 
+  const hasNextEp = hasNextProp ?? Boolean(detail?.episodes.some((ep) => ep.number > episode));
+
+  const goNext = () => {
+    if (!hasNextEp || !onNextEpisode) return;
+    forcePlayRef.current = true;
+    onNextEpisode();
+  };
+
+  /** Перемотка на шаг с вспышкой-подсказкой на нужной половине экрана */
+  const skipBy = (sec: number) => {
+    const video = videoRef.current;
+    if (!video) return;
+    video.currentTime = Math.min(dur || Infinity, Math.max(0, video.currentTime + sec));
+    setFlash((f) => ({ side: sec < 0 ? "l" : "r", sec: Math.abs(sec), n: (f?.n ?? 0) + 1 }));
+  };
+
+  /** Пропуск опенинга: запоминаем, где он начался, чтобы на следующих сериях кнопка вставала точно */
+  const skipOpening = () => {
+    const video = videoRef.current;
+    if (!video) return;
+    if (skips?.op) {
+      const len = Math.max(1, Math.round(skips.op[1] - video.currentTime));
+      video.currentTime = skips.op[1];
+      setFlash((f) => ({ side: "r", sec: len, n: (f?.n ?? 0) + 1 }));
+      return;
+    }
+    const start = readNum(`${OP_KEY}:${titleId}`);
+    if (start === null && video.currentTime > 1) {
+      try {
+        localStorage.setItem(`${OP_KEY}:${titleId}`, String(Math.round(video.currentTime)));
+      } catch {
+        /* хранилище недоступно — не страшно */
+      }
+    }
+    skipBy(OP_LEN);
+  };
+
+  /** Пропуск эндинга: следующая серия, а если её нет — в конец */
+  const skipEnding = () => {
+    if (hasNextEp) goNext();
+    else if (videoRef.current && dur) videoRef.current.currentTime = dur;
+  };
+
+  const toggleGlow = () => {
+    setGlow((v) => {
+      try {
+        localStorage.setItem(GLOW_KEY, v ? "0" : "1");
+      } catch {
+        /* ignore */
+      }
+      return !v;
+    });
+  };
+
+  /* ---------------------- Тайм-коды опенинга/эндинга ------------------ */
+  useEffect(() => {
+    if (!malId) return;
+    let alive = true;
+    fetch(`/api/skip?mal=${malId}&ep=${episode}`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => alive && setSkips(data && (data.op || data.ed) ? data : null))
+      .catch(() => alive && setSkips(null));
+    return () => {
+      alive = false;
+      setSkips(null);
+    };
+  }, [malId, episode]);
+
+  /* Авто-пропуск: один раз за серию, как только дошли до начала опенинга */
+  useEffect(() => {
+    const op = skips?.op;
+    if (!autoSkip || !op || !playing) return;
+    const key = `${titleId}:${episode}`;
+    if (autoSkippedRef.current === key) return;
+    if (curTime >= op[0] - 0.5 && curTime < op[1] - 2) {
+      autoSkippedRef.current = key;
+      const video = videoRef.current;
+      if (video) {
+        video.currentTime = op[1];
+        setFlash((f) => ({ side: "r", sec: Math.round(op[1] - op[0]), n: (f?.n ?? 0) + 1 }));
+      }
+    }
+  }, [autoSkip, skips, playing, curTime, titleId, episode]);
+
+  const toggleAutoSkip = () => {
+    setAutoSkip((v) => {
+      try {
+        localStorage.setItem("ag:autoskip", v ? "0" : "1");
+      } catch {
+        /* ignore */
+      }
+      return !v;
+    });
+  };
+
+  /* ----------------------- Горячие клавиши плеера -------------------- */
+  const keysRef = useRef<(e: KeyboardEvent) => void>(() => undefined);
+  useEffect(() => {
+  keysRef.current = (e) => {
+    const t = e.target as HTMLElement | null;
+    if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable)) return;
+    if (e.ctrlKey || e.metaKey || e.altKey || hqModal) return;
+    const shell = videoRef.current?.closest("#player-shell");
+    if (!shell || !started || !(shell.matches(":hover") || document.fullscreenElement)) return;
+    const k = e.key.toLowerCase();
+    const act: Record<string, () => void> = {
+      " ": toggle,
+      k: toggle,
+      arrowleft: () => skipBy(-5),
+      arrowright: () => skipBy(5),
+      j: () => skipBy(-10),
+      l: () => skipBy(10),
+      m: toggleMute,
+      f: toggleFullscreen,
+      n: goNext,
+      o: skipOpening,
+    };
+    const fn = act[k];
+    if (!fn) return;
+    e.preventDefault();
+    fn();
+    revealUi();
+  };
+  });
+  useEffect(() => {
+    const on = (e: KeyboardEvent) => keysRef.current(e);
+    document.addEventListener("keydown", on);
+    return () => document.removeEventListener("keydown", on);
+  }, []);
+
+  /* ------------------ Фоновая подсветка по цвету кадра --------------- */
+  useEffect(() => {
+    const video = videoRef.current;
+    const shell = video?.closest("#player-shell") as HTMLElement | null;
+    if (!video || !shell || !glow || !playing) return;
+    const cv = document.createElement("canvas");
+    cv.width = 16;
+    cv.height = 9;
+    const ctx = cv.getContext("2d", { willReadFrequently: true });
+    if (!ctx) return;
+    let rgb = [31, 123, 255];
+    const id = window.setInterval(() => {
+      try {
+        ctx.drawImage(video, 0, 0, 16, 9);
+        const px = ctx.getImageData(0, 0, 16, 9).data;
+        let r = 0, g = 0, b = 0;
+        for (let i = 0; i < px.length; i += 4) {
+          r += px[i];
+          g += px[i + 1];
+          b += px[i + 2];
+        }
+        const n = px.length / 4;
+        // Плавно подтягиваем к новому цвету — без мерцания на смене кадров
+        rgb = [r / n, g / n, b / n].map((v, i) => rgb[i] + (v - rgb[i]) * 0.35);
+        const [R, G, B] = rgb.map(Math.round);
+        shell.style.boxShadow = `0 0 150px 28px rgba(${R},${G},${B},0.42), 0 0 40px 2px rgba(${R},${G},${B},0.25), 0 40px 80px -40px #000`;
+      } catch {
+        // Кадр «грязный» (поток без CORS) — читать пиксели нельзя, оставляем акцент
+        window.clearInterval(id);
+        shell.style.boxShadow = "0 0 120px 20px rgba(var(--accent-rgb), 0.22), 0 40px 80px -40px #000";
+      }
+    }, 300);
+    return () => {
+      window.clearInterval(id);
+    };
+  }, [glow, playing, src]);
+
+  /* Выключили подсветку — убираем inline-тень */
+  useEffect(() => {
+    const shell = videoRef.current?.closest("#player-shell") as HTMLElement | null;
+    if (shell && !glow) shell.style.boxShadow = "";
+    return () => {
+      if (shell) shell.style.boxShadow = "";
+    };
+  }, [glow]);
+
   const retryMedia = () => {
     setFailedSrc(null);
     setMediaNonce((n) => n + 1);
@@ -669,7 +1011,6 @@ export function AltPlayer({
         ref={videoRef}
         playsInline
         preload="metadata"
-        poster={poster ?? detail?.card.poster}
         className="absolute inset-0 h-full w-full bg-black object-contain"
         onPlay={() => {
           setStarted(true);
@@ -686,8 +1027,7 @@ export function AltPlayer({
         onEnded={() => {
           setPlaying(false);
           setUiVisible(true);
-          const hasNext = Boolean(detail?.episodes.some((ep) => ep.number > episode));
-          if (autoNext && hasNext && onNextEpisode) {
+          if (autoNext && hasNextEp && onNextEpisode) {
             forcePlayRef.current = true;
             onNextEpisode();
           }
@@ -771,21 +1111,76 @@ export function AltPlayer({
             </span>
           </div>
           <div className="flex shrink-0 items-center gap-2">
-            {/* Плашка бренда — как «AnimeOn Classic», но в наших цветах:
-                градиентная кайма sky→cyan, тёмная «начинка», иконка-чип */}
-            <span className="inline-flex items-center rounded-full bg-gradient-to-r from-sky-400 via-cyan-400 to-sky-500 p-[1.5px] shadow-[0_2px_16px_rgba(56,189,248,0.45)]">
-              <span className="inline-flex items-center gap-2 rounded-full bg-[#0a0e15]/92 py-1 pl-1.5 pr-3 backdrop-blur">
-                <span className="grid h-5 w-5 place-items-center rounded-full bg-gradient-to-br from-sky-400 to-cyan-500 shadow-[0_0_10px_rgba(56,189,248,0.7)]">
-                  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden className="h-2.5 w-2.5 text-white">
-                    <path d="M8 5.5v13l11-6.5z" />
-                  </svg>
-                </span>
-                <span className="text-[11px] font-black tracking-wide text-white">AniGalaxy</span>
-              </span>
-            </span>
           </div>
         </div>
       )}
+
+      {/* Вспышка перемотки: двойной тап/клавиши J, L, стрелки */}
+      {flash && (
+        <div
+          key={flash.n}
+          aria-hidden
+          onAnimationEnd={() => setFlash(null)}
+          className={`ag-seekflash pointer-events-none absolute top-1/2 z-[12] grid h-24 w-24 -translate-y-1/2 place-items-center rounded-full bg-black/45 text-white backdrop-blur ${
+            flash.side === "l" ? "left-[14%]" : "right-[14%]"
+          }`}
+        >
+          <div className="text-center">
+            <Icon d={flash.side === "l" ? PATHS.back10 : PATHS.fwd10} className="mx-auto h-7 w-7" />
+            <span className="text-xs font-black">{flash.side === "l" ? "−" : "+"}{flash.sec} с</span>
+          </div>
+        </div>
+      )}
+
+      {/* Зоны двойного клика: слева −10 с, справа +10 с */}
+      {started && mediaReady && (
+        <>
+          <div className="absolute inset-y-16 left-0 z-[6] w-[30%]" onDoubleClick={() => skipBy(-10)} />
+          <div className="absolute inset-y-16 right-0 z-[6] w-[30%]" onDoubleClick={() => skipBy(10)} />
+        </>
+      )}
+
+      {/* Пропустить опенинг / эндинг */}
+      {started && mediaReady && dur > 0 && (() => {
+        const opStart = readNum(`${OP_KEY}:${titleId}`);
+        // Точные метки AniSkip, если они есть; иначе приблизительные окна
+        const inOpening = skips?.op
+          ? curTime >= skips.op[0] - 1 && curTime < skips.op[1] - 1
+          : skips?.ed
+            ? false
+            : opStart !== null
+              ? curTime >= opStart - 2 && curTime <= opStart + 25
+              : curTime >= 3 && curTime <= 240;
+        const remain = dur - curTime;
+        const inEnding = skips?.ed
+          ? curTime >= skips.ed[0] - 1 && curTime < dur - 1
+          : curTime > dur * 0.8 && remain <= 130;
+        if (!inOpening && !inEnding) return null;
+        return (
+          <div className={`absolute right-4 z-[21] flex gap-2 transition-all duration-300 ${uiVisible || !playing ? "bottom-24" : "bottom-6"}`}>
+            {inOpening && !inEnding && (
+              <button type="button" onClick={skipOpening} title="Пропустить опенинг (O)" className="ag-skipbtn">
+                <Icon d={PATHS.skip} className="h-4 w-4" />
+                Пропустить опенинг
+              </button>
+            )}
+            {inEnding && (
+              <>
+                <button type="button" onClick={skipEnding} className="ag-skipbtn">
+                  <Icon d={PATHS.skip} className="h-4 w-4" />
+                  Пропустить эндинг
+                </button>
+                {hasNextEp && (
+                  <button type="button" onClick={goNext} title="Следующая серия (N)" className="ag-skipbtn ag-skipbtn--next">
+                    Следующая серия
+                    <Icon d={PATHS.next} className="h-4 w-4" />
+                  </button>
+                )}
+              </>
+            )}
+          </div>
+        );
+      })()}
 
       {/* ------------------ Нижняя панель управления ------------------- */}
       {started && mediaReady && (
@@ -814,6 +1209,19 @@ export function AltPlayer({
             >
               <Icon d={playing ? PATHS.pause : PATHS.play} className="h-5 w-5" />
             </button>
+            <button type="button" aria-label="Назад на 10 секунд" title="−10 с (J)" onClick={() => skipBy(-10)} className={`${CBAR_BTN} relative max-sm:hidden`}>
+              <Icon d={PATHS.back10} className="h-6 w-6" />
+              <span className="absolute text-[8px] font-black">10</span>
+            </button>
+            <button type="button" aria-label="Вперёд на 10 секунд" title="+10 с (L)" onClick={() => skipBy(10)} className={`${CBAR_BTN} relative max-sm:hidden`}>
+              <Icon d={PATHS.fwd10} className="h-6 w-6" />
+              <span className="absolute text-[8px] font-black">10</span>
+            </button>
+            {hasNextEp && (
+              <button type="button" aria-label="Следующая серия" title="Следующая серия (N)" onClick={goNext} className={`${CBAR_BTN} max-sm:hidden`}>
+                <Icon d={PATHS.next} className="h-5 w-5" />
+              </button>
+            )}
             <button
               type="button"
               aria-label={muted ? "Включить звук" : "Выключить звук"}
@@ -850,7 +1258,7 @@ export function AltPlayer({
                 qualityLabel
               )}
             </button>
-            <button type="button" aria-label="Скорость" onClick={cycleSpeed} className={CBAR_CHIP}>
+            <button type="button" aria-label="Скорость" onClick={cycleSpeed} className={`${CBAR_CHIP} max-sm:hidden`}>
               {rate}x
             </button>
             <button
@@ -862,7 +1270,7 @@ export function AltPlayer({
             >
               <Icon d={PATHS.gear} className="h-5 w-5" />
             </button>
-            <button type="button" aria-label="Картинка в картинке" onClick={togglePip} className={CBAR_BTN}>
+            <button type="button" aria-label="Картинка в картинке" onClick={togglePip} className={`${CBAR_BTN} max-sm:hidden`}>
               <Icon d={PATHS.pip} className="h-5 w-5" />
             </button>
             <button
@@ -912,6 +1320,36 @@ export function AltPlayer({
             ))}
           </div>
 
+          {skips?.op && (
+            <div className="mb-3 flex items-center justify-between gap-3 border-t border-line pt-3">
+              <span className="text-sm font-semibold text-white">Авто-пропуск опенинга</span>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={autoSkip}
+                aria-label="Автоматически пропускать опенинг"
+                onClick={toggleAutoSkip}
+                className={`relative h-6 w-11 shrink-0 rounded-full transition-colors ${autoSkip ? "bg-accent" : "bg-white/15"}`}
+              >
+                <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white transition-all ${autoSkip ? "left-[22px]" : "left-0.5"}`} />
+              </button>
+            </div>
+          )}
+
+          <div className="mb-3 flex items-center justify-between gap-3 border-t border-line pt-3">
+            <span className="text-sm font-semibold text-white">Подсветка</span>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={glow}
+              aria-label="Фоновая подсветка плеера"
+              onClick={toggleGlow}
+              className={`relative h-6 w-11 shrink-0 rounded-full transition-colors ${glow ? "bg-accent" : "bg-white/15"}`}
+            >
+              <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white transition-all ${glow ? "left-[22px]" : "left-0.5"}`} />
+            </button>
+          </div>
+
           <div className="flex items-center justify-between gap-3 border-t border-line pt-3">
             <span className="text-sm font-semibold text-white">
               Авто-
@@ -957,9 +1395,20 @@ export function AltPlayer({
           </div>
           <div className="h-0.5 bg-gradient-to-r from-transparent via-amber-400/70 to-transparent" />
 
-          {!premiumActive && (
-            <p className="mx-2 mb-1.5 rounded-lg bg-gold/10 px-3 py-2 text-[11px] leading-relaxed text-gold/90 ring-1 ring-gold/25">
-              4K и 2K — часть Premium: это апскейл Anime4K поверх потока 1080p.
+          {SHOW_HQ_NOTE && (
+            <p className="mx-2 mb-1.5 rounded-lg bg-accent-2/10 px-3 py-2 text-[11px] leading-relaxed text-accent-2/90 ring-1 ring-accent-2/25">
+              {hqFreeForEpisode(episode) ? (
+                <>
+                  4K и 2K открыты на первых {FREE_HQ_EPISODES} сериях — это апскейл
+                  Anime4K поверх потока 1080p. С {FREE_HQ_EPISODES + 1}-й — по подписке.
+                </>
+              ) : (
+                <>
+                  4K и 2K с {FREE_HQ_EPISODES + 1}-й серии — часть Premium: апскейл
+                  Anime4K поверх потока 1080p. Первые {FREE_HQ_EPISODES} серии открыты
+                  всем.
+                </>
+              )}
             </p>
           )}
           <div className="p-1.5">
@@ -972,15 +1421,15 @@ export function AltPlayer({
                     : Boolean(bestSrc);
               const selected = quality === q;
               const beta = q === "2160" || q === "1440" || q === "1080";
-              /** Цель апскейла без подписки: кнопка не гасится, а объясняет */
-              const locked = qualityNeedsPremium(q) && !premiumActive;
+              /** Замок есть только на платных сериях: кнопку не гасим, а объясняем */
+              const locked = qualityNeedsPremium_(q, episode) && !premiumActive;
               return (
                 <button
                   key={q}
                   type="button"
                   disabled={!available}
                   aria-pressed={selected}
-                  onClick={() => (locked ? router.push("/premium") : pickQuality(q))}
+                  onClick={() => (locked ? setHqModal(true) : pickQuality(q))}
                   className={`flex w-full items-center justify-between gap-2 rounded-xl px-3.5 py-3 text-left transition ${
                     !available
                       ? "cursor-not-allowed text-white/25"
@@ -1020,7 +1469,7 @@ export function AltPlayer({
                     )}
                   </span>
                   {locked ? (
-                    <span className="flex shrink-0 items-center gap-1.5 rounded-lg bg-gold/18 px-2 py-1 text-[10px] font-black uppercase tracking-wide text-gold ring-1 ring-gold/35">
+                    <span className="flex shrink-0 items-center gap-1.5 rounded-lg bg-accent-2/18 px-2 py-1 text-[10px] font-black uppercase tracking-wide text-accent-2 ring-1 ring-accent-2/35">
                       <svg
                         viewBox="0 0 24 24"
                         className="h-3.5 w-3.5"
@@ -1040,6 +1489,69 @@ export function AltPlayer({
                 </button>
               );
             })}
+          </div>
+        </div>
+      )}
+
+      {/* ------------- Окно «2K/4K по подписке» -------------------------
+          Всплывает вместо переключения качества, когда серия не входит
+          в бесплатные первые FREE_HQ_EPISODES. */}
+      {hqModal && (
+        <div
+          className="absolute inset-0 z-40 grid place-items-center bg-black/70 p-4 backdrop-blur-sm animate-fade-in"
+          onClick={(e) => {
+            // подложка — всё, кроме самого окна
+            if (e.target === e.currentTarget) setHqModal(false);
+          }}
+        >
+          <div
+            ref={hqDialogRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="alt-hq-title"
+            data-alt-hq-modal=""
+            tabIndex={-1}
+            className="w-full max-w-md rounded-2xl border border-line bg-[#0d0d15]/98 p-5 text-center shadow-[0_36px_80px_-28px_rgba(0,0,0,1)] outline-none animate-fade-in"
+          >
+            <span className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-accent-2/15 text-accent-2 ring-1 ring-accent-2/30">
+              <svg
+                viewBox="0 0 24 24"
+                className="h-6 w-6"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.2"
+                aria-hidden
+              >
+                <rect x="5" y="11" width="14" height="9" rx="2" />
+                <path strokeLinecap="round" d="M8 11V8a4 4 0 0 1 8 0v3" />
+              </svg>
+            </span>
+
+            <h3 id="alt-hq-title" className="mt-3 text-lg font-black text-white">
+              2K и 4K — с подпиской Premium
+            </h3>
+            <p className="mt-2 text-[13px] leading-relaxed text-muted">
+              На первых {FREE_HQ_EPISODES} сериях 2K и 4K доступны всем. С 3-й серии
+              качество выше 1080p открывается по подписке — это апскейл Anime4K, он
+              считается на видеокарте.
+            </p>
+
+            <div className="mt-5 flex flex-col gap-2 sm:flex-row-reverse">
+              <button
+                type="button"
+                onClick={() => router.push("/premium")}
+                className="flex-1 rounded-xl bg-accent px-4 py-3 text-sm font-black text-white transition hover:brightness-110"
+              >
+                Оформить Premium
+              </button>
+              <button
+                type="button"
+                onClick={() => setHqModal(false)}
+                className="flex-1 rounded-xl bg-white/8 px-4 py-3 text-sm font-bold text-white ring-1 ring-white/12 transition hover:bg-white/14"
+              >
+                Смотреть в 1080p
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -1083,7 +1595,7 @@ export function AltPlayer({
           <div className="grid justify-items-center gap-3 text-center">
             <span className="h-9 w-9 animate-spin-slow rounded-full border-[3px] border-white/20 border-t-accent" />
             <span className="text-xs font-semibold uppercase tracking-widest text-muted">
-              Ищем на AniLiberty…
+              Ищем на {brand}…
             </span>
           </div>
         </div>
@@ -1092,11 +1604,29 @@ export function AltPlayer({
       {status === "empty" && (
         <div className="absolute inset-0 z-40 grid place-items-center bg-ink/85 animate-fade-in">
           <div className="grid max-w-xs justify-items-center gap-3 px-6 text-center">
-            <p className="text-sm font-semibold text-white">Не нашли на AniLiberty</p>
-            <p className="text-xs text-muted">
-              Возможно, этого тайтла нет в каталоге альтернативы — вернитесь на
-              основной плеер.
-            </p>
+            {/* У Kodik серия ищется не по каталогу, а прямой подписанной
+                ссылкой, поэтому «не нашли» тут означало бы неверно:
+                показываем то, что сервер ответил на самом деле. */}
+            {backend === "kodik" ? (
+              <>
+                <p className="text-sm font-semibold text-white">Поток не получен</p>
+                <p className="text-xs text-muted">
+                  {kodikError ?? "Kodik не ответил"}
+                </p>
+                <p className="text-xs text-muted/80">
+                  Если с VPN работает, а без него — нет, значит до сервера Kodik
+                  закрыт доступ из вашей сети.
+                </p>
+              </>
+            ) : (
+              <>
+                <p className="text-sm font-semibold text-white">Не нашли на {brand}</p>
+                <p className="text-xs text-muted">
+                  Возможно, этого тайтла нет в каталоге альтернативы — вернитесь на
+                  основной плеер.
+                </p>
+              </>
+            )}
             <button
               type="button"
               onClick={onBack}
@@ -1108,10 +1638,12 @@ export function AltPlayer({
         </div>
       )}
 
-      {status === "ok" && !current && (
+      {/* Нет именно этой серии в каталоге: у Kodik серии приходят по номеру,
+          пустой результат сюда не попадает — там своя проверка выше */}
+      {status === "ok" && !current && backend === "anilibria" && (
         <div className="absolute inset-0 z-40 grid place-items-center bg-ink/85 animate-fade-in">
           <div className="grid max-w-xs justify-items-center gap-2 px-6 text-center">
-            <p className="text-sm font-semibold text-white">Серии {episode} нет в AniLiberty</p>
+            <p className="text-sm font-semibold text-white">Серии {episode} нет на {brand}</p>
             <p className="text-xs text-muted">
               Выберите другую серию или переключитесь обратно на основной плеер.
             </p>

@@ -1,0 +1,532 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Уровни AniGalaxy — превью</title>
+<style>
+/* ================= ЭМБЛЕМА ================= */
+.le{--s:96px;position:relative;width:var(--s);height:var(--s);flex:none;display:grid;place-items:center;isolation:isolate}
+.le>*{position:absolute}
+.le svg{inset:0;width:100%;height:100%;overflow:visible}
+.le .gl{inset:-24%;border-radius:50%;z-index:-1;filter:blur(10px);animation:gl 3s ease-in-out infinite;background:radial-gradient(circle,color-mix(in srgb,var(--c) 60%,transparent),transparent 64%)}
+.le.fire .gl{animation-duration:.9s;background:radial-gradient(circle,color-mix(in srgb,var(--c2) 65%,transparent),color-mix(in srgb,var(--c) 25%,transparent) 45%,transparent 68%)}
+.le .rays{inset:-48%;border-radius:50%;z-index:-1;opacity:.55;animation:sp 26s linear infinite;
+ background:repeating-conic-gradient(color-mix(in srgb,var(--c) 75%,transparent) 0 2.2deg,transparent 2.2deg 11deg);-webkit-mask:radial-gradient(circle,#000 22%,transparent 62%);mask:radial-gradient(circle,#000 22%,transparent 62%)}
+.le .rays.b{inset:-40%;animation-duration:38s;animation-direction:reverse;background:repeating-conic-gradient(color-mix(in srgb,var(--c2) 70%,transparent) 0 1.4deg,transparent 1.4deg 18deg)}
+.le .core{inset:13%;border-radius:50%;overflow:hidden;background:radial-gradient(circle at 50% 38%,color-mix(in srgb,var(--c) 40%,#12090f),#09060c 74%)}
+.le .core::before{content:"";position:absolute;inset:-30%;opacity:var(--neb,0);filter:blur(8px);animation:sp 9s linear infinite;
+ background:conic-gradient(transparent,color-mix(in srgb,var(--c2) 50%,transparent),transparent 40%,color-mix(in srgb,var(--c) 50%,transparent),transparent 80%)}
+.le .core::after{content:"";position:absolute;top:-10%;bottom:-10%;width:30%;left:0;transform:translateX(-220%) skewX(-18deg);animation:sw 3.6s ease-in-out infinite;animation-delay:var(--d0,0s);
+ background:linear-gradient(90deg,transparent,rgba(255,255,255,.55),transparent)}
+.le .beam{inset:13%;border-radius:50%;opacity:.8;mix-blend-mode:screen;animation:sp 3s linear infinite;background:conic-gradient(color-mix(in srgb,var(--c) 65%,transparent),transparent 26%)}
+.le .rp{inset:6%;border-radius:50%;border:1.5px solid var(--c);opacity:0;animation:rp var(--t,3s) ease-out infinite;animation-delay:var(--d)}
+.le .cmt{inset:var(--i,3%);border-radius:50%;filter:drop-shadow(0 0 4px var(--cc,var(--c)));animation:sp var(--t) linear infinite;animation-delay:var(--d);
+ background:conic-gradient(transparent 0 68%,var(--cc,var(--c)));-webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 3px),#000 calc(100% - 2px));mask:radial-gradient(farthest-side,transparent calc(100% - 3px),#000 calc(100% - 2px))}
+.le .orb{inset:0;animation:sp var(--t) linear infinite;animation-delay:var(--d)}
+.le .orb::after{content:"";position:absolute;left:50%;top:1%;width:calc(var(--s)*.06);height:calc(var(--s)*.06);margin-left:calc(var(--s)*-.03);border-radius:50%;background:#fff;box-shadow:0 0 8px #fff,0 0 14px var(--c),0 0 22px var(--c2)}
+.le .st{width:calc(var(--s)*.035);height:calc(var(--s)*.035);border-radius:50%;background:#fff;box-shadow:0 0 6px #fff,0 0 12px var(--c);animation:tw var(--t) ease-in-out infinite;animation-delay:var(--d)}
+.le .em{left:var(--x);bottom:12%;width:calc(var(--s)*.03);height:calc(var(--s)*.03);border-radius:50%;opacity:0;background:var(--c2);box-shadow:0 0 6px var(--c),0 0 10px var(--c2);animation:em var(--t) ease-out var(--d) infinite}
+.le .pt{left:var(--x);top:-6%;width:calc(var(--s)*.07);height:calc(var(--s)*.05);border-radius:50% 0 50% 0;opacity:0;background:linear-gradient(135deg,#ffd6e8,var(--c));animation:pt var(--t) linear var(--d) infinite}
+.le b{position:relative;z-index:5;font-weight:900;line-height:1;font-size:calc(var(--s)*var(--fs,.3));animation:ng 2.4s ease-in-out infinite;
+ background:linear-gradient(180deg,#fff 8%,var(--c) 88%);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 8px color-mix(in srgb,var(--c) 80%,transparent))}
+.le.holo{animation:holo 8s linear infinite}
+/* svg-анимации */
+.le .r{transform-origin:50px 50px;animation:sp var(--t,20s) linear infinite}
+.le .rv{animation-direction:reverse}
+.le .br{transform-origin:50px 50px;animation:br 4s ease-in-out infinite}
+.le .pu{transform-origin:50px 50px;animation:pu 2.4s ease-in-out infinite}
+.le .dm{animation:dm 3s linear infinite}
+.le .arc{filter:drop-shadow(0 0 3px var(--c))}
+.le .bolt{fill:none;stroke:#fff;stroke-width:1.1;stroke-linejoin:round;filter:drop-shadow(0 0 3px var(--c));opacity:0;animation:bolt var(--t) steps(1) infinite;animation-delay:var(--d)}
+.le .wg{transform-origin:14px 40px;animation:wg 2.2s ease-in-out infinite alternate}
+.le .bob{animation:bob 2s ease-in-out infinite}
+.le .fl{transform-origin:50px 22px;animation:fl var(--t) ease-in-out infinite alternate;animation-delay:var(--d)}
+@keyframes sp{to{transform:rotate(360deg)}}
+@keyframes gl{50%{opacity:.55;transform:scale(1.14)}}
+@keyframes sw{0%,55%{transform:translateX(-220%) skewX(-18deg)}100%{transform:translateX(450%) skewX(-18deg)}}
+@keyframes rp{0%{opacity:.7;transform:scale(.7)}100%{opacity:0;transform:scale(1.6)}}
+@keyframes tw{0%,100%{opacity:.1;transform:scale(.5)}50%{opacity:1;transform:scale(1.5)}}
+@keyframes em{0%{opacity:0;transform:translate(0,0) scale(1)}15%{opacity:1}100%{opacity:0;transform:translate(var(--dx),calc(var(--s)*-.7)) scale(.3)}}
+@keyframes pt{0%{opacity:0;transform:translate(0,0) rotate(0)}10%{opacity:.9}100%{opacity:0;transform:translate(var(--dx),calc(var(--s)*.8)) rotate(360deg)}}
+@keyframes ng{50%{filter:drop-shadow(0 0 15px var(--c))}}
+@keyframes holo{to{filter:hue-rotate(360deg)}}
+@keyframes br{50%{transform:scale(1.045)}}
+@keyframes pu{50%{transform:scale(.95)}}
+@keyframes dm{to{stroke-dashoffset:-20}}
+@keyframes bolt{0%,86%,100%{opacity:0}88%,94%{opacity:1}91%{opacity:.25}}
+@keyframes wg{from{transform:rotate(-8deg)}to{transform:rotate(7deg)}}
+@keyframes bob{50%{transform:translateY(-1.6px)}}
+@keyframes fl{from{transform:scale(1,.82)}to{transform:scale(.88,1.18)}}
+/* пауза вне экрана, закрытый уровень, вспышка нового уровня */
+.le.pz,.le.pz *,.le.pz *::before,.le.pz *::after{animation-play-state:paused!important}
+.le.lk{filter:grayscale(1) brightness(.55);animation:none}
+.le.lk .gl,.le.lk .rays,.le.lk .beam{display:none}
+.le.lk::after{content:"";position:absolute;z-index:6;width:28%;height:28%;right:4%;bottom:4%;border-radius:50%;border:1px solid #555;background:#12121c url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ddd' stroke-width='2.4' stroke-linecap='round'%3E%3Crect x='5' y='11' width='14' height='9' rx='2'/%3E%3Cpath d='M8 11V8a4 4 0 018 0v3'/%3E%3C/svg%3E") center/62% no-repeat}
+.le .lu{inset:6%;z-index:6;border-radius:50%;border:2px solid var(--c2);opacity:0;pointer-events:none;animation:lu .9s ease-out 1}
+@keyframes lu{from{opacity:.9;transform:scale(.6)}to{opacity:0;transform:scale(1.9)}}
+/* XP-бар из демо-блока оригинала (цвета эры через --c/--c2) */
+.bar{height:12px;border-radius:99px;background:rgba(255,255,255,.08);margin:12px 0 8px;overflow:hidden}
+.bar i{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--c),var(--c2));box-shadow:0 0 14px var(--c);transition:width .4s}
+/* карточка уровня из демо-блока (см. level-emblem.html) */
+.card{--mut:#8b90a8;display:flex;gap:24px;align-items:center;border:1px solid color-mix(in srgb,var(--c) 35%,transparent);border-radius:22px;padding:26px;transition:.4s;
+ background:radial-gradient(560px 240px at 6% 50%,color-mix(in srgb,var(--c) 28%,transparent),transparent 70%),#0d0a14;box-shadow:0 0 40px color-mix(in srgb,var(--c) 14%,transparent)}
+.card .b{flex:1;min-width:0}
+/* Строка уровня — служебный статус-бар, а не заголовок страницы: раньше это
+   был h1, из-за чего на профиле оказывалось два h1. Теперь h2, поэтому в
+   селекторах стоят оба тега. */
+.card h1,.card h2{margin:0;font-size:clamp(24px,3.4vw,38px);font-weight:900;letter-spacing:.02em;display:flex;gap:12px;align-items:baseline;flex-wrap:wrap;background:linear-gradient(90deg,#fff,var(--c) 50%,var(--c2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.card h1 small,.card h2 small{font-size:14px;color:var(--mut);-webkit-text-fill-color:var(--mut);font-weight:600}
+.card h1 em,.card h2 em{margin-left:auto;font-style:normal;font-size:22px;-webkit-text-fill-color:var(--c2)}
+.card h1,.card h2{font-family:var(--font-sans)}
+.era{font-size:13px;color:var(--mut)}
+@media(prefers-reduced-motion:reduce){.le,.le *,.le *::before,.le *::after{animation:none!important}}
+
+
+:root{
+  --bg:#07060d; --panel:#0d0a14; --line:rgba(255,255,255,.08);
+  --mut:#8b90a8; --c:#38b6ff; --c2:#7a7dff; --font-sans:Manrope,system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  background:var(--bg); color:#fff; font-family:var(--font-sans);
+  padding:32px 20px 80px; line-height:1.5;
+}
+.wrap{max-width:1080px;margin:0 auto}
+h1{font-size:clamp(28px,5vw,48px);margin:0;font-weight:900;letter-spacing:-.01em}
+h2{font-size:20px;margin:0 0 4px;font-weight:800}
+.lead{color:var(--mut);margin:10px 0 0;font-size:15px;max-width:62ch}
+code{color:var(--c2);background:rgba(255,255,255,.05);padding:1px 6px;border-radius:6px;font-size:.92em}
+
+header{padding:18px 0 30px;border-bottom:1px solid var(--line);margin-bottom:30px}
+.badge{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:99px;
+  padding:5px 13px;font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--mut);margin-bottom:16px}
+
+section{margin:0 0 44px}
+.shead{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+.shead p{margin:0;color:var(--mut);font-size:13px}
+
+/* --- панель управления --- */
+.ctrl{display:flex;gap:18px;flex-wrap:wrap;align-items:center;
+  background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:16px 18px;margin-bottom:20px}
+.ctrl label{font-size:12px;color:var(--mut);display:block;margin-bottom:6px;letter-spacing:.04em;text-transform:uppercase;font-weight:700}
+.ctrl .grp{flex:1;min-width:220px}
+input[type=range]{width:100%;accent-color:var(--c)}
+.ctl-val{font-variant-numeric:tabular-nums;color:#fff;font-weight:800;font-size:15px}
+.switch{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--mut);cursor:pointer;user-select:none}
+.switch input{width:16px;height:16px;accent-color:var(--c)}
+
+/* --- карточка уровня --- */
+#card .card{gap:28px}
+#card .meta{display:flex;flex-direction:column;gap:4px}
+#card .kv{display:flex;justify-content:space-between;gap:16px;font-size:13px;color:var(--mut);
+  border-bottom:1px dashed rgba(255,255,255,.07);padding:5px 0}
+#card .kv b{color:#fff;font-variant-numeric:tabular-nums}
+.tagline{display:inline-flex;align-items:center;gap:7px;margin-top:8px;font-size:12px;font-weight:700;
+  border:1px solid color-mix(in srgb,var(--c2) 45%,transparent);border-radius:99px;padding:4px 11px;
+  color:var(--c2);background:rgba(255,255,255,.03)}
+
+/* --- сетка уровней --- */
+.era{margin-bottom:30px}
+.era-h{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.era-h b{font-size:14px;font-weight:800;letter-spacing:.02em}
+.era-h span{font-size:12px;color:var(--mut)}
+.era-h i{flex:1;height:1px;background:linear-gradient(90deg,color-mix(in srgb,var(--c) 40%,transparent),transparent)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:10px}
+.cell{display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px 6px 12px;border-radius:16px;
+  border:1px solid var(--line);background:#0b0912;transition:.25s;cursor:pointer}
+.cell:hover{border-color:color-mix(in srgb,var(--c) 55%,transparent);transform:translateY(-2px)}
+.cell.sel{border-color:var(--c);box-shadow:0 0 0 1px var(--c),0 0 24px -6px var(--c)}
+.cell .lv{font-size:11px;color:var(--mut);font-variant-numeric:tabular-nums}
+.cell .tg{font-size:9.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--c2)}
+
+/* --- график --- */
+.chart{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:18px 14px 10px;overflow:hidden}
+.chart svg{width:100%;height:auto;display:block}
+.chart .gl{stroke:rgba(255,255,255,.07);stroke-width:1}
+.chart .ax{fill:#7b809a;font-size:11px;font-family:var(--font-sans)}
+.chart .dot{fill:#ffd04d;stroke:#0d0a14;stroke-width:2}
+.chart .ln{fill:none;stroke:url(#cg);stroke-width:2.5;stroke-linejoin:round}
+.chart .ar{fill:url(#cg);opacity:.16}
+
+/* --- таблицы --- */
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line)}
+th{color:var(--mut);font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:700}
+td.n{text-align:right;font-variant-numeric:tabular-nums}
+tr.mile td{background:rgba(255,208,77,.07)}
+.tbl{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:8px 16px 4px;overflow:auto}
+
+.note{border-left:2px solid var(--c);padding:2px 0 2px 14px;color:var(--mut);font-size:13.5px;margin:18px 0 0}
+footer{border-top:1px solid var(--line);padding-top:20px;color:var(--mut);font-size:12.5px}
+@media(max-width:560px){#card .card{flex-direction:column;align-items:flex-start}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <span class="badge">Превью · AniGalaxy</span>
+    <h1>Уровни</h1>
+    <p class="lead">
+      Сто уровней и семь эр — от «Новичка» до «Трансцендента».
+      Кривая опыта: <code>xpToNext(L) = round(50 × L^1.2)</code>.
+      Страница собрана из настоящих исходников проекта: генератор эмблемы
+      <code>src/lib/levelEmblem.js</code> и стили <code>src/app/level-emblem.css</code>.
+    </p>
+  </header>
+
+  <section>
+    <div class="shead"><h2>Уровень и прогресс</h2><p>двигайте ползунки — эмблема пересобирается на лету</p></div>
+
+    <div class="ctrl">
+      <div class="grp">
+        <label>Уровень <span class="ctl-val" id="lvVal">37</span></label>
+        <input type="range" id="lv" min="1" max="100" value="37">
+      </div>
+      <div class="grp">
+        <label>Прогресс внутри уровня <span class="ctl-val" id="pcVal">64%</span></label>
+        <input type="range" id="pc" min="0" max="100" value="64">
+      </div>
+      <div>
+        <label>Вид</label>
+        <label class="switch"><input type="checkbox" id="lk"> закрытый</label>
+        <label class="switch"><input type="checkbox" id="up"> вспышка «новый уровень»</label>
+      </div>
+    </div>
+
+    <div id="card"></div>
+  </section>
+
+  <section>
+    <div class="shead"><h2>Кривая опыта</h2><p>суммарный XP, необходимый для достижения уровня</p></div>
+    <div class="chart">
+      <svg viewBox="0 0 900 260" preserveAspectRatio="xMidYMid meet">
+        <defs>
+          <linearGradient id="cg" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stop-color="#34e0a1"/><stop offset=".5" stop-color="#38b6ff"/><stop offset="1" stop-color="#ff4fa3"/>
+          </linearGradient>
+        </defs>
+        <line x1="62" y1="230.0" x2="882" y2="230.0" class="gl"/>
+            <text x="52" y="234.0" class="ax" text-anchor="end">0</text><line x1="62" y1="176.0" x2="882" y2="176.0" class="gl"/>
+            <text x="52" y="180.0" class="ax" text-anchor="end">141 153</text><line x1="62" y1="122.0" x2="882" y2="122.0" class="gl"/>
+            <text x="52" y="126.0" class="ax" text-anchor="end">282 307</text><line x1="62" y1="68.0" x2="882" y2="68.0" class="gl"/>
+            <text x="52" y="72.0" class="ax" text-anchor="end">423 460</text><line x1="62" y1="14.0" x2="882" y2="14.0" class="gl"/>
+            <text x="52" y="18.0" class="ax" text-anchor="end">564 613</text>
+        <polygon class="ar" points="62,230 62.0,230.0 70.3,230.0 78.6,229.9 86.8,229.9 95.1,229.8 103.4,229.6 111.7,229.5 120.0,229.3 128.3,229.0 136.5,228.8 144.8,228.5 153.1,228.1 161.4,227.8 169.7,227.3 178.0,226.9 186.2,226.4 194.5,225.9 202.8,225.3 211.1,224.7 219.4,224.0 227.7,223.3 235.9,222.6 244.2,221.8 252.5,221.0 260.8,220.1 269.1,219.2 277.4,218.2 285.6,217.2 293.9,216.2 302.2,215.1 310.5,214.0 318.8,212.8 327.1,211.6 335.3,210.3 343.6,209.0 351.9,207.6 360.2,206.2 368.5,204.8 376.7,203.3 385.0,201.7 393.3,200.1 401.6,198.5 409.9,196.8 418.2,195.0 426.4,193.2 434.7,191.4 443.0,189.5 451.3,187.5 459.6,185.6 467.9,183.5 476.1,181.4 484.4,179.3 492.7,177.1 501.0,174.8 509.3,172.5 517.6,170.2 525.8,167.8 534.1,165.4 542.4,162.9 550.7,160.3 559.0,157.7 567.3,155.1 575.5,152.3 583.8,149.6 592.1,146.8 600.4,143.9 608.7,141.0 616.9,138.0 625.2,135.0 633.5,131.9 641.8,128.8 650.1,125.6 658.4,122.4 666.6,119.1 674.9,115.7 683.2,112.3 691.5,108.9 699.8,105.3 708.1,101.8 716.3,98.2 724.6,94.5 732.9,90.8 741.2,87.0 749.5,83.1 757.8,79.2 766.0,75.3 774.3,71.3 782.6,67.2 790.9,63.1 799.2,58.9 807.5,54.7 815.7,50.4 824.0,46.0 832.3,41.6 840.6,37.2 848.9,32.6 857.2,28.1 865.4,23.4 873.7,18.7 882.0,14.0 882.0,230"/>
+        <polyline class="ln" points="62.0,230.0 70.3,230.0 78.6,229.9 86.8,229.9 95.1,229.8 103.4,229.6 111.7,229.5 120.0,229.3 128.3,229.0 136.5,228.8 144.8,228.5 153.1,228.1 161.4,227.8 169.7,227.3 178.0,226.9 186.2,226.4 194.5,225.9 202.8,225.3 211.1,224.7 219.4,224.0 227.7,223.3 235.9,222.6 244.2,221.8 252.5,221.0 260.8,220.1 269.1,219.2 277.4,218.2 285.6,217.2 293.9,216.2 302.2,215.1 310.5,214.0 318.8,212.8 327.1,211.6 335.3,210.3 343.6,209.0 351.9,207.6 360.2,206.2 368.5,204.8 376.7,203.3 385.0,201.7 393.3,200.1 401.6,198.5 409.9,196.8 418.2,195.0 426.4,193.2 434.7,191.4 443.0,189.5 451.3,187.5 459.6,185.6 467.9,183.5 476.1,181.4 484.4,179.3 492.7,177.1 501.0,174.8 509.3,172.5 517.6,170.2 525.8,167.8 534.1,165.4 542.4,162.9 550.7,160.3 559.0,157.7 567.3,155.1 575.5,152.3 583.8,149.6 592.1,146.8 600.4,143.9 608.7,141.0 616.9,138.0 625.2,135.0 633.5,131.9 641.8,128.8 650.1,125.6 658.4,122.4 666.6,119.1 674.9,115.7 683.2,112.3 691.5,108.9 699.8,105.3 708.1,101.8 716.3,98.2 724.6,94.5 732.9,90.8 741.2,87.0 749.5,83.1 757.8,79.2 766.0,75.3 774.3,71.3 782.6,67.2 790.9,63.1 799.2,58.9 807.5,54.7 815.7,50.4 824.0,46.0 832.3,41.6 840.6,37.2 848.9,32.6 857.2,28.1 865.4,23.4 873.7,18.7 882.0,14.0"/>
+        <text x="62.0" y="252" class="ax" text-anchor="middle">1</text><circle cx="62.0" cy="230.0" r="4" class="dot"/><text x="136.5" y="252" class="ax" text-anchor="middle">10</text><circle cx="136.5" cy="228.8" r="4" class="dot"/><text x="260.8" y="252" class="ax" text-anchor="middle">25</text><circle cx="260.8" cy="220.1" r="4" class="dot"/><text x="467.9" y="252" class="ax" text-anchor="middle">50</text><circle cx="467.9" cy="183.5" r="4" class="dot"/><text x="674.9" y="252" class="ax" text-anchor="middle">75</text><circle cx="674.9" cy="115.7" r="4" class="dot"/><text x="882.0" y="252" class="ax" text-anchor="middle">100</text><circle cx="882.0" cy="14.0" r="4" class="dot"/>
+      </svg>
+    </div>
+    <p class="note">
+      Ориентиры: ур.5 ≈ 616 · ур.10 ≈ 3 211 ·
+      ур.25 ≈ 25 857 · ур.50 ≈ 121 519 ·
+      ур.75 ≈ 298 729 · ур.100 ≈ 564 613 XP.
+    </p>
+  </section>
+
+  <section>
+    <div class="shead"><h2>Все 100 уровней</h2><p>нажмите на эмблему — она попадёт в карточку выше</p></div>
+    <div id="grid"></div>
+  </section>
+
+  <section>
+    <div class="shead"><h2>Источники XP</h2><p>правила движка, progression.config.ts → rules</p></div>
+    <div class="tbl"><table>
+      <thead><tr><th>Действие</th><th class="n">XP</th><th class="n">В сутки</th><th class="n">XP в сутки</th></tr></thead>
+      <tbody>
+        <tr>
+              <td>Первый вход</td>
+              <td class="n">25</td>
+              <td class="n">раз в день</td>
+              <td class="n">25</td>
+            </tr>
+        <tr>
+              <td>Досмотренная серия</td>
+              <td class="n">10</td>
+              <td class="n">30</td>
+              <td class="n">300</td>
+            </tr>
+        <tr>
+              <td>Первый просмотр</td>
+              <td class="n">20</td>
+              <td class="n">10</td>
+              <td class="n">200</td>
+            </tr>
+        <tr>
+              <td>Тайтл полностью</td>
+              <td class="n">100</td>
+              <td class="n">5</td>
+              <td class="n">500</td>
+            </tr>
+        <tr>
+              <td>Любимое в список</td>
+              <td class="n">5</td>
+              <td class="n">20</td>
+              <td class="n">100</td>
+            </tr>
+        <tr>
+              <td>Отметка «смотрю»</td>
+              <td class="n">5</td>
+              <td class="n">20</td>
+              <td class="n">100</td>
+            </tr>
+        <tr>
+              <td>Запланировано</td>
+              <td class="n">3</td>
+              <td class="n">20</td>
+              <td class="n">60</td>
+            </tr>
+        <tr>
+              <td>Оценка тайтла</td>
+              <td class="n">5</td>
+              <td class="n">20</td>
+              <td class="n">100</td>
+            </tr>
+        <tr>
+              <td>Первый комментарий</td>
+              <td class="n">15</td>
+              <td class="n">раз в день</td>
+              <td class="n">15</td>
+            </tr>
+        <tr>
+              <td>Комментарий</td>
+              <td class="n">5</td>
+              <td class="n">10</td>
+              <td class="n">50</td>
+            </tr>
+        <tr>
+              <td>Ответ на комментарий</td>
+              <td class="n">3</td>
+              <td class="n">20</td>
+              <td class="n">60</td>
+            </tr>
+        <tr class="mile"><td><b>Итого в сутки</b></td><td class="n">—</td><td class="n">—</td>
+          <td class="n"><b>1 510</b></td></tr>
+      </tbody>
+    </table></div>
+    <p class="note">
+      Soft-cap: до 1 000 XP в сутки — 100%, дальше 25%,
+      потолок 1 500. Достижения, квесты, сезоны и админ-выдачи капают мимо ограничения.
+    </p>
+  </section>
+
+  <section>
+    <div class="shead"><h2>Экономика за уровень</h2><p>AC начисляются автоматически, подарок забирается вручную</p></div>
+    <div class="tbl"><table>
+      <thead><tr><th>Правило</th><th class="n">Значение</th></tr></thead>
+      <tbody>
+        <tr><td>AC за уровень</td><td class="n">10 + 2 × L, каждый 10-й ещё +100 × (L/10)</td></tr>
+        <tr><td>Пример: уровень 37</td><td class="n">84 AC</td></tr>
+        <tr><td>Пример: уровень 100</td><td class="n">1 210 AC</td></tr>
+        <tr><td>Вход в день</td><td class="n">25 XP + 10 AC</td></tr>
+        <tr><td>Серия 7 дней</td><td class="n">+50 AC</td></tr>
+        <tr><td>Подарок за новый уровень</td><td class="n">50 AC</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section>
+    <div class="shead"><h2>Теги за уровень</h2><p>выдаются автоматически, в магазине не продаются</p></div>
+    <div class="tbl"><table>
+      <thead><tr><th>Уровень</th><th>Тег</th></tr></thead>
+      <tbody>
+        <tr><td class="n">5</td><td>Отаку</td></tr>
+        <tr><td class="n">10</td><td>Сенсей</td></tr>
+        <tr><td class="n">25</td><td>Синдикат</td></tr>
+        <tr><td class="n">30</td><td>Тэнгу</td></tr>
+        <tr><td class="n">50</td><td>Сёгун</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <footer>
+    Страница сгенерирована из исходников <code>anime-hub</code>: эмблема — <code>src/lib/levelEmblem.js</code>,
+    стили — <code>src/app/level-emblem.css</code>, математика — <code>src/lib/progression/curve.ts</code>.
+    Это статичное превью без Next.js, шрифты Manrope/Unbounded подставлены системными.
+  </footer>
+</div>
+
+<script>
+/* ============ КОМПОНЕНТ: levelEmblem(level, percent, sizePx) -> HTML ============ */
+const ERAS=[
+ {from:1,  n:'Новичок',  sh:'Круг-цветок',      c:'#34e0a1',c2:'#18a0ff',a:'#c8ff9a',st:4, orb:1,rp:0,beam:0,cmt:0,pt:0,em:0, rays:0},
+ {from:5,  n:'Зритель',  sh:'Гексагон-радар',   c:'#38b6ff',c2:'#7a7dff',a:'#aee0ff',st:4, orb:1,rp:2,beam:1,cmt:0,pt:0,em:0, rays:0},
+ {from:15, n:'Знаток',   sh:'Октаграмма-молнии',c:'#b06bff',c2:'#ff5fd2',a:'#e6d0ff',st:5, orb:1,rp:1,beam:0,cmt:2,pt:0,em:0, rays:0,neb:1},
+ {from:30, n:'Мастер',   sh:'Солнце-клинки',    c:'#ff4fa3',c2:'#ff9a3d',a:'#ffd27a',st:6, orb:2,rp:1,beam:0,cmt:1,pt:6,em:0, rays:1,neb:1},
+ {from:50, n:'Чемпион',  sh:'Щит с крыльями',   c:'#ffd04d',c2:'#ff8a1f',a:'#fff0b0',st:5, orb:2,rp:1,beam:0,cmt:1,pt:0,em:8, rays:1,neb:1},
+ {from:75, n:'Легенда',  sh:'Пламенное кольцо', c:'#ff4d4d',c2:'#ffa31f',a:'#ffd9a0',st:6, orb:3,rp:2,beam:0,cmt:2,pt:0,em:12,rays:2,neb:1,fire:1},
+ {from:100,n:'Трансцендент',sh:'Гексаграмма-космос',c:'#6cf0ff',c2:'#ff6bd6',a:'#ffffff',st:10,orb:4,rp:2,beam:0,cmt:3,pt:0,em:0,rays:2,neb:1,holo:1}
+];
+const eraOf=L=>{let i=0;ERAS.forEach((e,k)=>{if(L>=e.from)i=k});return i};
+const rng=s=>()=>{s|=0;s=s+0x6D2B79F5|0;let t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296};
+const pt=(n,r,rot)=>Array.from({length:n},(_,i)=>{const a=(rot+360*i/n)*Math.PI/180;return(50+r*Math.cos(a)).toFixed(2)+','+(50+r*Math.sin(a)).toFixed(2)}).join(' ');
+const star=(n,ro,ri,rot=-90)=>Array.from({length:n*2},(_,i)=>{const a=(rot+180*i/n)*Math.PI/180,r=i%2?ri:ro;return(50+r*Math.cos(a)).toFixed(2)+','+(50+r*Math.sin(a)).toFixed(2)}).join(' ');
+let UID=0;
+function levelEmblem(L,pct=0,size=96,o={}){
+  const lite=size<64,k=eraOf(L),E=lite?{...ERAS[k],rays:0,cmt:0,em:0,pt:0,beam:0,rp:0,orb:1,st:2,neb:0}:ERAS[k],nx=ERAS[k+1],w=Math.min(1,(L-E.from)/((nx?nx.from:101)-E.from)),r=rng(L*7919+13),id='g'+(++UID);
+  const T=()=>`style="--t:${(10+r()*20).toFixed(0)}s"`, dash=()=>`${(1.5+r()*8).toFixed(1)} ${(2+r()*6).toFixed(1)}`, f=(x)=>(+x).toFixed(1);
+  const prog=(tag,at,ex='')=>`<${tag} ${at} fill="none" stroke="rgba(255,255,255,.12)" stroke-width="4.5" stroke-linejoin="round" ${ex}/>`+(pct>0?`<${tag} ${at} class="arc" pathLength="100" fill="none" stroke="url(#${id}${k==6?'h':''})" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="${pct} 100" ${ex}/>`:'');
+  const circ=(rad,sw,col,op,da,cls,ex='')=>`<circle class="${cls}" ${T()} cx="50" cy="50" r="${rad}" fill="none" stroke="${col}" stroke-width="${sw}" stroke-opacity="${op}" ${da?`stroke-dasharray="${da}"`:''} ${ex}/>`;
+  const bolt=()=>{const a=r()*6.283;let d='';for(let i=0;i<=5;i++){const rr=46-i*4.8,aa=a+(r()-.5)*7/rr;d+=(i?'L':'M')+f(50+rr*Math.cos(aa))+' '+f(50+rr*Math.sin(aa))}return`<path class="bolt" d="${d}" style="--t:${(2+r()*3).toFixed(1)}s;--d:${(-r()*4).toFixed(1)}s"/>`};
+  let s=`<defs><linearGradient id="${id}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${E.c}"/><stop offset="1" stop-color="${E.c2}"/></linearGradient>
+   <linearGradient id="${id}h" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6cf0ff"/><stop offset=".33" stop-color="#ff6bd6"/><stop offset=".66" stop-color="#ffd04d"/><stop offset="1" stop-color="#6cf0ff"/></linearGradient>
+   <linearGradient id="${id}f" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="${E.c}"/><stop offset=".6" stop-color="${E.c2}"/><stop offset="1" stop-color="#fff3a0"/></linearGradient></defs>`;
+  if(k==0){ /* круг-цветок */
+    const N=5+Math.floor(r()*4);let pe='';for(let i=0;i<N;i++)pe+=`<ellipse cx="50" cy="7" rx="3" ry="6.5" fill="url(#${id})" opacity=".85" transform="rotate(${f(i*360/N)} 50 50)"/>`;
+    s+=`<g class="br">${circ(48,.9,E.c,.6,dash(),'r')}<g class="r rv" ${T()}>${pe}</g>${prog('circle','cx="50" cy="50" r="34"','transform="rotate(-90 50 50)"')}${circ(29,.8,E.c2,.6,'','r')}</g>`;
+  }else if(k==1){ /* гексагон-радар */
+    let dots='';pt(6,48,-90).split(' ').forEach(p=>{const[x,y]=p.split(',');dots+=`<circle cx="${x}" cy="${y}" r="1.7" fill="#fff"/>`});
+    s+=`<g class="r" ${T()}><polygon points="${pt(6,48,-90)}" fill="none" stroke="url(#${id})" stroke-width="1.5"/>${dots}</g>
+     <polygon class="r rv" ${T()} points="${pt(6,44,-60)}" fill="none" stroke="${E.a}" stroke-width="1.1" stroke-dasharray="${dash()}"/>
+     ${prog('polygon',`points="${pt(6,37,-90)}"`)}<polygon class="r rv" ${T()} points="${pt(6,30,-90)}" fill="none" stroke="${E.c2}" stroke-width=".8" stroke-opacity=".7"/>`;
+  }else if(k==2){ /* октаграмма-молнии */
+    s+=`<polygon class="r" ${T()} points="${pt(4,48,-90)}" fill="${E.c}" fill-opacity=".08" stroke="url(#${id})" stroke-width="1.5"/>
+     <polygon class="r rv" ${T()} points="${pt(4,48,-45)}" fill="${E.c2}" fill-opacity=".08" stroke="${E.c2}" stroke-width="1.5"/>
+     <circle class="dm" cx="50" cy="50" r="43" fill="none" stroke="${E.a}" stroke-width="1.6" stroke-dasharray=".8 3.6"/>
+     ${prog('polygon',`points="${pt(8,35,-90)}"`)}${bolt()}${bolt()}${bolt()}`;
+  }else if(k==3){ /* солнце-клинки */
+    const N=10+Math.floor(r()*5);
+    s+=`<g class="pu"><polygon class="r" style="--t:${(9+r()*6).toFixed(0)}s" points="${star(N,49,41)}" fill="url(#${id})" fill-opacity=".85"/></g>
+     <polygon class="r rv" ${T()} points="${star(8,32,26)}" fill="none" stroke="${E.a}" stroke-width="1"/>${prog('circle','cx="50" cy="50" r="36"','transform="rotate(-90 50 50)"')}${circ(32,.7,E.c2,.7,dash(),'r rv')}`;
+  }else if(k==4){ /* щит с крыльями */
+    const sh='M50 6L86 18V48C86 72 68 88 50 96C32 88 14 72 14 48V18Z';
+    const wing=`<g class="wg">${[-28,-8,12].map((a,i)=>`<ellipse cx="${2-i}" cy="${38+i*2}" rx="${12+i}" ry="3.2" fill="url(#${id}f)" transform="rotate(${a} 14 40)" opacity=".92"/>`).join('')}</g>`;
+    s+=`<g transform="translate(0 0)">${wing}</g><g transform="translate(100 0) scale(-1 1)">${wing}</g>
+     <path d="${sh}" fill="#0b0810" fill-opacity=".85" stroke="url(#${id}f)" stroke-width="1.6"/>
+     ${prog('path',`d="${sh}" transform="translate(50 52) scale(.84) translate(-50 -52)"`)}
+     <path d="M41 9L44 0L50 6L56 0L59 9Z" fill="url(#${id}f)" class="bob" stroke="#fff3a0" stroke-width=".6"/>`;
+  }else if(k==5){ /* пламенное кольцо */
+    const N=10+Math.floor(r()*5);let fl='';for(let i=0;i<N;i++)fl+=`<g transform="rotate(${f(i*360/N)} 50 50)"><path class="fl" style="--t:${(.35+r()*.5).toFixed(2)}s;--d:${(-r()).toFixed(2)}s" d="M50 1C57 9 56 16 50 23C44 16 43 9 50 1Z" fill="url(#${id}f)"/></g>`;
+    s+=`${fl}${prog('circle','cx="50" cy="50" r="33"','transform="rotate(-90 50 50)"')}${circ(28,.8,E.a,.7,dash(),'r rv')}<circle class="dm" cx="50" cy="50" r="38" fill="none" stroke="${E.a}" stroke-width="1" stroke-dasharray="1 3"/>${bolt()}${bolt()}`;
+  }else{ /* гексаграмма-космос */
+    s+=`${circ(48,1,`url(#${id}h)`,.9,dash(),'r')}<polygon class="r" ${T()} points="${pt(3,45,-90)}" fill="${E.c}" fill-opacity=".1" stroke="url(#${id}h)" stroke-width="1.5"/>
+     <polygon class="r rv" ${T()} points="${pt(3,45,-30)}" fill="${E.c2}" fill-opacity=".1" stroke="url(#${id}h)" stroke-width="1.5"/>
+     ${prog('circle','cx="50" cy="50" r="33"','transform="rotate(-90 50 50)"')}<polygon class="r rv" ${T()} points="${pt(5,26,-90)}" fill="none" stroke="#fff" stroke-width=".8" stroke-opacity=".7"/>
+     <circle class="dm" cx="50" cy="50" r="49.5" fill="none" stroke="#fff" stroke-width="1.4" stroke-dasharray=".6 2.9"/>`;
+  }
+  /* слои вокруг */
+  let h='';
+  const n=(c,fn)=>{for(let i=0;i<c;i++)h+=fn(i)};
+  n(E.rp+(w>.5&&k>0?1:0),i=>`<i class="rp" style="--d:${i*1.1}s;--t:${k==5?1.6:3}s"></i>`);
+  if(E.beam)h+='<i class="beam"></i>';
+  n(E.cmt,i=>`<i class="cmt" style="--i:${2+i*3}%;--t:${(3+r()*4).toFixed(1)}s;--d:${(-r()*5).toFixed(1)}s;--cc:${i%2?E.c2:E.c}"></i>`);
+  n(E.orb+(w>.66?1:0),i=>`<i class="orb" style="--t:${(5+r()*6+i*2).toFixed(1)}s;--d:${(-r()*8).toFixed(1)}s"></i>`);
+  n(E.st+Math.floor(w*3),()=>{const a=r()*6.283,d=8+r()*17;return`<i class="st" style="left:${f(50+Math.cos(a)*d)}%;top:${f(50+Math.sin(a)*d)}%;--t:${(1.6+r()*2.4).toFixed(1)}s;--d:${(-r()*3).toFixed(1)}s"></i>`});
+  n(E.em,()=>`<i class="em" style="--x:${f(20+r()*60)}%;--dx:${f((r()-.5)*30)}px;--t:${(k==5?1.2:2)+r()*1.5}s;--d:${(-r()*3).toFixed(1)}s"></i>`);
+  n(E.pt,()=>`<i class="pt" style="--x:${f(10+r()*80)}%;--dx:${f((r()-.5)*30)}px;--t:${(3+r()*2).toFixed(1)}s;--d:${(-r()*5).toFixed(1)}s"></i>`);
+  const hue=(E.holo||o.locked)?0:Math.round((r()-.5)*40), dg=String(L).length, fs=dg>2?.24:dg>1?.3:.38;
+  return `<div class="le ${E.fire?'fire':''} ${E.holo?'holo':''} ${o.locked?'lk':''}" role="img" aria-label="Уровень ${L}, эра ${E.n}${o.locked?', закрыт':', прогресс '+pct+'%'}" style="--s:${size}px;--c:${E.c};--c2:${E.c2};--fs:${fs};--neb:${E.neb||0};--d0:${(-r()*3).toFixed(1)}s;${hue?`filter:hue-rotate(${hue}deg)`:''}">
+   <i class="gl"></i>${E.rays?'<i class="rays"></i>':''}${E.rays>1?'<i class="rays b"></i>':''}<i class="core"></i><svg viewBox="0 0 100 100">${s}</svg>${h}${o.up?'<i class="lu"></i>':''}<b>${L}</b></div>`;
+}
+
+window.levelEmblem = levelEmblem;
+window.ERAS = ERAS;
+
+</script>
+<script>
+(function () {
+  var CFG = {"levels":{"base":50,"exponent":1.2,"maxLevel":100},"softCap":{"dailyXp":1000,"overRate":0.25,"hardCap":1500},"economy":{"dailyLoginXp":25,"dailyLoginAc":10,"streakEveryDays":7,"streakBonusAc":50,"levelAcBase":10,"levelAcPerLevel":2,"levelAcEvery10":100,"levelGiftAc":50},"levelTags":[5,10,25,30,50]};
+  var ERAS_META = [{"from":1,"name":"Новичок"},{"from":5,"name":"Зритель"},{"from":15,"name":"Знаток"},{"from":30,"name":"Мастер"},{"from":50,"name":"Чемпион"},{"from":75,"name":"Легенда"},{"from":100,"name":"Трансцендент"}];
+  var TAG_NAMES = {"5":"Отаку","10":"Сенсей","25":"Синдикат","30":"Тэнгу","50":"Сёгун"};
+  var MAX = CFG.levels.maxLevel, BASE = CFG.levels.base, EXP = CFG.levels.exponent;
+
+  var nf = function (n) { return new Intl.NumberFormat("ru-RU").format(Math.round(n)); };
+  var esc = function (s) {
+    return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  };
+
+  var STARTS = [0];
+  for (var L = 1; L < MAX; L++) STARTS.push(STARTS[L - 1] + Math.round(BASE * Math.pow(L, EXP)));
+  var totalXpFor = function (L) { return L <= 1 ? 0 : STARTS[Math.min(L, MAX) - 1]; };
+  var xpToNext = function (L) { return L < 1 || L >= MAX ? 0 : Math.round(BASE * Math.pow(L, EXP)); };
+  var levelAcReward = function (L) {
+    var e = CFG.economy, ac = e.levelAcBase + e.levelAcPerLevel * L;
+    if (L % 10 === 0) ac += e.levelAcEvery10 * (L / 10);
+    return ac;
+  };
+  var eraOf = function (L) {
+    var name = ERAS_META[0].name, i = 0;
+    ERAS_META.forEach(function (e, k) { if (L >= e.from) { name = e.name; i = k; } });
+    return { name: name, index: i };
+  };
+
+  var lv = document.getElementById("lv"), pc = document.getElementById("pc"),
+      lk = document.getElementById("lk"), up = document.getElementById("up"),
+      lvVal = document.getElementById("lvVal"), pcVal = document.getElementById("pcVal"),
+      card = document.getElementById("card"), grid = document.getElementById("grid");
+
+  function renderCard() {
+    var L = +lv.value, pct = +pc.value, era = eraOf(L), need = xpToNext(L), start = totalXpFor(L);
+    var into = Math.round((need * pct) / 100), tag = TAG_NAMES[L];
+
+    card.innerHTML =
+      '<div class="card" style="--c:' + ERAS[era.index].c + ';--c2:' + ERAS[era.index].c2 + '">' +
+        levelEmblem(L, pct, 128, { locked: lk.checked ? 1 : 0, up: up.checked ? 1 : 0 }) +
+        '<div class="b">' +
+          '<h2>Уровень ' + L + ' <small>' + esc(era.name) + '</small><em>' + nf(need) + ' XP</em></h2>' +
+          '<div class="bar"><i style="width:' + pct + '%"></i></div>' +
+          '<div class="meta">' +
+            '<div class="kv"><span>Накоплено XP</span><b>' + nf(start + into) + '</b></div>' +
+            '<div class="kv"><span>Внутри уровня</span><b>' + nf(into) + ' / ' + nf(need) + '</b></div>' +
+            '<div class="kv"><span>До следующего уровня</span><b>' + nf(Math.max(0, need - into)) + ' XP</b></div>' +
+            '<div class="kv"><span>Награда за уровень</span><b>' + nf(levelAcReward(L)) + ' AC</b></div>' +
+          '</div>' +
+          (tag ? '<span class="tagline">◆ ' + esc(tag) + '</span>' : '') +
+        '</div>' +
+      '</div>';
+
+    lvVal.textContent = L;
+    pcVal.textContent = pct + "%";
+    document.querySelectorAll(".cell").forEach(function (c) {
+      c.classList.toggle("sel", +c.dataset.lv === L);
+    });
+  }
+
+  function renderGrid() {
+    var html = "", era = -1;
+    for (var L = 1; L <= MAX; L++) {
+      var k = eraOf(L).index;
+      if (k !== era) {
+        if (html) html += "</div></section>";
+        era = k;
+        var from = L, next = ERAS_META[k + 1];
+        var count = (next ? next.from : MAX + 1) - from;
+        html +=
+          '<div class="era"><div class="era-h" style="--c:' + ERAS[k].c + ';--c2:' + ERAS[k].c2 + '">' +
+          '<b>' + esc(ERAS[k].n) + '</b><span>уровни ' + from + "–" + (from + count - 1) + " · " + count + "</span><i></i></div>" +
+          '<div class="grid">';
+      }
+      html +=
+        '<div class="cell" data-lv="' + L + '" style="--c:' + ERAS[k].c + ';--c2:' + ERAS[k].c2 + '" title="Уровень ' + L + '">' +
+        levelEmblem(L, 0, 64) +
+        '<span class="lv">' + nf(starts_[L - 1]) + " XP</span>" +
+        (TAG_NAMES[L] ? '<span class="tg">' + esc(TAG_NAMES[L]) + "</span>" : "") +
+        "</div>";
+    }
+    html += "</div></section>";
+    grid.innerHTML = html;
+  }
+
+  var starts_ = STARTS;
+
+  [lv, pc, lk, up].forEach(function (el) {
+    el.addEventListener("input", renderCard);
+    el.addEventListener("change", renderCard);
+  });
+
+  grid.addEventListener("click", function (e) {
+    var cell = e.target.closest(".cell");
+    if (!cell) return;
+    lv.value = cell.dataset.lv;
+    renderCard();
+    document.getElementById("card").scrollIntoView({ behavior: "smooth", block: "center" });
+  });
+
+  renderGrid();
+  renderCard();
+})();
+</script>
+</body>
+</html>

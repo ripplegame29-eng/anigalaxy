@@ -1,0 +1,119 @@
+/* Окно бонуса «Разбуди лисёнка» — стили из макета `ag-promo.html`:
+ * та же палитра, радиусы, орбиты лисёнка и анимации. Классы макета получили
+ * префикс px- (префиксы .gx- и .dd в header.css уже заняты старой версией
+ * окна), гарнитуры — проекта. Внешний каркас (рамка, скругление, отступы)
+ * убран: окно живёт внутри выпадашки шапки, рамку рисует она. */
+.px-root{--px-a:#3d7bff;--px-c:#38c8ff;--px-v:#8a5cff;--px-g:#a8dcff;--px-ink:#eaf0ff;--px-mut:#8f9fcb;font-family:inherit;color:var(--px-ink)}
+@property --px-ang{syntax:'<angle>';inherits:false;initial-value:0deg}
+.px-promo{position:relative;width:min(100%,400px);padding:22px 20px 20px;border-radius:26px;overflow:hidden;isolation:isolate;border:1px solid transparent;
+  background:linear-gradient(170deg,#0d1530,#080c1c 60%) padding-box,conic-gradient(from var(--px-ang),#3d7bff,#38c8ff,#dff3ff,#8a5cff,#3d7bff) border-box;
+  box-shadow:0 30px 80px rgba(20,40,160,.4),inset 0 1px 0 rgba(255,255,255,.07);transition:transform .25s ease;
+  animation:px-spin 9s linear infinite,px-enter .7s cubic-bezier(.2,.9,.3,1) backwards}
+@keyframes px-spin{to{--ang:360deg}}
+@keyframes px-enter{from{opacity:0;transform:translateY(24px) scale(.96)}}
+.px-promo::after{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(320px circle at var(--mx,80%) var(--my,0%),rgba(120,160,255,.16),transparent 60%)}
+.px-sky{position:absolute;inset:0;z-index:-1;pointer-events:none;animation:px-tw 5s ease-in-out infinite alternate;
+  background-image:radial-gradient(1.4px 1.4px at 10% 22%,#fff 50%,transparent),radial-gradient(1px 1px at 32% 8%,#cfe0ff 50%,transparent),radial-gradient(1.2px 1.2px at 58% 30%,#fff 50%,transparent),radial-gradient(1px 1px at 78% 12%,#cfe0ff 50%,transparent),radial-gradient(1.3px 1.3px at 90% 46%,#fff 50%,transparent),radial-gradient(1px 1px at 18% 60%,#cfe0ff 50%,transparent),radial-gradient(1.2px 1.2px at 70% 78%,#fff 50%,transparent),radial-gradient(1px 1px at 40% 92%,#cfe0ff 50%,transparent)}
+@keyframes px-tw{from{opacity:.3}to{opacity:.9}}
+.px-shoot{position:absolute;top:8%;left:-20%;width:90px;height:1.5px;z-index:-1;background:linear-gradient(90deg,transparent,#fff);opacity:0;animation:px-shoot 8s 2s infinite}
+@keyframes px-shoot{0%{transform:translate(0,0) rotate(24deg);opacity:0}3%{opacity:1}13%{transform:translate(520px,230px) rotate(24deg);opacity:0}100%{opacity:0}}
+
+.px-hd{display:grid;grid-template-columns:1fr 150px;align-items:center;gap:6px}
+.px-promo h2{margin:0 0 6px;font-size:26px;line-height:1.1;font-weight:800;background:linear-gradient(120deg,#fff,#b9ccff 60%,#d7c4ff);-webkit-background-clip:text;background-clip:text;color:transparent}
+.px-lead{margin:0;color:var(--px-mut);font-size:14px}
+.px-fox{position:relative;width:150px;height:150px;margin:-6px -8px -6px 0}
+.px-orbit{position:absolute;inset:-4%;border-radius:50%;border:1px solid rgba(160,200,255,.16);animation:px-rot 26s linear infinite}
+.px-orbit::before{content:"";position:absolute;top:-3px;left:50%;width:6px;height:6px;margin-left:-3px;border-radius:50%;background:#dff3ff;box-shadow:0 0 12px 2px rgba(120,190,255,.9)}
+.px-orbit.px-o2{inset:10%;border-color:rgba(160,200,255,.09);animation-duration:17s;animation-direction:reverse}
+.px-fox img{position:relative;width:100%;height:100%;object-fit:contain;animation:px-float 6s ease-in-out infinite;filter:drop-shadow(0 10px 22px rgba(56,140,255,.55));transition:filter .8s}
+.px-halo{position:absolute;inset:-10%;border-radius:50%;background:radial-gradient(closest-side,rgba(61,123,255,.5),transparent);animation:px-pulse 4s ease-in-out infinite}
+@keyframes px-float{50%{transform:translateY(-7px) rotate(-2deg)}}
+@keyframes px-pulse{50%{transform:scale(1.12);opacity:.7}}
+.px-sp{position:absolute;left:var(--x);top:var(--y);color:var(--px-g);font-size:var(--s,16px);opacity:0;text-shadow:0 0 10px var(--px-g);transition:opacity .8s}
+.px-awake .px-sp{opacity:1;animation:px-tw2 1.8s var(--d) ease-in-out infinite alternate}
+@keyframes px-tw2{to{transform:scale(.5) rotate(40deg);opacity:.4}}
+.px-awake .px-halo{background:radial-gradient(closest-side,rgba(190,235,255,.6),rgba(90,140,255,.35) 60%,transparent)}
+.px-awake .px-fox img{filter:drop-shadow(0 0 26px rgba(150,215,255,.85))}
+
+.px-gift{position:relative;overflow:hidden;display:flex;align-items:center;gap:16px;margin:16px 0 4px;padding:14px 16px;border-radius:18px;border:1px solid rgba(130,170,255,.22);background:linear-gradient(135deg,rgba(120,170,255,.14),rgba(138,92,255,.1));box-shadow:inset 0 1px 0 rgba(255,255,255,.08)}
+.px-gift::after{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 35%,rgba(220,240,255,.2) 50%,transparent 65%);transform:translateX(-120%);animation:px-sweep 6s 1.2s infinite}
+@keyframes px-sweep{0%{transform:translateX(-120%)}30%,100%{transform:translateX(120%)}}
+.px-nw{position:relative;display:grid;padding:0 10px 4px 0}
+.px-nw>span{grid-area:1/1;font:800 76px/1 var(--font-display);letter-spacing:-3px}
+.px-num{background:linear-gradient(110deg,#6fcfff 0%,#3d8bff 30%,#eaf7ff 50%,#3d8bff 70%,#6fcfff 100%);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:px-ns 5s linear infinite;filter:drop-shadow(0 2px 0 rgba(20,40,160,.55))}
+.px-ng{background:linear-gradient(135deg,#38c8ff,#8a5cff);-webkit-background-clip:text;background-clip:text;color:transparent;filter:blur(18px);opacity:.65;animation:px-gl 3.6s ease-in-out infinite alternate}
+.px-nw::after{content:"✦";position:absolute;right:-4px;top:4px;font-size:17px;color:#e8f6ff;text-shadow:0 0 12px #7fd8ff;animation:px-tw2 1.8s ease-in-out infinite alternate}
+@keyframes px-ns{to{background-position:200% 0}}
+@keyframes px-gl{to{opacity:.3;transform:scale(1.06)}}
+.px-gtxt{display:grid;gap:3px;font-size:13px;color:var(--px-mut);justify-items:start}
+.px-gtxt b{color:var(--px-ink);font-size:16px}
+.px-chip{margin-top:4px;padding:3px 11px;border-radius:99px;font-style:normal;font-weight:600;font-size:12.5px;color:#d6ecff;border:1px solid rgba(120,190,255,.4);background:rgba(61,123,255,.16)}
+
+.px-path{list-style:none;margin:16px 0 4px;padding:0;position:relative;--k:0}
+.px-path::before,.px-path::after{content:"";position:absolute;left:17px;top:24px;width:2px;border-radius:2px}
+.px-path::before{bottom:34px;background:rgba(143,159,203,.25)}
+.px-path::after{height:calc((100% - 58px) * var(--k));background:linear-gradient(var(--px-c),var(--px-v));box-shadow:0 0 10px var(--px-c);transition:height .9s ease}
+.px-path li{display:grid;grid-template-columns:36px 1fr;gap:12px;padding:4px 0 14px}
+.px-node{position:relative;width:36px;height:36px;display:grid;place-items:center}
+.px-node svg{width:26px;height:26px;fill:#0b1226;stroke:#5d6fa3;stroke-width:1.6;stroke-linejoin:round;transition:all .5s}
+.px-wait .px-node svg{stroke:var(--px-c);animation:px-blink 1.4s ease-in-out infinite}
+@keyframes px-blink{50%{filter:drop-shadow(0 0 7px var(--px-c))}}
+.px-done .px-node svg{fill:url(#sg);stroke:#c9ecff;filter:drop-shadow(0 0 8px rgba(56,200,255,.9));transform:scale(1.15) rotate(72deg)}
+.px-just .px-node::after{content:"";position:absolute;inset:2px;border-radius:50%;border:2px solid var(--px-c);animation:px-ring .9s ease-out forwards}
+@keyframes px-ring{to{transform:scale(2.2);opacity:0}}
+.px-st b{display:block;font-size:15px;font-weight:700}
+.px-st p{margin:2px 0 0;color:var(--px-mut);font-size:13px}
+.px-ac{margin-top:9px;padding:7px 14px;border-radius:10px;border:1px solid rgba(94,140,255,.4);background:rgba(61,123,255,.12);font-size:13px;font-weight:600;transition:background .2s,box-shadow .2s}
+.px-ac:hover{background:rgba(61,123,255,.26);box-shadow:0 0 18px rgba(61,123,255,.35)}
+.px-ok{display:none;margin-top:2px;font-size:13px;color:#7fe3c0;font-weight:600}
+.px-done .px-ac,.px-done .px-st p{display:none}.px-done .px-ok{display:block}
+.px-done b{color:#c9ecff}
+
+.px-ft{display:flex;align-items:center;gap:14px;margin-top:6px}
+.px-cta{position:relative;overflow:hidden;flex:none;min-width:136px;padding:13px 22px;border:0;border-radius:14px;font-weight:800;background:linear-gradient(135deg,#3d7bff,#38c8ff);box-shadow:0 10px 28px rgba(61,140,255,.45);transition:transform .2s,box-shadow .2s,opacity .2s}
+.px-cta::after{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 35%,rgba(255,255,255,.45) 50%,transparent 65%);transform:translateX(-120%)}
+.px-cta:hover::after{transform:translateX(120%);transition:transform .7s}
+.px-cta:hover{transform:translateY(-2px)}
+.px-cta.px-gold{background:linear-gradient(135deg,#8fdcff,#6c8cff 55%,#9a6cff);color:#fff;box-shadow:0 10px 30px rgba(110,160,255,.55);animation:px-glow 2s ease-in-out infinite}
+@keyframes px-glow{50%{box-shadow:0 10px 44px rgba(130,180,255,.9)}}
+.px-cta[disabled]{opacity:.7;cursor:default;transform:none;animation:none}
+.px-cta.px-load{color:transparent}
+.px-cta.px-load::before{content:"";position:absolute;left:50%;top:50%;width:18px;height:18px;margin:-9px;border-radius:50%;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;animation:px-rot .7s linear infinite}
+@keyframes px-rot{to{transform:rotate(360deg)}}
+.px-note{margin:0;font-size:12.5px;color:var(--px-mut);min-height:2.6em;transition:color .2s}
+.px-note.px-err{color:#ff9aab}
+.px-shake{animation:px-shake .4s}
+@keyframes px-shake{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.px-spark{position:fixed;width:7px;height:7px;margin:-3px;border-radius:50%;z-index:200;pointer-events:none;box-shadow:0 0 10px 1px rgba(255,255,255,.55);animation:px-spark .9s ease-out forwards}
+@keyframes px-spark{to{transform:translate(var(--dx),var(--dy)) scale(.2);opacity:0}}
+
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+.px-root *,.px-root *::before,.px-root *::after{box-sizing:border-box}
+.px-root button{font:inherit;color:inherit;cursor:pointer;border:0}
+.px-root a{color:inherit;text-decoration:none}
+.px-root :focus-visible{outline:2px solid var(--px-c);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){.px-root *,.px-root *::before,.px-root *::after{animation:none!important;transition:none!important}}
+
+/* Окно живёт внутри выпадашки шапки, но рамку и фон рисует сам макет —
+   поэтому снимаем только обвязку контейнера (ширина и отступы), а карточку
+   оставляем ровно как в макете: свой градиентный кант, скругление и свечение. */
+.px-promo.px-root{width:auto;max-width:none}
+
+/* Узкое окно. Карточка живёт в выпадашке шапки, и та на нешироком
+   экране поджимает её: колонка лисёнка фиксированная (150px), и на его
+   свечение наезжает заголовок. В макете этого не происходит — там ширина
+   всегда 400px. Ниже 380px лисёнок и заголовок уменьшаются. Запрос по
+   контейнеру, а не по окну: ширину задаёт выпадашка, а не viewport. */
+.px-promo{container:pxpromo / inline-size}
+@container pxpromo (max-width:330px){
+  .px-hd{grid-template-columns:1fr 104px;gap:2px}
+  .px-fox{width:104px;height:104px;margin:-4px -4px -4px 0}
+  .px-hd h2{font-size:22px}
+  .px-lead{font-size:13px}
+  .px-gift{padding:12px 14px}
+  .px-gtxt b{font-size:19px}
+}
+
+/* Кнопки шагов в макете — это <button>, они по умолчанию inline-block, и margin-top/padding разводят их по строкам. У нас это <a>/<Link>, то есть inline: отступ сверху не действует, и кнопка налезает на подпись шага. Поэтому явно задаём inline-flex. */
+.px-ac{display:inline-flex;align-items:center}
+

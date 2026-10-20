@@ -1,0 +1,177 @@
+/* Окно «Внешний вид» (примерочная): структура и премиальный вид.
+   Всё под .ag-wardrobe — другие окна не затрагиваются. */
+
+.ag-wardrobe {
+  --aw-a: var(--color-accent, #2b7fff);
+  --aw-b: var(--color-accent-2, #22d3ee);
+  max-width: 760px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 28px !important;
+  background: linear-gradient(165deg, #121624, #090b14) !important;
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.09), 0 50px 120px -30px #000 !important;
+}
+.ag-wardrobe > div:first-child { padding: 22px 26px 0; margin-bottom: 14px; }
+.ag-wardrobe h2 { font: 800 20px var(--font-display, var(--font-body)), sans-serif !important; letter-spacing: -0.02em; }
+.ag-wardrobe > div:not(:first-child) { margin-left: 26px; margin-right: 26px; }
+.ag-wardrobe > div:last-child { margin-bottom: 22px; }
+
+/* сцена */
+.ag-wardrobe .aw-stage {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  padding: 22px !important;
+  border: 0 !important;
+  border-radius: 22px !important;
+  background: #0b0d16 !important;
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.09);
+}
+.ag-wardrobe .aw-stage::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  background: var(--aw-bg);
+  opacity: 0.55;
+  transition: opacity 0.4s;
+}
+.ag-wardrobe .aw-stage::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    linear-gradient(90deg, rgb(9 11 20 / 0.92) 8%, rgb(9 11 20 / 0.35)),
+    linear-gradient(to top, rgb(9 11 20 / 0.85), transparent 60%);
+}
+
+/* панель переключателей: категории + редкость */
+.ag-wardrobe .aw-bar {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  gap: 10px;
+  margin-top: 18px !important;
+}
+.ag-wardrobe .aw-tabs,
+.ag-wardrobe .aw-rar {
+  gap: 2px !important;
+  padding: 4px !important;
+  border-radius: 14px !important;
+  background: rgb(255 255 255 / 0.045) !important;
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.08) !important;
+  --tw-ring-shadow: 0 0 #0000 !important;
+}
+.ag-wardrobe .aw-tabs button,
+.ag-wardrobe .aw-rar button {
+  position: relative;
+  border-radius: 10px !important;
+  padding: 8px 14px !important;
+  font-size: 12.5px !important;
+  font-weight: 800 !important;
+  transition: color 0.2s, background 0.25s, box-shadow 0.25s;
+}
+.ag-wardrobe .aw-tabs button.bg-accent-deep {
+  background: linear-gradient(135deg, var(--aw-a), var(--aw-b)) !important;
+  box-shadow: 0 8px 20px -8px var(--aw-a);
+}
+.ag-wardrobe .aw-rar button.bg-white\/15 {
+  background: rgb(255 255 255 / 0.12) !important;
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.14);
+}
+
+/* сетка и карточки */
+.ag-wardrobe .aw-scroll {
+  margin-top: 14px !important;
+  max-height: 44vh !important;
+  padding: 4px 6px 4px 2px !important;
+  scrollbar-width: thin;
+  scrollbar-color: rgb(255 255 255 / 0.2) transparent;
+  animation: aw-in 0.35s cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+@keyframes aw-in { from { opacity: 0; transform: translateY(10px); } }
+.ag-wardrobe .aw-grid { gap: 12px !important; }
+.ag-wardrobe .aw-card,
+.ag-wardrobe [data-wardrobe-grid] > div {
+  position: relative;
+  border-radius: 18px !important;
+  background: rgb(255 255 255 / 0.04) !important;
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.09) !important;
+  --tw-ring-shadow: 0 0 #0000 !important;
+  transition: transform 0.25s cubic-bezier(0.2, 0.9, 0.3, 1), box-shadow 0.25s, background 0.25s;
+}
+.ag-wardrobe .aw-card:not(:disabled):hover,
+.ag-wardrobe [data-wardrobe-grid] > div:hover {
+  transform: translateY(-3px);
+  background: rgb(255 255 255 / 0.06) !important;
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.2), 0 20px 36px -22px #000 !important;
+}
+.ag-wardrobe .aw-card.is-on {
+  box-shadow: inset 0 0 0 1.5px var(--aw-a), 0 18px 40px -20px var(--aw-a) !important;
+}
+.ag-wardrobe .aw-card.is-on::after {
+  content: "";
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 12.5 4 4 8-9'/%3E%3C/svg%3E") center / 14px no-repeat,
+    linear-gradient(135deg, var(--aw-a), var(--aw-b));
+  box-shadow: 0 6px 14px -4px var(--aw-a);
+}
+.ag-wardrobe .aw-card .aw-thumb { height: 96px !important; transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1); }
+.ag-wardrobe .aw-card:hover .aw-thumb { transform: scale(1.06); }
+.ag-wardrobe .aw-card { overflow: hidden; }
+.ag-wardrobe .aw-card:disabled { opacity: 1 !important; }
+.ag-wardrobe .aw-card:disabled .aw-thumb { filter: grayscale(0.85) brightness(0.55); }
+.ag-wardrobe .aw-card:disabled::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 36px;
+  z-index: 1;
+  width: 28px;
+  height: 28px;
+  transform: translateX(-50%);
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='5' y='11' width='14' height='9' rx='2.4'/%3E%3Cpath d='M8 11V8a4 4 0 0 1 8 0v3'/%3E%3C/svg%3E") center / contain no-repeat;
+  opacity: 0.85;
+}
+.ag-wardrobe .aw-card > span:last-child { padding: 10px 12px 12px !important; }
+.ag-wardrobe .aw-card .text-xs { font-size: 13px !important; }
+.ag-wardrobe .aw-frames .aw-card { padding: 16px 8px 12px !important; }
+
+/* подпись-абзацы под сетками */
+.ag-wardrobe .aw-scroll > .space-y-3 > p { color: #7f8aa6 !important; font-size: 12px !important; line-height: 1.6; }
+
+/* низ окна */
+.ag-wardrobe .aw-foot {
+  margin-top: 16px !important;
+  padding-top: 14px !important;
+  border-top: 1px solid rgb(255 255 255 / 0.08) !important;
+}
+.ag-wardrobe .aw-foot a {
+  padding: 9px 16px !important;
+  border-radius: 12px !important;
+  background: linear-gradient(135deg, var(--aw-a), var(--aw-b)) !important;
+  color: #fff !important;
+  font-weight: 800 !important;
+  box-shadow: 0 10px 24px -12px var(--aw-a);
+  transition: transform 0.18s;
+}
+.ag-wardrobe .aw-foot a:hover { transform: translateY(-2px); }
+
+@media (max-width: 560px) {
+  .ag-wardrobe > div:first-child { padding: 18px 18px 0; }
+  .ag-wardrobe > div:not(:first-child) { margin-left: 16px; margin-right: 16px; }
+  .ag-wardrobe .aw-rar { margin-left: 0 !important; overflow-x: auto; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ag-wardrobe *, .ag-wardrobe *::before { animation: none !important; transition: none !important; }
+}
+
+/* галочка выбранного рисуется бейджем в углу — штатную прячем */
+.ag-wardrobe .aw-card.is-on > span:last-child svg { display: none; }

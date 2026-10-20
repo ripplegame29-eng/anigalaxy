@@ -22,7 +22,7 @@ body{
     radial-gradient(900px 500px at 5% 10%, #ff3d711f, transparent 60%),
     var(--bg);
   color:var(--tx);
-  font-family:Manrope,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+  font-family:var(--font-body);
   min-height:100vh;
   overflow-x:hidden;
 }
@@ -50,7 +50,7 @@ a{color:inherit;text-decoration:none}
   display:grid;place-items:center;font-size:13px;color:#fff;
   box-shadow:0 6px 18px #ff3d7155;
 }
-.logo-text{font-family:Unbounded,sans-serif;font-weight:800;letter-spacing:.5px;font-size:17px}
+.logo-text{font-family:var(--font-display);font-weight:800;letter-spacing:.5px;font-size:17px}
 .logo-text span{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
 
 .nav{display:flex;gap:4px;overflow:auto;scrollbar-width:none}
@@ -101,7 +101,7 @@ a{color:inherit;text-decoration:none}
   display:inline-flex;gap:8px;align-items:center;font-size:12.5px;font-weight:700;
   padding:6px 12px;border-radius:30px;background:var(--grad);margin-bottom:14px;letter-spacing:.4px;
 }
-.hero h1{font-family:Unbounded,sans-serif;font-size:clamp(24px,4.4vw,50px);line-height:1.08;margin-bottom:12px}
+.hero h1{font-family:var(--font-display);font-size:clamp(24px,4.4vw,50px);line-height:1.08;margin-bottom:12px}
 .hero-meta{display:flex;flex-wrap:wrap;gap:14px;color:var(--tx2);font-weight:600;font-size:14px;margin-bottom:12px}
 .hero-meta .score{color:#ffd166}
 .hero-desc{
@@ -218,7 +218,7 @@ a{color:inherit;text-decoration:none}
 .d-head{display:flex;gap:22px;flex-wrap:wrap}
 .d-cover{width:150px;flex-shrink:0;border-radius:16px;overflow:hidden;border:2px solid #ffffff26;box-shadow:var(--shadow);background:#191926}
 .d-main{flex:1;min-width:260px}
-.d-main h2{font-family:Unbounded,sans-serif;font-size:clamp(20px,3vw,32px);line-height:1.15;margin-bottom:10px}
+.d-main h2{font-family:var(--font-display);font-size:clamp(20px,3vw,32px);line-height:1.15;margin-bottom:10px}
 .d-alt{color:var(--tx2);font-size:14px;margin-bottom:14px}
 .d-chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
 .chip{background:#ffffff10;border:1px solid var(--line);padding:5px 11px;border-radius:30px;font-size:12.5px;font-weight:700;color:#d8d5ea}

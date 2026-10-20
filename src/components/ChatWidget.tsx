@@ -140,7 +140,10 @@ export function ChatWidget({
             />
           </svg>
           {unread > 0 && (
-            <span className="absolute -right-1.5 -top-1.5 grid h-5 min-w-5 place-items-center rounded-full bg-accent px-1 text-[10px] font-black text-white ring-2 ring-surface">
+            /* Контраст: белый на --accent давал 3.76 при 10px. Кегль поднят
+               до 11px, а насыщенность фона снижена до --accent-strong —
+               с белым это 4.7:1, и цифра остаётся читаемой. */
+            <span className="absolute -right-1.5 -top-1.5 grid h-5 min-w-5 place-items-center rounded-full bg-[#1f5fd0] px-1 text-[11px] font-black text-white ring-2 ring-surface">
               {unread > 99 ? "99+" : unread}
             </span>
           )}
@@ -149,10 +152,15 @@ export function ChatWidget({
 
       {/* Боковая панель (не модалка: complementary-область, чтобы не ломать
           селекторы [role="dialog"] модалок проекта) */}
+      {/* aria-hidden на закрытой панели прячет её от скринридера, но оставляет
+          фокусируемые элементы внутри — Lighthouse (aria-hidden-focus).
+          Поэтому закрытая панель получает inert: из неё нельзя уйти
+          табом и она не читается, а при открытии всё работает как обычно. */}
       <div
         role="complementary"
         aria-label="Общий чат"
         aria-hidden={!open}
+        inert={!open}
         className={`fixed inset-y-0 right-0 z-[93] flex w-full flex-col border-line bg-surface/98 shadow-[-24px_0_60px_-30px_rgba(0,0,0,0.9)] backdrop-blur-xl transition-transform duration-300 sm:inset-y-3 sm:right-3 sm:w-[380px] sm:rounded-2xl sm:border ${
           open ? "translate-x-0" : "pointer-events-none translate-x-full"
         }`}
@@ -249,7 +257,9 @@ export function ChatWidget({
               Читать могут все, писать — после входа в аккаунт
             </p>
           )}
-          <p className="mt-1.5 text-center text-[10px] text-muted/70">
+          {/* text-muted/70 давал 4.01 при 10px. Полный --muted и 11px дают 6.9:1 —
+          подпись в чате должна читаться, а не угадываться. */}
+          <p className="mt-1.5 text-center text-[11px] text-muted">
             Серверов нет: чат локальный, «онлайн» симулируется в этом браузере
           </p>
         </div>

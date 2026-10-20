@@ -1,0 +1,210 @@
+/* Плашка «Следующая серия»: стекло, синий→циан, живая рамка и тихая анимация */
+.ne {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  padding: 16px;
+  border-radius: 22px;
+  background:
+    radial-gradient(120% 90% at 0% 0%, rgb(43 127 255 / 0.18), transparent 60%),
+    linear-gradient(165deg, #12151f, #0b0d15);
+  box-shadow:
+    inset 0 0 0 1px rgb(120 170 255 / 0.2),
+    0 24px 50px -30px rgb(43 127 255 / 0.55);
+}
+.ne::before {
+  /* бегущий по кромке блик */
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  padding: 1px;
+  background: conic-gradient(from var(--ne-a, 0deg), transparent 0 70%, rgb(34 211 238 / 0.85) 82%, transparent 92%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: ne-spin 6s linear infinite;
+}
+@property --ne-a {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+@keyframes ne-spin {
+  to {
+    --ne-a: 360deg;
+  }
+}
+
+.ne-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.ne-live {
+  position: relative;
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #22d3ee;
+  box-shadow: 0 0 10px #22d3ee;
+}
+.ne-live::after {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 1.5px solid #22d3ee;
+  animation: ne-ping 1.8s ease-out infinite;
+}
+@keyframes ne-ping {
+  from {
+    transform: scale(0.6);
+    opacity: 0.9;
+  }
+  to {
+    transform: scale(1.7);
+    opacity: 0;
+  }
+}
+.ne-kicker {
+  flex: 1;
+  min-width: 0;
+  color: #a9c8ff;
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.ne-date {
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.07);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.1);
+  color: #dfe6f5;
+  font-size: 11.5px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.ne-ep {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 12px 0 12px;
+}
+.ne-ep b {
+  font: 800 20px/1 var(--font-display, var(--font-body)), sans-serif;
+  letter-spacing: -0.015em;
+}
+.ne-ep span {
+  color: #8f9ab4;
+  font-size: 13px;
+  font-weight: 700;
+}
+.ne-out {
+  margin: 0 0 12px;
+  color: #b9c3da;
+  font-size: 14px;
+}
+
+.ne-cells {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+.ne-cell {
+  display: grid;
+  justify-items: center;
+  gap: 5px;
+  padding: 11px 0 9px;
+  border-radius: 14px;
+  background: rgb(255 255 255 / 0.045);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.07);
+}
+.ne-cell b {
+  display: block;
+  font: 800 24px/1 var(--font-display, var(--font-body)), sans-serif;
+  font-variant-numeric: tabular-nums;
+  color: #8f9ab4;
+  animation: ne-flip 0.35s cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+.ne-cell.is-lead b,
+.ne-cell:first-child b {
+  color: #fff;
+  text-shadow: 0 0 18px rgb(43 127 255 / 0.8);
+}
+.ne-cell span {
+  color: #6f7a96;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.ne-cell:first-child span {
+  color: #6fa8ff;
+}
+@keyframes ne-flip {
+  from {
+    transform: translateY(-40%) scale(0.9);
+    opacity: 0;
+  }
+}
+
+.ne-bar {
+  height: 4px;
+  margin-top: 14px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.09);
+}
+.ne-bar i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #2b7fff, #22d3ee);
+  box-shadow: 0 0 10px rgb(34 211 238 / 0.6);
+  transition: width 1s linear;
+}
+
+.ne-cal {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  height: 40px;
+  margin-top: 14px;
+  border: 0;
+  border-radius: 12px;
+  background: rgb(43 127 255 / 0.14);
+  box-shadow: inset 0 0 0 1px rgb(43 127 255 / 0.4);
+  color: #d6e6ff;
+  font-size: 13.5px;
+  font-weight: 800;
+  transition: background 0.2s, transform 0.2s;
+}
+.ne-cal:hover {
+  background: rgb(43 127 255 / 0.26);
+  transform: translateY(-1px);
+}
+.ne-cal svg {
+  width: 17px;
+  height: 17px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ne::before,
+  .ne-live::after,
+  .ne-cell b {
+    animation: none;
+  }
+}

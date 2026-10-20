@@ -1,0 +1,286 @@
+/* ProfileMenu — стили. Все классы с префиксом pm-, конфликтов с проектом быть не должно.
+   Цвета меняются переменными на .pm-root. Шрифт наследуется от страницы. */
+.pm-root{
+  --pm-accent:var(--ag-accent,#2b7fff); --pm-text:var(--ag-text,#eef2fb); --pm-muted:var(--ag-muted,#8d98b4); --pm-line:var(--ag-line,rgba(96,150,255,.16));
+  --pm-gold:#4ac5f5; --pm-red:#ff4d5e; --pm-ring-a:#ff6a6a; --pm-ring-b:#c1121f;
+  font-family:inherit; color:var(--pm-text); line-height:1.4;
+}
+.pm-root *,.pm-root *::before,.pm-root *::after{box-sizing:border-box}
+.pm-root button{font:inherit;color:inherit;cursor:pointer}
+.pm-root a{color:inherit;text-decoration:none}
+.pm-root :focus-visible{outline:2px solid var(--pm-accent);outline-offset:2px}
+.pm-root svg{display:block}
+
+/* затемнение */
+.pm-scrim{position:fixed;inset:0;z-index:9990;background:rgba(5,8,16,.7);backdrop-filter:blur(3px);opacity:0;pointer-events:none;transition:opacity .25s}
+.pm-scrim.pm-on{opacity:1;pointer-events:auto}
+
+/* панель */
+.pm-menu{position:fixed;z-index:9991;top:64px;right:16px;width:352px;max-width:calc(100vw - 20px);max-height:calc(100vh - 84px);overflow-y:auto;overscroll-behavior:contain;
+  scrollbar-width:thin;scrollbar-color:#ffffff22 transparent;
+  background:var(--ag-glass);backdrop-filter:blur(22px);border:1px solid var(--ag-line-strong);border-radius:22px;
+  box-shadow:0 30px 80px rgba(0,0,0,.85),inset 0 1px 0 rgba(255,255,255,.06);
+  transform-origin:calc(100% - 28px) 0;opacity:0;visibility:hidden;transform:translateY(-10px) scale(.94);filter:blur(8px);
+  transition:opacity .22s,transform .32s cubic-bezier(.2,.9,.25,1.15),filter .25s,visibility 0s .3s}
+.pm-menu.pm-on{opacity:1;visibility:visible;transform:none;filter:none;transition-delay:0s}
+
+/* Шапка меню по макету `ag-menu (1).html`: аватар и «кто я» в одну строку,
+   как в макете (там `.head{display:flex;align-items:center;gap:14px}`). */
+.pm-mh{display:flex;align-items:center;gap:14px;padding:0 6px 14px}
+.pm-who{min-width:0;display:grid;gap:2px}
+.pm-id{min-width:0}
+.pm-nm{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-weight:800;font-size:18px;line-height:1.15;word-break:break-all}
+/* Бейдж «PREMIUM» в шапке — тот же `PremiumChip`, что и в профиле
+   (app/premium-chip.css): та же капсула, рамка и корона. В макете
+   `ag-menu (1).html` его нет, но статус подписки должен читаться одинаково
+   в профиле и в меню. */
+.pm-pr{display:inline-flex;align-items:center}
+.pm-pr[hidden]{display:none}
+.pm-em{color:var(--pm-muted);font-size:12.5px;margin-top:3px;word-break:break-all}
+.pm-lvl{display:flex;gap:12px;align-items:center;padding:0 6px 12px}
+.pm-lt{width:54px;height:54px;flex:none;border-radius:16px;border:1px solid transparent;display:grid;place-items:center;font-weight:800;font-size:23px;background:linear-gradient(160deg,#14214a,#0a1024) padding-box,linear-gradient(135deg,#2b7fff,#22d3ee) border-box;box-shadow:0 0 22px rgba(43,127,255,.3)}
+.pm-lm{flex:1;min-width:0}
+.pm-lr{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.pm-lr b{font-size:14px}.pm-lr small{color:var(--pm-muted);font-size:11.5px}
+.pm-lr2{margin-top:6px}
+.pm-pc{color:var(--pm-muted);font-weight:600;font-size:13px}
+.pm-xb{position:relative;height:9px;margin-top:9px;border-radius:5px;background:rgba(255,255,255,.07);overflow:hidden}
+.pm-xb i{position:absolute;inset:0;width:0;border-radius:5px;background:linear-gradient(90deg,#c9ccd8,#fff);transition:width 1.2s cubic-bezier(.2,.8,.2,1)}
+.pm-xb i::after{content:"";position:absolute;inset:0;background:linear-gradient(105deg,transparent 40%,rgba(255,255,255,.45) 50%,transparent 60%);animation:pm-shine 2.6s linear infinite}
+@keyframes pm-shine{from{transform:translateX(-120%)}to{transform:translateX(120%)}}
+
+.pm-st{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}
+.pm-st>div{border:1px solid var(--pm-line);background:rgba(255,255,255,.03);border-radius:12px;padding:9px 6px;text-align:center;transition:transform .2s,border-color .2s}
+.pm-st>div:hover{transform:translateY(-2px);border-color:rgba(255,255,255,.2)}
+.pm-st b{display:block;font-size:18px}
+.pm-st span{display:block;font-size:12px;color:var(--pm-muted);margin-top:1px}
+
+.pm-fxs{margin-top:12px;display:flex;align-items:center;gap:8px}
+.pm-fxs>span{font-size:12px;color:var(--pm-muted);flex:none}
+.pm-seg{display:flex;flex:1;border:1px solid var(--pm-line);border-radius:10px;padding:3px;background:rgba(255,255,255,.03);gap:2px}
+.pm-seg button{flex:1;border:0;background:none;border-radius:7px;padding:5px 0;font-size:12px;font-weight:600;color:var(--pm-muted);transition:background .2s,color .2s}
+.pm-seg button[aria-pressed=true]{background:var(--pm-accent);color:#fff;box-shadow:0 4px 14px rgba(43,127,255,.35)}
+
+/* список пунктов */
+.pm-ml{position:relative;padding:8px;border-top:1px solid var(--pm-line)}
+.pm-hl{position:absolute;left:8px;right:8px;top:0;height:0;border-radius:12px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.07);opacity:0;pointer-events:none;transition:transform .22s cubic-bezier(.3,.9,.3,1),height .22s,opacity .2s}
+.pm-it{position:relative;opacity:0;transform:translateX(12px);transition:opacity .3s,transform .35s cubic-bezier(.2,.9,.3,1)}
+.pm-menu.pm-on .pm-it{opacity:1;transform:none;transition-delay:calc(var(--i)*22ms + 90ms)}
+.pm-link{display:flex;align-items:center;gap:14px;padding:6px 10px;border-radius:14px;color:var(--ag-text);font-size:15px;font-weight:700;transition:color .2s}
+.pm-link:hover,.pm-link:focus-visible{color:#fff}
+.pm-ico{width:38px;height:38px;border-radius:12px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.06);display:grid;place-items:center;color:var(--ag-text-2);flex:none;transition:background .2s,color .2s,transform .2s}
+.pm-ico svg{width:18px;height:18px}
+.pm-link:hover .pm-ico{background:rgba(255,255,255,.1);color:#fff;transform:rotate(-6deg) scale(1.08)}
+.pm-badge{margin-left:auto;min-width:22px;height:22px;padding:0 6px;border-radius:11px;background:var(--pm-accent);color:#fff;font-size:11px;font-weight:800;display:grid;place-items:center}
+/* Компонент включает значок атрибутом hidden, но display:grid из правила выше
+   его перебивает — при нуле уведомлений оставалась видимая нуль-бейдж.
+   Возвращаем стандартное поведение hidden. */
+.pm-badge[hidden]{display:none}
+.pm-sep{height:1px;background:var(--pm-line);margin:6px 4px}
+.pm-out .pm-link{color:var(--pm-red)}
+.pm-out .pm-ico{background:rgba(255,77,94,.09);color:var(--pm-red)}
+.pm-out .pm-link:hover .pm-ico{background:var(--pm-red);color:#fff}
+.pm-note{padding:12px 20px 16px;border-top:1px solid var(--pm-line);font-size:11.5px;color:var(--pm-muted)}
+
+/* аватар с кольцом XP */
+/* Аватар в шапке меню — 66px, как в макете (`ag-menu (1).html`: `.ava`) */
+.pm-mh>[data-pm="avatar"]{--s:66px;width:66px;height:66px;flex:none;display:block;position:relative}
+.pm-av{position:relative;display:inline-block;width:var(--s,36px);height:var(--s,36px);flex:none;vertical-align:middle}
+.pm-pic{position:absolute;inset:12%;border-radius:50%;overflow:hidden;background:#2b7fff;display:grid;place-items:center;color:#fff;font-weight:800;font-size:calc(var(--s,36px)*.4)}
+.pm-pic img{width:100%;height:100%;object-fit:cover;display:block}
+.pm-rg{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg)}
+.pm-rg circle{fill:none;stroke-width:5}
+.pm-rg .pm-t{stroke:rgba(255,255,255,.11)}
+.pm-rg .pm-v{stroke:url(#pm-xg);stroke-linecap:round;stroke-dasharray:289;transition:stroke-dashoffset 1.2s cubic-bezier(.2,.8,.2,1)}
+
+/* эффекты аватара (применяются к любому [data-pm-av]) */
+.pm-fx-neon .pm-pic{box-shadow:0 0 12px #00f0ff,0 0 26px rgba(255,43,214,.6);animation:pm-np 2.4s ease-in-out infinite}
+.pm-fx-neon .pm-rg{filter:drop-shadow(0 0 4px #00f0ff)}
+@keyframes pm-np{50%{box-shadow:0 0 6px #00f0ff,0 0 12px rgba(255,43,214,.4)}}
+.pm-fx-glitch .pm-pic{animation:pm-gl 3s steps(1) infinite}
+@keyframes pm-gl{0%,84%,100%{transform:none;filter:none}
+  85%{transform:translate(-2px,1px);filter:drop-shadow(2px 0 #0ff) drop-shadow(-2px 0 #f0f)}
+  88%{transform:translate(2px,-1px) skewX(6deg);filter:hue-rotate(60deg)}
+  91%{transform:translate(-1px,0);filter:drop-shadow(-3px 0 #0ff) brightness(1.4)}}
+.pm-fx-rainbow .pm-rg,.pm-fx-rainbow .pm-pic{animation:pm-hue 3s linear infinite}
+.pm-fx-rainbow .pm-pic{box-shadow:0 0 14px rgba(201,107,255,.55)}
+@keyframes pm-hue{to{filter:hue-rotate(360deg)}}
+
+/* Телефон: нижняя шторка. В макете `ag-menu (1).html` такого режима нет —
+   там выпадашка всегда справа от кнопки, поэтому включаем шторку только на
+   самых узких экранах, иначе меню не совпадает с макетом на планшете. */
+@media (max-width:420px){
+  .pm-menu{left:0;right:0;top:auto;bottom:0;width:auto;max-width:none;max-height:88vh;border-radius:24px 24px 0 0;
+    padding-bottom:env(safe-area-inset-bottom,0px);transform:translateY(100%);filter:none;transform-origin:center bottom}
+  .pm-menu.pm-on{transform:none}
+  .pm-mh::before{content:"";display:block;width:42px;height:4px;border-radius:2px;background:rgba(255,255,255,.2);margin:-6px auto 12px}
+}
+@media (prefers-reduced-motion:reduce){
+  .pm-root *,.pm-root *::before,.pm-root *::after,.pm-menu,.pm-menu *{animation:none!important;transition-duration:.01ms!important;transition-delay:0s!important}
+}
+
+/* Плашка PREMIUM в шапке — её рисует ProfileMenu.premiumButton, отдельно от меню */
+.pm-pbtn{box-sizing:border-box;color:var(--ag-text);height:42px;font:inherit;letter-spacing:.06em;cursor:pointer;
+  background:#2b7fff14;border:1px solid #2b7fff80;border-radius:12px;align-items:center;gap:8px;padding:0 16px;
+  font-size:14px;font-weight:800;text-decoration:none;transition:background .2s,box-shadow .2s,transform .15s;
+  display:inline-flex;position:relative;overflow:hidden}
+.pm-pbtn:hover{background:#2b7fff2e;transform:translateY(-1px);box-shadow:0 0 22px #2b7fff59}
+.pm-pbtn:focus-visible{outline:2px solid #2b7fff;outline-offset:2px}
+.pm-pbtn svg{flex:none;width:17px;height:17px}
+.pm-pbtn::after{content:"";background:linear-gradient(105deg,transparent 35%,rgba(255,255,255,.22) 50%,transparent 65%);
+  animation:3.4s ease-in-out infinite pm-shine;position:absolute;inset:0;transform:translateX(-120%)}
+.pm-pbtn-on svg{color:#4ac5f5}
+@media (max-width:700px){.pm-pbtn{padding:0 12px}.pm-pbtn span{display:none}}
+@media (prefers-reduced-motion:reduce){.pm-pbtn,.pm-pbtn::after{transition-duration:.01ms!important;animation:none!important}}
+
+/* ═══ макет «ag-menu (1).html» ═══
+ * Панель, пункты, блок ежедневного входа и окно входа перенесены как в
+ * макете: та же палитра, те же радиусы, градиентная рамка и анимации.
+ * Гарнитуры проекта — вместо Manrope, размеры — как в макете.
+ */
+
+@property --pm-ang{syntax:'<angle>';inherits:false;initial-value:0deg}
+.pm-root{
+  --pm-a:var(--ag-accent,#2b7fff); --pm-c:var(--ag-cyan,#22d3ee); --pm-v:var(--ag-cyan,#22d3ee); --pm-red:#ff6b80;
+  --pm-ink:var(--ag-text,#eef2fb); --pm-mut:var(--ag-muted,#8d98b4);
+}
+
+.pm-menu{position:fixed;top:66px;right:16px;z-index:9991;width:min(360px,calc(100vw - 24px));max-height:calc(100vh - 80px);overflow:auto;scrollbar-width:none;padding:18px 14px 12px;border-radius:26px;isolation:isolate;border:1px solid transparent;
+  background:linear-gradient(180deg,rgba(14,22,44,.94),rgba(7,11,24,.97)) padding-box,conic-gradient(from var(--pm-ang),rgba(43,127,255,.75),rgba(96,150,255,.12) 25%,rgba(34,211,238,.6) 50%,rgba(96,150,255,.12) 75%,rgba(43,127,255,.75)) border-box;
+  box-shadow:0 30px 80px rgba(0,0,0,.6),0 0 60px rgba(43,127,255,.14);backdrop-filter:blur(24px);
+  opacity:0;visibility:hidden;transform:translateY(-8px) scale(.97);transform-origin:top right;transition:opacity .25s,transform .3s cubic-bezier(.2,.9,.3,1),visibility .3s;animation:pm-spin 14s linear infinite}
+.pm-menu::-webkit-scrollbar{display:none}
+.pm-menu.pm-on{opacity:1;visibility:visible;transform:none}
+@keyframes pm-spin{to{--pm-ang:360deg}}
+.pm-aur{position:absolute;left:0;right:0;top:0;height:230px;z-index:-1;pointer-events:none;background:radial-gradient(260px 150px at 15% 0,rgba(43,127,255,.38),transparent),radial-gradient(220px 130px at 95% 0,rgba(34,211,238,.3),transparent)}
+.pm-rv{position:relative}
+.pm-menu.pm-on .pm-rv{animation:pm-in .5s calc(var(--i)*38ms + 60ms) cubic-bezier(.2,.9,.3,1) backwards}
+@keyframes pm-in{from{opacity:0;transform:translateY(10px)}}
+
+@keyframes pm-sw{0%{transform:translateX(-120%)}40%,100%{transform:translateX(120%)}}
+
+.pm-daily{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;width:100%;margin:4px 0 10px;padding:12px;border-radius:18px;overflow:hidden;text-align:left;border:1px solid transparent;
+  background:linear-gradient(135deg,rgba(20,32,70,.92),rgba(11,17,38,.92)) padding-box,linear-gradient(135deg,rgba(43,127,255,.8),rgba(34,211,238,.5),rgba(34,211,238,.45)) border-box;transition:transform .2s,box-shadow .25s}
+.pm-daily:hover{transform:translateY(-1px);box-shadow:0 12px 30px rgba(50,90,230,.35)}
+.pm-daily::after{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 35%,rgba(180,210,255,.14) 50%,transparent 65%);transform:translateX(-120%);animation:pm-sw 6s 2s infinite}
+.pm-dic{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;background:linear-gradient(135deg,#2b7fff,#22d3ee);box-shadow:0 6px 18px rgba(43,127,255,.45)}
+.pm-daily b{display:block;font-size:15px;font-weight:800}
+.pm-daily small{display:block;color:var(--pm-mut);font-size:12px}
+.pm-pips{display:flex;gap:4px;margin-top:7px}
+.pm-pips i{width:17px;height:4px;border-radius:3px;background:rgba(255,255,255,.13)}
+.pm-pips i.pm-on{background:linear-gradient(90deg,var(--pm-c),var(--pm-v))}
+.pm-pill{padding:7px 13px;border-radius:99px;font-size:12.5px;font-weight:800;background:linear-gradient(135deg,#2b7fff,#22d3ee);box-shadow:0 6px 18px rgba(43,127,255,.5);animation:pm-glow 2.2s ease-in-out infinite}
+.pm-pill.pm-off{background:rgba(255,255,255,.08);color:var(--pm-mut);box-shadow:none;animation:none}
+@keyframes pm-glow{50%{box-shadow:0 6px 26px rgba(43,127,255,.85)}}
+.pm-link .pm-ico svg,.pm-daily svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+
+.pm-link::before{content:"";position:absolute;left:0;top:26%;bottom:26%;width:3px;border-radius:3px;background:linear-gradient(var(--pm-c),var(--pm-v));transform:scaleY(0);transition:transform .25s}
+.pm-link:hover{transform:translateX(2px)}
+.pm-link:hover::before{transform:scaleY(1)}
+.pm-link:hover .pm-ico{color:#fff;border-color:rgba(96,150,255,.5);background:linear-gradient(135deg,rgba(43,127,255,.6),rgba(34,211,238,.42));box-shadow:0 0 18px rgba(43,127,255,.5)}
+.pm-link:active{transform:scale(.98)}
+.pm-ch{margin-left:auto;width:16px;height:16px;opacity:0;transform:translateX(-6px);transition:.25s;color:var(--pm-mut);fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
+.pm-link:hover .pm-ch{opacity:1;transform:none}
+.pm-prem .pm-ico{color:#fff;background:linear-gradient(135deg,rgba(43,127,255,.45),rgba(34,211,238,.45))}
+.pm-prem .pm-tx{background:linear-gradient(90deg,#bfe3ff,#9fe8ff);-webkit-background-clip:text;background-clip:text;color:transparent}
+.pm-out .pm-link{color:#ff6b80}
+.pm-out .pm-ico{color:#ff6b80;background:rgba(255,80,100,.1);border-color:rgba(255,80,100,.2)}
+.pm-out .pm-link:hover .pm-ico{background:rgba(255,80,100,.3);border-color:rgba(255,100,120,.5);box-shadow:0 0 18px rgba(255,80,100,.4)}
+.pm-out .pm-link::before{background:#ff6b80}
+.pm-ml{position:relative;padding:0;border-top:0}
+.pm-hl{position:absolute;left:0;right:0;top:0;height:0;border-radius:14px;pointer-events:none;opacity:0;background:linear-gradient(90deg,rgba(43,127,255,.2),rgba(34,211,238,.06));border:1px solid rgba(96,150,255,.14);transition:transform .25s cubic-bezier(.3,.9,.3,1),height .25s,opacity .2s,background .25s,border-color .25s}
+.pm-hl.pm-red{background:linear-gradient(90deg,rgba(255,80,100,.2),rgba(255,80,100,.05));border-color:rgba(255,100,120,.2)}
+.pm-sep{height:1px;margin:8px 8px;background:linear-gradient(90deg,transparent,rgba(143,159,203,.3),transparent)}
+.pm-note{margin:8px 8px 2px;color:var(--pm-mut);font-size:11.5px;line-height:1.4}
+
+.pm-modal{position:fixed;inset:0;z-index:9992;display:grid;place-items:center;padding:16px;background:rgba(5,8,16,.7);backdrop-filter:blur(10px);opacity:0;visibility:hidden;transition:opacity .3s,visibility .3s}
+.pm-modal.pm-on{opacity:1;visibility:visible}
+.pm-dm{position:relative;width:min(100%,440px);padding:24px 20px 20px;border-radius:26px;border:1px solid transparent;transform:translateY(22px) scale(.96);transition:transform .45s cubic-bezier(.2,.9,.3,1);animation:pm-spin 12s linear infinite;
+  background:linear-gradient(170deg,#0d1630,#070b18) padding-box,conic-gradient(from var(--pm-ang),#2b7fff,#22d3ee,#dff3ff,#22d3ee,#2b7fff) border-box;box-shadow:0 30px 80px rgba(20,40,160,.4)}
+.pm-modal.pm-on .pm-dm{transform:none}
+.pm-dm h3{margin:0 0 4px;font-size:23px;font-weight:800;background:linear-gradient(120deg,#fff,#b9ccff 60%,#bfeaff);-webkit-background-clip:text;background-clip:text;color:transparent}
+.pm-dm p{margin:0 0 16px;color:var(--pm-mut);font-size:14px;max-width:34ch}
+.pm-x{position:absolute;right:14px;top:14px;width:32px;height:32px;border-radius:50%;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);color:var(--pm-mut)}
+.pm-days{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.pm-dc{position:relative;padding:12px 6px;border-radius:16px;text-align:center;border:1px solid rgba(255,255,255,.07);background:rgba(255,255,255,.03);opacity:.65;transition:all .4s}
+.pm-dc.pm-d7{grid-column:span 2}
+.pm-dc small{display:block;color:var(--pm-mut);font-size:11.5px}
+.pm-dc b{display:block;margin:3px 0 1px;font-size:18px;font-weight:800;background:linear-gradient(135deg,#9fe8ff,#6fa8ff);-webkit-background-clip:text;background-clip:text;color:transparent}
+.pm-dc.pm-d7 b{font-size:23px}
+.pm-dc span{font-size:11.5px;color:var(--pm-mut)}
+.pm-dc.pm-done{opacity:1;border-color:rgba(43,127,255,.5);background:linear-gradient(160deg,rgba(43,127,255,.26),rgba(34,211,238,.16))}
+.pm-dc.pm-done::after{content:"✓";position:absolute;top:6px;right:9px;font-size:12px;color:#9fe6ff}
+.pm-dc.pm-cur{opacity:1;border-color:var(--pm-c);box-shadow:0 0 26px rgba(34,211,238,.35);animation:pm-glow2 2s ease-in-out infinite}
+@keyframes pm-glow2{50%{box-shadow:0 0 38px rgba(34,211,238,.6)}}
+.pm-cta{position:relative;overflow:hidden;width:100%;margin-top:16px;padding:14px;border:0;border-radius:14px;font-weight:800;font-size:15px;background:linear-gradient(135deg,#2b7fff,#22d3ee);box-shadow:0 10px 28px rgba(43,127,255,.45);transition:transform .2s,box-shadow .2s,opacity .2s}
+.pm-cta::after{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 35%,rgba(255,255,255,.45) 50%,transparent 65%);transform:translateX(-120%)}
+.pm-cta:hover:not([disabled])::after{transform:translateX(120%);transition:transform .7s}
+.pm-cta:hover:not([disabled]){transform:translateY(-2px)}
+.pm-cta[disabled]{opacity:.55;cursor:default;box-shadow:none;background:rgba(255,255,255,.1)}
+.pm-spark{position:fixed;width:7px;height:7px;margin:-3px;border-radius:50%;z-index:300;pointer-events:none;box-shadow:0 0 10px 1px rgba(255,255,255,.55);animation:pm-spark .9s ease-out forwards}
+@keyframes pm-spark{to{transform:translate(var(--dx),var(--dy)) scale(.2);opacity:0}}
+.pm-toast{position:fixed;left:50%;bottom:26px;z-index:400;transform:translate(-50%,20px);padding:11px 18px;border-radius:14px;font-weight:700;font-size:14px;background:rgba(11,17,38,.95);border:1px solid rgba(96,150,255,.4);box-shadow:0 10px 30px rgba(0,0,0,.5);opacity:0;pointer-events:none;transition:all .35s}
+.pm-toast.pm-on{opacity:1;transform:translate(-50%,0)}
+@media (prefers-reduced-motion:reduce){.pm-root *,.pm-root *::before,.pm-root *::after{animation:none!important;transition:none!important}}
+
+/* ═══ правки под проект ═══ */
+/* `.pm-who` остался флексом от прежней вёрстки, и ник с почтой вставали в
+   одну строку. В макете `.who` — обычный блок, а ник с бейджем Premium
+   переносятся внутри `<b>`. */
+.pm-who{display:block;min-width:0}
+.pm-who b{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:19px;font-weight:800;line-height:1.15;word-break:break-all}
+.pm-who>span{display:block;color:var(--pm-mut);font-size:13px;margin-top:2px;word-break:break-all}
+/* Значок счётчика (квесты) стоит между подписью и шевроном — макет его
+   не рисует, но убрать значок значило бы потерять счётчик */
+.pm-link .pm-ch{margin-left:auto}
+.pm-link .pm-badge{margin-left:auto}
+.pm-link .pm-badge+.pm-ch{margin-left:8px}
+/* Шторка снизу — только на телефоне (см. правило выше) */
+@media (max-width:420px){
+  .pm-menu{border-radius:24px 24px 0 0;max-height:88vh}
+}
+
+/* ═══ Телефон: премиальная нижняя шторка ═══
+ * Ставим в самый конец и удваиваем класс: общее правило `.pm-menu` выше
+ * перебивало прежний мобильный блок, и меню оставалось выпадашкой справа с
+ * высотой по `100vh` — панель браузера обрезала низ списка. Здесь высота
+ * считается от видимой области (dvh), список внутри прокручивается. */
+@media (max-width:520px){
+  .pm-scrim{background:rgba(4,7,16,.72);backdrop-filter:blur(6px)}
+  .pm-menu.pm-menu{
+    left:8px;right:8px;top:auto;bottom:calc(8px + env(safe-area-inset-bottom,0px));
+    width:auto;max-width:none;
+    max-height:min(84vh,calc(100dvh - 88px));
+    padding:26px 14px calc(14px + env(safe-area-inset-bottom,0px));
+    border-radius:30px;
+    overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;
+    transform-origin:center bottom;
+    transform:translateY(48px) scale(.97);
+    box-shadow:0 -10px 70px rgba(43,127,255,.22),0 30px 90px rgba(0,0,0,.75);
+  }
+  .pm-menu.pm-menu.pm-on{transform:none}
+
+  /* ручка шторки — по центру сверху, не в строке с аватаром */
+  .pm-mh{position:relative;padding-top:6px}
+  .pm-mh::before{
+    content:"";position:absolute;left:50%;top:-14px;margin:0;display:block;
+    width:44px;height:5px;border-radius:3px;transform:translateX(-50%);
+    background:linear-gradient(90deg,rgba(255,255,255,.14),rgba(255,255,255,.34),rgba(255,255,255,.14));
+  }
+
+  .pm-aur{height:200px}
+  .pm-mh>[data-pm="avatar"]{--s:72px;width:72px;height:72px}
+  .pm-who b{font-size:20px}
+
+  /* пункты — крупнее под палец, две в ряд не делаем: подписи длинные */
+  .pm-link{padding:8px 10px;gap:14px;font-size:16px}
+  .pm-ico{width:42px;height:42px;border-radius:14px}
+  .pm-ico svg{width:20px;height:20px}
+  .pm-daily{margin:6px 0 12px;padding:14px;border-radius:20px}
+  .pm-sep{margin:8px 6px}
+  .pm-note{font-size:11px;opacity:.8}
+}
+@media (max-width:520px) and (max-height:700px){
+  .pm-link{padding:6px 10px}
+  .pm-ico{width:38px;height:38px}
+}

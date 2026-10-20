@@ -24,6 +24,8 @@ export interface Unlock {
   premium?: boolean;
   /** Цена в монетах (покупка в магазине) */
   price?: number;
+  /** Открывается за N приглашённых друзей (рубеж реферальной программы) */
+  referral?: number;
 }
 
 export interface BackgroundItem {
@@ -58,6 +60,19 @@ export interface FrameItem {
   css?: string;
   /** SVG-оверлей поверх аватара (`/frames/…`), со своей анимацией внутри */
   img?: string;
+  /**
+   * Во сколько раз картинка рамки больше аватара. Не задаётся — 1.3, как у
+   * рамок из public/frames (файлы 512×512 рассчитаны на круг ~77% кадра).
+   * Нужен рамкам из макетов премиум-рамок: в проекте круг аватара занимает
+   * 38.5% ширины картинки, а в макетах — около 26%, и без масштаба венок
+   * уезжал под аватар.
+   */
+  scale?: number;
+  /**
+   * Рисунок шире обычного холста (у серафимов крылья выходят за 240
+   * единиц). Таким рамкам карточка в магазине нужна шире — см. ags-card-wide.
+   */
+  wide?: boolean;
   unlock: Unlock;
 }
 
@@ -395,49 +410,74 @@ export function titleTag(item: TitleItem): TagDef {
 export const FRAMES: FrameItem[] = [
   { id: "f-none", name: "Без рамки", rarity: "common", css: "", unlock: {} },
   /* — common — */
-  { id: "frame-22", name: "Шаринган", rarity: "common", img: "/frames/frame-22.svg", unlock: {} },
-  { id: "frame-33", name: "Мангекё", rarity: "common", img: "/frames/frame-33.svg", unlock: {} },
-  { id: "frame-10", name: "Энсо-самурай", rarity: "common", img: "/frames/frame-10.svg", unlock: {} },
-  { id: "frame-32", name: "Шаринган", rarity: "common", img: "/frames/frame-32.svg", unlock: { level: 2 } },
-  { id: "frame-38", name: "Шаринган 1→2→3", rarity: "common", img: "/frames/frame-38.svg", unlock: { level: 3 } },
-  { id: "frame-39", name: "Шаринган → Мангекё", rarity: "common", img: "/frames/frame-39.svg", unlock: { level: 3 } },
-  { id: "frame-28", name: "Щит АТ-поля", rarity: "common", img: "/frames/frame-28.svg", unlock: { level: 5 } },
+  { id: "frame-22", name: "Шаринган", rarity: "common", img: "/frames/frame-22.svg?v=2", unlock: {} },
+  { id: "frame-33", name: "Мангекё", rarity: "common", img: "/frames/frame-33.svg?v=2", unlock: {} },
+  { id: "frame-10", name: "Энсо-самурай", rarity: "common", img: "/frames/frame-10.svg?v=2", unlock: {} },
+  { id: "frame-32", name: "Шаринган", rarity: "common", img: "/frames/frame-32.svg?v=2", unlock: { level: 2 } },
+  { id: "frame-38", name: "Шаринган 1→2→3", rarity: "common", img: "/frames/frame-38.svg?v=2", unlock: { level: 3 } },
+  { id: "frame-39", name: "Шаринган → Мангекё", rarity: "common", img: "/frames/frame-39.svg?v=2", unlock: { level: 3 } },
+  { id: "frame-28", name: "Щит АТ-поля", rarity: "common", img: "/frames/frame-28.svg?v=2", unlock: { level: 5 } },
   /* — rare — */
-  { id: "frame-05", name: "Цепи и замок", rarity: "rare", img: "/frames/frame-05.svg", unlock: { level: 4 } },
-  { id: "frame-08", name: "Фонк-дрифт", rarity: "rare", img: "/frames/frame-08.svg", unlock: { level: 6 } },
-  { id: "frame-03", name: "Маска гуля", rarity: "rare", img: "/frames/frame-03.svg", unlock: { level: 7 } },
-  { id: "frame-09", name: "Чёрная дыра", rarity: "rare", img: "/frames/frame-09.svg", unlock: { level: 8 } },
-  { id: "frame-19", name: "Крылья демона", rarity: "rare", img: "/frames/frame-19.svg", unlock: { level: 9 } },
-  { id: "frame-15", name: "Мяч", rarity: "rare", img: "/frames/frame-15.svg", unlock: { level: 10 } },
-  { id: "frame-34", name: "Риннеган", rarity: "rare", img: "/frames/frame-34.svg", unlock: { level: 12 } },
-  { id: "frame-35", name: "Бьякуган", rarity: "rare", img: "/frames/frame-35.svg", unlock: { level: 14 } },
-  { id: "frame-21", name: "Джо-стиль", rarity: "rare", img: "/frames/frame-21.svg", unlock: { level: 16 } },
-  { id: "frame-16", name: "Соты", rarity: "rare", img: "/frames/frame-16.svg", unlock: { premium: true } },
-  { id: "frame-12", name: "Кицунэ", rarity: "rare", img: "/frames/frame-12.svg", unlock: { achievement: "minutes-300" } },
-  { id: "frame-36", name: "Геасс", rarity: "rare", img: "/frames/frame-36.svg", unlock: { achievement: "watch-1" } },
-  { id: "frame-13", name: "Синее пламя эго", rarity: "rare", img: "/frames/frame-13.svg", unlock: { price: 600 } },
-  { id: "frame-24", name: "Проклятая энергия", rarity: "rare", img: "/frames/frame-24.svg", unlock: { price: 1500 } },
+  { id: "frame-05", name: "Цепи и замок", rarity: "rare", img: "/frames/frame-05.svg?v=2", unlock: { level: 4 } },
+  { id: "frame-08", name: "Фонк-дрифт", rarity: "rare", img: "/frames/frame-08.svg?v=2", unlock: { level: 6 } },
+  { id: "frame-03", name: "Маска гуля", rarity: "rare", img: "/frames/frame-03.svg?v=2", unlock: { referral: 10 } },
+  { id: "frame-09", name: "Чёрная дыра", rarity: "rare", img: "/frames/frame-09.svg?v=2", unlock: { level: 8 } },
+  { id: "frame-19", name: "Крылья демона", rarity: "rare", img: "/frames/frame-19.svg?v=2", unlock: { level: 9 } },
+  { id: "frame-15", name: "Мяч", rarity: "rare", img: "/frames/frame-15.svg?v=2", unlock: { level: 10 } },
+  { id: "frame-34", name: "Риннеган", rarity: "rare", img: "/frames/frame-34.svg?v=2", unlock: { level: 12 } },
+  { id: "frame-35", name: "Бьякуган", rarity: "rare", img: "/frames/frame-35.svg?v=2", unlock: { level: 14 } },
+  { id: "frame-21", name: "Джо-стиль", rarity: "rare", img: "/frames/frame-21.svg?v=2", unlock: { level: 16 } },
+  { id: "frame-16", name: "Соты", rarity: "rare", img: "/frames/frame-16.svg?v=2", unlock: { premium: true } },
+  { id: "frame-12", name: "Кицунэ", rarity: "rare", img: "/frames/frame-12.svg?v=2", unlock: { achievement: "minutes-300" } },
+  { id: "frame-36", name: "Геасс", rarity: "rare", img: "/frames/frame-36.svg?v=2", unlock: { referral: 3 } },
+  { id: "frame-13", name: "Синее пламя эго", rarity: "rare", img: "/frames/frame-13.svg?v=2", unlock: { price: 600 } },
+  { id: "frame-24", name: "Проклятая энергия", rarity: "rare", img: "/frames/frame-24.svg?v=2", unlock: { price: 1500 } },
   /* — epic — */
-  { id: "frame-01", name: "Кагуне", rarity: "epic", img: "/frames/frame-01.svg", unlock: { level: 18 } },
-  { id: "frame-02", name: "Какуган", rarity: "epic", img: "/frames/frame-02.svg", unlock: { level: 20 } },
-  { id: "frame-25", name: "Тетрадь смерти", rarity: "epic", img: "/frames/frame-25.svg", unlock: { level: 22 } },
-  { id: "frame-27", name: "Крылья свободы", rarity: "epic", img: "/frames/frame-27.svg", unlock: { level: 24 } },
-  { id: "frame-31", name: "Драконьи шары", rarity: "epic", img: "/frames/frame-31.svg", unlock: { level: 28 } },
-  { id: "frame-29", name: "Магическая луна", rarity: "epic", img: "/frames/frame-29.svg", unlock: { premium: true } },
-  { id: "frame-23", name: "Клинок-волны", rarity: "epic", img: "/frames/frame-23.svg", unlock: { achievement: "titles-10" } },
-  { id: "frame-20", name: "Чемпион №1", rarity: "epic", img: "/frames/frame-20.svg", unlock: { achievement: "collections-5" } },
-  { id: "frame-04", name: "Паучья лилия", rarity: "epic", img: "/frames/frame-04.svg", unlock: { achievement: "episodes-25" } },
-  { id: "frame-30", name: "Бензопила", rarity: "epic", img: "/frames/frame-30.svg", unlock: { price: 3000 } },
+  { id: "frame-01", name: "Кагуне", rarity: "epic", img: "/frames/frame-01.svg?v=2", unlock: { level: 18 } },
+  { id: "frame-02", name: "Какуган", rarity: "epic", img: "/frames/frame-02.svg?v=2", unlock: { level: 20 } },
+  { id: "frame-25", name: "Тетрадь смерти", rarity: "epic", img: "/frames/frame-25.svg?v=2", unlock: { level: 22 } },
+  { id: "frame-27", name: "Крылья свободы", rarity: "epic", img: "/frames/frame-27.svg?v=2", unlock: { referral: 30 } },
+  { id: "frame-31", name: "Драконьи шары", rarity: "epic", img: "/frames/frame-31.svg?v=2", unlock: { level: 28 } },
+  { id: "frame-29", name: "Магическая луна", rarity: "epic", img: "/frames/frame-29.svg?v=2", unlock: { premium: true } },
+  { id: "frame-23", name: "Клинок-волны", rarity: "epic", img: "/frames/frame-23.svg?v=2", unlock: { achievement: "titles-10" } },
+  { id: "frame-20", name: "Чемпион №1", rarity: "epic", img: "/frames/frame-20.svg?v=2", unlock: { achievement: "collections-5" } },
+  { id: "frame-04", name: "Паучья лилия", rarity: "epic", img: "/frames/frame-04.svg?v=2", unlock: { achievement: "episodes-25" } },
+  { id: "frame-30", name: "Бензопила", rarity: "epic", img: "/frames/frame-30.svg?v=2", unlock: { price: 3000 } },
+  /* Премиум-рамки: код 1:1 из макетов, файлы собираются генераторами
+     tools/make-premium-frames.mjs (4), make-premium-frames-more.mjs (8) и
+     make-premium-frames-variants.mjs (8). Анимации живут внутри самих SVG,
+     поэтому img — обычный файл и AvatarView рисует их штатно.
+     Ранг легендарный, цена 6000 AC — выше самой дорогой рамки магазина
+     («Золотые крылья», 5000). */
+
+  { id: "frame-lunar-feather", name: "Лунное перо", rarity: "legendary", img: "/frames/frame-lunar-feather.svg?v=2", scale: 1.95, unlock: { price: 6000 } },
+  { id: "frame-golden-laurel", name: "Золотой лавр", rarity: "legendary", img: "/frames/frame-golden-laurel.svg?v=2", scale: 1.95, unlock: { price: 6000 } },
+  { id: "frame-emerald-laurel", name: "Изумрудный лавр", rarity: "legendary", img: "/frames/frame-emerald-laurel.svg?v=2", scale: 1.95, unlock: { price: 6000 } },
+  { id: "frame-sakura", name: "Сакура", rarity: "legendary", img: "/frames/frame-sakura.svg?v=2", scale: 1.95, unlock: { price: 6000 } },
+  { id: "frame-ruby-laurel", name: "Рубиновый лавр", rarity: "legendary", img: "/frames/frame-ruby-laurel.svg?v=2", scale: 1.95, unlock: { price: 6000 } },
+  { id: "frame-sapphire-night", name: "Сапфировая ночь", rarity: "legendary", img: "/frames/frame-sapphire-night.svg?v=2", scale: 1.95, unlock: { price: 6000 } },
+  { id: "frame-amethyst", name: "Аметист", rarity: "legendary", img: "/frames/frame-amethyst.svg?v=2", scale: 1.95, unlock: { price: 6000 } },
+  { id: "frame-platinum", name: "Платина", rarity: "legendary", img: "/frames/frame-platinum.svg?v=2", scale: 1.95, unlock: { price: 6000 } },
+  { id: "frame-turquoise-laurel", name: "Бирюзовый лавр", rarity: "legendary", img: "/frames/frame-turquoise-laurel.svg?v=2", scale: 1.95, unlock: { price: 6000 } },
+  { id: "frame-sunset", name: "Закат", rarity: "legendary", img: "/frames/frame-sunset.svg?v=2", scale: 1.95, unlock: { price: 6000 } },
+  { id: "frame-obsidian", name: "Обсидиан", rarity: "legendary", img: "/frames/frame-obsidian.svg?v=2", scale: 1.95, unlock: { price: 6000 } },
+  { id: "frame-royal-purple", name: "Королевский пурпур", rarity: "legendary", img: "/frames/frame-royal-purple.svg?v=2", scale: 1.95, unlock: { price: 6000 } },
+  { id: "frame-blue-flame", name: "Синее пламя", rarity: "legendary", img: "/frames/frame-blue-flame.svg?v=2", scale: 1.95, unlock: { price: 6000 } },
+  { id: "frame-ghost-flame", name: "Призрачный огонь", rarity: "legendary", img: "/frames/frame-ghost-flame.svg?v=2", scale: 1.95, unlock: { price: 6000 } },
+  { id: "frame-golden-seal", name: "Золотая печать", rarity: "legendary", img: "/frames/frame-golden-seal.svg?v=2", scale: 1.95, unlock: { price: 6000 } },
+  { id: "frame-crimson-seal", name: "Багровая печать", rarity: "legendary", img: "/frames/frame-crimson-seal.svg?v=2", scale: 1.95, unlock: { price: 6000 } },
+  { id: "frame-golden-moths", name: "Золотые бабочки", rarity: "legendary", img: "/frames/frame-golden-moths.svg?v=2", scale: 1.95, unlock: { price: 6000 } },
+  { id: "frame-lunar-moths", name: "Лунные мотыльки", rarity: "legendary", img: "/frames/frame-lunar-moths.svg?v=2", scale: 1.95, unlock: { price: 6000 } },
   /* — legendary — */
-  { id: "frame-37", name: "Безграничные глаза", rarity: "legendary", img: "/frames/frame-37.svg", unlock: { level: 35 } },
-  { id: "frame-26", name: "Пират-соломенная шляпа", rarity: "legendary", img: "/frames/frame-26.svg", unlock: { level: 40 } },
-  { id: "frame-06", name: "Обратный отсчёт 1000−7", rarity: "legendary", img: "/frames/frame-06.svg", unlock: { level: 50 } },
-  { id: "frame-17", name: "Молния", rarity: "legendary", img: "/frames/frame-17.svg", unlock: { achievement: "level-10" } },
-  { id: "frame-11", name: "Они", rarity: "legendary", img: "/frames/frame-11.svg", unlock: { achievement: "claims-10" } },
-  { id: "frame-07", name: "ZXC Cyber", rarity: "legendary", img: "/frames/frame-07.svg", unlock: { achievement: "showcase" } },
+  { id: "frame-37", name: "Безграничные глаза", rarity: "legendary", img: "/frames/frame-37.svg?v=2", unlock: { level: 35 } },
+  { id: "frame-26", name: "Пират-соломенная шляпа", rarity: "legendary", img: "/frames/frame-26.svg?v=2", unlock: { level: 40 } },
+  { id: "frame-06", name: "Обратный отсчёт 1000−7", rarity: "legendary", img: "/frames/frame-06.svg?v=2", unlock: { level: 50 } },
+  { id: "frame-17", name: "Молния", rarity: "legendary", img: "/frames/frame-17.svg?v=2", unlock: { achievement: "level-10" } },
+  { id: "frame-11", name: "Они", rarity: "legendary", img: "/frames/frame-11.svg?v=2", unlock: { achievement: "claims-10" } },
+  { id: "frame-07", name: "ZXC Cyber", rarity: "legendary", img: "/frames/frame-07.svg?v=2", unlock: { achievement: "showcase" } },
   // награда достижения прогрессии «Хранитель» (reward.frameId)
-  { id: "frame-14", name: "Король поля", rarity: "legendary", img: "/frames/frame-14.svg", unlock: {} },
-  { id: "frame-18", name: "Золотые крылья", rarity: "legendary", img: "/frames/frame-18.svg", unlock: { price: 5000 } },
+  { id: "frame-14", name: "Король поля", rarity: "legendary", img: "/frames/frame-14.svg?v=2", unlock: {} },
+  { id: "frame-18", name: "Золотые крылья", rarity: "legendary", img: "/frames/frame-18.svg?v=2", unlock: { price: 5000 } },
 ];
 
 /**
@@ -462,12 +502,15 @@ export interface UnlockContext {
   premium: boolean;
   claimed: string[];
   purchased: string[];
+  /** Сколько друзей приглашено — для предметов за рубежи рефералки */
+  referrals: number;
 }
 
 export function isUnlocked(unlock: Unlock, ctx: UnlockContext): boolean {
   if (unlock.level && ctx.level < unlock.level) return false;
   if (unlock.achievement && !ctx.claimed.includes(unlock.achievement)) return false;
   if (unlock.premium && !ctx.premium) return false;
+  if (unlock.referral && ctx.referrals < unlock.referral) return false;
   return true;
 }
 
@@ -495,8 +538,18 @@ export function findItem(id: string): BackgroundItem | TitleItem | FrameItem | u
 /** Человекочитаемое условие открытия */
 export function unlockHint(unlock: Unlock): string {
   if (unlock.price) return `${unlock.price} монет`;
+  if (unlock.referral) return `${unlock.referral} ${friendWord(unlock.referral)}`;
   if (unlock.premium) return "нужен Premium";
   if (unlock.achievement) return "за достижение";
   if (unlock.level) return `уровень ${unlock.level}`;
   return "доступно всем";
+}
+
+/** «1 друг», «3 друга», «10 друзей» — то же правило, что и в рефералке */
+function friendWord(n: number): string {
+  const a = n % 10;
+  const b = n % 100;
+  if (a === 1 && b !== 11) return "друг";
+  if (a >= 2 && a <= 4 && (b < 10 || b >= 20)) return "друга";
+  return "друзей";
 }

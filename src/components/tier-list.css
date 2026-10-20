@@ -1,0 +1,123 @@
+/* Виджет «Тир-лист аниме» — стили из макета `anime-tierlist.html`.
+ * Классы макета уже с префиксом tl-, поэтому перенесены без правок: размеры,
+ * начертания и анимации — как в макете. Подменены только гарнитуры (Manrope →
+ * шрифты проекта). Виджет лежит внутри карточки профиля, поэтому рамку,
+ * скругление и фон корня .tl-root убираем — их уже нарисовала карточка блока.
+ */
+
+.tl-root{--ink:#f4f2ee;--mut:#9a98a6;--line:rgba(255,255,255,.07);--acc:#ffb26b;
+  position:relative;isolation:isolate;overflow:hidden;max-width:1040px;margin:0 auto;padding:26px;border-radius:26px;
+  font-family:var(--font-body);color:var(--ink);
+  background:linear-gradient(160deg,#17161d 0%,#0e0e13 60%);border:1px solid var(--line);
+  box-shadow:0 40px 80px -30px rgba(0,0,0,.8),inset 0 1px 0 rgba(255,255,255,.05)}
+.tl-root *{box-sizing:border-box}
+.tl-glow{position:absolute;inset:-30% -10% auto;height:360px;z-index:-1;pointer-events:none;filter:blur(60px);opacity:.5;
+  background:radial-gradient(40% 60% at 20% 40%,#ff6b57 0,transparent 70%),radial-gradient(40% 60% at 55% 30%,#7fd8ff 0,transparent 70%),radial-gradient(40% 60% at 85% 50%,#ff80ff 0,transparent 70%);
+  animation:tlDrift 18s ease-in-out infinite alternate}
+@keyframes tlDrift{to{transform:translateX(-6%) scale(1.08)}}
+.tl-head{display:flex;gap:14px;align-items:flex-end;justify-content:space-between;margin-bottom:22px}
+.tl-headtxt{min-width:0;flex:1}
+.tl-title{width:100%;background:transparent;border:0;border-bottom:2px solid transparent;color:var(--ink);padding:2px 0;
+  font:800 34px/1.1 var(--font-display);letter-spacing:-.02em;transition:border-color .2s}
+.tl-title:hover{border-bottom-color:rgba(255,255,255,.15)}.tl-title:focus{outline:0;border-bottom-color:var(--acc)}
+.tl-count{display:block;margin-top:4px;color:var(--mut);font-size:13px}
+.tl-btn{background:rgba(255,255,255,.06);color:var(--ink);border:1px solid var(--line);border-radius:999px;padding:10px 18px;
+  font:700 14px inherit;font-family:inherit;cursor:pointer;transition:transform .2s,background .2s,box-shadow .2s}
+.tl-btn:hover{background:rgba(255,255,255,.12);transform:translateY(-1px)}
+.tl-primary{background:linear-gradient(135deg,#ffb26b,#ff6b57);color:#1a1210;border:0;box-shadow:0 8px 24px -8px #ff6b57}
+.tl-primary:hover{background:linear-gradient(135deg,#ffc088,#ff7d6b);box-shadow:0 12px 30px -8px #ff6b57}
+.tl-root :focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+
+.tl-tiers{display:flex;flex-direction:column;gap:10px}
+.tl-tier{--c:#fff;display:flex;min-height:108px;border-radius:16px;overflow:hidden;background:rgba(255,255,255,.035);
+  border:1px solid var(--line);transition:border-color .25s,box-shadow .25s,background .25s}
+.tl-tier:hover{border-color:color-mix(in srgb,var(--c) 40%,transparent)}
+.tl-tier.over{border-color:var(--c);background:color-mix(in srgb,var(--c) 10%,transparent);box-shadow:0 0 0 1px var(--c),0 0 36px -6px var(--c)}
+.boot .tl-tier{animation:tlRow .7s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--i)*70ms)}
+@keyframes tlRow{from{opacity:0;transform:translateX(-28px) scale(.98)}}
+.tl-label{flex:0 0 88px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:8px;
+  background:linear-gradient(160deg,color-mix(in srgb,var(--c) 100%,#fff 18%),var(--c));color:#15100c;font-weight:800;font-size:30px;
+  text-align:center;user-select:none;cursor:text;box-shadow:12px 0 40px -14px var(--c);position:relative;z-index:1;word-break:break-word}
+.tl-label small{font-size:11px;font-weight:700;opacity:.6}
+.tl-label[contenteditable="true"]{outline:2px solid #15100c;outline-offset:-5px}
+.tl-items{flex:1;display:flex;flex-wrap:wrap;gap:8px;padding:10px;align-content:flex-start;align-items:flex-start}
+
+.tl-add{width:54px;height:72px;align-self:center;display:grid;place-items:center;border-radius:12px;cursor:pointer;
+  background:transparent;border:1.5px dashed color-mix(in srgb,var(--c) 55%,transparent);color:var(--c);font-size:26px;line-height:1;
+  transition:background .25s,transform .25s,box-shadow .25s}
+.tl-add span{display:block;transition:transform .35s cubic-bezier(.3,1.6,.5,1)}
+.tl-add:hover{background:color-mix(in srgb,var(--c) 16%,transparent);box-shadow:0 0 28px -6px var(--c);transform:translateY(-2px)}
+.tl-add:hover span{transform:rotate(90deg) scale(1.15)}
+
+.tl-card{--c:#444;--rx:0deg;--ry:0deg;position:relative;width:72px;height:98px;flex:none;border-radius:10px;overflow:hidden;cursor:grab;
+  background:var(--c);border:0;padding:0;color:#fff;box-shadow:0 6px 16px -6px rgba(0,0,0,.7);
+  transform:perspective(500px) rotateX(var(--rx)) rotateY(var(--ry));transition:transform .2s ease-out,box-shadow .25s}
+.tl-card:hover{box-shadow:0 16px 28px -10px rgba(0,0,0,.9),0 0 0 1px rgba(255,255,255,.25);z-index:2}
+.tl-card::after{content:"";position:absolute;inset:0;background:linear-gradient(115deg,transparent 35%,rgba(255,255,255,.28) 50%,transparent 65%);
+  transform:translateX(-120%);transition:transform .7s;pointer-events:none}
+.tl-card:hover::after{transform:translateX(120%)}
+.tl-card img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none}
+.tl-card .cap{position:absolute;inset:auto 0 0;padding:18px 5px 4px;font-size:10px;line-height:1.15;font-weight:600;text-align:left;
+  background:linear-gradient(transparent,rgba(0,0,0,.9));display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.tl-card.drag{opacity:.35;transform:scale(.92)}
+.tl-card.pop{animation:tlPop .55s cubic-bezier(.3,1.5,.5,1)}
+@keyframes tlPop{0%{transform:scale(.3) rotate(-8deg);opacity:0}100%{transform:none;opacity:1}}
+.tl-x{position:absolute;top:3px;right:3px;width:22px;height:22px;border-radius:50%;border:0;background:rgba(10,10,14,.8);color:#fff;
+  font-size:14px;line-height:1;cursor:pointer;opacity:0;transform:scale(.6);transition:opacity .2s,transform .2s,background .2s;z-index:3}
+.tl-card:hover .tl-x,.tl-x:focus-visible{opacity:1;transform:none}.tl-x:hover{background:#ff4d4d}
+@media (hover:none){.tl-x{opacity:1;transform:none}}
+
+.tl-trash{position:absolute;left:50%;bottom:16px;transform:translate(-50%,30px);opacity:0;pointer-events:none;padding:12px 22px;border-radius:999px;
+  background:rgba(255,77,77,.16);border:1.5px dashed #ff6b6b;color:#ffb3b3;font-weight:700;font-size:13px;backdrop-filter:blur(8px);
+  transition:opacity .25s,transform .25s,background .2s;z-index:5}
+.tl-root.dragging .tl-trash{opacity:1;pointer-events:auto;transform:translate(-50%,0)}
+.tl-trash.over{background:rgba(255,77,77,.4);color:#fff}
+
+.tl-modal{position:fixed;inset:0;z-index:9999;display:grid;place-items:center;padding:16px;visibility:hidden}
+.tl-modal.open{visibility:visible}
+.tl-backdrop{position:absolute;inset:0;background:rgba(6,6,10,.65);backdrop-filter:blur(0);opacity:0;transition:opacity .3s,backdrop-filter .3s}
+.tl-modal.open .tl-backdrop{opacity:1;backdrop-filter:blur(10px)}
+.tl-panel{--c:#ff6b57;position:relative;width:min(760px,100%);max-height:min(86vh,720px);display:flex;flex-direction:column;gap:14px;padding:22px;
+  border-radius:24px;background:linear-gradient(170deg,#1d1c25,#121217);border:1px solid rgba(255,255,255,.1);
+  box-shadow:0 50px 100px -20px rgba(0,0,0,.9),0 0 80px -30px var(--c);opacity:0;transform:translateY(24px) scale(.94);
+  transition:opacity .3s,transform .4s cubic-bezier(.2,1.1,.3,1)}
+.tl-modal.open .tl-panel{opacity:1;transform:none}
+.tl-phead{display:flex;align-items:center;justify-content:space-between}
+.tl-mtitle{margin:0;font-size:20px;font-weight:800;display:flex;align-items:center;gap:10px}
+.tl-chip{display:inline-grid;place-items:center;min-width:34px;height:34px;padding:0 8px;border-radius:10px;background:var(--c);color:#15100c;font-weight:800;box-shadow:0 0 22px -2px var(--c)}
+.tl-close{width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:rgba(255,255,255,.06);color:var(--ink);font-size:20px;cursor:pointer;transition:transform .3s,background .2s}
+.tl-close:hover{transform:rotate(90deg);background:rgba(255,255,255,.14)}
+.tl-sbox{display:flex;align-items:center;gap:10px;padding:0 16px;border-radius:14px;background:rgba(255,255,255,.06);border:1.5px solid transparent;color:var(--mut);transition:border-color .2s,box-shadow .2s}
+.tl-sbox:focus-within{border-color:var(--c);box-shadow:0 0 24px -8px var(--c);color:var(--ink)}
+.tl-search{flex:1;background:transparent;border:0;color:var(--ink);padding:14px 0;font:500 16px inherit;font-family:inherit}
+.tl-search:focus{outline:0}
+.tl-grid{flex:1;overflow:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:12px;padding:4px;min-height:200px;align-content:start}
+.tl-grid .tl-card{width:100%;height:auto;aspect-ratio:3/4;cursor:pointer}
+.tl-grid .tl-card:active{transform:scale(.96)}
+.tl-badge{position:absolute;top:6px;left:6px;min-width:22px;height:22px;padding:0 6px;display:grid;place-items:center;border-radius:7px;font-size:12px;font-weight:800;color:#15100c;z-index:3;animation:tlPop .4s cubic-bezier(.3,1.5,.5,1)}
+.tl-card.has{box-shadow:0 0 0 2px var(--b)}
+.tl-skel{aspect-ratio:3/4;border-radius:10px;background:linear-gradient(100deg,rgba(255,255,255,.05) 30%,rgba(255,255,255,.12) 50%,rgba(255,255,255,.05) 70%) 0 0/300% 100%;animation:tlShim 1.2s linear infinite}
+@keyframes tlShim{to{background-position:-300% 0}}
+.tl-empty{grid-column:1/-1;color:var(--mut);font-size:14px;padding:30px 8px;text-align:center}
+.tl-pfoot{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.tl-hint{color:var(--mut);font-size:13px}
+.tl-modal.open .tl-grid .tl-card{animation:tlPop .45s cubic-bezier(.3,1.4,.5,1) both;animation-delay:calc(var(--k,0)*22ms)}
+
+@media (max-width:560px){.tl-root{padding:14px;border-radius:18px}.tl-title{font-size:24px}.tl-label{flex-basis:56px;font-size:22px}
+  .tl-card{width:62px;height:86px}.tl-add{width:46px;height:62px}.tl-panel{padding:16px;border-radius:20px}.tl-grid{grid-template-columns:repeat(auto-fill,minmax(92px,1fr))}}
+@media (prefers-reduced-motion:reduce){.tl-root *,.tl-root *::before,.tl-root *::after{animation:none!important;transition:none!important}}
+
+/* ═══ правки под профиль ═══ */
+/* Блок виджета уже в рамке карточки .ag-w / .ag-wv-card: вторая рамка внутри
+   выглядела бы коробкой в коробке. Оставляем только внутренние отступы. */
+.ag-w .tl-root, .ag-wv-card .tl-root {
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+}
+/* Заголовок тир-листа — он же подпись блока, поэтому не давим на него рамкой */
+.ag-w .tl-root .tl-title, .ag-wv-card .tl-root .tl-title { font-size: 26px; }

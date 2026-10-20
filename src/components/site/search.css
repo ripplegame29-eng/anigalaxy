@@ -1,0 +1,484 @@
+/*
+ * Поиск по каталогу — порт из `_design`-прототипа
+ * (anigalaxy-search.html, приложен пользователем).
+ *
+ * Правила перенесены один в один, с двумя правками:
+ *
+ *  1. Из прототипа убраны `*`, `body` и безымянный `button` — это правила
+ *     уровня страницы, и проект запрещает их в CSS страницы: глобальный
+ *     сброс уже делает Tailwind-база, а `button` переписан как
+ *     `.sx button`, чтобы стиль жил только внутри поиска.
+ *  2. Палитра прототипа заменена на токены темы AniGalaxy (`--line`,
+ *     `--muted`, `--gold`, `--cyan`, `--blue`), чтобы оверлей совпадал с
+ *     шапкой и карточками, а не был отдельным чужеродным блоком.
+ *
+ * Все селекторы начинаются с `.sx` — это и есть контейнер оверлея, так
+ * что стили не выходят за его пределы и не задевают остальной сайт.
+ * Имена `@keyframes` здесь нет: анимации не используются, поэтому
+ * пересечений с `hd-*` из header.css и с ключами других страниц нет.
+ */
+
+.sx {
+  --sx-accent: var(--ag-accent, #2b7fff);
+  --sx-star: #ffb020;
+  --sx-ok: var(--green, #34e0a1);
+
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: none;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 7vh 16px 24px;
+  background: var(--ag-scrim);
+  backdrop-filter: blur(16px);
+  overflow-y: auto;
+}
+.sx.is-open {
+  display: flex;
+}
+
+.sx button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+.sx .icon {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  flex: none;
+}
+.sx mark {
+  background: none;
+  color: var(--ag-cyan);
+}
+
+/* --- Коробка --- */
+.sx__box {
+  width: 100%;
+  max-width: 1040px;
+  background: var(--ag-glass);
+  border: 1px solid var(--ag-line-strong);
+  border-radius: 24px;
+  box-shadow: 0 40px 120px rgba(0, 0, 0, 0.65);
+  overflow: hidden;
+}
+
+/* --- Поле --- */
+.sx__head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 22px;
+  border-bottom: 1px solid var(--ag-line);
+  color: var(--sx-accent);
+}
+.sx__input {
+  flex: 1;
+  min-width: 0;
+  background: none;
+  border: 0;
+  outline: 0;
+  font: 500 18px var(--body, sans-serif);
+  color: var(--ag-text);
+}
+.sx__input::placeholder {
+  color: var(--ag-muted);
+}
+.sx .kbd {
+  padding: 3px 8px;
+  border-radius: 7px;
+  background: var(--ag-ctl-hover);
+  color: var(--ag-text-2);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* Кнопки справа от поля: скриншот, закрытие, режимы */
+.sx__tools {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: none;
+}
+.sx__tool {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  color: var(--ag-muted);
+  transition: background 0.15s, color 0.15s;
+}
+.sx__tool:hover {
+  background: var(--ag-ctl-hover);
+  color: #fff;
+}
+.sx__mode {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  color: var(--ag-muted);
+  transition: background 0.15s, color 0.15s;
+}
+.sx__mode:hover {
+  color: #fff;
+  background: var(--ag-ctl);
+}
+.sx__mode[aria-pressed="true"] {
+  background: linear-gradient(135deg, var(--sx-accent), var(--ag-accent-deep));
+  color: #fff;
+  box-shadow: 0 6px 20px rgba(43, 127, 255, 0.35);
+}
+
+/* --- Фильтры --- */
+.sx__filters {
+  display: flex;
+  gap: 8px;
+  padding: 14px 22px;
+  border-bottom: 1px solid var(--ag-line);
+  overflow-x: auto;
+}
+.sx .chip {
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--ag-line);
+  color: var(--ag-text-2);
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.sx .chip:hover {
+  color: #fff;
+}
+.sx .chip[aria-pressed="true"] {
+  color: #fff;
+  border-color: transparent;
+  background: linear-gradient(135deg, var(--sx-accent), var(--ag-accent-deep));
+  box-shadow: 0 6px 20px rgba(43, 127, 255, 0.35);
+}
+
+/* --- Заголовок раздела («Популярное» / «Результаты») --- */
+.sx__cap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 22px 6px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--ag-muted);
+}
+.sx__cap b {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  background: var(--ag-ctl);
+  color: var(--sx-accent);
+}
+.sx__cap span {
+  margin-left: auto;
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 600;
+  color: var(--ag-muted);
+}
+
+/* --- Список + превью --- */
+.sx__main {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  min-height: 440px;
+}
+.sx__list {
+  list-style: none;
+  margin: 0;
+  padding: 10px;
+  max-height: 440px;
+  overflow-y: auto;
+  border-right: 1px solid var(--ag-line);
+}
+.sx .row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 8px 10px;
+  border-radius: 14px;
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+.sx .row.is-active {
+  background: var(--ag-accent-bg);
+  border-color: rgba(43, 127, 255, 0.35);
+}
+.sx .row__poster {
+  width: 46px;
+  height: 66px;
+  flex: none;
+  border-radius: 9px;
+  object-fit: cover;
+  background: linear-gradient(160deg, var(--c, #2b7fff), var(--ag-card));
+}
+.sx .row__body {
+  flex: 1;
+  min-width: 0;
+}
+.sx .row__title {
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.sx .row__studio {
+  font-size: 11px;
+  color: var(--ag-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.sx .row__meta {
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--ag-muted);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+.sx .row__rating {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--sx-star);
+  flex: none;
+}
+.sx .row__eps {
+  margin-left: auto;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--ag-ctl);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--ag-text-2);
+}
+.sx .live {
+  color: var(--sx-ok);
+}
+.sx .chipmini {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--ag-ctl);
+  font-size: 11px;
+  color: var(--ag-text-2);
+  white-space: nowrap;
+}
+
+/* --- Превью --- */
+.sx .pv {
+  --tint: var(--sx-accent);
+  position: relative;
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow: hidden;
+}
+.sx .pv::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(120% 70% at 50% 0%, color-mix(in srgb, var(--tint) 38%, transparent), transparent 70%);
+  pointer-events: none;
+  transition: background 0.3s;
+}
+.sx .pv > * {
+  position: relative;
+}
+.sx .pv__poster {
+  width: 140px;
+  height: 200px;
+  border-radius: 16px;
+  object-fit: cover;
+  background: linear-gradient(160deg, var(--tint), var(--ag-card));
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+}
+.sx .pv__title {
+  margin: 6px 0 0;
+  font: 800 18px/1.25 var(--font-display);
+}
+.sx .pv__orig {
+  font-size: 12px;
+  color: var(--ag-muted);
+}
+.sx .pv__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.sx .tag {
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--ag-ctl-hover);
+  font-size: 11px;
+  color: var(--ag-text-2);
+}
+.sx .tag--star {
+  background: rgba(34, 211, 238, 0.15);
+  color: var(--sx-star);
+  font-weight: 700;
+}
+.sx .pv__desc {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--ag-text-2);
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.sx .pv__actions {
+  display: flex;
+  gap: 8px;
+  margin-top: auto;
+}
+.sx .btn {
+  height: 42px;
+  padding: 0 18px;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+}
+.sx .btn--main {
+  background: var(--sx-accent);
+  color: #fff;
+  box-shadow: 0 8px 24px rgba(43, 127, 255, 0.4);
+}
+.sx .btn--ghost {
+  background: var(--ag-ctl-hover);
+  color: #fff;
+}
+
+/* --- Пусто / загрузка / ошибка --- */
+.sx .empty {
+  padding: 56px 24px;
+  text-align: center;
+  color: var(--ag-muted);
+  font-size: 14px;
+}
+.sx .empty b {
+  display: block;
+  margin-bottom: 6px;
+  font: 800 16px var(--font-display);
+  color: var(--ag-text);
+}
+.sx .empty--sm {
+  padding: 34px 24px;
+}
+
+/* --- Низ --- */
+.sx__foot {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 22px;
+  border-top: 1px solid var(--ag-line);
+  font-size: 12px;
+  color: var(--ag-muted);
+}
+.sx__foot .frame {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 12px;
+  border-radius: 10px;
+  border: 1px dashed rgba(43, 127, 255, 0.5);
+  color: var(--ag-accent-ink);
+  font-weight: 600;
+  min-width: 0;
+}
+.sx__foot .frame span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sx__foot .framelink {
+  flex: none;
+  color: var(--sx-accent);
+  font-weight: 700;
+  text-decoration: none;
+}
+.sx__foot .framelink:hover {
+  text-decoration: underline;
+}
+.sx__foot .hints {
+  margin-left: auto;
+  display: flex;
+  gap: 14px;
+  flex: none;
+}
+
+/* --- Телефон: превью и подсказки уходят, остаётся один список --- */
+@media (max-width: 800px) {
+  .sx__main {
+    grid-template-columns: 1fr;
+  }
+  .sx .pv,
+  .sx__foot .hints {
+    display: none;
+  }
+  .sx__list {
+    border-right: 0;
+  }
+  .sx {
+    padding: 4vh 10px 16px;
+  }
+  .sx__box {
+    border-radius: 20px;
+  }
+  .sx__head {
+    padding: 14px 16px;
+    gap: 10px;
+  }
+  .sx__input {
+    font-size: 16px;
+  }
+  .sx__filters {
+    padding: 12px 16px;
+  }
+  .sx__list {
+    max-height: 58vh;
+  }
+  .sx__foot {
+    padding: 12px 16px;
+  }
+  /* На телефоне режимы занимают место, а искать всё равно по каталогу */
+  .sx__mode {
+    display: none;
+  }
+}
+
+/* Пользователь просил меньше движения — гасим переходы */
+@media (prefers-reduced-motion: reduce) {
+  .sx *,
+  .sx *::before,
+  .sx *::after {
+    transition-duration: 0.01ms !important;
+  }
+}

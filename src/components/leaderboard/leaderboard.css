@@ -1,0 +1,863 @@
+/*
+ * Лидерборд. Разметка и значения — 1:1 по макету
+ * (anigalaxy-leaderboard.html).
+ *
+ * Про шрифты: в макете крупные надписи (заголовок, очки, номер места,
+ * пьедестал) набраны акцентной гарнитурой, обычный текст — основной.
+ * Здесь это Montserrat 800 (`--font-display`) и Onest (`--font-body`) —
+ * те же переменные, что на остальных страницах макетов.
+ *
+ * Отличия от макета сознательные и описаны в LeaderboardView: вместо
+ * кругов-заглушек, плашек-чипов и шестиугольников с числом подставлены
+ * настоящие рамки (`AvatarView`), теги (`AgTag`) и эмблемы уровня
+ * (`LevelEmblem`) проекта. Поэтому у `.lb-row` ширина колонок та же, но
+ * у аватара и уровня своя геометрия — их задаёт сам проект.
+ *
+ * Префикс lb- по тем же причинам, что и hd-/ag-/bp- в остальных файлах:
+ * короткие имена @keyframes в проекте уже перетирают друг друга.
+ */
+
+.lb {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ------------------------------ Герой --------------------------------- */
+
+.lb-eb {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  margin-bottom: 16px;
+  border: 1px solid rgba(255, 200, 90, 0.35);
+  border-radius: 99px;
+  background: rgba(255, 200, 90, 0.07);
+  color: #ffd36a;
+  font-size: 12.5px;
+  font-weight: 700;
+}
+
+.lb-eb i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #ffd36a;
+  box-shadow: 0 0 10px #ffd36a;
+  animation: lb-pl 2s infinite;
+}
+
+.lb-h1 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(40px, 7.6vw, 84px);
+  font-weight: 800;
+  line-height: 0.98;
+  letter-spacing: -0.04em;
+  background: linear-gradient(100deg, #fff 20%, #a9c4ff 50%, #fff 80%);
+  background-size: 220% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: lb-sh 7s linear infinite;
+}
+
+.lb-lead {
+  margin: 14px 0 0;
+  max-width: 440px;
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.lb-hero {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.lb-d {
+  display: flex;
+  gap: 8px;
+}
+
+.lb-d span {
+  min-width: 74px;
+  padding: 12px 10px 9px;
+  text-align: center;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.02));
+}
+
+.lb-d b {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 30px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.lb-d i {
+  display: block;
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 11.5px;
+  font-style: normal;
+}
+
+.lb-tm small {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--muted);
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+/* ---------------------------- Фильтры --------------------------------- */
+
+.lb-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-top: 30px;
+}
+
+.lb-seg {
+  display: inline-flex;
+  padding: 4px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.lb-seg button {
+  padding: 9px 20px;
+  border: 0;
+  border-radius: 10px;
+  background: none;
+  color: var(--muted);
+  font-weight: 700;
+  font-size: 14px;
+  transition: 0.2s;
+}
+
+.lb-seg button:hover {
+  color: #fff;
+}
+
+.lb-seg .on {
+  background: #3b82ff;
+  color: #fff;
+  box-shadow: 0 8px 22px -10px #3b82ff;
+}
+
+.lb-chips {
+  display: flex;
+  gap: 8px;
+}
+
+.lb-chips button {
+  padding: 9px 16px;
+  border: 1px solid var(--line);
+  border-radius: 99px;
+  background: none;
+  color: var(--muted);
+  font-weight: 700;
+  font-size: 13.5px;
+  transition: 0.2s;
+}
+
+.lb-chips button.on {
+  border-color: rgba(168, 120, 255, 0.6);
+  background: rgba(140, 90, 255, 0.16);
+  color: #fff;
+}
+
+/* ----------------------------- Подиум --------------------------------- */
+
+.lb-podium {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1.18fr 1fr;
+  align-items: end;
+  gap: 14px;
+  margin: 40px 0 22px;
+  padding-top: 34px;
+}
+
+.lb-podium::before {
+  content: "";
+  position: absolute;
+  left: 30%;
+  right: 30%;
+  top: -30px;
+  bottom: 0;
+  background: conic-gradient(from 180deg at 50% 0, transparent 160deg, rgba(255, 200, 90, 0.16) 180deg, transparent 200deg);
+  filter: blur(10px);
+  pointer-events: none;
+}
+
+.lb-pod {
+  --c: 255, 200, 90;
+  --ph: 92px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 0;
+  text-align: center;
+}
+
+.lb-p2 {
+  --c: 196, 212, 238;
+}
+
+.lb-p3 {
+  --c: 228, 146, 92;
+  --ph: 66px;
+}
+
+.lb-p1 {
+  --ph: 132px;
+}
+
+.lb-orb {
+  --s: 116px;
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: var(--s);
+  height: var(--s);
+  margin-bottom: 12px;
+}
+
+.lb-p1 .lb-orb {
+  --s: 156px;
+}
+
+/* Кольцо-ореол вокруг аватара */
+.lb-orb::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: conic-gradient(rgba(var(--c), 0.95), transparent 30%, rgba(var(--c), 0.5) 55%, transparent 80%, rgba(var(--c), 0.95));
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 2px));
+  mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 2px));
+  animation: lb-spin 9s linear infinite;
+}
+
+.lb-orb::after {
+  content: "";
+  position: absolute;
+  inset: 12px;
+  border: 1px dashed rgba(var(--c), 0.35);
+  border-radius: 50%;
+  animation: lb-spin 40s linear infinite reverse;
+}
+
+.lb-crown {
+  position: absolute;
+  top: -26px;
+  left: 50%;
+  z-index: 2;
+  color: rgb(var(--c));
+  transform: translateX(-50%);
+  filter: drop-shadow(0 0 10px rgba(var(--c), 0.8));
+  animation: lb-fl 3s ease-in-out infinite;
+}
+
+.lb-pod-n {
+  max-width: 100%;
+  overflow: hidden;
+  font-size: 17px;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lb-pod-tt {
+  margin: 5px 0 4px;
+  padding: 3px 10px;
+  border: 1px solid rgba(var(--c), 0.4);
+  border-radius: 99px;
+  background: rgba(var(--c), 0.08);
+  color: rgb(var(--c));
+  font-size: 11.5px;
+  font-weight: 700;
+}
+
+.lb-pod-p {
+  margin-top: 4px;
+  color: rgb(var(--c));
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 800;
+}
+
+.lb-p1 .lb-pod-p {
+  font-size: 34px;
+}
+
+.lb-pod-s {
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 12.5px;
+}
+
+.lb-ped {
+  display: grid;
+  place-items: start center;
+  width: 100%;
+  height: var(--ph);
+  margin-top: 14px;
+  padding-top: 8px;
+  border: 1px solid rgba(var(--c), 0.3);
+  border-bottom: 0;
+  border-radius: 20px 20px 0 0;
+  background: linear-gradient(180deg, rgba(var(--c), 0.22), transparent);
+  color: rgba(var(--c), 0.85);
+  font-family: var(--font-display);
+  font-size: 50px;
+  font-weight: 800;
+}
+
+/* ---------------------------- Награды --------------------------------- */
+
+.lb-lad {
+  margin: 26px 0 30px;
+}
+
+.lb-lg {
+  display: grid;
+  grid-template-columns: 1.25fr repeat(4, 1fr);
+  gap: 8px;
+}
+
+.lb-lc {
+  position: relative;
+  padding: 14px 16px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.lb-lc b {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.lb-lc span {
+  display: block;
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 12.5px;
+  line-height: 1.45;
+}
+
+.lb-lc.g {
+  border-color: rgba(255, 200, 90, 0.45);
+  background: linear-gradient(160deg, rgba(255, 200, 90, 0.14), rgba(255, 200, 90, 0.02));
+}
+
+.lb-lc.g b {
+  color: #ffd36a;
+}
+
+.lb-lc.g::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -80px;
+  width: 60px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.18), transparent);
+  transform: skewX(-20deg);
+  animation: lb-gl 5s ease-in-out infinite;
+}
+
+.lb-note {
+  margin-top: 8px;
+  padding: 12px 16px;
+  border: 1px solid rgba(140, 90, 255, 0.35);
+  border-radius: 14px;
+  background: rgba(140, 90, 255, 0.08);
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 13px;
+}
+
+.lb-note b {
+  color: #fff;
+}
+
+/* ------------------------------ Зоны ---------------------------------- */
+
+.lb-zone {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 18px 4px 8px;
+  color: var(--muted);
+  font-size: 12.5px;
+  font-weight: 700;
+}
+
+.lb-zone::before,
+.lb-zone::after {
+  content: "";
+  height: 1px;
+  flex: 1;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.18));
+}
+
+.lb-zone::after {
+  transform: scaleX(-1);
+}
+
+.lb-zone.z1 {
+  color: #ffd36a;
+}
+
+.lb-zone.z2 {
+  color: #c4a8ff;
+}
+
+.lb-zone.z3 {
+  color: #7fc4ff;
+}
+
+/* ------------------------------ Список -------------------------------- */
+
+.lb-rows {
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  list-style: none;
+}
+
+.lb-row {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  /* Колонка аватара — по рамке: --ag-av-xs (36px) x 1.95 = 70px плюс запас.
+     Сам .ag-frame занимает в гриде ровно 36px и центрируется, поэтому круг
+     стоит одинаково у всех строк независимо от рамки. */
+  grid-template-columns: 44px 90px minmax(0, 1fr) 54px 112px;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 18px 12px 6px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.025);
+  transition: border-color 0.2s, transform 0.2s;
+}
+
+.lb-row:hover {
+  border-color: rgba(59, 130, 255, 0.5);
+  transform: translateX(3px);
+}
+
+/* Полоска очков слева направо */
+.lb-row::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  width: var(--w);
+  background: linear-gradient(90deg, rgba(59, 130, 255, 0.24), rgba(59, 130, 255, 0.02));
+  transform-origin: left;
+  transform: scaleX(0);
+  animation: lb-grow 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  animation-delay: var(--d);
+}
+
+.lb-row.me {
+  border-color: rgba(56, 189, 248, 0.6);
+  box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.2), 0 0 30px -10px #38bdf8;
+}
+
+.lb-rk {
+  text-align: center;
+  color: var(--muted);
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.lb-nm {
+  min-width: 0;
+}
+
+.lb-l1 {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 7px;
+}
+
+.lb-l1 b {
+  max-width: 170px;
+  overflow: hidden;
+  font-size: 15.5px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Остатки статусов, которых нет в каталоге тегов */
+.lb-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border: 1px solid;
+  border-radius: 7px;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.lb-chip.pr {
+  border-color: rgba(168, 120, 255, 0.4);
+  background: rgba(168, 120, 255, 0.12);
+  color: #c4a8ff;
+}
+
+/*
+ * Масштаб тега в строке лидерборда.
+ *
+ * Внутри — обычный `AgTag` проекта (size="sm"): тот же дизайн, те же
+ * анимации и эффекты, ничего не переписано. Уменьшены только габариты —
+ * `sm` это ~33px, на референсе капсула ~22px.
+ *
+ * Класс висит на самом теге, а не на обёртке: с zoom на обёртке её бокс и
+ * бокс тега расходятся (у капсулы есть позиционированные слои эффектов,
+ * они вылезают наружу), и тег на экране уезжает за пределы своей строки.
+ *
+ * max-content по ширине — чтобы длинное имя тега не обрезалось: подпись
+ * задаёт сам тег, и она бывает и в два слова.
+ */
+.lb-tag {
+  zoom: 0.7;
+  width: max-content;
+  max-width: none;
+}
+
+/*
+ * Титул — рамка на тёмном, а не заливка.
+ *
+ * Отличие от тега неслучайное: тег про достижение (цветная капсула),
+ * титул про статус (плашка с рамкой цвета титула). На референсе так же,
+ * и благодаря этому строка читается без легенды.
+ */
+.lb-title {
+  display: inline-flex;
+  align-items: center;
+  height: 20px;
+  padding: 0 8px;
+  border: 1px solid color-mix(in srgb, var(--c) 55%, transparent);
+  border-radius: 6px;
+  background: rgba(6, 7, 12, 0.75);
+  color: var(--c);
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+/* Статистика под ником: иконка + значение, разделитель «+» */
+.lb-stat {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.lb-stat svg {
+  width: 13px;
+  height: 13px;
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.lb-plus {
+  color: var(--line-strong);
+  font-style: normal;
+}
+
+.lb-sub {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 12.5px;
+}
+
+/* Эмблема уровня рисуется компонентом проекта — колонка по центру */
+.lb-lv {
+  display: grid;
+  place-items: center;
+}
+
+.lb-pt {
+  text-align: right;
+}
+
+.lb-pt b {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.lb-pt small {
+  color: var(--muted);
+  font-size: 11.5px;
+}
+
+.lb-empty {
+  padding: 34px;
+  color: var(--muted);
+  text-align: center;
+}
+
+.lb-more {
+  display: block;
+  margin: 18px auto 0;
+  padding: 12px 26px;
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  background: rgba(255, 255, 255, 0.04);
+  font-size: 14px;
+  font-weight: 700;
+  transition: 0.2s;
+}
+
+.lb-more:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* --------------------------- Твоё место ------------------------------- */
+
+.lb-dock {
+  position: sticky;
+  bottom: 16px;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  max-width: 780px;
+  margin: 30px auto 0;
+  padding: 12px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 22px;
+  background: rgba(12, 14, 20, 0.86);
+  backdrop-filter: blur(18px);
+  box-shadow: 0 24px 60px -20px #000, 0 0 0 1px rgba(59, 130, 255, 0.16);
+}
+
+.lb-dk {
+  padding: 10px 16px;
+  border-radius: 15px;
+  background: rgba(255, 255, 255, 0.06);
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.lb-dx {
+  flex: 1;
+  min-width: 0;
+}
+
+.lb-dx small {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.lb-dx b {
+  display: block;
+  margin: 1px 0 7px;
+  font-size: 15px;
+}
+
+.lb-gap {
+  height: 5px;
+  overflow: hidden;
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.09);
+}
+
+.lb-gap i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #3b82ff, #38bdf8, #a78bfa);
+  transition: width 1.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.lb-dx em {
+  display: block;
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 12.5px;
+  font-style: normal;
+}
+
+.lb-dx em strong {
+  color: #fff;
+}
+
+.lb-up {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 11px 16px;
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  background: rgba(255, 255, 255, 0.06);
+  font-size: 13.5px;
+  font-weight: 700;
+}
+
+/* --------------------------- Анимации --------------------------------- */
+
+@keyframes lb-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes lb-fl {
+  50% {
+    transform: translateX(-50%) translateY(-5px);
+  }
+}
+
+@keyframes lb-pl {
+  50% {
+    opacity: 0.3;
+  }
+}
+
+@keyframes lb-sh {
+  to {
+    background-position: -220% 0;
+  }
+}
+
+@keyframes lb-gl {
+  40%,
+  100% {
+    left: 120%;
+  }
+}
+
+@keyframes lb-grow {
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/* ---------------------------- Мобильные ------------------------------- */
+
+@media (max-width: 760px) {
+  .lb-row {
+    grid-template-columns: 30px 42px minmax(0, 1fr) 92px;
+    gap: 10px;
+    padding-right: 12px;
+  }
+
+  /* Эмблема уровня — первое, что можно убрать: номер и так в строке подписи */
+  .lb-lv {
+    display: none;
+  }
+
+  .lb-l1 b {
+    max-width: 110px;
+  }
+
+  .lb-lg {
+    display: flex;
+    overflow-x: auto;
+    padding-bottom: 6px;
+  }
+
+  .lb-lc {
+    flex: none;
+    min-width: 190px;
+  }
+
+  .lb-podium {
+    gap: 8px;
+  }
+
+  .lb-p1 .lb-orb {
+    --s: 116px;
+  }
+
+  .lb-orb {
+    --s: 84px;
+  }
+
+  .lb-pod-p,
+  .lb-p1 .lb-pod-p {
+    font-size: 17px;
+  }
+
+  .lb-ped {
+    font-size: 34px;
+  }
+
+  .lb-pod-tt {
+    display: none;
+  }
+
+  .lb-d span {
+    min-width: 58px;
+  }
+
+  .lb-d b {
+    font-size: 22px;
+  }
+
+  .lb-dk {
+    padding: 8px 12px;
+    font-size: 17px;
+  }
+
+  .lb-up span {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lb-eb i,
+  .lb-h1,
+  .lb-orb::before,
+  .lb-orb::after,
+  .lb-crown,
+  .lb-lc.g::after,
+  .lb-row::before {
+    animation: none !important;
+  }
+
+  .lb-row::before {
+    transform: scaleX(1);
+  }
+}

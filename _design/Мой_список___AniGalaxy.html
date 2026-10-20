@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Мой список — AniGalaxy</title>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Unbounded:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{box-sizing:border-box;color-scheme:dark;--bg:#050810;--text:#eef2fb;--muted:#8d98b4;--line:rgba(96,150,255,.16);--blue:#2b7fff;--cyan:#22d3ee;--gold:#f5b74a;--green:#34e0a1;--red:#ff5d73;--violet:#9b86ff;--disp:"Unbounded","Manrope",sans-serif}
+html{scroll-behavior:smooth}*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.45 Manrope,system-ui,sans-serif;overflow-x:hidden}
+a{color:inherit;text-decoration:none}button,select,input{font:inherit;color:inherit}button{cursor:pointer}svg{display:block}
+:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+.sky{position:fixed;inset:0;z-index:-2;background:radial-gradient(1000px 600px at 78% 5%,rgba(43,127,255,.18),transparent 65%),radial-gradient(800px 600px at 0 55%,rgba(124,92,255,.1),transparent 60%),var(--bg)}
+.stars{position:fixed;left:0;top:0;width:2px;height:2px;border-radius:50%;z-index:-1;animation:tw 6s ease-in-out infinite alternate}
+@keyframes tw{from{opacity:.25}to{opacity:.95}}
+/* общее */
+.wrap{max-width:1180px;margin:0 auto;padding:34px clamp(14px,3vw,24px) 90px}
+.card{position:relative;border-radius:24px;border:1px solid var(--line);background:linear-gradient(180deg,rgba(15,24,48,.7),rgba(8,13,26,.7));box-shadow:0 20px 50px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.04)}
+.btn{display:inline-flex;align-items:center;gap:9px;border:0;border-radius:12px;padding:11px 18px;font-weight:800;color:#fff;background:linear-gradient(135deg,#2b7fff,#18b8e8);box-shadow:0 8px 24px rgba(43,127,255,.45),inset 0 1px 0 rgba(255,255,255,.3);transition:.15s;position:relative;overflow:hidden;white-space:nowrap}
+.btn:hover{transform:translateY(-2px);box-shadow:0 12px 30px rgba(43,127,255,.6)}.btn svg{width:17px;height:17px}
+.btn::after{content:"";position:absolute;inset:0;background:linear-gradient(105deg,transparent 35%,rgba(255,255,255,.3) 50%,transparent 65%);transform:translateX(-120%);animation:sh 3.4s ease-in-out infinite}@keyframes sh{50%,100%{transform:translateX(120%)}}
+.btn.g{background:rgba(255,255,255,.06);border:1px solid var(--line);box-shadow:none}.btn.g::after{display:none}.btn.g:hover{background:rgba(43,127,255,.14);border-color:rgba(43,127,255,.5)}
+.gh{display:inline-flex;align-items:center;gap:8px;background:none;border:0;color:#c3cadb;font-weight:700;font-size:14px;padding:8px 10px;border-radius:10px;transition:.2s}.gh:hover{color:#fff;background:rgba(255,255,255,.06)}.gh svg{width:17px;height:17px}.gh.d:hover{color:var(--red)}
+/* заголовок */
+.ph{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:22px}
+.ph h1{display:flex;align-items:center;gap:14px;font:800 clamp(26px,3.6vw,38px)/1 var(--disp);letter-spacing:-.03em;margin:0}
+.ph h1 .lg{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;background:rgba(43,127,255,.14);border:1px solid rgba(43,127,255,.45);color:#7cc0ff;box-shadow:0 0 24px rgba(43,127,255,.3)}.lg svg{width:24px;height:24px}
+.ph h1 em{font-style:normal;background:linear-gradient(100deg,#7cc0ff,#22d3ee 55%,#9b86ff);-webkit-background-clip:text;background-clip:text;color:transparent}
+.ph p{margin:10px 0 0;color:var(--muted)}
+/* поиск */
+.sb{padding:16px;display:flex;gap:10px;flex-wrap:wrap}
+.fld{flex:1;min-width:200px;display:flex;align-items:center;gap:10px;height:46px;padding:0 14px;border-radius:14px;border:1px solid var(--line);background:rgba(3,6,14,.6);transition:.2s}
+.fld:focus-within{border-color:rgba(43,127,255,.7);box-shadow:0 0 0 3px rgba(43,127,255,.18)}.fld svg{width:17px;height:17px;color:var(--muted)}.fld input{flex:1;background:none;border:0;outline:0}
+.adv{max-height:0;overflow:hidden;width:100%;transition:max-height .35s ease}.adv.o{max-height:200px}
+.adv-in{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;padding-top:6px}
+select{height:44px;border-radius:12px;border:1px solid var(--line);background:rgba(3,6,14,.8);padding:0 12px;outline:0;color:var(--text)}select:focus{border-color:rgba(43,127,255,.7)}
+/* табы */
+.tabs{display:flex;gap:4px;margin:26px 0 0;border-bottom:1px solid var(--line);overflow-x:auto;scrollbar-width:none;position:relative}.tabs::-webkit-scrollbar{display:none}
+.tab{position:relative;display:flex;align-items:center;gap:8px;background:none;border:0;padding:14px 18px;font:800 14.5px Manrope;color:var(--muted);white-space:nowrap;transition:.2s}
+.tab svg{width:16px;height:16px}.tab:hover{color:#fff}.tab.on{color:#fff}.tab.on svg{color:var(--c)}
+.tab i{font-style:normal;font-size:11px;padding:2px 7px;border-radius:8px;background:rgba(255,255,255,.07);color:#aab4cc}.tab.on i{background:rgba(43,127,255,.3);color:#fff}
+.bar{position:absolute;bottom:-1px;height:3px;border-radius:3px;background:linear-gradient(90deg,var(--blue),var(--cyan));box-shadow:0 0 14px rgba(43,127,255,.8);transition:left .3s cubic-bezier(.3,.9,.3,1),width .3s}
+/* сетка тайтлов */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(176px,1fr));gap:18px;margin-top:26px}
+.it{position:relative;border-radius:16px;overflow:hidden;border:1px solid var(--line);background:#0a1126;transition:transform .3s,box-shadow .3s,border-color .3s;animation:up .45s both}
+@keyframes up{from{opacity:0;transform:translateY(14px)}}
+.it:hover{transform:translateY(-6px);border-color:rgba(43,127,255,.7);box-shadow:0 18px 44px rgba(0,0,0,.5),0 0 30px rgba(43,127,255,.3)}
+.po{position:relative;aspect-ratio:2/3}.po::after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,rgba(5,8,16,.95) 0,transparent 55%)}
+.st{position:absolute;top:10px;left:10px;z-index:2;font-size:10.5px;font-weight:800;letter-spacing:.06em;padding:4px 9px;border-radius:8px;backdrop-filter:blur(8px);border:1px solid}
+.rate{position:absolute;top:10px;right:10px;z-index:2;font-size:12px;font-weight:800;padding:4px 8px;border-radius:8px;background:rgba(5,8,16,.7);color:var(--gold)}
+.pt{position:absolute;z-index:2;left:12px;right:12px;bottom:12px;font-weight:800;font-size:14.5px;line-height:1.2;text-shadow:0 2px 10px #000}
+.pl{position:absolute;z-index:3;inset:0;display:grid;place-items:center;background:rgba(5,8,16,.55);opacity:0;transition:.25s}.it:hover .pl{opacity:1}
+.pl span{width:54px;height:54px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,#2b7fff,#18b8e8);box-shadow:0 0 30px rgba(43,127,255,.9);transform:scale(.8);transition:.25s}.it:hover .pl span{transform:scale(1)}.pl svg{width:22px;height:22px;margin-left:3px}
+.ft{padding:10px 12px 12px}.ep{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);font-weight:700;margin-bottom:7px}.ep b{color:#dfe8ff}
+.pb{height:5px;border-radius:5px;background:rgba(255,255,255,.08);overflow:hidden}.pb i{display:block;height:100%;border-radius:5px;background:linear-gradient(90deg,var(--blue),var(--cyan));box-shadow:0 0 10px rgba(34,211,238,.6)}
+.ft select{width:100%;height:34px;margin-top:10px;font-size:12.5px;font-weight:700}
+/* пустое состояние */
+.empty{max-width:470px;margin:50px auto 30px;padding:34px 30px;text-align:center}
+.eic{width:68px;height:68px;margin:0 auto 18px;border-radius:20px;display:grid;place-items:center;background:rgba(43,127,255,.12);border:1px solid rgba(43,127,255,.45);color:#7cc0ff;box-shadow:0 0 36px rgba(43,127,255,.3);animation:fl 4s ease-in-out infinite}.eic svg{width:30px;height:30px}
+@keyframes fl{50%{transform:translateY(-6px)}}
+.empty h3{margin:0 0 10px;font:700 19px var(--disp)}.empty p{color:var(--muted);margin:0 0 18px}
+.pk{list-style:none;padding:0;margin:0 0 22px;display:grid;gap:9px;text-align:left;font-size:14px;color:#c3cadb}.pk li{display:flex;gap:10px;align-items:center}.pk svg{width:17px;height:17px;color:var(--cyan);flex:none}
+.empty .acts{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}.empty small{display:block;margin-top:16px;color:#5f6a86;font-size:12px}
+/* история */
+.hs{margin-top:60px;padding-top:34px;border-top:1px solid var(--line)}
+.hh{display:flex;align-items:center;gap:12px;margin-bottom:20px}.hh h2{margin:0;font:700 20px var(--disp);display:flex;gap:12px;align-items:center}.hh h2 svg{width:22px;height:22px;color:var(--cyan)}.hh .sp{flex:1}.cnt{color:#6b7694;font-size:13px}
+.hg{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:18px}
+.hc{position:relative;border-radius:18px;overflow:hidden;border:1px solid var(--line);background:linear-gradient(180deg,rgba(15,24,48,.8),rgba(8,13,26,.85));transition:.3s;animation:up .45s both}
+.hc:hover{transform:translateY(-4px);border-color:rgba(43,127,255,.7);box-shadow:0 14px 40px rgba(0,0,0,.5),0 0 34px rgba(43,127,255,.28)}
+.th{position:relative;aspect-ratio:16/9}.th::after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,rgba(5,8,16,.95) 0,transparent 60%)}
+.bg2{position:absolute;top:12px;left:12px;z-index:2;display:flex;gap:6px}.bg2 span{font-size:12px;font-weight:800;padding:5px 10px;border-radius:99px;background:rgba(5,8,16,.78);backdrop-filter:blur(8px)}.bg2 span+span{background:linear-gradient(135deg,#2b7fff,#18b8e8)}
+.x{position:absolute;top:10px;right:10px;z-index:4;width:30px;height:30px;border-radius:50%;border:1px solid rgba(255,255,255,.2);background:rgba(5,8,16,.8);display:grid;place-items:center;opacity:0;transition:.2s}.hc:hover .x{opacity:1}.x:hover{background:var(--red);border-color:var(--red)}.x svg{width:14px;height:14px}
+.hn{position:absolute;z-index:2;left:14px;right:14px;bottom:12px;font-weight:800;font-size:14.5px;line-height:1.2;transition:color .2s}.hc:hover .hn{color:#7cc0ff}
+.hp{position:absolute;z-index:3;left:0;right:0;bottom:0;height:3px;background:rgba(255,255,255,.1)}.hp i{display:block;height:100%;background:linear-gradient(90deg,var(--blue),var(--cyan))}
+.hf{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;gap:10px}
+.dub{font-size:12px;font-weight:700;padding:6px 11px;border-radius:9px;background:rgba(255,255,255,.05);border:1px solid var(--line);color:#c3cadb}
+.dt{text-align:right;font-size:12px;color:var(--muted);line-height:1.3}.dt b{color:#e5ecff;font-size:12.5px}
+.toast{position:fixed;left:50%;bottom:30px;transform:translate(-50%,30px);opacity:0;padding:12px 20px;border-radius:14px;background:rgba(15,24,48,.95);border:1px solid rgba(43,127,255,.6);box-shadow:0 10px 40px rgba(0,0,0,.6);font-weight:700;transition:.3s;z-index:99;pointer-events:none}.toast.o{opacity:1;transform:translate(-50%,0)}
+</style>
+</head>
+<body>
+<div class="sky"></div><div class="stars" id="stars"></div>
+
+<main class="wrap">
+  <div class="ph">
+    <div><h1><span class="lg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h10M4 12h7M4 18h7M15 14l5 3-5 3z"/></svg></span>Мой <em>список</em></h1><p>Отслеживайте прогресс просмотра аниме</p></div>
+    <div><button class="gh" data-t="Выберите файл Shikimori или Anixart"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m-4-4l4 4 4-4M5 20h14"/></svg>Импорт</button><button class="gh" data-t="Список экспортирован"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V5m-4 4l4-4 4 4M5 20h14"/></svg>Экспорт</button><button class="gh d" id="clr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg>Очистить</button></div>
+  </div>
+
+  <section class="card sb">
+    <label class="fld"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input id="q" placeholder="Поиск по списку…"></label>
+    <button class="btn g" id="advb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg>Расширенный поиск</button>
+    <div class="adv" id="adv"><div class="adv-in">
+      <select id="fg"><option value="">Все жанры</option><option>Экшен</option><option>Фэнтези</option><option>Драма</option><option>Романтика</option><option>Комедия</option></select>
+      <select id="so"><option value="n">Сортировка: по названию</option><option value="r">По рейтингу</option><option value="p">По прогрессу</option></select>
+      <select id="fy"><option value="">Любой год</option><option value="2024">2024</option><option value="2023">2023</option><option value="2020">2020 и старше</option></select>
+    </div></div>
+  </section>
+
+  <div class="tabs" id="tabs"><i class="bar" id="bar"></i></div>
+  <div id="out"></div>
+
+  <section class="hs">
+    <div class="hh"><h2><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8M3 3v5h5M12 7v5l3 2"/></svg>История просмотров</h2><span class="sp"></span><span class="cnt" id="hc"></span><button class="gh d" id="hcl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg>Очистить историю</button></div>
+    <div class="hg" id="hist"></div>
+  </section>
+</main>
+<div class="toast" id="toast"></div>
+
+<script>
+const $=s=>document.querySelector(s);
+const ICO={play:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 4l13 8-13 8z"/></svg>',x:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>',dl:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m-4-4l4 4 4-4M5 20h14"/></svg>',lst:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h10M4 12h7M4 18h7M15 14l5 3-5 3z"/></svg>',bell:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 16v-5a6 6 0 0 1 12 0v5l2 2H4zM10 21h4"/></svg>',pl2:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M10 8l6 4-6 4z" fill="currentColor"/></svg>'};
+/* Статусы: ключ → [название, цвет, иконка таба] */
+const ST={w:['Смотрю','#34e0a1','<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M7 4l13 8-13 8z"/></svg>'],p:['Запланировано','#22d3ee','<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>'],d:['Просмотрено','#4da3ff','<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/></svg>'],x:['Брошено','#ff5d73','<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M9 9l6 6M15 9l-6 6"/></svg>'],h:['Отложено','#f5b74a','<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M10 9v6M14 9v6"/></svg>'],u:['Не распределено','#8d98b4','<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13l3-8h10l3 8v6H4zM4 13h5l1 2h4l1-2h5"/></svg>']};
+/* [название, год, рейтинг, жанр, серий, просмотрено, статус, h1, h2] */
+const D=[
+["Поднятие уровня в одиночку",2024,8.14,"Экшен",12,7,"w",230,200],["Фрирен: Провожая в последний путь",2023,9.3,"Фэнтези",28,19,"w",190,280],["Магическая битва",2020,8.8,"Экшен",47,31,"w",260,330],["Монолог травницы",2023,8.7,"Драма",24,11,"w",320,40],
+["Атака титанов",2013,9.1,"Драма",87,0,"p",350,10],["Твоя апрельская ложь",2014,8.7,"Романтика",22,0,"p",330,200],["Созданный в Бездне",2017,8.8,"Фэнтези",25,0,"p",30,200],
+["Тетрадь смерти",2006,9.0,"Драма",37,37,"d",0,300],["Ванпанчмен",2015,8.5,"Комедия",24,24,"d",45,20],["Твоё имя",2016,8.8,"Романтика",1,1,"d",300,200],["Клинок, рассекающий демонов",2019,8.7,"Экшен",55,55,"d",340,20],
+["Токийский гуль",2014,7.9,"Драма",48,6,"h",350,240],["Человек-бензопила",2022,8.6,"Экшен",12,4,"h",15,330]];
+const H=[["Изгнанный реинкарнированный тяжёлый рыцарь",1,"0:02","AniDUB","9 окт., 06:58",8,270,200],["Блич: Тысячелетняя кровавая война",5,"11:57","Amber","3 окт., 19:49",50,0,330],["Невероятное приключение ДжоДжо: Гонка «Стальной шар»",1,"12:12","Amazing Dubbing","3 окт., 04:15",55,40,200],["Мастер муси: Следующая глава 2",1,"1:38","AniDUB","3 окт., 04:16",7,150,190]];
+const art=(h1,h2)=>`background:radial-gradient(circle at 70% 25%,hsl(${h1} 90% 60%/.65),transparent 50%),linear-gradient(160deg,hsl(${h1} 65% 36%),hsl(${h2} 70% 12%))`;
+let cur='w',q='';
+const tabs=$('#tabs');
+function tabsRender(){tabs.querySelectorAll('.tab').forEach(t=>t.remove());
+ Object.keys(ST).forEach(k=>{const n=D.filter(a=>a[6]===k).length,b=document.createElement('button');b.className='tab'+(k===cur?' on':'');b.dataset.k=k;b.innerHTML=ST[k][2]+ST[k][0]+(n?`<i>${n}</i>`:'');b.onclick=()=>{cur=k;render()};tabs.insertBefore(b,$('#bar'))});
+ const on=tabs.querySelector('.on'),bar=$('#bar');bar.style.left=on.offsetLeft+'px';bar.style.width=on.offsetWidth+'px'}
+function render(){tabsRender();
+ let r=D.filter(a=>a[6]===cur&&a[0].toLowerCase().includes(q));
+ const g=$('#fg').value,y=$('#fy').value,s=$('#so').value;
+ if(g)r=r.filter(a=>a[3]===g);if(y)r=r.filter(a=>y==='2020'?a[1]<=2020:a[1]==y);
+ r.sort((a,b)=>s==='r'?b[2]-a[2]:s==='p'?b[5]/b[4]-a[5]/a[4]:a[0].localeCompare(b[0]));
+ const o=$('#out');
+ if(!r.length){o.innerHTML=`<div class="card empty"><div class="eic">${ICO.lst}</div><h3>${q||g||y?'Ничего не найдено':'Список пока пуст'}</h3><p>${q||g||y?'Попробуйте изменить запрос или фильтры.':'Уже собрали список на Shikimori или в Anixart? Перенесите его сюда за пару минут — заново отмечать ничего не придётся.'}</p>
+ <ul class="pk"><li>${ICO.bell}Уведомления о выходе новых серий по вашим тайтлам</li><li>${ICO.pl2}Лента «Продолжить смотреть» на главной</li></ul>
+ <div class="acts"><button class="btn" data-t="Выберите файл Shikimori или Anixart">${ICO.dl}Перенести список</button><button class="btn g">В каталог</button></div><small>Shikimori (XML/JSON) и Anixart (CSV/TXT)</small></div>`;bind();return}
+ o.innerHTML=`<div class="grid">${r.map((a,i)=>{const p=Math.round(a[5]/a[4]*100),c=ST[a[6]][1];
+ return `<article class="it" style="animation-delay:${i*45}ms"><div class="po" style="${art(a[7],a[8])}"><span class="st" style="color:${c};border-color:${c}66;background:${c}22">${ST[a[6]][0]}</span><span class="rate">★ ${a[2]}</span><div class="pl"><span>${ICO.play}</span></div><div class="pt">${a[0]}</div></div>
+ <div class="ft"><div class="ep"><span><b>${a[5]}</b> / ${a[4]} серий</span><span>${p}%</span></div><div class="pb"><i style="width:${p}%"></i></div>
+ <select data-n="${a[0]}">${Object.keys(ST).map(k=>`<option value="${k}" ${k===a[6]?'selected':''}>${ST[k][0]}</option>`).join('')}</select></div></article>`}).join('')}</div>`;
+ o.querySelectorAll('select[data-n]').forEach(s=>s.onchange=()=>{D.find(a=>a[0]===s.dataset.n)[6]=s.value;toast('Перенесено в «'+ST[s.value][0]+'»');render()});bind()}
+function hist(){const h=$('#hist');$('#hc').textContent=H.length+' '+(H.length%10===1&&H.length!==11?'запись':H.length%10>1&&H.length%10<5&&(H.length<10||H.length>20)?'записи':'записей');$('#hcl').style.display=H.length?'':'none';
+ h.innerHTML=H.length?H.map((a,i)=>`<article class="hc" style="animation-delay:${i*60}ms"><div class="th" style="${art(a[6],a[7])}"><div class="bg2"><span>Серия ${a[1]}</span><span>${a[2]}</span></div><button class="x" data-i="${i}" aria-label="Удалить">${ICO.x}</button><div class="hn">${a[0]}</div><div class="hp"><i style="width:${a[5]}%"></i></div></div>
+ <div class="hf"><span class="dub">🎙 ${a[3]}</span><div class="dt"><b>0 сек</b><br>${a[4]}</div></div></article>`).join(''):'<p style="color:var(--muted)">История пуста — начните смотреть, и она появится здесь.</p>';
+ h.querySelectorAll('.x').forEach(b=>b.onclick=()=>{H.splice(+b.dataset.i,1);hist()})}
+function bind(){document.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>toast(b.dataset.t))}
+let tt;function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('o');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('o'),2200)}
+$('#q').oninput=e=>{q=e.target.value.toLowerCase();render()};['#fg','#so','#fy'].forEach(s=>$(s).onchange=render);
+$('#advb').onclick=()=>$('#adv').classList.toggle('o');
+$('#clr').onclick=()=>{if(D.length){D.length=0;toast('Список очищен');render()}};$('#hcl').onclick=()=>{H.length=0;hist()};
+addEventListener('resize',tabsRender);
+(()=>{let s=[];for(let i=0;i<120;i++)s.push(`${(Math.random()*100).toFixed(1)}vw ${(Math.random()*100).toFixed(1)}vh 0 ${Math.random()<.15?1:0}px rgba(200,225,255,${(Math.random()*.7+.2).toFixed(2)})`);$('#stars').style.boxShadow=s.join(',')})();
+render();hist();bind();
+</script>
+</body>
+</html>

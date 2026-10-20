@@ -4,10 +4,11 @@ import { useCallback, useMemo, useState } from "react";
 import { AuthTrigger } from "./AuthDialog";
 import { activatePremium, formatPremiumUntil, isPremiumActive } from "@/lib/auth";
 import { redeemPromo } from "@/lib/promo-client";
+import { PREMIUM_PERKS } from "@/lib/premium-perks";
 import { openAuthDialog } from "@/lib/auth-dialog";
 import { useAccount } from "@/lib/use-account";
 
-interface Plan {
+export interface PremiumPlan {
   id: "month" | "quarter" | "year";
   title: string;
   price: number;
@@ -20,7 +21,11 @@ interface Plan {
   light?: boolean;
 }
 
-const PLANS: Plan[] = [
+/**
+ * Тарифы и цены — один источник правды для витрины и для продления на
+ * странице активной подписки (`PremiumStatus`).
+ */
+export const PLANS: PremiumPlan[] = [
   {
     id: "month",
     title: "Месяц",
@@ -55,17 +60,12 @@ const PLANS: Plan[] = [
 /**
  * Что показываем в карточке тарифа.
  *
- * Короткий список для тарифа и подробный — ниже на странице; оба из
- * одного модуля lib/premium-perks, чтобы текст не расходился с кодом.
+ * Список не набирается руками: он собирается из `PREMIUM_PERKS`, поэтому
+ * формулировки в карточках тарифов и в блоке «Твои привилегии» совпадают
+ * слово в слово. Раньше тут стояли отдельные короткие строки, и они
+ * разъезжались с формулировками привилегий при каждой правке.
  */
-const FEATURES = [
-  { text: "4K и 2K в плеере" },
-  { text: "Вдвое больше за квесты и вход" },
-  { text: "Клану +50% очков в заданиях" },
-  { text: "Вторая линия наград боевого пропуска" },
-  { text: "Эксклюзивные рамки и титулы" },
-  { text: "Промокоды на дни подписки" },
-];
+const FEATURES = PREMIUM_PERKS.map((perk) => ({ key: perk.id, text: perk.title }));
 
 function CheckIcon({ className = "h-3.5 w-3.5" }: { className?: string }) {
   return (
@@ -95,7 +95,7 @@ export function PremiumPlans() {
   const statusLabel = useMemo(() => formatPremiumUntil(account), [account]);
 
   const onSelect = useCallback(
-    (plan: Plan) => {
+    (plan: PremiumPlan) => {
       if (!account) {
         openAuthDialog("login");
         return;
@@ -108,6 +108,7 @@ export function PremiumPlans() {
   );
 
   return (
+    <>
     <div className="grid grid-cols-1 items-stretch gap-6 md:grid-cols-3 lg:gap-7">
       {PLANS.map((plan) => {
         const highlighted = plan.badge !== undefined;
@@ -163,7 +164,7 @@ export function PremiumPlans() {
 
             <ul className="mt-6 flex-1 space-y-3">
               {FEATURES.map((feature) => (
-                <li key={feature.text} className={`flex items-start gap-2.5 text-sm ${featureClass}`}>
+                <li key={feature.key} className={`flex items-start gap-2.5 text-sm ${featureClass}`}>
                   <span
                     className={`mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full ${
                       plan.light ? "bg-accent/12" : "bg-accent/18"
@@ -203,7 +204,7 @@ export function PremiumPlans() {
 
               {justActivated === plan.id && (
                 <p className="mt-2.5 text-center text-xs text-mint animate-fade-in">
-                  Подписка активирована — спасибо за поддержку!
+                  Подписка активирована в демо-режиме — деньги не списывались.
                 </p>
               )}
             </div>
@@ -211,6 +212,11 @@ export function PremiumPlans() {
         );
       })}
     </div>
+    <p className="mt-5 text-center text-xs leading-relaxed text-accent-2/80">
+      Демо: платёжный шлюз не подключён. Кнопка активирует подписку на выбранный
+      срок без оплаты — это единственный способ проверить привилегии Premium.
+    </p>
+    </>
   );
 }
 
@@ -221,7 +227,7 @@ export function PremiumLoginNote() {
   const account = useAccount();
   if (account) return null;
   return (
-    <p className="mt-4 text-sm text-gold">
+    <p className="mt-4 text-sm text-accent-2">
       Для оформления подписки необходимо{" "}
       <AuthTrigger
         tab="login"
@@ -315,7 +321,7 @@ export function PromoCode() {
           </p>
         )
       ) : (
-        <p className="mt-3 text-sm text-gold/85">Войди в аккаунт, чтобы применить промокод</p>
+        <p className="mt-3 text-sm text-accent-2/85">Войди в аккаунт, чтобы применить промокод</p>
       )}
     </section>
   );

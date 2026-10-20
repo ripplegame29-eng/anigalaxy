@@ -175,7 +175,7 @@ export function ClanTreasury({ clan, game }: { clan: Clan; game: ClanGameState }
             </span>
             <b>{result.loot.entry.label}</b>
             {result.loot.duplicate && <em>уже было в коллекции — выдана компенсация</em>}
-            {result.selfAc ? <em>{num(result.selfAc)} атомов в личную копилку</em> : null}
+            {result.selfAc ? <em>{num(result.selfAc)} AC в личную копилку</em> : null}
           </div>
         )}
         {message && (
@@ -297,8 +297,8 @@ export function ClanTreasury({ clan, game }: { clan: Clan; game: ClanGameState }
       </section>
 
       <p className="text-xs leading-relaxed text-muted">
-        Награды из сундука попадают в общую казну клана, кроме атомов: они уходят в
-        личную копилку открывшего, потому что выдать личные атомы от имени гильдии —
+        Награды из сундука попадают в общую казну клана, кроме AC: они уходят в
+        личную копилку открывшего, потому что выдать личные AC от имени гильдии —
         значит обложить чужие деньги. Повторно выпавший уже купленный предмет
         заменяется компенсацией в 40% его цены.
       </p>

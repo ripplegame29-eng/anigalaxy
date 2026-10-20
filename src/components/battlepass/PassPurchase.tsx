@@ -32,7 +32,7 @@ export function PassPurchase({ premium, level, totals }: PassPurchaseProps) {
       <aside className="bp-buy border border-mint/25" aria-label="Статус пропуска">
         <p className="text-[10px] font-black uppercase tracking-[0.18em] text-mint">Боевой пропуск</p>
         <p className="mt-1 font-display text-lg font-black leading-tight text-white">
-          Premium активен ✓
+          Пропуск активен ✓
         </p>
         <p className="mt-2 text-xs leading-relaxed text-muted">
           Золотая линия открыта целиком: {totals.levels} наградных уровней,{" "}
@@ -45,6 +45,9 @@ export function PassPurchase({ premium, level, totals }: PassPurchaseProps) {
         >
           Управление подпиской
         </Link>
+        <p className="mt-2 text-[10px] leading-snug text-muted">
+          Золотую линию открывает подписка — срок и продление видны в разделе Premium.
+        </p>
       </aside>
     );
   }
@@ -94,7 +97,7 @@ export function PassPurchase({ premium, level, totals }: PassPurchaseProps) {
       </ul>
 
       <Link
-        href="/premium"
+        href="/battlepass/buy"
         className="mt-3 inline-flex w-full items-center justify-center gap-1.5 rounded-xl bg-gradient-to-b from-accent to-accent-2 px-4 py-3 text-sm font-black text-white shadow-[0_8px_26px_-10px_rgba(31,123,255,0.9)] transition hover:brightness-110 motion-reduce:transition-none"
       >
         Купить пропуск →

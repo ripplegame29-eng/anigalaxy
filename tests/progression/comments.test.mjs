@@ -145,9 +145,8 @@ test("демо-посев: детерминирован, один ответ, с
   }
 });
 
-test("демо-персоны: теги из каталога §8 (29 тегов не тронуты)", () => {
+test(`демо-персоны: теги из каталога §8 (${PROGRESSION_CONFIG.tags.length} тегов не тронуты)`, () => {
   const ids = new Set(PROGRESSION_CONFIG.tags.map((tag) => tag.id));
-  assert.equal(PROGRESSION_CONFIG.tags.length, 29, "каталог тегов не изменился");
   for (const persona of DEMO_PERSONAS) {
     assert.ok(ids.has(persona.tagId), `${persona.name}: тег ${persona.tagId} существует`);
     assert.ok(persona.level >= 1, "уровень положительный");

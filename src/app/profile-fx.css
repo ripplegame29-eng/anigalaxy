@@ -1,0 +1,935 @@
+/* ==========================================================================
+   ЭФФЕКТЫ ПРОФИЛЯ — частицы, стили и уровень
+   Модель из макета profile-effects.html: частица одна на профиль (canvas),
+   стили сочетаются классами на корне, уровень — множитель --g/--gd.
+
+   Глитч собран по образцу animeon.cc/user/ayaa. Ключевое отличие от первого
+   варианта: там элементы бьют НЕ одновременно. У каждой группы свой цикл,
+   своя амплитуда и своя задержка — ник, числа, карточки и обломки ловят
+   разные кадры. Именно это даёт «где-то сильнее, где-то нет».
+
+   Все keyframes и длительности перенесены из их таблицы стилей дословно.
+   ========================================================================== */
+
+/* ---------------------------------------------------------------------------
+   Уровень задаёт цикл глитча. Длительности — их стадии: 5.5 → 4.4 → 2.7 с.
+   Мягкий цикл отстаёт от основного, поэтому даже на одном уровне страница
+   не дёргается в унисон.
+   --------------------------------------------------------------------------- */
+.ag-root.fx-lv-1 {
+  --gd-s: 5.5s;
+}
+
+.ag-root.fx-lv-2 {
+  --gd-s: 5.5s;
+}
+
+.ag-root.fx-lv-3 {
+  --gd-s: 4.4s;
+}
+
+/* --------------------------------- Ник ------------------------------------ */
+
+/* Ник — самый «звонкий» элемент: средняя амплитуда, основной цикл, без
+   задержки — он бьёт первым, и остальное подхватывает следом. */
+.ag-root.fx-glitch .ag-pf-hi h1 {
+  position: relative;
+  animation: ag-fx-jitter-mid var(--gd) steps(1) infinite;
+}
+
+.ag-root.fx-glitch .ag-pf-hi h1::before,
+.ag-root.fx-glitch .ag-pf-hi h1::after {
+  content: attr(data-text);
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  user-select: none;
+  mix-blend-mode: screen;
+}
+
+/* Голубой призрак — левее и вверх, красный — правее и вниз */
+.ag-root.fx-glitch .ag-pf-hi h1::before {
+  color: rgba(0, 229, 255, 0.95);
+}
+
+.ag-root.fx-glitch .ag-pf-hi h1::after {
+  color: rgba(255, 0, 64, 0.95);
+}
+
+/* На первом уровне призраки мягкие: жёсткие сразу превращают крупный
+   заголовок в нечитаемое месиво. */
+.ag-root.fx-lv-1.fx-glitch .ag-pf-hi h1::before {
+  animation: ag-fx-ghost-c-soft var(--gd) steps(1) infinite;
+}
+
+.ag-root.fx-lv-1.fx-glitch .ag-pf-hi h1::after {
+  animation: ag-fx-ghost-m-soft var(--gd) steps(1) infinite;
+}
+
+.ag-root.fx-lv-2.fx-glitch .ag-pf-hi h1::before,
+.ag-root.fx-lv-3.fx-glitch .ag-pf-hi h1::before {
+  animation: ag-fx-ghost-c-hard var(--gd) steps(1) infinite;
+}
+
+.ag-root.fx-lv-2.fx-glitch .ag-pf-hi h1::after,
+.ag-root.fx-lv-3.fx-glitch .ag-pf-hi h1::after {
+  animation: ag-fx-ghost-m-hard var(--gd) steps(1) infinite;
+}
+
+/* -------------------------------- Аватар ---------------------------------- */
+
+/* Аватар с рамкой бьёт мягче всего и позже всех: rotateX на рамке сразу
+   видно по сдвигу картинки внутри. */
+.ag-root.fx-glitch .ag-pf-av {
+  animation: ag-fx-break2 var(--gd-s) cubic-bezier(0.7, 0, 0.2, 1) 0.3s infinite;
+}
+
+/* ------------------------------ Чипы и знаки -------------------------------- */
+
+/* Чипы шапки («Новичок», «Уровень N») бьют иначе, чем ник: не сдвигом, а
+   перекосом — skewX даёт «кривую» надпись. У них для этого два разных
+   keyframes: бейдж дрожит цветной тенью, а подпись знака перекашивает. */
+.ag-root.fx-glitch .ag-pf-line .ag-tag {
+  animation: ag-fx-badge-glitch var(--gd-s) steps(1) 0.55s infinite;
+}
+
+.ag-root.fx-glitch .ag-pf-line .ag-tag > b {
+  animation: ag-fx-clabel-soft var(--gd-s) steps(1) 0.55s infinite;
+}
+
+.ag-root.fx-glitch.fx-lv-1 .ag-pf-line .ag-tag {
+  animation: ag-fx-badge-glitch-lite var(--gd-s) steps(1) 0.55s infinite;
+}
+
+.ag-root.fx-glitch.fx-lv-1 .ag-pf-line .ag-tag > b {
+  animation: ag-fx-clabel-soft-lite var(--gd-s) steps(1) 0.55s infinite;
+}
+
+.ag-root.fx-glitch.fx-lv-3 .ag-pf-line .ag-tag > b {
+  animation: ag-fx-clabel-hard var(--gd) steps(1) 0.55s infinite;
+}
+
+/* Чипы в ряд не бьют кучно: шаг 0.55 с, как у них на «a → b → c».
+   Задержку получают и бейдж, и подпись внутри него — иначе второй чип
+   перекашивался бы текстом, пока первый молчал.
+
+   Обёртка `.ag-tag-wrap` (в ней живёт окошко с описанием) стала прямым
+   потомком строки, поэтому `nth-of-type` считаем по ней.
+
+   Селектор с .ag-tag, а не просто `> *`: в этой же строке стоит PREMIUM-тег,
+   и его течение рамки сдвинулось бы вслед за чужим глитчем. */
+.ag-root.fx-glitch .ag-pf-line > .ag-tag-wrap:nth-of-type(2) > .ag-tag,
+.ag-root.fx-glitch .ag-pf-line > .ag-tag-wrap:nth-of-type(2) > .ag-tag > b {
+  animation-delay: 1.1s;
+}
+
+.ag-root.fx-glitch .ag-pf-line > .ag-tag-wrap:nth-of-type(3) > .ag-tag,
+.ag-root.fx-glitch .ag-pf-line > .ag-tag-wrap:nth-of-type(3) > .ag-tag > b {
+  animation-delay: 1.65s;
+}
+
+.ag-root.fx-glitch .ag-pf-line > .ag-tag-wrap:nth-of-type(4) > .ag-tag,
+.ag-root.fx-glitch .ag-pf-line > .ag-tag-wrap:nth-of-type(4) > .ag-tag > b {
+  animation-delay: 2.2s;
+}
+
+/* --------------------------------- Числа ---------------------------------- */
+
+/* У чисел своя поздняя фаза — они отстают от ника примерно на треть цикла,
+   поэтому профиль читается по очереди: заголовок, потом счётчики. */
+.ag-root.fx-glitch .stat-num,
+.ag-root.fx-glitch .ag-pf-sum-grid b,
+.ag-root.fx-glitch .ag-ls-legend b {
+  position: relative;
+  animation: ag-fx-jitter-soft var(--gd-s) steps(1) 1.4s infinite;
+}
+
+.ag-root.fx-glitch .stat-num::before,
+.ag-root.fx-glitch .ag-pf-sum-grid b::before,
+.ag-root.fx-glitch .ag-ls-legend b::before,
+.ag-root.fx-glitch .stat-num::after,
+.ag-root.fx-glitch .ag-pf-sum-grid b::after,
+.ag-root.fx-glitch .ag-ls-legend b::after {
+  content: attr(data-text);
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  user-select: none;
+  mix-blend-mode: screen;
+}
+
+.ag-root.fx-glitch .stat-num::before,
+.ag-root.fx-glitch .ag-pf-sum-grid b::before,
+.ag-root.fx-glitch .ag-ls-legend b::before {
+  color: rgba(0, 229, 255, 0.95);
+  animation: ag-fx-ghost-c-soft var(--gd-s) steps(1) 1.4s infinite;
+}
+
+.ag-root.fx-glitch .stat-num::after,
+.ag-root.fx-glitch .ag-pf-sum-grid b::after,
+.ag-root.fx-glitch .ag-ls-legend b::after {
+  color: rgba(255, 0, 64, 0.95);
+  animation: ag-fx-ghost-m-soft var(--gd-s) steps(1) 1.4s infinite;
+}
+
+/* Внутри одного блока числа тоже не бьют кучно: шаг 0.9 с между соседями,
+   иначе три цифры подряд мигали бок о бок. */
+.ag-root.fx-glitch .ag-pf-sum-grid > div:nth-of-type(2) b,
+.ag-root.fx-glitch .ag-ls-legend li:nth-of-type(2) b {
+  animation-delay: 2.3s;
+}
+
+.ag-root.fx-glitch .ag-pf-sum-grid > div:nth-of-type(3) b,
+.ag-root.fx-glitch .ag-ls-legend li:nth-of-type(3) b {
+  animation-delay: 3.2s;
+}
+
+.ag-root.fx-glitch .ag-ls-legend li:nth-of-type(4) b {
+  animation-delay: 4.1s;
+}
+
+.ag-root.fx-glitch .ag-ls-legend li:nth-of-type(5) b {
+  animation-delay: 5s;
+}
+
+/* ------------------------------ Карточки --------------------------------- */
+
+/* Карточки виджетов ломаются по-разному и идут друг за другом с шагом
+   0.55 с — их схема «a → b → c». Это и есть последовательность: страница
+   не дрожит целиком, а «проезжает» сверху вниз.
+
+   Задержки положительные, как у них: сдвиг фазы виден глазом, отрицательный
+   — нет. На первом уровне разломов нет вовсе, только мягкая дрожь. */
+.ag-root.fx-glitch .ag-wv-card {
+  animation: ag-fx-jitter-soft var(--gd-s) steps(1) 0.8s infinite;
+}
+
+.ag-root.fx-glitch:is(.fx-lv-2, .fx-lv-3) .ag-wv-grid > *:nth-child(3n + 1) {
+  animation: ag-fx-break-a var(--gd) cubic-bezier(0.7, 0, 0.2, 1) 0s infinite;
+}
+
+.ag-root.fx-glitch:is(.fx-lv-2, .fx-lv-3) .ag-wv-grid > *:nth-child(3n + 2) {
+  animation: ag-fx-break-b var(--gd) cubic-bezier(0.7, 0, 0.2, 1) 0.55s infinite;
+}
+
+.ag-root.fx-glitch:is(.fx-lv-2, .fx-lv-3) .ag-wv-grid > *:nth-child(3n + 3) {
+  animation: ag-fx-break-c var(--gd) cubic-bezier(0.65, 0, 0.25, 1) 1.1s infinite;
+}
+
+/* Карточки боковой колонки — в другой момент и слабее: их и так много,
+   и на общем разломе колонка выглядела бы сдвинутой целиком. */
+.ag-root.fx-glitch .ag-pf-lay .ag-card {
+  animation: ag-fx-jitter-soft var(--gd-s) steps(1) 2.1s infinite;
+}
+
+/* ------------------------------- Обломки ---------------------------------- */
+
+/* Обломки-глифы и строки ошибок живут на собственных, более длинных циклах
+   (их --pg-mark-dur 11.85 с и --pg-spark-dur 7.05 с) — благодаря этому они
+   подсвечиваются не в такт остальному, а когда глаз уже отвлёкся. */
+.ag-root .ag-fx-debris {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.ag-root .ag-fx-debris i {
+  position: absolute;
+  font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  mix-blend-mode: screen;
+}
+
+.ag-root .ag-fx-debris i.is-glyph {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: rgba(190, 225, 255, 0.5);
+  text-shadow: 0 0 6px rgba(0, 229, 255, 0.45);
+  animation: ag-fx-debris-flick 11.85s steps(1) infinite;
+}
+
+.ag-root .ag-fx-debris i.is-err {
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  color: rgba(255, 92, 110, 0.6);
+  text-shadow: 0 0 8px rgba(255, 0, 64, 0.4);
+  animation: ag-fx-debris-flick 7.05s steps(1) infinite;
+}
+
+/* Шаг 0.9 с и 1.05 с — обломки появляются не сразу, а лесенкой. */
+.ag-root .ag-fx-debris i:nth-of-type(2) {
+  animation-delay: 0.9s;
+}
+
+.ag-root .ag-fx-debris i:nth-of-type(3) {
+  animation-delay: 1.8s;
+}
+
+.ag-root .ag-fx-debris i:nth-of-type(4) {
+  animation-delay: 2.7s;
+}
+
+.ag-root .ag-fx-debris i:nth-of-type(5) {
+  animation-delay: 1.05s;
+}
+
+.ag-root .ag-fx-debris i:nth-of-type(6) {
+  animation-delay: 2.1s;
+}
+
+.ag-root .ag-fx-debris i:nth-of-type(7) {
+  animation-delay: 3.15s;
+}
+
+@keyframes ag-fx-debris-flick {
+  0%,
+  62% {
+    opacity: 0;
+  }
+  64% {
+    opacity: 1;
+  }
+  68% {
+    opacity: 0.25;
+  }
+  71%,
+  100% {
+    opacity: 0;
+  }
+}
+
+/* ==========================================================================
+   Keyframes — перенесены из animeon.cc. Амплитуда у них трёх уровней:
+   soft ±2px, mid ±3px. Разломы карточек (a/b/c) бьют сильнее всего:
+   rotateX до 34° с цветной тенью и обрезкой по высоте.
+   ========================================================================== */
+
+/* ------------------------------- Keyframes -------------------------------- */
+
+/* Бейдж: дрожит цветной тенью, форма остаётся. Всплеск на 54% — ник в этот
+   момент уже отбил свой, поэтому строка читается по очереди. */
+@keyframes ag-fx-badge-glitch {
+  0%,
+  53.5% {
+    filter: none;
+    transform: translate(0, 0);
+  }
+  54% {
+    filter: drop-shadow(rgba(255, 0, 64, 0.8) 3px 0) drop-shadow(rgba(0, 229, 255, 0.65) -3px 0);
+    transform: translate(-1px, 1px);
+  }
+  56% {
+    filter: drop-shadow(rgba(255, 0, 64, 0.65) -3px 0) drop-shadow(rgba(0, 229, 255, 0.55) 3px 0);
+    transform: translate(1px, -1px);
+  }
+  58% {
+    filter: drop-shadow(rgba(255, 0, 64, 0.75) 4px 0);
+    transform: translate(0, 1px);
+  }
+  60%,
+  83% {
+    filter: none;
+    transform: translate(0, 0);
+  }
+  83.5% {
+    filter: drop-shadow(rgba(0, 229, 255, 0.6) -3px 0) drop-shadow(rgba(255, 0, 64, 0.5) 2px 0);
+    transform: translate(1px, 0);
+  }
+  85%,
+  100% {
+    filter: none;
+    transform: translate(0, 0);
+  }
+}
+
+/* Тот же бейдж без тени: на первом уровне ореол и так цветной, лишняя
+   пара drop-shadow превращала чип в мутное пятно. */
+@keyframes ag-fx-badge-glitch-lite {
+  0%,
+  53.5% {
+    transform: translate(0, 0);
+  }
+  54% {
+    transform: translate(-1px, 1px) skewX(-4deg);
+  }
+  56% {
+    transform: translate(1px, -1px) skewX(3deg);
+  }
+  58% {
+    transform: translate(0, 1px);
+  }
+  60%,
+  83% {
+    transform: translate(0, 0);
+  }
+  83.5% {
+    transform: translate(1px, 0) skewX(-2deg);
+  }
+  85%,
+  100% {
+    transform: translate(0, 0);
+  }
+}
+
+/* Подпись знака: перекос вместо сдвига. Всплеск на 48% — раньше бейджа,
+   поэтому надпись «Новичок» ведёт себя не так, как значок рядом. */
+@keyframes ag-fx-clabel-hard {
+  0%,
+  47% {
+    transform: translate(0, 0);
+    filter: none;
+    opacity: 0.92;
+  }
+  48% {
+    transform: translate(-3px, 1px) skewX(-3deg);
+    filter: drop-shadow(rgba(0, 229, 255, 0.65) -3px 0) drop-shadow(rgba(255, 0, 64, 0.6) 3px 0);
+    opacity: 1;
+  }
+  50% {
+    transform: translate(3px, -1px) skewX(2deg);
+    filter: drop-shadow(rgba(255, 0, 64, 0.55) 2px 0);
+    opacity: 0.45;
+  }
+  52% {
+    transform: translate(-1px, 0);
+    filter: none;
+    opacity: 1;
+  }
+  54%,
+  100% {
+    transform: translate(0, 0);
+    filter: none;
+    opacity: 0.92;
+  }
+}
+
+@keyframes ag-fx-clabel-soft {
+  0%,
+  60% {
+    transform: translate(0, 0);
+    filter: none;
+    opacity: 0.9;
+  }
+  61% {
+    transform: translate(-2px, 1px);
+    filter: drop-shadow(rgba(0, 229, 255, 0.55) -2px 0);
+    opacity: 1;
+  }
+  63% {
+    transform: translate(2px, -1px);
+    filter: drop-shadow(rgba(255, 0, 64, 0.5) 2px 0);
+    opacity: 0.6;
+  }
+  65%,
+  100% {
+    transform: translate(0, 0);
+    filter: none;
+    opacity: 0.9;
+  }
+}
+
+/* Тот же перекос без тени — первый уровень */
+@keyframes ag-fx-clabel-soft-lite {
+  0%,
+  60% {
+    transform: translate(0, 0);
+    opacity: 0.9;
+  }
+  61% {
+    transform: translate(-2px, 1px) skewX(-2deg);
+    opacity: 1;
+  }
+  63% {
+    transform: translate(2px, -1px) skewX(1.5deg);
+    opacity: 0.6;
+  }
+  65%,
+  100% {
+    transform: translate(0, 0);
+    opacity: 0.9;
+  }
+}
+
+/* Средняя амплитуда: всплески на 54% и 83.5% */
+@keyframes ag-fx-jitter-mid {
+  0%,
+  53.5% {
+    transform: translate(0, 0);
+  }
+  54% {
+    transform: translate(-3px, 1px);
+  }
+  55.5% {
+    transform: translate(3px, -2px);
+  }
+  57% {
+    transform: translate(-2px, 2px);
+  }
+  58.5% {
+    transform: translate(1px, 0);
+  }
+  60%,
+  83% {
+    transform: translate(0, 0);
+  }
+  83.5% {
+    transform: translate(3px, 1px);
+  }
+  85% {
+    transform: translate(-2px, -1px);
+  }
+  86.5%,
+  100% {
+    transform: translate(0, 0);
+  }
+}
+
+/* Мягкая амплитуда: ±2px, всплески позже — на 83% и 91.5% */
+@keyframes ag-fx-jitter-soft {
+  0%,
+  82.5% {
+    transform: translate(0, 0);
+  }
+  83% {
+    transform: translate(-2px, 1px);
+  }
+  84.5% {
+    transform: translate(2px, -1px);
+  }
+  86% {
+    transform: translate(-1px, 1px);
+  }
+  87.5%,
+  91% {
+    transform: translate(0, 0);
+  }
+  91.5% {
+    transform: translate(2px, -1px);
+  }
+  93% {
+    transform: translate(-1px, 0);
+  }
+  94.5%,
+  100% {
+    transform: translate(0, 0);
+  }
+}
+
+/* Призраки режут себя по высоте (clip-path) — отсюда ощущение «съехавшей
+   строки», а не просто сдвинутого слова. */
+@keyframes ag-fx-ghost-c-hard {
+  0%,
+  53.5% {
+    opacity: 0;
+    transform: translate(0, 0);
+    clip-path: inset(0);
+  }
+  54% {
+    opacity: 0.95;
+    transform: translate(-7px, 2px);
+    clip-path: inset(0);
+  }
+  55.5% {
+    opacity: 0.55;
+    transform: translate(5px, -3px);
+    clip-path: inset(18% 0 52%);
+  }
+  57% {
+    opacity: 1;
+    transform: translate(-8px, 1px);
+    clip-path: inset(58% 0 8%);
+  }
+  58.5% {
+    opacity: 0.45;
+    transform: translate(4px, 1px);
+    clip-path: inset(8% 0 70%);
+  }
+  60%,
+  83% {
+    opacity: 0;
+    transform: translate(0, 0);
+    clip-path: inset(0);
+  }
+  83.5% {
+    opacity: 0.85;
+    transform: translate(6px, -2px);
+    clip-path: inset(30% 0 40%);
+  }
+  85% {
+    opacity: 0.5;
+    transform: translate(-5px, 1px);
+    clip-path: inset(62% 0 6%);
+  }
+  86.5%,
+  100% {
+    opacity: 0;
+    transform: translate(0, 0);
+    clip-path: inset(0);
+  }
+}
+
+@keyframes ag-fx-ghost-m-hard {
+  0%,
+  53.5% {
+    opacity: 0;
+    transform: translate(0, 0);
+    clip-path: inset(0);
+  }
+  54% {
+    opacity: 0.9;
+    transform: translate(7px, -2px);
+    clip-path: inset(0);
+  }
+  55.5% {
+    opacity: 0.5;
+    transform: translate(-5px, 3px);
+    clip-path: inset(55% 0 12%);
+  }
+  57% {
+    opacity: 0.95;
+    transform: translate(8px, 0);
+    clip-path: inset(10% 0 62%);
+  }
+  58.5% {
+    opacity: 0.4;
+    transform: translate(-4px, -1px);
+    clip-path: inset(70% 0 6%);
+  }
+  60%,
+  83% {
+    opacity: 0;
+    transform: translate(0, 0);
+    clip-path: inset(0);
+  }
+  83.5% {
+    opacity: 0.8;
+    transform: translate(-6px, 1px);
+    clip-path: inset(42% 0 28%);
+  }
+  85% {
+    opacity: 0.45;
+    transform: translate(5px, -1px);
+    clip-path: inset(6% 0 64%);
+  }
+  86.5%,
+  100% {
+    opacity: 0;
+    transform: translate(0, 0);
+    clip-path: inset(0);
+  }
+}
+
+@keyframes ag-fx-ghost-c-soft {
+  0%,
+  82.5% {
+    opacity: 0;
+    transform: translate(0, 0);
+  }
+  83% {
+    opacity: 0.8;
+    transform: translate(-3px, 1px);
+  }
+  84.5% {
+    opacity: 0.45;
+    transform: translate(2px, -1px);
+  }
+  86% {
+    opacity: 0.7;
+    transform: translate(-2px, 0);
+  }
+  87.5%,
+  91% {
+    opacity: 0;
+    transform: translate(0, 0);
+  }
+  91.5% {
+    opacity: 0.65;
+    transform: translate(2px, -1px);
+  }
+  93% {
+    opacity: 0.35;
+    transform: translate(-1.5px, 1px);
+  }
+  94.5%,
+  100% {
+    opacity: 0;
+    transform: translate(0, 0);
+  }
+}
+
+@keyframes ag-fx-ghost-m-soft {
+  0%,
+  82.5% {
+    opacity: 0;
+    transform: translate(0, 0);
+  }
+  83% {
+    opacity: 0.75;
+    transform: translate(3px, -1px);
+  }
+  84.5% {
+    opacity: 0.42;
+    transform: translate(-2px, 1px);
+  }
+  86% {
+    opacity: 0.68;
+    transform: translate(2px, 0);
+  }
+  87.5%,
+  91% {
+    opacity: 0;
+    transform: translate(0, 0);
+  }
+  91.5% {
+    opacity: 0.6;
+    transform: translate(-2px, 1px);
+  }
+  93% {
+    opacity: 0.33;
+    transform: translate(1.5px, -1px);
+  }
+  94.5%,
+  100% {
+    opacity: 0;
+    transform: translate(0, 0);
+  }
+}
+
+/* Разлом аватара: самый мягкий из трёх, с цветной тенью */
+@keyframes ag-fx-break2 {
+  0%,
+  53% {
+    transform: perspective(1000px) rotateX(0deg) rotateY(0deg) rotate(-0.6deg);
+    filter: none;
+  }
+  54% {
+    transform: perspective(1000px) rotateX(13deg) rotateY(-6deg) rotate(0.4deg) translateY(-2px);
+    filter: drop-shadow(rgba(0, 229, 255, 0.4) -3px 0px) drop-shadow(rgba(255, 0, 64, 0.4) 3px 0px);
+  }
+  55.5% {
+    transform: perspective(1000px) rotateX(-5deg) rotateY(4deg) rotate(-1deg);
+    filter: drop-shadow(rgba(255, 0, 64, 0.32) 2px 0px);
+  }
+  57.5% {
+    transform: perspective(1000px) rotateX(3deg) rotateY(-1deg) rotate(-0.4deg);
+    filter: none;
+  }
+  59%,
+  83% {
+    transform: perspective(1000px) rotateX(0deg) rotateY(0deg) rotate(-0.6deg);
+    filter: none;
+  }
+  83.5% {
+    transform: perspective(1000px) rotateX(8deg) rotateY(3deg) rotate(0.3deg) translateY(-1px);
+    filter: drop-shadow(rgba(0, 229, 255, 0.32) -2px 0px);
+  }
+  85%,
+  100% {
+    transform: perspective(1000px) rotateX(0deg) rotateY(0deg) rotate(-0.6deg);
+    filter: none;
+  }
+}
+
+/* Разлом «a»: самый сильный, с обрезкой по высоте */
+@keyframes ag-fx-break-a {
+  0%,
+  52% {
+    transform: perspective(900px) rotateX(0deg) rotate(-1.3deg) translateY(2px);
+    clip-path: inset(-28% -8% 0%);
+    filter: none;
+  }
+  53% {
+    transform: perspective(900px) rotateX(34deg) rotate(0.6deg) translateY(-3px) scale(1.01);
+    clip-path: inset(0 0 38%);
+    filter: drop-shadow(rgba(0, 229, 255, 0.5) -5px 0px) drop-shadow(rgba(255, 0, 64, 0.5) 4px 0px);
+  }
+  54.5% {
+    transform: perspective(900px) rotateX(-12deg) rotate(-2.4deg) translateY(2px);
+    clip-path: inset(44% 0 0);
+    filter: drop-shadow(rgba(255, 0, 64, 0.45) 4px 0px);
+  }
+  56% {
+    transform: perspective(900px) rotateX(8deg) rotate(-0.7deg) translateY(0);
+    clip-path: inset(0 0 12%);
+  }
+  58%,
+  100% {
+    transform: perspective(900px) rotateX(0deg) rotate(-1.3deg) translateY(2px);
+    clip-path: inset(-28% -8% 0%);
+    filter: none;
+  }
+}
+
+/* Разлом «b»: сдвиг по горизонтали */
+@keyframes ag-fx-break-b {
+  0%,
+  54% {
+    transform: perspective(900px) rotateY(0deg) rotate(1.1deg) skewY(0deg);
+    clip-path: inset(0);
+    filter: none;
+  }
+  55% {
+    transform: perspective(900px) rotateY(-28deg) rotate(2deg) skewY(1.6deg) translateX(-5px);
+    clip-path: inset(0 38% 0 0);
+    filter: drop-shadow(rgba(255, 0, 64, 0.5) 5px 0px) drop-shadow(rgba(0, 229, 255, 0.45) -4px 0px);
+  }
+  56.5% {
+    transform: perspective(900px) rotateY(10deg) rotate(0.4deg) skewY(-1deg) translateX(4px);
+    clip-path: inset(0 0 0 40%);
+    filter: drop-shadow(rgba(0, 229, 255, 0.4) -4px 0px);
+  }
+  58% {
+    transform: perspective(900px) rotateY(-4deg) rotate(1.4deg) skewY(0.4deg);
+    clip-path: inset(0 14% 0 0);
+  }
+  60%,
+  100% {
+    transform: perspective(900px) rotateY(0deg) rotate(1.1deg) skewY(0deg);
+    clip-path: inset(0);
+    filter: none;
+  }
+}
+
+/* Разлом «c»: поворот по двум осям */
+@keyframes ag-fx-break-c {
+  0%,
+  50% {
+    transform: perspective(900px) rotateX(0deg) rotateY(0deg) rotate(-2deg) translateY(3px);
+    clip-path: inset(0);
+    filter: none;
+  }
+  51% {
+    transform: perspective(900px) rotateX(-26deg) rotateY(12deg) rotate(-0.4deg) translateY(-4px);
+    clip-path: inset(0 0 0 36%);
+    filter: drop-shadow(rgba(0, 229, 255, 0.55) -5px 0px) drop-shadow(rgba(255, 0, 64, 0.5) 5px 0px);
+  }
+  53% {
+    transform: perspective(900px) rotateX(14deg) rotateY(-8deg) rotate(-3deg) translateY(3px);
+    clip-path: inset(40% 0 0);
+    filter: drop-shadow(rgba(255, 0, 64, 0.45) 4px 0px);
+  }
+  55% {
+    transform: perspective(900px) rotateX(-6deg) rotateY(3deg) rotate(-1.4deg);
+    clip-path: inset(0 0 18%);
+  }
+  57%,
+  100% {
+    transform: perspective(900px) rotateX(0deg) rotateY(0deg) rotate(-2deg) translateY(3px);
+    clip-path: inset(0);
+    filter: none;
+  }
+}
+
+/* ==========================================================================
+   Остальные стили
+   ========================================================================== */
+
+/* Неон: пульс рамки аватара и свечение ника. */
+.ag-root.fx-neon .ag-pf-av .ag-frame,
+.ag-root.fx-neon .ag-frame--md {
+  animation: ag-fx-pulse 2.4s ease-in-out infinite;
+}
+
+.ag-root.fx-neon .ag-pf-hi h1 {
+  text-shadow: 0 0 calc(var(--g) * 6px) var(--accent, #1e8fff),
+    0 0 calc(var(--g) * 18px) var(--accent, #1e8fff);
+}
+
+@keyframes ag-fx-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 calc(var(--g) * 8px) var(--accent, #1e8fff),
+      0 0 calc(var(--g) * 20px) rgba(30, 143, 255, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 calc(var(--g) * 14px) var(--accent-2, #22d3ee),
+      0 0 calc(var(--g) * 38px) rgba(34, 211, 238, 0.55);
+  }
+}
+
+/* Голограмма: сканлайны и бегущий блик поверх всей карточки профиля. */
+.ag-root.fx-holo .ag-pf-full::after,
+.ag-root.fx-holo .ag-pf-wrap::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  opacity: calc(0.25 + var(--g) * 0.12);
+  background: repeating-linear-gradient(
+      0deg,
+      rgba(120, 200, 255, 0.18) 0 1px,
+      transparent 1px 4px
+    ),
+    linear-gradient(115deg, transparent 40%, rgba(160, 220, 255, 0.35) 50%, transparent 60%) 0 0 / 250% 100%;
+  animation: ag-fx-holo 3.2s linear infinite;
+}
+
+@keyframes ag-fx-holo {
+  to {
+    background-position: 0 0, -250% 0;
+  }
+}
+
+/* Перелив ника: бегущий золото-голубой градиент в тексте. */
+.ag-root.fx-foil .ag-pf-hi h1 {
+  background: linear-gradient(110deg, #fff 30%, #ffd978 42%, #fff 54%, #9ad4ff 66%, #fff 78%);
+  background-size: 260% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: ag-fx-foil 3s linear infinite;
+}
+
+@keyframes ag-fx-foil {
+  to {
+    background-position: -260% 0;
+  }
+}
+
+/* Канвас частиц лежит поверх карточки и ничего не перехватывает. */
+.ag-root .pfx-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 5;
+}
+
+/* Пользователь просил меньше движения — эффекты не запускаем вовсе. */
+@media (prefers-reduced-motion: reduce) {
+  .ag-root.fx-glitch .ag-pf-hi h1,
+  .ag-root.fx-glitch .ag-pf-hi h1::before,
+  .ag-root.fx-glitch .ag-pf-hi h1::after,
+  .ag-root.fx-glitch .ag-pf-av,
+  .ag-root.fx-glitch .ag-pf-line .ag-tag,
+  .ag-root.fx-glitch .ag-pf-line .ag-tag > b,
+  .ag-root.fx-glitch .ag-wv-card,
+  .ag-root.fx-glitch .ag-pf-lay .ag-card,
+  .ag-root.fx-glitch .stat-num,
+  .ag-root.fx-glitch .stat-num::before,
+  .ag-root.fx-glitch .stat-num::after,
+  .ag-root.fx-glitch .ag-pf-sum-grid b,
+  .ag-root.fx-glitch .ag-pf-sum-grid b::before,
+  .ag-root.fx-glitch .ag-pf-sum-grid b::after,
+  .ag-root.fx-glitch .ag-ls-legend b,
+  .ag-root.fx-glitch .ag-ls-legend b::before,
+  .ag-root.fx-glitch .ag-ls-legend b::after,
+  .ag-root .ag-fx-debris i,
+  .ag-root.fx-neon .ag-pf-av .ag-frame,
+  .ag-root.fx-neon .ag-frame--md,
+  .ag-root.fx-neon .ag-pf-hi h1,
+  .ag-root.fx-holo .ag-pf-full::after,
+  .ag-root.fx-holo .ag-pf-wrap::after,
+  .ag-root.fx-foil .ag-pf-hi h1 {
+    animation: none !important;
+  }
+}

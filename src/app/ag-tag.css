@@ -56,7 +56,7 @@
   align-items: center;
   gap: 0.5em;
   padding: 0.8em 1.4em;
-  font-family: var(--font-sans), system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-family: var(--font-body);
   font-size: var(--tag-fs);
   font-weight: 800;
   line-height: 1;

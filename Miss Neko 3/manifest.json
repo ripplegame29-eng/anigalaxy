@@ -1,0 +1,375 @@
+{
+  "game": "Miss Neko 3",
+  "appid": 2022180,
+  "source": "https://store.steampowered.com/points/shop/app/2022180",
+  "api": "https://api.steampowered.com/ILoyaltyRewardsService/BatchedQueryRewardItems/v1",
+  "cdn": "https://shared.fastly.steamstatic.com/community_assets/images/items/2022180",
+  "note": "Steam Community items. Property of Valve Corporation and the game's publisher. Personal/fan use only.",
+  "groups": [
+    {
+      "dir": "1 Анимированные аватары",
+      "title": "Animated Avatars",
+      "items": [
+        {
+          "name": "Misaki",
+          "files": [
+            {
+              "file": "misaki.gif",
+              "bytes": 1806547,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2022180/2b76687e49715a75da390cd0ff4f84f5c5382cb2.gif"
+            },
+            {
+              "file": "misaki-1.jpg",
+              "bytes": 20639,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2022180/f3e97b219e82dedd145f9b1f5565f3725c271ca2.jpg"
+            }
+          ]
+        },
+        {
+          "name": "Clarise",
+          "files": [
+            {
+              "file": "clarise.gif",
+              "bytes": 2093847,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2022180/e081bb44f8c79e9b5ae44d1be71aae559d7fcf88.gif"
+            },
+            {
+              "file": "clarise-1.jpg",
+              "bytes": 27524,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2022180/0ee2ec26de1f9db9801339771530d9088b0f5ee8.jpg"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "dir": "2 Рамки аватара",
+      "title": "Avatar Frames",
+      "items": [
+        {
+          "name": "WhiteCat",
+          "files": [
+            {
+              "file": "whitecat.png",
+              "bytes": 348801,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2022180/64c7df7e54649e990d9c79e14dcbd4e89100873a.png"
+            },
+            {
+              "file": "whitecat-1.png",
+              "bytes": 35341,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2022180/37b8bb26a0359cf0c1a8895e2f618d9db062860e.png"
+            }
+          ]
+        },
+        {
+          "name": "OrangeCat",
+          "files": [
+            {
+              "file": "orangecat.png",
+              "bytes": 1336268,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2022180/100f980a8a5bf89ca502228475982a4a3342ddf9.png"
+            },
+            {
+              "file": "orangecat-1.png",
+              "bytes": 39276,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2022180/a5c09bc9f9835e9eccdca98b5046db514e2929f9.png"
+            }
+          ]
+        },
+        {
+          "name": "CalicoCat",
+          "files": [
+            {
+              "file": "calicocat.png",
+              "bytes": 1397120,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2022180/6da3a3291e166745765edce57e97101ebcfff59a.png"
+            },
+            {
+              "file": "calicocat-1.png",
+              "bytes": 38601,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2022180/47c44002245bb5a05f1fbcee053e3440ac3ab665.png"
+            }
+          ]
+        },
+        {
+          "name": "BlackCat",
+          "files": [
+            {
+              "file": "blackcat.png",
+              "bytes": 1049347,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2022180/e908117e85663de8404b9ea6d38bde29ce522ec3.png"
+            },
+            {
+              "file": "blackcat-1.png",
+              "bytes": 33926,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2022180/2b07504f9b7dfcbf25625d7533918e77d77b3fab.png"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "dir": "3 Фоны мини-профиля",
+      "title": "Mini-Profile Backgrounds",
+      "items": [
+        {
+          "name": "Misaki's night",
+          "files": [
+            {
+              "file": "misaki-s-night.jpg",
+              "bytes": 130395,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2022180/e2a067b3cda6002f1cedb001bdafcefc05a1bc44.jpg"
+            },
+            {
+              "file": "misaki-s-night-1.webm",
+              "bytes": 1052769,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2022180/085bf9f32de025daebd74cacb106c1099f1112fb.webm"
+            },
+            {
+              "file": "misaki-s-night-2.mp4",
+              "bytes": 3406684,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2022180/29457e5f72069fbb873de76fedb1fe52709c0a8c.mp4"
+            }
+          ]
+        },
+        {
+          "name": "ClariseShow",
+          "files": [
+            {
+              "file": "clariseshow.jpg",
+              "bytes": 119972,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2022180/e21dd42e9fc11d666a4a69bd7ecede696013ab8a.jpg"
+            },
+            {
+              "file": "clariseshow-1.webm",
+              "bytes": 1738768,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2022180/d46f82904fb304f697ef5864bd86b7da86b8a87f.webm"
+            },
+            {
+              "file": "clariseshow-2.mp4",
+              "bytes": 3606692,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2022180/2a74c457f4bfb72d8633490aa7e825009d310d26.mp4"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "dir": "4 Фоны профиля",
+      "title": "Profile Backgrounds",
+      "items": [
+        {
+          "name": "ClariseShow",
+          "files": [
+            {
+              "file": "clariseshow.jpg",
+              "bytes": 257740,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2022180/885b30abe1447bb625b657e1c69591f6651a01ef.jpg"
+            },
+            {
+              "file": "clariseshow-1.webm",
+              "bytes": 3784975,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2022180/378ad2ba8b743e3b53ba8a8899a2633bcd8938e6.webm"
+            },
+            {
+              "file": "clariseshow-2.mp4",
+              "bytes": 3782858,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2022180/7a607efd136dec22f3e73ff1f577788f8d1f99e3.mp4"
+            },
+            {
+              "file": "clariseshow-3.webm",
+              "bytes": 356497,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2022180/02a9b60ff839a503e61e86ce0884ee65ce1cf654.webm"
+            },
+            {
+              "file": "clariseshow-4.mp4",
+              "bytes": 666114,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2022180/8d986253b1fc6528702ff90ceca1c6cd46c12576.mp4"
+            },
+            {
+              "file": "clariseshow-5.jpg",
+              "bytes": 275070,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2022180/dcb46ea884c6b722feb3dbb81ba0e408a95547fe.jpg"
+            },
+            {
+              "file": "clariseshow-6.webm",
+              "bytes": 4110448,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2022180/9f45f0a23219cb4c99b8d72d4d2fee104185d985.webm"
+            },
+            {
+              "file": "clariseshow-7.mp4",
+              "bytes": 3874508,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2022180/93309fcd2d1989901cc7dce7d9aed8ffcd48f3b7.mp4"
+            },
+            {
+              "file": "clariseshow-8.webm",
+              "bytes": 366146,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2022180/839549142e532b82cf1b307d4178324a619b54c3.webm"
+            },
+            {
+              "file": "clariseshow-9.mp4",
+              "bytes": 711047,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2022180/55bdab2d64cc38c533f03d3b2216540784b563cc.mp4"
+            }
+          ]
+        },
+        {
+          "name": "Dancers in NekoCity",
+          "files": [
+            {
+              "file": "dancers-in-nekocity.jpg",
+              "bytes": 327097,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2022180/a00232adb96ef99e2adbf1995ae73cdec825b83b.jpg"
+            }
+          ]
+        },
+        {
+          "name": "Under the night sky",
+          "files": [
+            {
+              "file": "under-the-night-sky.jpg",
+              "bytes": 301025,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2022180/cbd1b59fb6a8226db4ecb363d42fdcf2c427dc0d.jpg"
+            }
+          ]
+        },
+        {
+          "name": "Neko's Wish",
+          "files": [
+            {
+              "file": "neko-s-wish.jpg",
+              "bytes": 311480,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2022180/f1c8bd14b084dea4a316593bf5aa39289774f735.jpg"
+            }
+          ]
+        },
+        {
+          "name": "Neko Agents",
+          "files": [
+            {
+              "file": "neko-agents.jpg",
+              "bytes": 275473,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2022180/6fd4325de005867ba66f4e8a1b0d4ebae0392ca0.jpg"
+            }
+          ]
+        },
+        {
+          "name": "Maids in the rain",
+          "files": [
+            {
+              "file": "maids-in-the-rain.jpg",
+              "bytes": 279078,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2022180/cdc2a2e84ee6c836a4b66de93831f5ab0e05ba41.jpg"
+            }
+          ]
+        },
+        {
+          "name": "FuwaFuwa Neko",
+          "files": [
+            {
+              "file": "fuwafuwa-neko.jpg",
+              "bytes": 268926,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2022180/b6008085fa3d896d92d0b1da8fc8041c7cb171d0.jpg"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "dir": "5 Анимированные стикеры",
+      "title": "Animated Stickers",
+      "items": [
+        {
+          "name": "BeCool",
+          "files": [
+            {
+              "file": "becool.png",
+              "bytes": 54318,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2022180/6d263f1eaded51f00bbcf0c86a7524206bb8e438.png"
+            },
+            {
+              "file": "becool-1.png",
+              "bytes": 16469,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2022180/b3584e55a4a5a5fae2d39073bb8381ce2e44d8dc.png"
+            }
+          ]
+        },
+        {
+          "name": "Wink",
+          "files": [
+            {
+              "file": "wink.png",
+              "bytes": 130727,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2022180/8bc927e1969c238ebaf2f177990e4f5457d17a16.png"
+            },
+            {
+              "file": "wink-1.png",
+              "bytes": 17841,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2022180/be9d413bc6303a6fb8d584bd9522b34fc8f559a9.png"
+            }
+          ]
+        },
+        {
+          "name": "CatDie",
+          "files": [
+            {
+              "file": "catdie.png",
+              "bytes": 196146,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2022180/9130afd0e19c22d71d10fa8d188ee9b8f8f4faa4.png"
+            },
+            {
+              "file": "catdie-1.png",
+              "bytes": 13344,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2022180/aaaa1985f8f068f5b93645d43ad8a1c245f7a15d.png"
+            }
+          ]
+        },
+        {
+          "name": "CatchHeart",
+          "files": [
+            {
+              "file": "catchheart.png",
+              "bytes": 287272,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2022180/e35b05cba52c6abe7756b5a3c0e6116980c872ea.png"
+            },
+            {
+              "file": "catchheart-1.png",
+              "bytes": 19582,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2022180/44c889d1bd9f62b5e5ff0e6ae85924cda4830bc3.png"
+            }
+          ]
+        },
+        {
+          "name": "ShowUp",
+          "files": [
+            {
+              "file": "showup.png",
+              "bytes": 111612,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2022180/cec4fa9eded24bbdff6c27316ddafd11259f5a2e.png"
+            },
+            {
+              "file": "showup-1.png",
+              "bytes": 14171,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2022180/c247a6be78b3dbec78554b182a3a78a79ff20158.png"
+            }
+          ]
+        },
+        {
+          "name": "Unhappy",
+          "files": [
+            {
+              "file": "unhappy.png",
+              "bytes": 136857,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2022180/12c61de3e5a1edfb535a5e8c05c4e338091a1e07.png"
+            },
+            {
+              "file": "unhappy-1.png",
+              "bytes": 16821,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2022180/8c9994b8550052c7908a0e3c808e2a057df211b1.png"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

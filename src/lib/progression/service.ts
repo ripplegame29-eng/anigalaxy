@@ -385,13 +385,14 @@ export function emit(event: DomainEvent): EmitResult {
   const now = Date.now();
   const current = st.get();
   const tz = current.progress.tz || systemTz();
-  const ctx: EngineCtx = { now, tz, userId: current.progress.userId };
-
   const invalid = prevalidate(event);
   const extras = event.type === "BATTLEPASS_CLAIMED" ? battlepassExtras() : undefined;
-  // Подписка ускоряет квесты и бонус за вход. Аккаунт читается на границе,
-  // а не внутри движка: клиент это значение в событие не передаёт
-  const earnedMult = isPremiumActive(readAccount()) ? PREMIUM_QUEST_MULT : 1;
+  // Подписка ускоряет квесты и бонус за вход, а ещё покрывает одну смену
+  // ника и одну смену цвета. Аккаунт читается на границе, а не внутри
+  // движка: клиент это значение в событие не передаёт
+  const premium = isPremiumActive(readAccount());
+  const earnedMult = premium ? PREMIUM_QUEST_MULT : 1;
+  const ctx: EngineCtx = { now, tz, userId: current.progress.userId, premium };
   let result: EngineResult = invalid
     ? noteRejection(current, event.type, invalid, ctx, cfg)
     : applyEvent(current, event, externalMetrics(), ctx, cfg, extras, earnedMult);

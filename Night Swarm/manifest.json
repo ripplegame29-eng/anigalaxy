@@ -1,0 +1,31 @@
+{
+  "game": "Night Swarm",
+  "appid": 3668370,
+  "source": "https://store.steampowered.com/points/shop/app/3668370",
+  "api": "https://api.steampowered.com/ILoyaltyRewardsService/BatchedQueryRewardItems/v1",
+  "cdn": "https://shared.fastly.steamstatic.com/community_assets/images/items/3668370",
+  "note": "Steam Community items. Property of Valve Corporation and the game's publisher. Personal/fan use only.",
+  "groups": [
+    {
+      "dir": "2 Рамки аватара",
+      "title": "Avatar Frames",
+      "items": [
+        {
+          "name": "Crimson Vein Frame",
+          "files": [
+            {
+              "file": "crimson-vein-frame.png",
+              "bytes": 1194443,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/3668370/92a21a62f1b838298887530f76536dd45e7fc1d6.png"
+            },
+            {
+              "file": "crimson-vein-frame-1.png",
+              "bytes": 45607,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/3668370/f7847daf9ad9e5b27093d5ad601fb4555a426921.png"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,374 @@
+{
+  "game": "HATARUU",
+  "appid": 3946810,
+  "source": "https://store.steampowered.com/points/shop/app/3946810",
+  "api": "https://api.steampowered.com/ILoyaltyRewardsService/BatchedQueryRewardItems/v1",
+  "cdn": "https://shared.fastly.steamstatic.com/community_assets/images/items/3946810",
+  "note": "Steam Community items. Property of Valve Corporation and the game's publisher. Personal/fan use only.",
+  "groups": [
+    {
+      "dir": "1 Анимированные аватары",
+      "title": "Animated Avatars",
+      "items": [
+        {
+          "name": "Nowhere to Run",
+          "files": [
+            {
+              "file": "nowhere-to-run.gif",
+              "bytes": 905469,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/3946810/1b435249a386e40765c47dfa099f33790375c555.gif"
+            },
+            {
+              "file": "nowhere-to-run-1.jpg",
+              "bytes": 31039,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/3946810/3c90c8cbfd7d6fa1b901b2c4c3c16ca89469e211.jpg"
+            }
+          ]
+        },
+        {
+          "name": "In a Passing Glance",
+          "files": [
+            {
+              "file": "in-a-passing-glance.gif",
+              "bytes": 591127,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/3946810/0b18ba2f973628afa28e55209fb3c1302f6660dd.gif"
+            },
+            {
+              "file": "in-a-passing-glance-1.jpg",
+              "bytes": 27109,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/3946810/54fc7e4968e8a27427cdb6d6ffbf39bc161fa855.jpg"
+            }
+          ]
+        },
+        {
+          "name": "Between Dream and Dawn",
+          "files": [
+            {
+              "file": "between-dream-and-dawn.gif",
+              "bytes": 555484,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/3946810/a0c89a4fa32de9d046defcae5f81a48e9a07a028.gif"
+            },
+            {
+              "file": "between-dream-and-dawn-1.jpg",
+              "bytes": 27523,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/3946810/7bd3f13388636530d6684bd8420e6d06c8da9f7e.jpg"
+            }
+          ]
+        },
+        {
+          "name": "Moonlit Smile",
+          "files": [
+            {
+              "file": "moonlit-smile.gif",
+              "bytes": 1094891,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/3946810/16504d25c157a75ce9fd8ba0f7f935b42cf71327.gif"
+            },
+            {
+              "file": "moonlit-smile-1.jpg",
+              "bytes": 31963,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/3946810/9cee341f6f26fec19a8dc575abb080e1cd407dc1.jpg"
+            }
+          ]
+        },
+        {
+          "name": "Destructive Smile",
+          "files": [
+            {
+              "file": "destructive-smile.gif",
+              "bytes": 511726,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/3946810/23dbbf1662f0cd46edce81eb0ebb8ed2ccc976d4.gif"
+            },
+            {
+              "file": "destructive-smile-1.jpg",
+              "bytes": 25831,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/3946810/0d34df5010ef6c5f20f1c85ba57b290c4e74b895.jpg"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "dir": "2 Рамки аватара",
+      "title": "Avatar Frames",
+      "items": [
+        {
+          "name": "Running Through Seven Days",
+          "files": [
+            {
+              "file": "running-through-seven-days.png",
+              "bytes": 406177,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/3946810/cf342fc174095abab066535b12ec39deb2508043.png"
+            },
+            {
+              "file": "running-through-seven-days-1.png",
+              "bytes": 20224,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/3946810/ffa0fffaa8af6052c054d955eee34b6f7734ec8e.png"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "dir": "3 Фоны мини-профиля",
+      "title": "Mini-Profile Backgrounds",
+      "items": [
+        {
+          "name": "Uneasy Crimson Eyes",
+          "files": [
+            {
+              "file": "uneasy-crimson-eyes.jpg",
+              "bytes": 173388,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/3946810/2de720e9314a5d488b0e71dddea1812bb4f07894.jpg"
+            },
+            {
+              "file": "uneasy-crimson-eyes-1.webm",
+              "bytes": 3653265,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/3946810/72d691f1c8da295e2fade80c6bff0e5ce2349305.webm"
+            },
+            {
+              "file": "uneasy-crimson-eyes-2.mp4",
+              "bytes": 2280566,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/3946810/2ac058f553f9bc01fc70c367897c74c2a41ed21a.mp4"
+            }
+          ]
+        },
+        {
+          "name": "Prayer Beneath the Moon",
+          "files": [
+            {
+              "file": "prayer-beneath-the-moon.jpg",
+              "bytes": 206071,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/3946810/07a4733c1c226c101737cc8c4278589404fe92bd.jpg"
+            },
+            {
+              "file": "prayer-beneath-the-moon-1.webm",
+              "bytes": 1572974,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/3946810/6c1abfe123ed2bbd5b17874db62622184681d794.webm"
+            },
+            {
+              "file": "prayer-beneath-the-moon-2.mp4",
+              "bytes": 2249758,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/3946810/6f437c4674bf5894824b3ef322a9b166a6fa6af5.mp4"
+            }
+          ]
+        },
+        {
+          "name": "Moments Together",
+          "files": [
+            {
+              "file": "moments-together.jpg",
+              "bytes": 195566,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/3946810/e9c7f28c8f2dbc42b587018809caeb4a13734778.jpg"
+            },
+            {
+              "file": "moments-together-1.webm",
+              "bytes": 1572431,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/3946810/eb8ebbba1be695b96e938b4d81bce9c5c455b472.webm"
+            },
+            {
+              "file": "moments-together-2.mp4",
+              "bytes": 2436604,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/3946810/bdc399e1586cf7b31c5a87ac06139709fe717569.mp4"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "dir": "4 Фоны профиля",
+      "title": "Profile Backgrounds",
+      "items": [
+        {
+          "name": "Starlight in a Dream",
+          "files": [
+            {
+              "file": "starlight-in-a-dream.jpg",
+              "bytes": 180971,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/3946810/c3fec290b7cd62366a3ca36fea25d07b510a3601.jpg"
+            },
+            {
+              "file": "starlight-in-a-dream-1.webm",
+              "bytes": 2558073,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/3946810/f4506c3d9aad816c05424427e428bfc6fb133523.webm"
+            },
+            {
+              "file": "starlight-in-a-dream-2.mp4",
+              "bytes": 2305995,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/3946810/2fba3a5fd082ea35feb3b66a7ef6b2c25d1f975b.mp4"
+            },
+            {
+              "file": "starlight-in-a-dream-3.webm",
+              "bytes": 339082,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/3946810/e6886a10af6464d0e5a83997e396cb309f3bc4a0.webm"
+            },
+            {
+              "file": "starlight-in-a-dream-4.mp4",
+              "bytes": 914485,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/3946810/bd9b88b7683556a2dd892bc0643f13079ff530da.mp4"
+            }
+          ]
+        },
+        {
+          "name": "Moments in Her Words",
+          "files": [
+            {
+              "file": "moments-in-her-words.jpg",
+              "bytes": 221102,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/3946810/b3bbf814abc78c821a9cb0cbe9af61ebae2d4676.jpg"
+            },
+            {
+              "file": "moments-in-her-words-1.webm",
+              "bytes": 2991549,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/3946810/0f67126734ff309ceb1c92249aa87b6806c0d6e9.webm"
+            },
+            {
+              "file": "moments-in-her-words-2.mp4",
+              "bytes": 2541778,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/3946810/428b8d80ad0263b538926afa71a7561cecb4e2a0.mp4"
+            },
+            {
+              "file": "moments-in-her-words-3.webm",
+              "bytes": 380021,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/3946810/8a8fad02df629c7f67d5c86709dab351457f39bd.webm"
+            },
+            {
+              "file": "moments-in-her-words-4.mp4",
+              "bytes": 853791,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/3946810/eccb56db0d664db8add404018a00722ba7293309.mp4"
+            }
+          ]
+        },
+        {
+          "name": "Always Watching You",
+          "files": [
+            {
+              "file": "always-watching-you.jpg",
+              "bytes": 174944,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/3946810/f6611895a7ca680705186e2afa04c9385430d26e.jpg"
+            },
+            {
+              "file": "always-watching-you-1.webm",
+              "bytes": 3770090,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/3946810/3c33e3e866a9457cf01d5b498f276f4d42745db8.webm"
+            },
+            {
+              "file": "always-watching-you-2.mp4",
+              "bytes": 2664827,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/3946810/b98c3b7a394048429458ff304d1cfe26220d78da.mp4"
+            },
+            {
+              "file": "always-watching-you-3.webm",
+              "bytes": 658559,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/3946810/fb874d9b67ecce014dc03c8f4ccf085c5f6d919f.webm"
+            },
+            {
+              "file": "always-watching-you-4.mp4",
+              "bytes": 774331,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/3946810/ad9cf3c8adf1b9cc7377db4cec20f2155ec83983.mp4"
+            }
+          ]
+        },
+        {
+          "name": "So close yet tender",
+          "files": [
+            {
+              "file": "so-close-yet-tender.jpg",
+              "bytes": 329313,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/3946810/b6c33b08ac7b6d1e80c37f9eaeca42a99563f2cd.jpg"
+            }
+          ]
+        },
+        {
+          "name": "While you slumber",
+          "files": [
+            {
+              "file": "while-you-slumber.jpg",
+              "bytes": 321613,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/3946810/1a7d971d3f3c168c1992e6af1c79971b71c9d6f1.jpg"
+            }
+          ]
+        },
+        {
+          "name": "Your figure in my diary",
+          "files": [
+            {
+              "file": "your-figure-in-my-diary.jpg",
+              "bytes": 305089,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/3946810/4d1ba08903cd627d27d7e5cfa34e2a9742b4df01.jpg"
+            }
+          ]
+        },
+        {
+          "name": "Wishes drifting to the sky",
+          "files": [
+            {
+              "file": "wishes-drifting-to-the-sky.jpg",
+              "bytes": 301810,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/3946810/145ddc0fd73b7811aae9fcf5a59ad1ff4c7031b2.jpg"
+            }
+          ]
+        },
+        {
+          "name": "Hydrangea",
+          "files": [
+            {
+              "file": "hydrangea.jpg",
+              "bytes": 274153,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/3946810/d6b44990870d10f3cae833915fee247ea5ff1fed.jpg"
+            }
+          ]
+        },
+        {
+          "name": "Lily",
+          "files": [
+            {
+              "file": "lily.jpg",
+              "bytes": 276802,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/3946810/07919c64952466d00528552c44214bc796e132d3.jpg"
+            }
+          ]
+        },
+        {
+          "name": "Rose",
+          "files": [
+            {
+              "file": "rose.jpg",
+              "bytes": 272832,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/3946810/adc8bf1bb6c5b565042cb8ad153f89c07c714940.jpg"
+            }
+          ]
+        },
+        {
+          "name": "Night falls slowly",
+          "files": [
+            {
+              "file": "night-falls-slowly.jpg",
+              "bytes": 292689,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/3946810/334161c2f4d2c0b3e2333bbecbade95aa2bec814.jpg"
+            }
+          ]
+        },
+        {
+          "name": "Beneath the sunset glow",
+          "files": [
+            {
+              "file": "beneath-the-sunset-glow.jpg",
+              "bytes": 263640,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/3946810/fee8f4b3695dcd4b563b554fae7cf9935003a4fe.jpg"
+            }
+          ]
+        },
+        {
+          "name": "Sunlight at its finest",
+          "files": [
+            {
+              "file": "sunlight-at-its-finest.jpg",
+              "bytes": 274437,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/3946810/d3c40e478670c9f5cf69c6c7cba991588ddcac96.jpg"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

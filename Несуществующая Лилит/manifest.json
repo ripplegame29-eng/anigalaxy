@@ -1,0 +1,395 @@
+{
+  "game": "The NOexistenceN of Lilith",
+  "appid": 4643090,
+  "source": "https://store.steampowered.com/points/shop/app/4643090",
+  "api": "https://api.steampowered.com/ILoyaltyRewardsService/BatchedQueryRewardItems/v1",
+  "cdn": "https://shared.fastly.steamstatic.com/community_assets/images/items/4643090",
+  "note": "Steam Community items. Property of Valve Corporation and the game's publisher. Personal/fan use only.",
+  "groups": [
+    {
+      "dir": "1 Анимированные аватары",
+      "title": "Animated Avatars",
+      "items": [
+        {
+          "name": "SWEET LILITH",
+          "files": [
+            {
+              "file": "sweet-lilith.gif",
+              "bytes": 1867634,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/4643090/782247923946ef60c11f13855db13e8d4d3f38b8.gif"
+            },
+            {
+              "file": "sweet-lilith.jpg",
+              "bytes": 17423,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/4643090/5517312477e1f001f853f1aac93aff878917a386.jpeg"
+            }
+          ]
+        },
+        {
+          "name": "THINKING LILITH",
+          "files": [
+            {
+              "file": "thinking-lilith.gif",
+              "bytes": 1760612,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/4643090/fdcccbfbc766df3e032c72769f35831de438fd73.gif"
+            },
+            {
+              "file": "thinking-lilith.jpg",
+              "bytes": 18609,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/4643090/37ef511203d8752ccb5f8566a0dbc853eb334d3a.jpeg"
+            }
+          ]
+        },
+        {
+          "name": "SMILING LILITH",
+          "files": [
+            {
+              "file": "smiling-lilith.gif",
+              "bytes": 1299583,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/4643090/8c320621bca524cc0f862afa3ca5a89122661785.gif"
+            },
+            {
+              "file": "smiling-lilith.jpg",
+              "bytes": 17230,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/4643090/887b4e2393c9334ac2fef9b3e70c18cbb879e1a2.jpeg"
+            }
+          ]
+        },
+        {
+          "name": "GIGGLING LILITH",
+          "files": [
+            {
+              "file": "giggling-lilith.gif",
+              "bytes": 1094485,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/4643090/52725af9270a4a56d540f135bda33475ec3729ff.gif"
+            },
+            {
+              "file": "giggling-lilith.jpg",
+              "bytes": 17927,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/4643090/2076ee35112b6f7974e759422a85ab2b2e9f6c83.jpg"
+            }
+          ]
+        },
+        {
+          "name": "GAZING LILITH",
+          "files": [
+            {
+              "file": "gazing-lilith.gif",
+              "bytes": 1358261,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/4643090/00ec8acc76b5831d3c394e9431a6068b4390a7fe.gif"
+            },
+            {
+              "file": "gazing-lilith.jpg",
+              "bytes": 16162,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/4643090/78262cc8826c454526846a5aeb47984140db92ea.jpeg"
+            }
+          ]
+        },
+        {
+          "name": "DROWSY LILITH",
+          "files": [
+            {
+              "file": "drowsy-lilith.gif",
+              "bytes": 1406064,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/4643090/23183fd9f854453575f4a3aec2e4f44bd0e0ced5.gif"
+            },
+            {
+              "file": "drowsy-lilith.jpg",
+              "bytes": 16637,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/4643090/2a250f78f99c74cda08a67d09e35a74238155aad.jpeg"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "dir": "2 Рамки аватара",
+      "title": "Avatar Frames",
+      "items": [
+        {
+          "name": "Winter Snow",
+          "files": [
+            {
+              "file": "winter-snow.png",
+              "bytes": 1487834,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/4643090/a295f9601b77ac2251d0bf7cb1525d59c65061f8.png"
+            },
+            {
+              "file": "winter-snow@2x.png",
+              "bytes": 45380,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/4643090/6a4721ebb4e6e09d8b43634e227f122ca7150568.png"
+            }
+          ]
+        },
+        {
+          "name": "Strawberry Ice-cream",
+          "files": [
+            {
+              "file": "strawberry-ice-cream.png",
+              "bytes": 178270,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/4643090/5cfdcd53eca1325d7e9dfec7c1d8d05acb688924.png"
+            },
+            {
+              "file": "strawberry-ice-cream@2x.png",
+              "bytes": 37789,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/4643090/f4f13ef9b0248d68cd4cc87909ae924cadc951fc.png"
+            }
+          ]
+        },
+        {
+          "name": "Cloud Cotton Candy",
+          "files": [
+            {
+              "file": "cloud-cotton-candy.png",
+              "bytes": 136053,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/4643090/8fe7be4cc81b441ea90578c3fa675e819d9b362b.png"
+            },
+            {
+              "file": "cloud-cotton-candy@2x.png",
+              "bytes": 31553,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/4643090/31e8a31992faea377d91b100cbd48d861348e3a6.png"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "dir": "3 Фоны мини-профиля",
+      "title": "Mini-Profile Backgrounds",
+      "items": [
+        {
+          "name": "My room",
+          "files": [
+            {
+              "file": "my-room.jpg",
+              "bytes": 338065,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/4643090/59a44c860a1a38997fd4edb86e708930afff9206.jpg"
+            },
+            {
+              "file": "my-room.webm",
+              "bytes": 168839,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/4643090/b96169b9d100b5f73045709d0c62cf67df33a97e.webm"
+            },
+            {
+              "file": "my-room.mp4",
+              "bytes": 270510,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/4643090/79680df06d43ae743cb036095b0d306a580022d3.mp4"
+            }
+          ]
+        },
+        {
+          "name": "Lilith & Courtyard",
+          "files": [
+            {
+              "file": "lilith-and-courtyard.jpg",
+              "bytes": 215067,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/4643090/8e0d891cc878ef26cecf5c1d08f07dd8e86b41d4.jpg"
+            },
+            {
+              "file": "lilith-and-courtyard.webm",
+              "bytes": 376487,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/4643090/f28c50713c80c357c5584844adf54e5e5682c44a.webm"
+            },
+            {
+              "file": "lilith-and-courtyard.mp4",
+              "bytes": 3692609,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/4643090/a10758919b26c7a4b1d2ff71eddc4d3b7b6e2d0a.mp4"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "dir": "4 Фоны профиля",
+      "title": "Profile Backgrounds",
+      "items": [
+        {
+          "name": "Your room",
+          "files": [
+            {
+              "file": "your-room.jpg",
+              "bytes": 344616,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/4643090/04ab5d1a698193448c17c905d6a45e4eac539099.jpg"
+            },
+            {
+              "file": "your-room.webm",
+              "bytes": 3136092,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/4643090/04657c1ae9aed95972b91d3ab6f0f3f27d9278dd.webm"
+            },
+            {
+              "file": "your-room.mp4",
+              "bytes": 3141312,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/4643090/5a35c66ea58b78d9f463b466eaa3d126b38ae78f.mp4"
+            },
+            {
+              "file": "your-room-large.webm",
+              "bytes": 393390,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/4643090/484f2dbde95582dabb5056ed0afb7f8bd1676f66.webm"
+            },
+            {
+              "file": "your-room-large.mp4",
+              "bytes": 509936,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/4643090/a34546ad0075759f7fa95dfba72c5a463ec18e17.mp4"
+            }
+          ]
+        },
+        {
+          "name": "Night Sky",
+          "files": [
+            {
+              "file": "night-sky.jpg",
+              "bytes": 282310,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/4643090/bd24e725ac410f667b742fb87968a90029be9485.jpg"
+            }
+          ]
+        },
+        {
+          "name": "My Lilith",
+          "files": [
+            {
+              "file": "my-lilith.jpg",
+              "bytes": 344616,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/4643090/04ab5d1a698193448c17c905d6a45e4eac539099.jpg"
+            }
+          ]
+        },
+        {
+          "name": "Afternoon Tea in the Courtyard",
+          "files": [
+            {
+              "file": "afternoon-tea.jpg",
+              "bytes": 269985,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/4643090/140f0cf328610cf36da19ddcb019a94e52a2995f.jpg"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "dir": "5 Анимированные стикеры",
+      "title": "Animated Stickers",
+      "items": [
+        {
+          "name": "Sing",
+          "files": [
+            {
+              "file": "sing.png",
+              "bytes": 172457,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/4643090/70899e322a4f0c720aff4975c3a2f1eb76f0c16e.png"
+            },
+            {
+              "file": "sing@2x.png",
+              "bytes": 31292,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/4643090/0f3e9ec8c8f01d989a282e8a80b501223928af78.png"
+            }
+          ]
+        },
+        {
+          "name": "Adore",
+          "files": [
+            {
+              "file": "adore.png",
+              "bytes": 278719,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/4643090/3dddcd22098509632449dbe04fe4dc7723a937a0.png"
+            },
+            {
+              "file": "adore@2x.png",
+              "bytes": 28466,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/4643090/e15655c5f11028f73dcf178743a33a4cf4c829c5.png"
+            }
+          ]
+        },
+        {
+          "name": "Complacency",
+          "files": [
+            {
+              "file": "complacency.png",
+              "bytes": 239843,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/4643090/fcb509bb479ff16f35e19e9870a7860af6d5095f.png"
+            },
+            {
+              "file": "complacency@2x.png",
+              "bytes": 26386,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/4643090/db02fa0e096fdc3960665243e39841fef15dbcfb.png"
+            }
+          ]
+        },
+        {
+          "name": "Happy Birthday",
+          "files": [
+            {
+              "file": "happy-birthday.png",
+              "bytes": 214423,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/4643090/8e06fccae465828f422621b439b7fb02765c99e1.png"
+            },
+            {
+              "file": "happy-birthday@2x.png",
+              "bytes": 28064,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/4643090/a61bb91563b6f3f25dc7eb5207a93ef48ef7befb.png"
+            }
+          ]
+        },
+        {
+          "name": "Sleepy",
+          "files": [
+            {
+              "file": "sleepy.png",
+              "bytes": 287339,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/4643090/01f10a872d4b80bd09be32994b0d53a08d8496e1.png"
+            },
+            {
+              "file": "sleepy@2x.png",
+              "bytes": 27035,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/4643090/4056e4b4ed59104b5543f8cbda36de12e2504039.png"
+            }
+          ]
+        },
+        {
+          "name": "Pride",
+          "files": [
+            {
+              "file": "pride.png",
+              "bytes": 273638,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/4643090/d3b457e92f28993c2c2d9f53a5fed104be41b463.png"
+            },
+            {
+              "file": "pride@2x.png",
+              "bytes": 26957,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/4643090/526d6684b2926cf5b2d3733a2aef776721f3c05f.png"
+            }
+          ]
+        },
+        {
+          "name": "Celebration",
+          "files": [
+            {
+              "file": "celebration.png",
+              "bytes": 286179,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/4643090/72653288b3f810f5014aa7ee7456c2c0d2b714e6.png"
+            },
+            {
+              "file": "celebration@2x.png",
+              "bytes": 28315,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/4643090/30856574ad989aadff996e69944b962dee4f5838.png"
+            }
+          ]
+        },
+        {
+          "name": "Downtime",
+          "files": [
+            {
+              "file": "downtime.png",
+              "bytes": 305931,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/4643090/aacbb704583cc03ce80d349464296884133d9ea1.png"
+            },
+            {
+              "file": "downtime@2x.png",
+              "bytes": 27446,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/4643090/97383e677f3ad1b7582fcfc15c3b07583a4fbbb0.png"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

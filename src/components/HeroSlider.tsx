@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { formatRating, kindLabel, statusLabel, statusTone, truncate } from "@/lib/anime";
-import { SHADER_CONTRAST, SHADER_STRENGTH, useQuality } from "@/lib/quality";
+import { HERO_SHARPEN } from "@/lib/quality";
 import { attachSharpen } from "@/lib/video-shader";
 import type { AnimeCard } from "@/lib/types";
 import { Poster } from "./Poster";
@@ -19,14 +19,14 @@ const SLIDE_MS = 7000;
 export function HeroSlider({ items }: { items: AnimeCard[] }) {
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
+  const touchX = useRef<number | null>(null);
   const timer = useRef<ReturnType<typeof setInterval> | null>(null);
   /** Фоновые ролики по индексу слайда (у слайда может не быть своего видео) */
   const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
   /** Канвасы под WebGL-шейдер апскейла (по одному на ролик) */
   const canvasRefs = useRef<(HTMLCanvasElement | null)[]>([]);
-  /** Глобальное качество: оригинал выключает шейдер, HD/4K — включает */
-  const quality = useQuality();
-  const shaderStrength = SHADER_STRENGTH[quality];
+  /** Сила шейдера: было привязано к кнопке под плеером, теперь задано константой */
+  const shaderStrength = HERO_SHARPEN.strength;
 
   const slides = items.filter((i) => i.poster || i.screenshots?.length).slice(0, 6);
 
@@ -57,17 +57,14 @@ export function HeroSlider({ items }: { items: AnimeCard[] }) {
   // Апскейл активного ролика: шейдер забирает кадры у <video> (звук и
   // декодирование остаются там) и рисует результат поверх. Контекст один —
   // при перелистовании старый освобождается, новый навешивается на слайд.
-  // Без WebGL или при качестве «Оригинал» канвас остаётся прозрачным.
+  // Без WebGL канвас остаётся прозрачным, и виден исходный кадр.
   useEffect(() => {
     if (shaderStrength <= 0) return;
     const canvas = canvasRefs.current[index];
     const video = videoRefs.current[index];
     if (!canvas || !video) return;
-    return attachSharpen(canvas, video, {
-      strength: shaderStrength,
-      contrast: SHADER_CONTRAST[quality],
-    });
-  }, [index, quality, shaderStrength]);
+    return attachSharpen(canvas, video, HERO_SHARPEN);
+  }, [index, shaderStrength]);
 
   if (!slides.length) return null;
 
@@ -78,6 +75,15 @@ export function HeroSlider({ items }: { items: AnimeCard[] }) {
       className="relative isolate h-[74vh] min-h-[520px] w-full overflow-hidden sm:h-[78vh] lg:h-[82vh]"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
+      onTouchStart={(e) => {
+        touchX.current = e.touches[0].clientX;
+      }}
+      onTouchEnd={(e) => {
+        if (touchX.current == null) return;
+        const dx = e.changedTouches[0].clientX - touchX.current;
+        touchX.current = null;
+        if (Math.abs(dx) > 50) go(index + (dx < 0 ? 1 : -1));
+      }}
       aria-roledescription="carousel"
       aria-label="Рекомендуемые тайтлы"
     >
@@ -228,6 +234,32 @@ export function HeroSlider({ items }: { items: AnimeCard[] }) {
         </div>
       </div>
 
+      {/* Стрелки: влево/вправо по краям, на телефоне компактнее */}
+      {slides.length > 1 && (
+        <>
+          <button
+            type="button"
+            onClick={() => go(index - 1)}
+            aria-label="Предыдущий слайд"
+            className="absolute left-2 top-1/2 z-20 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-black/40 text-white ring-1 ring-white/15 backdrop-blur transition hover:bg-black/60 hover:ring-white/30 focus-visible:outline-2 focus-visible:outline-accent-2 sm:left-5 sm:h-12 sm:w-12"
+          >
+            <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+              <path d="m15 5-7 7 7 7" />
+            </svg>
+          </button>
+          <button
+            type="button"
+            onClick={() => go(index + 1)}
+            aria-label="Следующий слайд"
+            className="absolute right-2 top-1/2 z-20 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-black/40 text-white ring-1 ring-white/15 backdrop-blur transition hover:bg-black/60 hover:ring-white/30 focus-visible:outline-2 focus-visible:outline-accent-2 sm:right-5 sm:h-12 sm:w-12"
+          >
+            <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+              <path d="m9 5 7 7-7 7" />
+            </svg>
+          </button>
+        </>
+      )}
+
       {/* Навигация: точки по центру снизу */}
       {slides.length > 1 && (
         <div className="absolute bottom-5 left-1/2 z-20 flex -translate-x-1/2 items-center gap-2 sm:bottom-8">
@@ -239,7 +271,7 @@ export function HeroSlider({ items }: { items: AnimeCard[] }) {
                 onClick={() => go(i)}
                 aria-label={`Слайд ${i + 1}`}
                 aria-current={i === index}
-                className="group h-6 w-7 sm:w-12"
+                className="group h-7 w-7 sm:w-12"
               >
                 <span className="block h-[3px] w-full overflow-hidden rounded-full bg-white/20 transition-colors group-hover:bg-white/40">
                   {i === index && (

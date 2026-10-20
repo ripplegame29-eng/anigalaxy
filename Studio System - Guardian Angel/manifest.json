@@ -1,0 +1,425 @@
+{
+  "game": "Studio System : Guardian Angel",
+  "folder": "Studio System - Guardian Angel",
+  "appid": 2194790,
+  "source": "https://store.steampowered.com/points/shop/app/2194790",
+  "api": "https://api.steampowered.com/ILoyaltyRewardsService/BatchedQueryRewardItems/v1",
+  "cdn": "https://shared.fastly.steamstatic.com/community_assets/images/items/2194790",
+  "note": "Steam Community items. Property of Valve Corporation and the game's publisher. Personal/fan use only.",
+  "groups": [
+    {
+      "dir": "1 Анимированные аватары",
+      "title": "Animated Avatars",
+      "items": [
+        {
+          "name": "Becky (Hurt)",
+          "files": [
+            {
+              "file": "becky-hurt.gif",
+              "bytes": 5870,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2194790/60472c275e62f3f4ff4d5aa98bc501accd86099f.gif"
+            },
+            {
+              "file": "becky-hurt-1.jpg",
+              "bytes": 19253,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2194790/d10460c51050d455ff67fdbb48834cbe914f3821.jpg"
+            }
+          ]
+        },
+        {
+          "name": "Jasmine (Portrait)",
+          "files": [
+            {
+              "file": "jasmine-portrait.gif",
+              "bytes": 6106,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2194790/cd149f0b0c22686079af9b86734a6f3406cbb187.gif"
+            },
+            {
+              "file": "jasmine-portrait-1.jpg",
+              "bytes": 35083,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2194790/6ef679d6e9f6c248c9c0e27fcca136e1820dd330.jpg"
+            }
+          ]
+        },
+        {
+          "name": "Becky (Portrait)",
+          "files": [
+            {
+              "file": "becky-portrait.gif",
+              "bytes": 5762,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2194790/817dc60af91943ea7e99f7a245d4e9e94a1b9c69.gif"
+            },
+            {
+              "file": "becky-portrait-1.jpg",
+              "bytes": 31173,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2194790/b0ade41aff91772ded72186b5964e6706ce99072.jpg"
+            }
+          ]
+        },
+        {
+          "name": "Presenter (Portrait)",
+          "files": [
+            {
+              "file": "presenter-portrait.gif",
+              "bytes": 7341,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2194790/8899ea621e5e61e5d413a650b15e70e077041106.gif"
+            },
+            {
+              "file": "presenter-portrait-1.jpg",
+              "bytes": 41362,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2194790/2d684ce5688beeb343f1603e8a9a584d6134824e.jpg"
+            }
+          ]
+        },
+        {
+          "name": "Ghost",
+          "files": [
+            {
+              "file": "ghost.gif",
+              "bytes": 1107754,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2194790/d3d97b7366aaf99ef67a7c0a06b92e4596de971d.gif"
+            },
+            {
+              "file": "ghost-1.jpg",
+              "bytes": 8357,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2194790/39141fedd80c16f2fff64d7a7d4f9b40d4cefdf5.jpg"
+            }
+          ]
+        },
+        {
+          "name": "Wendigo (Portrait)",
+          "files": [
+            {
+              "file": "wendigo-portrait.gif",
+              "bytes": 6585,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2194790/08d37d3cfe84c4d4167637b41c85429e0a1389d6.gif"
+            },
+            {
+              "file": "wendigo-portrait-1.jpg",
+              "bytes": 40773,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2194790/577beef11a5749c1bda866940ced89c1605dc18e.jpg"
+            }
+          ]
+        },
+        {
+          "name": "Tomaro (Portrait)",
+          "files": [
+            {
+              "file": "tomaro-portrait.gif",
+              "bytes": 6816,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2194790/2c50fbf9fdada7016a203e896f76de7de28f69d7.gif"
+            },
+            {
+              "file": "tomaro-portrait-1.jpg",
+              "bytes": 41783,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2194790/bf4a4b1f060ddcd460f131d0b719407e0d69ffe9.jpg"
+            }
+          ]
+        },
+        {
+          "name": "Becky (Fine)",
+          "files": [
+            {
+              "file": "becky-fine.gif",
+              "bytes": 5887,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2194790/295d95dbdc7b7f6254c7271903364435105f9021.gif"
+            },
+            {
+              "file": "becky-fine-1.jpg",
+              "bytes": 18090,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2194790/e6ef5db04f970fb911e6c20d67a99f18c1f2cbbe.jpg"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "dir": "2 Рамки аватара",
+      "title": "Avatar Frames",
+      "items": [
+        {
+          "name": "Chatter (Jasmine)",
+          "files": [
+            {
+              "file": "chatter-jasmine.png",
+              "bytes": 47268,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2194790/3b241ad4ba13e43f1d70c71a7062b4657d036337.png"
+            },
+            {
+              "file": "chatter-jasmine-1.png",
+              "bytes": 11963,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2194790/b7f6664d4a270b41f5ac119a099db5412ba7b747.png"
+            }
+          ]
+        },
+        {
+          "name": "Chatter (Wendigo)",
+          "files": [
+            {
+              "file": "chatter-wendigo.png",
+              "bytes": 44521,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2194790/c195c65380c5ca8dd2e735776d482aab8907c374.png"
+            },
+            {
+              "file": "chatter-wendigo-1.png",
+              "bytes": 10895,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2194790/0abdebb7d058f11a9270308128e8f7da41cebf71.png"
+            }
+          ]
+        },
+        {
+          "name": "Chatter (Tomaro)",
+          "files": [
+            {
+              "file": "chatter-tomaro.png",
+              "bytes": 42516,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2194790/1c82781e507a76a183c132799990b1ca6dfe425e.png"
+            },
+            {
+              "file": "chatter-tomaro-1.png",
+              "bytes": 10684,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2194790/739e34e8aae884207de64a91750cafe84b58d1b0.png"
+            }
+          ]
+        },
+        {
+          "name": "Chatter (Becky)",
+          "files": [
+            {
+              "file": "chatter-becky.png",
+              "bytes": 51026,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2194790/120a9e9158ff542cf2e4718ff33bdbcba3fa9d46.png"
+            },
+            {
+              "file": "chatter-becky-1.png",
+              "bytes": 12834,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2194790/a6413b79db5a8b8e6011263a3ba87d2f987c8376.png"
+            }
+          ]
+        },
+        {
+          "name": "TV Screen",
+          "files": [
+            {
+              "file": "tv-screen.png",
+              "bytes": 621788,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2194790/054e18ad9fd01782a260316f27bf96044e8b5869.png"
+            },
+            {
+              "file": "tv-screen-1.png",
+              "bytes": 50700,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2194790/2f0b595bfbb76aae50b0bada3bc997deb0eebeff.png"
+            }
+          ]
+        },
+        {
+          "name": "Swirly Flowers",
+          "files": [
+            {
+              "file": "swirly-flowers.png",
+              "bytes": 43333,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2194790/5d43e9ecd38279e1467f7a5aa95a984aa75f97a7.png"
+            },
+            {
+              "file": "swirly-flowers-1.png",
+              "bytes": 16266,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2194790/81f75ca82d7165ddf4362aa9ade33868c3d8a3d0.png"
+            }
+          ]
+        },
+        {
+          "name": "Item",
+          "files": [
+            {
+              "file": "item.png",
+              "bytes": 18776,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2194790/18bedb23ecfc6aba45333a73cc19d42cd1748589.png"
+            },
+            {
+              "file": "item-1.png",
+              "bytes": 1736,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2194790/009683485de9167a9c9273553e658808c61966f0.png"
+            }
+          ]
+        },
+        {
+          "name": "Field of Eyes",
+          "files": [
+            {
+              "file": "field-of-eyes.png",
+              "bytes": 63815,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2194790/77e639b0f302fd4dea81834880f60b7d0eca4613.png"
+            },
+            {
+              "file": "field-of-eyes-1.png",
+              "bytes": 6224,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2194790/ee410bca6a41bf00dabfc3dbec456c2a15966a8b.png"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "dir": "3 Фоны мини-профиля",
+      "title": "Mini-Profile Backgrounds",
+      "items": [
+        {
+          "name": "Thinking Becky",
+          "files": [
+            {
+              "file": "thinking-becky.jpg",
+              "bytes": 53440,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2194790/de333b983f7e66cb20fdc426d70c6998784192f6.jpg"
+            },
+            {
+              "file": "thinking-becky-1.webm",
+              "bytes": 106786,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2194790/2dbb657cb37f1fe57fb32c2a5458f87dfee5439e.webm"
+            },
+            {
+              "file": "thinking-becky-2.mp4",
+              "bytes": 106081,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2194790/b4124925c3326426372a57ac6622c0d7ac218015.mp4"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "dir": "4 Фоны профиля",
+      "title": "Profile Backgrounds",
+      "items": [
+        {
+          "name": "Wendigo Solace",
+          "files": [
+            {
+              "file": "wendigo-solace.jpg",
+              "bytes": 260346,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2194790/d3cb3442c1cbbb78eb5422b6840f30b869f7d1d8.jpg"
+            }
+          ]
+        },
+        {
+          "name": "Tomaro Yellows",
+          "files": [
+            {
+              "file": "tomaro-yellows.jpg",
+              "bytes": 207735,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2194790/3e4c1cf37db21d118f717d7664b11924b837a942.jpg"
+            }
+          ]
+        },
+        {
+          "name": "Rebecca \"Becky\" Townshend",
+          "files": [
+            {
+              "file": "rebecca-becky-townshend.jpg",
+              "bytes": 175304,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2194790/5ecfcf1917b5a547aa5f653e1dc0710b676083a7.jpg"
+            }
+          ]
+        },
+        {
+          "name": "Jasmine Campbell",
+          "files": [
+            {
+              "file": "jasmine-campbell.jpg",
+              "bytes": 203715,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2194790/dd450879eeb02db5c107450b4b7da4c8f04ef691.jpg"
+            }
+          ]
+        },
+        {
+          "name": "Status Difference",
+          "files": [
+            {
+              "file": "status-difference.jpg",
+              "bytes": 214632,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2194790/a23b618ed284959998e5e514a3654f6db513a7c8.jpg"
+            },
+            {
+              "file": "status-difference-1.webm",
+              "bytes": 2022816,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2194790/86df8bbfff92b84974564a765ce49709932de286.webm"
+            },
+            {
+              "file": "status-difference-2.mp4",
+              "bytes": 2001082,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2194790/8c8a1e4c3c9c0ed62ee861664c85a853f6eb247f.mp4"
+            },
+            {
+              "file": "status-difference-3.webm",
+              "bytes": 156779,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2194790/084be60c0c86f823d356b8a8a25dae83aa7c85ac.webm"
+            },
+            {
+              "file": "status-difference-4.mp4",
+              "bytes": 157340,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2194790/2ddfb2617a728aa7c80a81700675580aef0d8677.mp4"
+            }
+          ]
+        },
+        {
+          "name": "Viewers Like You",
+          "files": [
+            {
+              "file": "viewers-like-you.jpg",
+              "bytes": 225343,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2194790/fb3817c152c36f662670370ce90c2ab7fbecafe1.jpg"
+            }
+          ]
+        },
+        {
+          "name": "Street",
+          "files": [
+            {
+              "file": "street.jpg",
+              "bytes": 290593,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2194790/cae504077f69d219572db4a81a3299ff435eaa53.jpg"
+            }
+          ]
+        },
+        {
+          "name": "Inventory",
+          "files": [
+            {
+              "file": "inventory.jpg",
+              "bytes": 153112,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2194790/f841bbe09fb7c2d3a756952987186b14f39f6dff.jpg"
+            },
+            {
+              "file": "inventory-1.webm",
+              "bytes": 704726,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2194790/205dfb25f2851b9992dba7719fda2099121da22b.webm"
+            },
+            {
+              "file": "inventory-2.mp4",
+              "bytes": 612756,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2194790/5ce6828f0edd093fb5336ccc7ad70adacf11c525.mp4"
+            },
+            {
+              "file": "inventory-3.webm",
+              "bytes": 73459,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2194790/f050efc91c37e98076fd6abe69e025a99fe66be5.webm"
+            },
+            {
+              "file": "inventory-4.mp4",
+              "bytes": 811909,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2194790/5a647fc4e36da43332e539c2c21dd0956dab2208.mp4"
+            }
+          ]
+        },
+        {
+          "name": "Beach",
+          "files": [
+            {
+              "file": "beach.jpg",
+              "bytes": 208167,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/2194790/e8d723a1831900ddecea3a64618f04143b4e138e.jpg"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

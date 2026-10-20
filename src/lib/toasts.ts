@@ -9,7 +9,7 @@
  * Тосты ничего не начисляют: их собирает `ToastHost` из эффектов движка.
  */
 
-export type ToastKind = "xp" | "level" | "achievement" | "tag" | "quest" | "ac";
+export type ToastKind = "xp" | "level" | "achievement" | "tag" | "quest" | "ac" | "premium";
 
 export interface ToastInput {
   kind: ToastKind;

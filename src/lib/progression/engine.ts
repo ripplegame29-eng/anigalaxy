@@ -25,6 +25,9 @@ import {
 } from "../battlepass/logic";
 import type { BpExtras, BpReward } from "../battlepass/config";
 import { eraFor, levelAcReward, levelFromXp, totalXpFor } from "./curve";
+import { expectedPrice } from "./deals";
+import { displayNameError, nickColorTotal, normalizeNickStyle } from "../nickname";
+import { genreCount, trackGenre } from "./genres";
 import { PROGRESSION_CONFIG } from "./progression.config";
 import { appendEntry, confirmDue, entryKey, hasKey } from "./ledger";
 import { dayIndexFromKey, dayKeyOf, timeParts, weekIndexOf } from "./time";
@@ -47,6 +50,12 @@ export interface EngineCtx {
   tz: string;
   /** id пользователя — входит в ключи идемпотентности */
   userId: string;
+  /**
+   * Активна ли подписка. Кладёт вызывающая сторона (service.ts читает
+   * аккаунт) — в само событие она не входит, чтобы клиент не мог объявить
+   * себя подписчиком: движок сам решает, покрывает ли бонус услугу.
+   */
+  premium?: boolean;
 }
 
 /** Метрики, которые движок не знает сам (живут в сторах: профиль, списки) */
@@ -315,6 +324,37 @@ function grantTag(env: Env, tagId: string, source: string): boolean {
   return true;
 }
 
+/**
+ * Сколько друзей приглашено по документу прогрессии.
+ *
+ * Считаем по журналу: у каждой зарегистрированной по ссылке учётки там есть
+ * своя строка REFERRAL_REGISTERED с ключом `REF:<код>:<ник>`, поэтому
+ * повторная регистрация одного и того же ника не завышает счёт.
+ */
+function referralsInDoc(doc: ProgressDoc): number {
+  let n = 0;
+  for (const entry of doc.ledger) {
+    if (entry.type === "REFERRAL_REGISTERED") n += 1;
+  }
+  return n;
+}
+
+/**
+ * Выдаёт теги, за которые дают рубежи реферальной программы.
+ *
+ * Условие проверяется здесь, а не в интерфейсе: иначе предмет числился бы
+ * открытым в каталоге и пропадал бы из коллекции. Считает от фактического
+ * числа приглашений, поэтому рубеж, пройденный до правки, тоже засчитан.
+ */
+function grantReferralTags(env: Env): void {
+  const friends = referralsInDoc(env.doc);
+  for (const tag of env.cfg.tags) {
+    if (tag.source !== "referral") continue;
+    if (!tag.friends || friends < tag.friends) continue;
+    grantTag(env, tag.id, "referral");
+  }
+}
+
 /** Смена/снятие тега: счётчик дня + рекорд (секрет «Смена облика») */
 function noteTagSwap(env: Env): void {
   env.doc.daily.counts.TAG_EQUIPPED = (env.doc.daily.counts.TAG_EQUIPPED ?? 0) + 1;
@@ -478,6 +518,18 @@ export function resolveMetrics(
     if (tag) rarities.add(tag.rarity);
   }
 
+  /* Мета-достижения считаются по состоянию документа, а не по счётчикам:
+     «все тайные» и «все достижения» по определению зависят от того, что уже
+     открыто. Они обновляются на следующей же переоценке после последнего
+     открытия — это задержка в один проход, а не цикл: само «все достижения»
+     считает только то, что открыто, и себя открыть не может. */
+  const unlockedIds = Object.keys(doc.achievements).filter(
+    (id) => doc.achievements[id]?.unlockedAt,
+  );
+  const hiddenDefs = new Set(cfg.achievements.filter((a) => a.hidden).map((a) => a.id));
+  const openedHidden = unlockedIds.filter((id) => hiddenDefs.has(id)).length;
+  const openedAll = unlockedIds.length;
+
   const metrics: Record<string, number> = {
     ...external,
     LEVEL: doc.progress.level,
@@ -499,6 +551,17 @@ export function resolveMetrics(
     MAX_XP_IN_DAY: c.MAX_XP_IN_DAY ?? 0,
     MAX_TITLES_IN_DAY: c.MAX_TITLES_IN_DAY ?? 0,
     MAX_TAG_SWAPS_IN_DAY: c.MAX_TAG_SWAPS_IN_DAY ?? 0,
+    // рекорд суток в минутах — «24 часа аниме за одни сутки» это ровно 1440
+    MAX_MINUTES_IN_DAY: Math.floor((c.MAX_SECONDS_IN_DAY ?? 0) / 60),
+    GENRE_SHONEN: genreCount(doc.sets.genreTitles, "shonen"),
+    GENRE_FANTASY: genreCount(doc.sets.genreTitles, "fantasy"),
+    SECRETS_DONE: openedHidden,
+    ACHIEVEMENTS_DONE: openedAll,
+    // «Пройти все сезонные события»: сезон пройден, когда пропуск доведён
+    // до последнего уровня. Сейчас сезон один, поэтому это 0 или 1 — и
+    // счётчик останется верным, когда сезонов станет больше.
+    SEASONS_DONE:
+      bpLevelFromXp(doc.battlepass.xp) >= BATTLEPASS.maxLevel ? 1 : 0,
     SECRET_0404: doc.flags.secret0404 ?? 0,
     SECRET_ABYSS: doc.flags.abyss ?? 0,
     FLAGS_LOGO: doc.flags["egg:logo"] ?? 0,
@@ -561,6 +624,7 @@ function rollover(env: Env): void {
       week: env.weekIdx,
       xpActivity: 0,
       xpTotal: 0,
+      secondsWatched: 0,
       counts: {},
       weekCounts: freshWeek ? {} : doc.daily.weekCounts,
     };
@@ -702,6 +766,13 @@ function watchTick(env: Env, event: Extract<DomainEvent, { type: "EPISODE_TICK" 
       doc.counters.SECONDS_WATCHED = (doc.counters.SECONDS_WATCHED ?? 0) + inc;
       doc.daily.counts.WATCH_SECONDS = (doc.daily.counts.WATCH_SECONDS ?? 0) + inc;
       doc.daily.weekCounts.WATCH_SECONDS = (doc.daily.weekCounts.WATCH_SECONDS ?? 0) + inc;
+      // Рекорд суток для «Хроноритма»: держим максимум прямо по ходу дня,
+      // а не на смену даты — иначе достижение открывалось бы на следующий день
+      doc.daily.secondsWatched = (doc.daily.secondsWatched ?? 0) + inc;
+      doc.counters.MAX_SECONDS_IN_DAY = Math.max(
+        doc.counters.MAX_SECONDS_IN_DAY ?? 0,
+        doc.daily.secondsWatched,
+      );
     }
   }
   session.lastAt = env.ctx.now;
@@ -987,6 +1058,9 @@ function dispatch(env: Env, event: DomainEvent): void {
         for (const genre of event.genres) {
           if (genre && !doc.sets.genres.includes(genre)) doc.sets.genres.push(genre);
         }
+        // Счётчик по конкретным жанрам («досмотреть 50 сёнэнов»). Список id
+        // защищён от повторов внутри `trackGenre`.
+        trackGenre(doc.sets.genreTitles, event.titleId, event.genres);
       }
       return;
     }
@@ -1085,6 +1159,21 @@ function dispatch(env: Env, event: DomainEvent): void {
       return;
     }
 
+    case "NICKNAME_RENAMED": {
+      renameNick(env, event);
+      return;
+    }
+
+    case "NICK_COLOR_SET": {
+      applyNickColor(env, event);
+      return;
+    }
+
+    case "TOME_PURCHASED": {
+      purchaseTome(env, event);
+      return;
+    }
+
     case "TAG_EQUIPPED": {
       const tag = cfg.tags.find((t) => t.id === event.tagId);
       if (!tag) {
@@ -1105,6 +1194,63 @@ function dispatch(env: Env, event: DomainEvent): void {
     case "PREMIUM_ACTIVATED": {
       // Premium не даёт XP/AC (§1) — только фиксируем факт
       doc.counters.PREMIUM_ACTIVATED = (doc.counters.PREMIUM_ACTIVATED ?? 0) + 1;
+      return;
+    }
+
+    case "CLAN_CONTRIBUTED": {
+      const amount = Math.floor(event.amount);
+      if (!Number.isFinite(amount) || amount <= 0) {
+        logRejected(env, event.type, "invalid_amount");
+        return;
+      }
+      if (doc.progress.acBalance < amount) {
+        logRejected(env, event.type, "insufficient_ac");
+        return;
+      }
+      doc.progress.acBalance -= amount;
+      appendEntry(doc, {
+        id: `CLAN_CONTRIBUTED:${env.ctx.now}:${doc.ledger.length}`,
+        currency: "AC",
+        type: "CLAN_CONTRIBUTED",
+        source: "CLAN",
+        amount: -amount,
+        status: "confirmed",
+        idempotencyKey: `CLAN_CONTRIBUTED:${env.ctx.now}:${doc.ledger.length}:ac`,
+        createdAt: env.ctx.now,
+      });
+      env.effects.push({
+        type: "AC_SPENT",
+        amount,
+        source: "CLAN",
+        balance: doc.progress.acBalance,
+      });
+      return;
+    }
+
+    case "CLAN_REWARD_CLAIMED": {
+      // Через общий grant: журнал и защита от повторной выдачи уровня
+      grant(env, {
+        currency: "AC",
+        raw: Math.max(0, Math.floor(event.amount)),
+        ruleClass: "EXEMPT",
+        type: "CLAN_LEVEL",
+        source: "CLAN",
+        baseKey: `CLAN_LEVEL:${event.level}`,
+        metadata: { level: event.level },
+      });
+      return;
+    }
+
+    case "CLAN_CHEST_REWARD": {
+      grant(env, {
+        currency: "AC",
+        raw: Math.max(0, Math.floor(event.amount)),
+        ruleClass: "EXEMPT",
+        type: "CLAN_CHEST",
+        source: "CLAN",
+        baseKey: `CLAN_CHEST:${event.key}`,
+        metadata: { key: event.key },
+      });
       return;
     }
 
@@ -1175,6 +1321,47 @@ function dispatch(env: Env, event: DomainEvent): void {
       return;
     }
 
+    case "REFERRAL_REGISTERED": {
+      // Ключ идемпотентности включает ник новичка: повторная регистрация
+      // с того же аккаунта не должна начислять награду дважды
+      const key = `REF:${event.refCode}:${event.newNick}`;
+      if (hasKey(doc, key, "AC")) {
+        logRejected(env, event.type, "already_referred");
+        return;
+      }
+      if (!event.refCode || !event.newNick) {
+        logRejected(env, event.type, "missing_field");
+        return;
+      }
+
+      const xp = cfg.economy.referralXp;
+      const ac = cfg.economy.referralAc;
+      doc.progress.xpTotal += xp;
+      doc.daily.xpTotal += xp;
+      doc.progress.acBalance += ac;
+
+      appendEntry(doc, {
+        id: `${key}@${env.ctx.now}`,
+        currency: "AC",
+        type: "REFERRAL_REGISTERED",
+        source: "REFERRAL",
+        amount: ac,
+        status: "confirmed",
+        idempotencyKey: entryKey(key, "AC"),
+        createdAt: env.ctx.now,
+        metadata: { refCode: event.refCode, newNick: event.newNick, xp },
+      });
+
+      env.effects.push(
+        { type: "AC_GAINED", amount: ac, source: "REFERRAL" },
+        { type: "XP_GAINED", raw: xp, credited: xp, source: "REFERRAL", ruleClass: "EXEMPT", reduced: false },
+      );
+
+      // Новый рубеж мог открыть тег за приглашение — выдаём сразу.
+      grantReferralTags(env);
+      return;
+    }
+
     case "BATTLEPASS_CLAIMED": {
       claimBundle(env, event);
       return;
@@ -1237,8 +1424,89 @@ function claimQuest(env: Env, questId: string): void {
  *
  * Исключения — расходники (`svc_freeze`, смена ника): там у каждого
  * предмета есть `maxOwned`, и лимит считается в общей ветке проверки.
+ * `custom` — постоянные настройки профиля (сейчас блок уровня в
+ * предпросмотре): покупается один раз и навсегда.
  */
-const COSMETIC_ONCE = new Set(["title", "frame", "background", "effect"]);
+const COSMETIC_ONCE = new Set(["title", "frame", "background", "effect", "custom"]);
+
+/**
+ * Покупка тома опыта.
+ *
+ * Отдельная ветка, а не позиция магазина: у тома нет предмета в гардеробе,
+ * есть срок в сутки и порог уровня. XP идёт мимо soft-cap (оплачено),
+ * но AC списывается строго по цене из конфига — клиент цену не диктует.
+ */
+function purchaseTome(
+  env: Env,
+  event: Extract<DomainEvent, { type: "TOME_PURCHASED" }>,
+): void {
+  const { doc, cfg } = env;
+  const tome = cfg.tomes.find((t) => t.id === event.tomeId);
+  if (!tome || tome.enabled === false) {
+    logRejected(env, event.type, "unknown_tome");
+    return;
+  }
+
+  const price = Math.floor(event.price);
+  if (price !== tome.price) {
+    logRejected(env, event.type, "price_mismatch");
+    return;
+  }
+
+  if (tome.fromLevel !== undefined) {
+    const level = levelFromXp(doc.progress.xpTotal, cfg);
+    if (level < tome.fromLevel) {
+      logRejected(env, event.type, "tome_locked");
+      return;
+    }
+  }
+
+  const countKey = `TOME:${tome.id}`;
+  const boughtToday = doc.daily.counts[countKey] ?? 0;
+  if (boughtToday >= (tome.perDay ?? 1)) {
+    logRejected(env, event.type, "tome_daily_limit");
+    return;
+  }
+
+  if (price < 0 || doc.progress.acBalance < price) {
+    logRejected(env, event.type, "insufficient_ac");
+    return;
+  }
+
+  // Ключ включает номер покупки: при perDay > 1 одна база на сутки
+  // заблокировала бы вторую покупку как «уже выдано».
+  const baseKey = `${countKey}:${env.ctx.userId}:${env.dayKey}:${boughtToday}`;
+
+  grant(env, {
+    currency: "AC",
+    raw: -price,
+    ruleClass: "EXEMPT",
+    type: "TOME_PURCHASED",
+    source: countKey,
+    baseKey,
+  });
+
+  const res = grant(env, {
+    currency: "XP",
+    raw: tome.xp,
+    ruleClass: "EXEMPT",
+    type: "TOME_PURCHASED",
+    source: countKey,
+    baseKey,
+    metadata: { tomeId: tome.id, price },
+  });
+
+  if (res.already) return;
+
+  doc.daily.counts[countKey] = boughtToday + 1;
+  doc.purchases.push({ itemId: tome.id, kind: "custom", price, at: env.ctx.now });
+  env.effects.push({
+    type: "AC_SPENT",
+    amount: price,
+    source: tome.id,
+    balance: doc.progress.acBalance,
+  });
+}
 
 function purchase(
   env: Env,
@@ -1251,7 +1519,11 @@ function purchase(
     return;
   }
   const price = Math.floor(event.price);
-  if (price !== item.price) {
+  /* Цену сверяем не с конфигом, а с тем, что движок считает правильным
+   * сейчас: у витрины дня предмет стоит со скидкой. Клиент не может прислать
+   * «свою» скидку — она выводится здесь из того же числа, что и на плашке. */
+  const expected = expectedPrice(cfg.shop, item.id, env.ctx.now);
+  if (price !== expected) {
     logRejected(env, event.type, "price_mismatch");
     return;
   }
@@ -1315,6 +1587,137 @@ function purchase(
   // Тег из магазина попадает в собрание: без этого списание AC «висело» бы
   // в воздухе — предмет должен появиться в документе (один атомарный шаг).
   if (item.kind === "tag") grantTag(env, item.id, "shop");
+}
+
+/* ------------------- Отображаемое имя и его оформление ------------------ */
+
+/** Флаги документа: бонус подписки на каждую из услуг одноразовый */
+const NICK_BONUS_FLAG: Record<string, string> = {
+  svc_nick: "bonus:svc_nick",
+  svc_color: "bonus:svc_color",
+};
+
+/** Подписка покрывает услугу, пока бонус не потрачен */
+function nickBonusLeft(env: Env, itemId: string): boolean {
+  if (!env.ctx.premium) return false;
+  const flag = NICK_BONUS_FLAG[itemId];
+  return (env.doc.flags[flag] ?? 0) < env.cfg.nickname.freeUses;
+}
+
+/**
+ * Цена услуги глазами движка: магазинная (с учётом витрины дня) плюс
+ * наценки за опции, минус бонус подписки. Клиент присылает «сколько он
+ * насчитал» — и движок сверяет со своим ответом, иначе оформление было бы
+ * бесплатным просто потому, что клиент так сказал.
+ */
+function nickServicePrice(env: Env, itemId: string, addons = 0): number {
+  const item = env.cfg.shop.find((i) => i.id === itemId);
+  if (!item) return -1;
+  if (nickBonusLeft(env, itemId)) return 0;
+  return expectedPrice(env.cfg.shop, itemId, env.ctx.now) + addons;
+}
+
+/**
+ * Общая часть обеих услуг: списание AC, запись в покупки и журнал, бонус.
+ * Само имя/оформление движок не хранит — это делает UI в аккаунте и профиле.
+ */
+function chargeNickService(
+  env: Env,
+  itemId: string,
+  price: number,
+  freeUsed: boolean,
+): void {
+  const { doc, cfg } = env;
+  const item = cfg.shop.find((i) => i.id === itemId);
+  if (!item) {
+    logRejected(env, "NICK_SERVICE", "unknown_item");
+    return;
+  }
+  if (price > 0 && doc.progress.acBalance < price) {
+    logRejected(env, "NICK_SERVICE", "insufficient_ac");
+    return;
+  }
+  if (item.maxOwned !== undefined) {
+    const held = doc.purchases.filter((p) => p.itemId === itemId).length;
+    if (held + 1 > item.maxOwned) {
+      logRejected(env, "NICK_SERVICE", "limit_reached");
+      return;
+    }
+  }
+
+  doc.progress.acBalance -= price;
+  doc.purchases.push({ itemId, kind: item.kind, price, at: env.ctx.now });
+  if (freeUsed) {
+    const flag = NICK_BONUS_FLAG[itemId];
+    doc.flags[flag] = (doc.flags[flag] ?? 0) + 1;
+  }
+  if (price > 0) {
+    appendEntry(doc, {
+      id: `SHOP:${env.ctx.userId}:${itemId}:${env.ctx.now}`,
+      currency: "AC",
+      type: "SHOP_PURCHASED",
+      source: "SHOP",
+      amount: -price,
+      status: "confirmed",
+      idempotencyKey: `SHOP:${env.ctx.userId}:${itemId}:${env.ctx.now}`,
+      createdAt: env.ctx.now,
+      metadata: { itemId, kind: item.kind },
+    });
+    env.effects.push({
+      type: "AC_SPENT",
+      amount: price,
+      source: itemId,
+      balance: doc.progress.acBalance,
+    });
+  }
+  env.effects.push({ type: "ITEM_GRANTED", itemId, kind: item.kind });
+}
+
+/** «Смена ника»: правила имени проверяет движок, цену — по конфигу */
+function renameNick(
+  env: Env,
+  event: Extract<DomainEvent, { type: "NICKNAME_RENAMED" }>,
+): void {
+  const name = event.nickname.trim();
+  if (displayNameError(name)) {
+    logRejected(env, event.type, "invalid_nickname");
+    return;
+  }
+  const price = nickServicePrice(env, "svc_nick");
+  if (price < 0) {
+    logRejected(env, event.type, "unknown_item");
+    return;
+  }
+  if (price !== Math.floor(event.price)) {
+    logRejected(env, event.type, "price_mismatch");
+    return;
+  }
+  chargeNickService(env, "svc_nick", price, price === 0);
+}
+
+/**
+ * «Цвет ника»: оформление нормализуется движком, иначе в профиль попал бы
+ * мусор из хранилища (кривой цвет или скорость 0 — и сломанный градиент).
+ */
+function applyNickColor(
+  env: Env,
+  event: Extract<DomainEvent, { type: "NICK_COLOR_SET" }>,
+): void {
+  const style = normalizeNickStyle(event.style);
+  if (style.mode === "def") {
+    logRejected(env, event.type, "empty_style");
+    return;
+  }
+  const price = nickServicePrice(env, "svc_color", nickColorTotal(0, env.cfg.nickname.addons, style));
+  if (price < 0) {
+    logRejected(env, event.type, "unknown_item");
+    return;
+  }
+  if (price !== Math.floor(event.price)) {
+    logRejected(env, event.type, "price_mismatch");
+    return;
+  }
+  chargeNickService(env, "svc_color", price, price === 0);
 }
 
 /* ---------------------------- Реверс награды ---------------------------- */
@@ -1425,6 +1828,10 @@ export function applyEvent(
     const before = unlockedCount(doc);
     recalcLevel(env);
     checkAchievements(env, external);
+    // Теги за рубежи рефералки не зависят от круга — проверка идемпотентна
+    // (выданный тег повторно не выдаётся) и нужна для тех, кто прошёл рубеж
+    // до появления этого правила.
+    grantReferralTags(env);
     syncQuests(env, external);
     if (unlockedCount(doc) === before) break;
   }

@@ -1,0 +1,131 @@
+{
+  "game": "GODSOUL",
+  "appid": 1213300,
+  "source": "https://store.steampowered.com/points/shop/app/1213300",
+  "api": "https://api.steampowered.com/ILoyaltyRewardsService/BatchedQueryRewardItems/v1",
+  "cdn": "https://shared.fastly.steamstatic.com/community_assets/images/items/1213300",
+  "note": "Steam Community items. Property of Valve Corporation and the game's publisher. Personal/fan use only.",
+  "groups": [
+    {
+      "dir": "4 Фоны профиля",
+      "title": "Profile Backgrounds",
+      "items": [
+        {
+          "name": "1Rebellion GodSoul - Faith: Mirage of Water Mirror",
+          "files": [
+            {
+              "file": "1rebellion-godsoul-faith-mirage-of-water-mirror.jpg",
+              "bytes": 344539,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/1213300/ead77cc1e70128b0a53b65098209c875d0b0229e.jpg"
+            },
+            {
+              "file": "1rebellion-godsoul-faith-mirage-of-water-mirror-1.webm",
+              "bytes": 4103904,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/1213300/5aba855446c337d97f8234de758c3c1f7cdd2b7a.webm"
+            },
+            {
+              "file": "1rebellion-godsoul-faith-mirage-of-water-mirror-2.mp4",
+              "bytes": 3984330,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/1213300/36a7401f2f915c661c7b3ade72cca61bb3679fa6.mp4"
+            },
+            {
+              "file": "1rebellion-godsoul-faith-mirage-of-water-mirror-3.webm",
+              "bytes": 1026967,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/1213300/4f614782c5791c0e2396e8473141f16850476e50.webm"
+            },
+            {
+              "file": "1rebellion-godsoul-faith-mirage-of-water-mirror-4.mp4",
+              "bytes": 965187,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/1213300/32c84957770f34c936c529cc25abeb14a41011ad.mp4"
+            },
+            {
+              "file": "1rebellion-godsoul-faith-mirage-of-water-mirror-5.jpg",
+              "bytes": 346418,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/1213300/d18586c1a5b94e04357887dff12f4ef747b518c8.jpg"
+            },
+            {
+              "file": "1rebellion-godsoul-faith-mirage-of-water-mirror-6.webm",
+              "bytes": 4063313,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/1213300/0cf14ee6f9bdcf09f91ecf787bb3d6a9a421ba23.webm"
+            },
+            {
+              "file": "1rebellion-godsoul-faith-mirage-of-water-mirror-7.mp4",
+              "bytes": 3673283,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/1213300/161a8015589ed8209a09e8560e2acb9a593e2efb.mp4"
+            },
+            {
+              "file": "1rebellion-godsoul-faith-mirage-of-water-mirror-8.webm",
+              "bytes": 769269,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/1213300/c3b200d09c22d4b411ff10b1bb1e416e04d87a58.webm"
+            },
+            {
+              "file": "1rebellion-godsoul-faith-mirage-of-water-mirror-9.mp4",
+              "bytes": 924653,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/1213300/c9c5bfb02b00067cc121e05f9b8f9f8abd9ac9af.mp4"
+            }
+          ]
+        },
+        {
+          "name": "RebellionGODSOUL-U No1 handsome",
+          "files": [
+            {
+              "file": "rebelliongodsoul-u-no1-handsome.jpg",
+              "bytes": 329250,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/1213300/b4fad87a6acf8da568a0c18ffca5af9ae90cdbc9.jpg"
+            },
+            {
+              "file": "rebelliongodsoul-u-no1-handsome-1.webm",
+              "bytes": 4173422,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/1213300/760e5e0f00ff23f1464ed4c20f78a69f26b2b1f1.webm"
+            },
+            {
+              "file": "rebelliongodsoul-u-no1-handsome-2.mp4",
+              "bytes": 4108464,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/1213300/8327275912a0249d95de17ed50f19cfef83bb65d.mp4"
+            },
+            {
+              "file": "rebelliongodsoul-u-no1-handsome-3.webm",
+              "bytes": 802882,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/1213300/89a7a7752b97752f77df2277684bfcd157aba886.webm"
+            },
+            {
+              "file": "rebelliongodsoul-u-no1-handsome-4.mp4",
+              "bytes": 1045920,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/1213300/6bf94f24e2cc83eeeed61c9af821fae5507dee83.mp4"
+            }
+          ]
+        },
+        {
+          "name": "8Title: Rebellion GodSoul - Lincy: Tale of Painted Dreams",
+          "files": [
+            {
+              "file": "8title-rebellion-godsoul-lincy-tale-of-painted-dreams.jpg",
+              "bytes": 338816,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/1213300/a9a51f138f62ad84e6e6e1c8dc9847592d23cdc2.jpg"
+            },
+            {
+              "file": "8title-rebellion-godsoul-lincy-tale-of-painted-dreams-1.webm",
+              "bytes": 4179729,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/1213300/dfd17d1932ff8d815d46c6fcea23247cde565a21.webm"
+            },
+            {
+              "file": "8title-rebellion-godsoul-lincy-tale-of-painted-dreams-2.mp4",
+              "bytes": 4038893,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/1213300/cd80a9510d84fb86d572aade20349c7079fe34be.mp4"
+            },
+            {
+              "file": "8title-rebellion-godsoul-lincy-tale-of-painted-dreams-3.webm",
+              "bytes": 1025414,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/1213300/748a79cec6d8e8fefafb3c33cf1fe36cf585b0df.webm"
+            },
+            {
+              "file": "8title-rebellion-godsoul-lincy-tale-of-painted-dreams-4.mp4",
+              "bytes": 970448,
+              "source": "https://shared.fastly.steamstatic.com/community_assets/images/items/1213300/9c332dbf7a4f57645e734cd5208593add302f12d.mp4"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

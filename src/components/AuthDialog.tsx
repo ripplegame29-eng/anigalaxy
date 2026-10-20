@@ -1,10 +1,11 @@
 "use client";
 
-import { useCallback, useState, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { Logo } from "./Logo";
 import {
   loginAccount,
   loginTelegramDemo,
+  loginTelegramVerified,
   registerAccount,
   validateNickname,
   validateEmail,
@@ -236,6 +237,8 @@ export function AuthDialog() {
   const [error, setError] = useState<string | null>(null);
   /** Открыт ли выбор демо-аккаунта Telegram (вкладка «Вход») */
   const [tgOpen, setTgOpen] = useState(false);
+  const [tgRealOpen, setTgRealOpen] = useState(false);
+  const tgContainerRef = useRef<HTMLDivElement | null>(null);
 
   /** Закрытие: сбрасываем ошибку, чтобы она не всплывала при следующем открытии */
   const close = useCallback(() => {
@@ -309,6 +312,53 @@ export function AuthDialog() {
     },
     [close],
   );
+
+  useEffect(() => {
+    if (!tgRealOpen || !tgContainerRef.current) return;
+    const container = tgContainerRef.current;
+    container.innerHTML = "";
+    const botUsername = process.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME || "anigalaxy_bot";
+
+    (window as unknown as { onTelegramAuth?: (user: unknown) => void }).onTelegramAuth = async (user) => {
+      try {
+        const response = await fetch("/api/auth/telegram", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(user),
+        });
+        const data = await response.json();
+        if (!response.ok || !data.ok) {
+          setError(data.error || "Не удалось войти через Telegram");
+          return;
+        }
+        const result = loginTelegramVerified({ nickname: data.nickname, telegram: data.telegram });
+        if (!result.ok) {
+          setError(result.error);
+          return;
+        }
+        setError(null);
+        setTgRealOpen(false);
+        setTgOpen(false);
+        close();
+      } catch {
+        setError("Не удалось связаться с сервером");
+      }
+    };
+
+    const script = document.createElement("script");
+    script.async = true;
+    script.src = "https://telegram.org/js/telegram-widget.js?22";
+    script.setAttribute("data-telegram-login", botUsername);
+    script.setAttribute("data-size", "medium");
+    script.setAttribute("data-userpic", "false");
+    script.setAttribute("data-request-access", "write");
+    script.setAttribute("data-onauth", "onTelegramAuth(user)");
+    container.appendChild(script);
+
+    return () => {
+      container.innerHTML = "";
+    };
+  }, [tgRealOpen, close]);
 
   if (!state.open) return null;
 
@@ -455,6 +505,20 @@ export function AuthDialog() {
                   или
                   <span className="h-px flex-1 bg-white/10" aria-hidden />
                 </div>
+
+                <button
+                  type="button"
+                  onClick={() => setTgRealOpen((value) => !value)}
+                  aria-label="Войти через Telegram"
+                  className="mt-3 flex w-full items-center justify-center gap-2.5 rounded-xl bg-[#2AABEE] px-4 py-3 text-sm font-extrabold text-white transition hover:bg-[#229ED9] active:scale-[0.99]"
+                >
+                  <TelegramIcon className="h-4.5 w-4.5" />
+                  Войти через Telegram
+                </button>
+
+                {tgRealOpen && (
+                  <div ref={tgContainerRef} className="mt-3 flex justify-center rounded-xl border border-white/10 bg-white/[0.03] p-3" />
+                )}
 
                 {!tgOpen ? (
                   <button

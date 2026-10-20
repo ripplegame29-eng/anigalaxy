@@ -25,7 +25,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { AgTag } from "@/components/progression/AgTag";
-import { AvatarView } from "@/components/profile/AvatarView";
+import { AvatarFrame } from "@/components/profile/AvatarFrame";
 import { isPremiumActive } from "@/lib/auth";
 import { FRAMES } from "@/lib/cosmetics";
 import {
@@ -34,6 +34,7 @@ import {
   bpLineTotals,
   bpProgress,
   bpRewardStatus,
+  bpRewards,
   describeReward,
   type BpRewardStatus,
   type BpStatusCtx,
@@ -249,7 +250,7 @@ export function BattlePassView() {
               <span>БОЕВОЙ ПРОПУСК</span>
             </h1>
             <p className="sub">
-              100 уровней, две линии наград и аникойны за активность: XP сайта идёт в пропуск один в
+              100 уровней, две линии наград и AC за активность: XP сайта идёт в пропуск один в
               один, а редкие предметы — рамки, маски и титулы — только за сезон.
             </p>
 
@@ -259,7 +260,7 @@ export function BattlePassView() {
                   ? "МАКСИМУМ"
                   : `${progress.into.toLocaleString("ru-RU")} / ${progress.need.toLocaleString("ru-RU")} XP`}
               </span>
-              <span>{(bp.xp + bpXpFromRewards()).toLocaleString("ru-RU")} XP всего</span>
+              <span>{(bp.xp + bpXpFromRewards(claimables)).toLocaleString("ru-RU")} XP всего</span>
             </div>
             <div className="bp-xpb">
               <i style={{ width: `${Math.round(fraction * 100)}%` }} />
@@ -357,8 +358,18 @@ export function BattlePassView() {
 }
 
 /** Сколько XP даст выдача всех доступных пакетов (для «XP всего») */
-function bpXpFromRewards(): number {
-  return 0;
+function bpXpFromRewards(
+  claimables: Array<{ level: number; line: BattlepassLine }>,
+): number {
+  let total = 0;
+  for (const item of claimables) {
+    const rewards = bpRewards(item.level, item.line);
+    if (!rewards) continue;
+    for (const reward of rewards) {
+      if (reward.kind === "bpXp") total += reward.amount;
+    }
+  }
+  return total;
 }
 
 /* ============================ Статус-бар ================================ */
@@ -379,7 +390,9 @@ function StickyBar({
   return (
     <section
       aria-label="Статус боевого пропуска"
-      className="animate-bp-bar-in fixed inset-x-0 top-16 z-40 px-4 pt-2"
+      /* top-[78px] — высота новой шапки (padding-top 12 + капсула .hi 66).
+         Раньше здесь было top-16: 64 px от прежней фиксированной шапки. */
+      className="animate-bp-bar-in fixed inset-x-0 top-[78px] z-40 px-4 pt-2"
     >
       <div className="bp-panel mx-auto flex max-w-6xl items-center gap-3 px-3 py-2 sm:gap-4 sm:px-4">
         <div className="flex shrink-0 items-baseline gap-1">
@@ -585,13 +598,11 @@ function ExclusiveShowcase({
                     </span>
                   ) : (
                     <span className="flex aspect-[3/2] w-full items-center justify-center bg-[#0c0d16]">
-                      <AvatarView
-                        nickname={nickname}
-                        frameCss={frame?.css}
-                        frameImg={frame?.img}
-                        className="h-20 w-20"
-                        textClass="text-xl"
-                      />
+                      <AvatarFrame
+  nickname={nickname}
+  frame={frame}
+  size="sm"
+/>
                     </span>
                   )}
 

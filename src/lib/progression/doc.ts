@@ -37,8 +37,8 @@ export const EMPTY_DOC: ProgressDoc = Object.freeze({
     createdAt: 0,
   },
   counters: {},
-  sets: { genres: [] },
-  daily: { date: -1, week: -1, xpActivity: 0, xpTotal: 0, counts: {}, weekCounts: {} },
+  sets: { genres: [], genreTitles: {} },
+  daily: { date: -1, week: -1, xpActivity: 0, xpTotal: 0, secondsWatched: 0, counts: {}, weekCounts: {} },
   quests: { day: -1, daily: [], week: -1, weekly: [] },
   battlepass: { season: BATTLEPASS.seasonId, xp: 0, claimed: [] },
   sessions: [],
@@ -95,12 +95,18 @@ export function parseDoc(raw: string): ProgressDoc | null {
         createdAt: num(p.createdAt),
       },
       counters: (obj(parsed.counters) as Record<string, number>) ?? {},
-      sets: { genres: Array.isArray(sets.genres) ? (sets.genres as string[]) : [] },
+      sets: {
+        genres: Array.isArray(sets.genres) ? (sets.genres as string[]) : [],
+        // документы, сохранённые до появления счётчика по жанрам, отдадут
+        // сюда undefined — это нормально, а не поломка
+        genreTitles: (obj(sets.genreTitles) as Record<string, string[]>) ?? {},
+      },
       daily: {
         date: num(daily.date, -1),
         week: num(daily.week, -1),
         xpActivity: Math.max(0, num(daily.xpActivity)),
         xpTotal: Math.max(0, num(daily.xpTotal)),
+        secondsWatched: Math.max(0, num(daily.secondsWatched)),
         counts: (obj(daily.counts) as Record<string, number>) ?? {},
         weekCounts: (obj(daily.weekCounts) as Record<string, number>) ?? {},
       },

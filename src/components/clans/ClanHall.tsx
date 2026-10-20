@@ -13,7 +13,6 @@ import {
   toNextLevel,
   type Clan,
 } from "@/lib/clans";
-import { LevelRing } from "@/components/clans/LevelRing";
 
 /**
  * Зал клана — сетка вкладов по мотивам ратуши из Clash of Clans.
@@ -111,6 +110,16 @@ export function ClanHall({ clan, ac }: { clan: Clan; ac: number }) {
     if (reward) setPicked(reward.label);
   };
 
+  /* Если клан перескочил несколько уровней за один вклад, в списке видны
+     только последние восемь — «Забрать все» не даёт потерять нижние награды. */
+  const onClaimAll = () => {
+    let count = 0;
+    for (const item of pending) {
+      if (claimLevelReward(item)) count += 1;
+    }
+    if (count > 0) setPicked(`Награды за ${count} ур.`);
+  };
+
   const canDonate = ac > 0 && cells.some((value, i) => value < levelInfo(i + 1).goal);
 
   return (
@@ -140,7 +149,9 @@ export function ClanHall({ clan, ac }: { clan: Clan; ac: number }) {
               </div>
               <div className="text-[10px] uppercase tracking-wider text-muted">вложено всего</div>
             </div>
-            <LevelRing clan={clan} />
+            {/* Кружок с уровнем убран: он дублировал «Уровень {level}» из
+                заголовка слева и съедал ширину у сетки клеток. Номер уровня
+                остаётся в заголовке, прогресс — в полосе под сеткой. */}
           </div>
         </div>
 
@@ -206,7 +217,7 @@ export function ClanHall({ clan, ac }: { clan: Clan; ac: number }) {
 
           <div className="flex items-baseline justify-between rounded-xl bg-white/5 px-4 py-3 ring-1 ring-white/10">
             <span className="text-sm text-muted">Твоя валюта</span>
-            <span className="font-accent text-lg font-extrabold tabular-nums text-gold">{num(ac)}</span>
+            <span className="font-accent text-lg font-extrabold tabular-nums text-accent-2">{num(ac)}</span>
           </div>
 
           <ul className="mt-3 space-y-1.5 text-xs text-muted">
@@ -257,11 +268,21 @@ export function ClanHall({ clan, ac }: { clan: Clan; ac: number }) {
           className="cl-reveal cl-panel p-5"
           style={{ ["--c" as string]: clan.color }}
         >
-          <div className="mb-3 flex items-center justify-between">
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
             <h3 className="cl-lbl !mb-0">Награды за уровни</h3>
             {pending.length > 0 && (
-              <span className="rounded-md bg-accent px-2 py-0.5 text-[10px] font-bold text-white">
-                {pending.length} доступно
+              <span className="flex items-center gap-2">
+                <span className="rounded-md bg-accent px-2 py-0.5 text-[10px] font-bold text-white">
+                  {pending.length} доступно
+                </span>
+                <button
+                  type="button"
+                  onClick={onClaimAll}
+                  className="cl-btn sm !py-1 !text-[11px]"
+                  style={{ ["--c" as string]: clan.color }}
+                >
+                  Забрать все
+                </button>
               </span>
             )}
           </div>

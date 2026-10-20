@@ -5,10 +5,12 @@ import { useAccount } from "@/lib/use-account";
 import { PREMIUM_CLAN_MULT, PREMIUM_QUEST_MULT } from "@/lib/premium-perks";
 
 export {
+  FREE_HQ_EPISODES,
   PREMIUM_CLAN_MULT,
   PREMIUM_PERKS,
   PREMIUM_QUEST_MULT,
   PREMIUM_QUALITIES,
+  hqFreeForEpisode,
   qualityNeedsPremium,
   type PremiumPerk,
 } from "@/lib/premium-perks";

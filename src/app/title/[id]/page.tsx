@@ -1,10 +1,12 @@
+import { NextEpisode } from "@/components/NextEpisode";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Breadcrumbs } from "@/components/Breadcrumbs";
+import { ReadMore } from "@/components/ReadMore";
 import { Poster } from "@/components/Poster";
 import { AnimeRow } from "@/components/AnimeRow";
 import { WatchBox } from "@/components/WatchBox";
+import { WatchButton } from "@/components/WatchButton";
 import { TitleActions } from "@/components/TitleActions";
 import { FranchiseTimeline, type FranchiseItem } from "@/components/FranchiseTimeline";
 import { ScreenshotsGallery } from "@/components/ScreenshotsGallery";
@@ -27,6 +29,7 @@ import {
 import {
   screenshots as shikimoriScreenshots,
   trailer as shikimoriTrailer,
+  nextEpisode as shikimoriNextEpisode,
 } from "@/lib/shikimori";
 
 interface PageParams {
@@ -72,6 +75,15 @@ export async function generateMetadata({ params }: PageParams): Promise<Metadata
   }
 }
 
+/** Нейтральный чип показателя (год, длительность, серии) */
+function Chip({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="inline-flex items-center rounded-xl bg-white/[0.05] px-3.5 py-2 text-sm font-bold tabular-nums text-white/85 ring-1 ring-white/[0.09]">
+      {children}
+    </span>
+  );
+}
+
 /* ----------------------------- Страница ---------------------------- */
 
 export default async function TitlePage({ params }: PageParams) {
@@ -87,13 +99,14 @@ export default async function TitlePage({ params }: PageParams) {
   if (!detail) notFound();
 
   // Озвучки, похожие, франшиза, кадры и трейлер грузим параллельно с деталями
-  const [translations, similarCards, franchiseCards, shots, trailerVideo] =
+  const [translations, similarCards, franchiseCards, shots, trailerVideo, upcoming] =
     await Promise.all([
       getTranslations(id).catch(() => []),
       similar(detail.card).catch(() => []),
       franchise(detail.card).catch(() => []),
       shikimoriScreenshots(detail.card.shikimoriId).catch(() => []),
       shikimoriTrailer(detail.card.shikimoriId, detail.card.title).catch(() => null),
+      shikimoriNextEpisode(detail.card.shikimoriId).catch(() => null),
     ]);
 
   const card = detail.card;
@@ -116,24 +129,81 @@ export default async function TitlePage({ params }: PageParams) {
     ? shots
     : (card.screenshots ?? []).map((url) => ({ url, thumb: url }));
 
+  // Год, длительность и серии показаны чипами справа, статус — плашкой над
+  // названием; здесь только то, чего нигде больше нет.
   const metaRows: { label: string; value: string }[] = [
-    ...(card.year ? [{ label: "Год выпуска", value: String(card.year) }] : []),
     ...(kindLabel(card.kind) ? [{ label: "Тип", value: kindLabel(card.kind)! }] : []),
-    ...(statusLabel(card.status) ? [{ label: "Статус", value: statusLabel(card.status)! }] : []),
-    ...(card.lastEpisode
-      ? [
-          {
-            label: "Эпизоды",
-            value: card.episodesTotal
-              ? `${card.episodesAired ?? card.lastEpisode} / ${card.episodesTotal}`
-              : `вышло ${card.lastEpisode}`,
-          },
-        ]
-      : []),
-    ...(card.duration ? [{ label: "Длительность", value: `${card.duration} мин.` }] : []),
-    ...(card.studios?.length ? [{ label: "Студии", value: card.studios.join(", ") }] : []),
+    ...(card.studios?.length ? [{ label: "Студия", value: card.studios.join(", ") }] : []),
     ...(card.translation ? [{ label: "Озвучка", value: card.translation }] : []),
   ];
+
+  /* ---------- «Особенности» и «Частые вопросы» — только из реальных данных ---------- */
+  const voices = translations.filter((t) => t.type === "voice");
+  const episodesNow = card.episodesAired ?? card.lastEpisode;
+  const episodesLine = card.episodesTotal
+    ? card.status === "released"
+      ? `${card.episodesTotal} серий`
+      : `вышло ${episodesNow ?? 0} из ${card.episodesTotal} серий`
+    : episodesNow
+      ? `вышло ${episodesNow} серий`
+      : null;
+
+  const features: string[] = [];
+  if (episodesLine)
+    features.push(
+      card.status === "ongoing"
+        ? `Выходит прямо сейчас: ${episodesLine}`
+        : card.status === "anons"
+          ? "Анонсировано — серии появятся после выхода"
+          : `Завершено: ${episodesLine}`,
+    );
+  if (card.duration) features.push(`Длительность серии — около ${card.duration} мин.`);
+  if (card.studios?.length) features.push(`Студия: ${card.studios.join(", ")}`);
+  if (voices.length)
+    features.push(`Доступно озвучек: ${voices.length} — выбирайте в плеере ниже`);
+  if (rating)
+    features.push(
+      `Оценка зрителей ${rating} из 10${votes ? ` (${votes} оценок)` : ""}`,
+    );
+  if (franchiseItems.length > 1) features.push(`Часть франшизы из ${franchiseItems.length} тайтлов`);
+  if (card.genres.length) features.push(`Жанры: ${card.genres.slice(0, 4).join(", ")}`);
+
+  const faq: { q: string; a: string }[] = [];
+  if (episodesLine)
+    faq.push({
+      q: `Сколько серий в аниме «${card.title}»?`,
+      a:
+        card.status === "ongoing"
+          ? `Сейчас ${episodesLine}. Аниме ещё выходит — новые серии появляются на странице по мере выхода.`
+          : `${episodesLine[0].toUpperCase()}${episodesLine.slice(1)}.`,
+    });
+  if (card.status)
+    faq.push({
+      q: "Завершено ли аниме?",
+      a:
+        card.status === "ongoing"
+          ? "Нет, тайтл ещё выходит. Добавьте его в «Смотрю», чтобы не потерять место."
+          : card.status === "anons"
+            ? "Пока это анонс: серии ещё не вышли."
+            : "Да, тайтл завершён — все серии доступны для просмотра.",
+    });
+  if (voices.length)
+    faq.push({
+      q: "Какие озвучки доступны?",
+      a: `${voices
+        .slice(0, 8)
+        .map((v) => v.title)
+        .join(", ")}${voices.length > 8 ? ` и ещё ${voices.length - 8}` : ""}. Переключать озвучку можно в плеере.`,
+    });
+  faq.push({
+    q: `Где смотреть «${card.title}» онлайн?`,
+    a: "Прямо на этой странице: плеер ниже с выбором источника, озвучки и серии. Место просмотра запоминается, поэтому можно продолжить с нужной серии.",
+  });
+  if (similarCards.length)
+    faq.push({
+      q: "Что посмотреть после этого аниме?",
+      a: `Ниже на странице — подборка похожих тайтлов (${similarCards.length}).`,
+    });
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -158,8 +228,8 @@ export default async function TitlePage({ params }: PageParams) {
   return (
     <>
       {/* ------------------------- Шапка тайтла ------------------------- */}
-      <section className="relative isolate overflow-hidden border-b border-line">
-        {/* Размытый фон из кадров/постера */}
+      <section className="relative isolate overflow-hidden">
+        {/* Фон: кадр/постер, сильно размытый и затемнённый до цвета сайта */}
         <div className="absolute inset-0 -z-10" aria-hidden>
           {backdrop && (
             <Poster
@@ -167,112 +237,116 @@ export default async function TitlePage({ params }: PageParams) {
               alt=""
               priority
               sizes="100vw"
-              className="scale-110 object-cover opacity-30 blur-2xl"
+              className="scale-110 object-cover opacity-25 blur-3xl"
             />
           )}
-          <div className="absolute inset-0 bg-gradient-to-b from-ink/60 via-ink/85 to-ink" />
+          <div className="absolute inset-0 bg-gradient-to-b from-ink/55 via-ink/90 to-ink" />
+          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent/50 to-transparent" />
         </div>
 
-        <div className="mx-auto max-w-7xl px-4 py-7 sm:px-6 sm:py-9">
-          <Breadcrumbs
-            items={[
-              ...(kindLabel(card.kind) ? [{ label: kindLabel(card.kind)!, href: `/catalog?kind=${card.kind}` }] : []),
-              { label: card.title },
-            ]}
-          />
-
-          <div className="grid gap-6 md:grid-cols-[280px_minmax(0,1fr)] md:gap-8 lg:grid-cols-[330px_minmax(0,1fr)]">
-            {/* Постер — крупный акцентный блок, как на референсе */}
-            <div className="w-[170px] sm:w-[210px] md:w-full">
-              <div className="group relative aspect-[2/3] overflow-hidden rounded-2xl bg-card ring-1 ring-white/12 shadow-[0_40px_90px_-40px_rgba(0,0,0,1)] transition duration-300 hover:ring-accent/45 hover:shadow-[0_50px_110px_-45px_rgba(31,123,255,0.6)]">
+        <div className="mx-auto max-w-7xl px-4 pb-8 pt-8 sm:px-6 sm:pb-10 sm:pt-10">
+          <div className="grid gap-7 md:grid-cols-[260px_minmax(0,1fr)] md:gap-9 lg:grid-cols-[320px_minmax(0,1fr)] lg:gap-12">
+            {/* ===== Левая колонка: постер, действия, сведения ===== */}
+            <aside className="mx-auto w-[210px] space-y-3 sm:w-[240px] md:mx-0 md:w-full">
+              <div className="group relative aspect-[2/3] overflow-hidden rounded-3xl bg-card ring-1 ring-white/12 shadow-[0_40px_90px_-40px_rgba(0,0,0,1)] transition duration-300 hover:ring-accent/45 hover:shadow-[0_50px_110px_-45px_rgba(43,127,255,0.55)]">
                 <Poster
                   src={card.poster}
                   alt={card.title}
                   title={card.title}
                   priority
-                  sizes="(max-width: 768px) 210px, (max-width: 1024px) 280px, 330px"
-                  className="object-cover transition-transform duration-500 group-hover:scale-[1.06]"
+                  sizes="(max-width: 768px) 240px, (max-width: 1024px) 260px, 320px"
+                  className="object-cover transition-transform duration-500 group-hover:scale-[1.05]"
                 />
-
-                {/* Оверлей при наведении */}
-                <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink via-ink/35 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-              </div>
-            </div>
-
-            {/* Информация */}
-            <div className="min-w-0 animate-fade-up">
-              <div className="mb-3 flex flex-wrap items-center gap-2">
-                {statusLabel(card.status) && (
-                  <span className={`rounded-md px-2.5 py-1 text-xs font-bold ring-1 backdrop-blur ${statusTone(card.status)}`}>
-                    {statusLabel(card.status)}
-                  </span>
-                )}
-                {kindLabel(card.kind) && (
-                  <span className="rounded-md bg-white/8 px-2.5 py-1 text-xs font-semibold text-white/75 ring-1 ring-white/10">
-                    {kindLabel(card.kind)}
-                  </span>
-                )}
-                {card.year && (
-                  <span className="rounded-md bg-white/8 px-2.5 py-1 text-xs font-semibold text-white/75 ring-1 ring-white/10">
-                    {card.year}
-                  </span>
-                )}
-                {card.lastEpisode ? (
-                  <span className="rounded-md bg-white/8 px-2.5 py-1 text-xs font-semibold text-white/75 ring-1 ring-white/10">
-                    {card.lastEpisode} серий
-                  </span>
-                ) : null}
+                <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/55 to-transparent" />
               </div>
 
-              <h1 className="text-2xl font-extrabold leading-tight tracking-tight sm:text-4xl">
-                <span className="text-gradient">{card.title}</span>
-              </h1>
+              {/* Главное действие — во всю ширину, остальное — под ним */}
+              <WatchButton id={card.id} />
+              <TitleActions anime={{ id: card.id, title: card.title, poster: card.poster }} />
 
-              {card.titleOrig && card.titleOrig !== card.title && (
-                <p className="mt-2 text-sm text-muted">{card.titleOrig}</p>
+              {/* Идущий тайтл: живой отсчёт до следующей серии (данные Shikimori) */}
+              {upcoming && (
+                <NextEpisode
+                  at={upcoming.at}
+                  episode={upcoming.episode}
+                  total={upcoming.total}
+                  title={card.title}
+                />
               )}
 
-              {/* Рейтинг и мета */}
-              <div className="mt-5 flex flex-wrap items-center gap-5">
-                {rating && (
-                  <div className="flex items-center gap-3 rounded-2xl bg-white/6 px-4 py-3 ring-1 ring-white/10">
-                    <span className="text-3xl font-extrabold tabular-nums text-gold">{rating}</span>
-                    <span className="text-xs leading-tight text-muted">
-                      {card.ratingSource === "shikimori"
-                        ? "Shikimori"
-                        : card.ratingSource === "kinopoisk"
-                          ? "Кинопоиск"
-                          : "IMDb"}
-                      {votes && (
-                        <>
-                          <br />
-                          {votes} оценок
-                        </>
-                      )}
-                    </span>
-                  </div>
-                )}
-
-                <dl className="grid grid-cols-2 gap-x-6 gap-y-1.5 text-sm sm:grid-cols-3">
+              {/* Сведения: нейтрально-тёмная карточка, как остальные блоки */}
+              {metaRows.length > 0 && (
+                <dl className="divide-y divide-white/[0.06] overflow-hidden rounded-2xl bg-[#0d0d14] ring-1 ring-white/[0.07]">
                   {metaRows.map((row) => (
-                    <div key={row.label} className="min-w-0">
-                      <dt className="text-xs text-muted">{row.label}</dt>
-                      <dd className="truncate font-semibold text-white/90" title={row.value}>
+                    <div key={row.label} className="flex items-baseline justify-between gap-4 px-4 py-2.5">
+                      <dt className="shrink-0 text-xs font-semibold uppercase tracking-[0.08em] text-muted">
+                        {row.label}
+                      </dt>
+                      <dd className="min-w-0 truncate text-right text-sm font-bold text-white/90" title={row.value}>
                         {row.value}
                       </dd>
                     </div>
                   ))}
                 </dl>
+              )}
+            </aside>
+
+            {/* ===== Правая колонка: название, показатели, описание ===== */}
+            <div className="min-w-0 animate-fade-up">
+              {/* Строка-ярлык: статус · тип */}
+              <div className="mb-4 flex flex-wrap items-center gap-2.5 text-xs font-bold uppercase tracking-[0.14em]">
+                {statusLabel(card.status) && (
+                  <span className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 ring-1 backdrop-blur ${statusTone(card.status)}`}>
+                    <span className="h-1.5 w-1.5 rounded-full bg-current shadow-[0_0_8px_currentColor]" />
+                    {statusLabel(card.status)}
+                  </span>
+                )}
+                {kindLabel(card.kind) && <span className="text-muted">{kindLabel(card.kind)}</span>}
+              </div>
+
+              <h1 className="font-display text-[clamp(30px,5vw,58px)] font-extrabold leading-[1.05] tracking-[-0.035em] text-white">
+                {card.title}
+              </h1>
+
+              {card.titleOrig && card.titleOrig !== card.title && (
+                <p className="mt-3 text-lg font-semibold text-white/60 sm:text-xl">{card.titleOrig}</p>
+              )}
+              {card.otherTitles && card.otherTitles.length > 0 && (
+                <p className="mt-1.5 line-clamp-1 text-sm text-muted">
+                  {card.otherTitles.slice(0, 3).join(" / ")}
+                </p>
+              )}
+
+              {/* Показатели чипами */}
+              <div className="mt-6 flex flex-wrap items-center gap-2">
+                {rating && (
+                  <span className="inline-flex items-center gap-2 rounded-xl bg-accent/12 px-3.5 py-2 text-sm font-extrabold text-white ring-1 ring-accent/35">
+                    <svg viewBox="0 0 24 24" className="h-4 w-4 text-gold" fill="currentColor" aria-hidden>
+                      <path d="m12 2.5 2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 17.3 6.1 20.6l1.3-6.6L2.5 9.4l6.6-.8L12 2.5Z" />
+                    </svg>
+                    <span className="tabular-nums">{rating}</span>
+                    {votes && <span className="text-xs font-semibold text-muted">{votes}</span>}
+                  </span>
+                )}
+                {card.year && <Chip>{card.year}</Chip>}
+                {card.duration ? <Chip>{card.duration} мин.</Chip> : null}
+                {card.lastEpisode ? (
+                  <Chip>
+                    {card.episodesTotal
+                      ? `${card.episodesAired ?? card.lastEpisode} / ${card.episodesTotal} эп.`
+                      : `${card.lastEpisode} эп.`}
+                  </Chip>
+                ) : null}
               </div>
 
               {/* Жанры */}
               {card.genres.length > 0 && (
-                <div className="mt-5 flex flex-wrap gap-2">
+                <div className="mt-3 flex flex-wrap gap-2">
                   {card.genres.slice(0, 8).map((genre) => (
                     <Link
                       key={genre}
                       href={`/catalog?genre=${encodeURIComponent(genre)}`}
-                      className="btn-ghost rounded-lg bg-white/6 px-3 py-1.5 text-xs font-semibold text-white/80 ring-1 ring-white/10 hover:bg-accent/15 hover:text-white hover:ring-accent/40"
+                      className="rounded-full bg-white/[0.05] px-3.5 py-1.5 text-[13px] font-semibold text-white/80 ring-1 ring-white/[0.09] transition hover:bg-accent/15 hover:text-white hover:ring-accent/45"
                     >
                       {genre}
                     </Link>
@@ -282,37 +356,73 @@ export default async function TitlePage({ params }: PageParams) {
 
               {/* Описание */}
               {card.description && (
-                <p className="mt-5 max-w-3xl text-sm leading-relaxed text-muted sm:text-[15px]">
-                  {card.description}
-                </p>
+                <div className="mt-7 max-w-3xl border-t border-white/[0.07] pt-6">
+                  <ReadMore text={card.description} />
+                </div>
               )}
 
-              {/* Действия */}
-              <div className="mt-6 flex flex-wrap items-center gap-3">
-                <a href="#watch" className="btn-primary inline-flex items-center gap-2 rounded-xl px-6 py-3 text-sm font-bold text-white">
-                  <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor">
-                    <path d="M8 5.14v13.72c0 .8.87 1.3 1.56.88l10.9-6.86a1.04 1.04 0 0 0 0-1.76L9.56 4.26A1.04 1.04 0 0 0 8 5.14Z" />
-                  </svg>
-                  Смотреть онлайн
-                </a>
+              {/* Особенности */}
+              {features.length > 0 && (
+                <section className="mt-9 max-w-3xl" aria-labelledby="tp-features">
+                  <h2
+                    id="tp-features"
+                    className="mb-4 flex items-center gap-2.5 font-display text-[13px] font-extrabold uppercase tracking-[0.16em] text-white"
+                  >
+                    <span className="h-4 w-1 rounded-full bg-gradient-to-b from-accent to-accent-2" />
+                    Особенности
+                  </h2>
+                  <ul className="grid gap-x-8 gap-y-3 sm:grid-cols-2">
+                    {features.map((text) => (
+                      <li key={text} className="flex items-start gap-3 text-[14.5px] leading-snug text-white/80">
+                        <span className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-accent-2 shadow-[0_0_8px_rgba(34,211,238,0.8)]" />
+                        {text}
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+              )}
 
-                {/* «В избранное» и «В подборку» (localStorage + модалка) */}
-                <TitleActions anime={{ id: card.id, title: card.title, poster: card.poster }} />
-
-                <Link
-                  href="/catalog"
-                  className="btn-ghost inline-flex items-center gap-2 rounded-xl bg-white/8 px-5 py-3 text-sm font-semibold text-white ring-1 ring-white/12 hover:bg-white/14"
-                >
-                  В каталог
-                </Link>
-              </div>
+              {/* Частые вопросы */}
+              {faq.length > 0 && (
+                <section className="mt-9 max-w-3xl" aria-labelledby="tp-faq">
+                  <h2
+                    id="tp-faq"
+                    className="mb-3 flex items-center gap-2.5 font-display text-[13px] font-extrabold uppercase tracking-[0.16em] text-white"
+                  >
+                    <span className="h-4 w-1 rounded-full bg-gradient-to-b from-accent to-accent-2" />
+                    Частые вопросы
+                  </h2>
+                  <div className="divide-y divide-white/[0.07] border-y border-white/[0.07]">
+                    {faq.map((item) => (
+                      <details key={item.q} className="group py-1">
+                        <summary className="flex cursor-pointer list-none items-center justify-between gap-4 py-3 text-[15px] font-bold text-white/90 transition hover:text-white [&::-webkit-details-marker]:hidden">
+                          {item.q}
+                          <svg
+                            viewBox="0 0 24 24"
+                            className="h-4 w-4 shrink-0 text-muted transition-transform duration-300 group-open:rotate-180 group-open:text-accent-2"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2.4"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            aria-hidden
+                          >
+                            <path d="m6 9 6 6 6-6" />
+                          </svg>
+                        </summary>
+                        <p className="pb-3 pr-8 text-sm leading-relaxed text-muted">{item.a}</p>
+                      </details>
+                    ))}
+                  </div>
+                </section>
+              )}
             </div>
           </div>
         </div>
       </section>
 
       {/* --------------------------- Плеер --------------------------- */}
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
+      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8">
         <div className="mb-4 flex items-center gap-3">
           <span className="h-6 w-1.5 rounded-full bg-accent" />
           <h2 className="text-lg font-extrabold tracking-tight sm:text-xl">Смотреть онлайн</h2>

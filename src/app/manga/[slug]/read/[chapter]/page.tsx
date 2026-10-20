@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ReaderShell } from "@/components/manga/ReaderShell";
-import { chapterPages, mangaDetail } from "@/lib/mangadex";
+import { chapterPages, mangaDetail } from "@/lib/senku";
 
 /** Главы часто обновляются переводами — перечитываем почаще */
 export const revalidate = 3600;
@@ -14,7 +14,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { slug, chapter } = await params;
   const [detail, pages] = await Promise.all([
     mangaDetail(slug).catch(() => null),
-    chapterPages(chapter).catch(() => null),
+    chapterPages(slug, chapter).catch(() => null),
   ]);
   if (!detail || !pages) return { title: "Глава не найдена" };
 
@@ -30,7 +30,7 @@ export default async function ReadPage({ params }: PageProps) {
   const { slug, chapter } = await params;
   const [detail, pages] = await Promise.all([
     mangaDetail(slug).catch(() => null),
-    chapterPages(chapter).catch(() => null),
+    chapterPages(slug, chapter).catch(() => null),
   ]);
   if (!detail) notFound();
 

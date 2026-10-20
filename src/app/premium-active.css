@@ -1,0 +1,771 @@
+/*
+ * Страница активной подписки (/premium) — макет `premium (1).html`.
+ *
+ * Правила перенесены без изменений, кроме двух вещей:
+ *  - классы с префиксом pra-: в проекте уже есть .card, .ic, .go, .note,
+ *    .btn, .status, .msg, .bottom, .d и подобные, а без префикса макетные
+ *    правила перебивали бы чужие блоки (ровно так же вышло с .card на
+ *    странице подборок);
+ *  - гарнитуры: макет ставит Unbounded/Manrope, проект после перехода на
+ *    Montserrat/Onest использует --font-display/--font-body. Размеры, начертания
+ *    и интерлиньяж — как в макете.
+ *
+ * @keyframes тоже с префиксом pra-: короткие имена (spin, shine, pulse) уже
+ * заняты в ag-tag.css, header.css и на страницах пропуска/рефералки.
+ */
+
+.pra-page {
+  --pra-bg: #050810;
+  --pra-panel: #0a1022;
+  --pra-line: #17213e;
+  --pra-text: #e8eeff;
+  --pra-mute: #8693b6;
+  --pra-blue: #2f8bff;
+  --pra-cyan: #38d6ff;
+  --pra-violet: #8a6bff;
+  --pra-gold: #61d1ff;
+  --pra-ok: #3ddc97;
+  --pra-r: 22px;
+
+  position: relative;
+  z-index: 1;
+  max-width: 980px;
+  margin: 0 auto;
+  /* В макете снизу 110px — там под ними висит виджет. На сайте снизу уже есть
+     подвал, поэтому хвост короче, иначе под ссылкой остаётся пустота. */
+  padding: 36px 20px 60px;
+  color: var(--pra-text);
+  color-scheme: dark;
+}
+
+/* Звёздное поле и сияние — фон макета */
+.pra-stars {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.pra-aurora {
+  position: absolute;
+  inset: -60px -20% auto;
+  height: 620px;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(38% 50% at 50% 34%, #1b5cff55, transparent 70%),
+    radial-gradient(28% 40% at 82% 22%, #8a6bff33, transparent 70%);
+  filter: blur(28px);
+  animation: pra-drift 14s ease-in-out infinite alternate;
+}
+
+@keyframes pra-drift {
+  to {
+    transform: translateX(50px) scale(1.07);
+  }
+}
+
+.pra-page button {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+/* ------------------------------ Hero: циферблат ------------------------------ */
+
+.pra-hero {
+  text-align: center;
+}
+
+.pra-dial {
+  position: relative;
+  width: 300px;
+  height: 300px;
+  margin: 0 auto 8px;
+  transform-style: preserve-3d;
+  transition: transform 0.25s ease-out;
+  will-change: transform;
+}
+
+.pra-dial > svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.pra-track {
+  fill: none;
+  stroke: #16213f;
+  stroke-width: 6;
+}
+
+.pra-arc {
+  fill: none;
+  stroke: url(#pra-arc-gradient);
+  stroke-width: 6;
+  stroke-linecap: round;
+  transform: rotate(-90deg);
+  transform-origin: 50% 50%;
+  stroke-dasharray: 754;
+  stroke-dashoffset: 754;
+  transition: stroke-dashoffset 1.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+  filter: drop-shadow(0 0 8px #38d6ff99);
+}
+
+.pra-orbit2 {
+  fill: none;
+  stroke: #8a6bff33;
+  stroke-dasharray: 3 9;
+  animation: pra-spin 60s linear infinite;
+  transform-origin: 50% 50%;
+}
+
+.pra-moon {
+  animation: pra-spin 18s linear infinite;
+  transform-origin: 150px 150px;
+}
+
+@keyframes pra-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.pra-core {
+  position: absolute;
+  inset: 48px;
+  border-radius: 50%;
+  display: grid;
+  place-content: center;
+  text-align: center;
+  background: radial-gradient(circle at 50% 35%, #13265a, #070c1c 70%);
+  box-shadow: inset 0 0 50px #2f8bff44, 0 0 60px -10px #2f8bff88;
+}
+
+.pra-crownicon {
+  display: block;
+  width: 34px;
+  height: 34px;
+  margin: 0 auto 4px;
+  stroke: var(--pra-gold);
+  fill: none;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 8px #61d1ff99);
+  animation: pra-bob 3.4s ease-in-out infinite;
+}
+
+@keyframes pra-bob {
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+.pra-days {
+  font: 800 54px/1 var(--font-display);
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+
+.pra-core small {
+  color: var(--pra-mute);
+  font-size: 13px;
+  margin-top: 6px;
+}
+
+.pra-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 10px 0 20px;
+  padding: 7px 16px;
+  border-radius: 99px;
+  background: #3ddc9712;
+  border: 1px solid #3ddc9755;
+  color: var(--pra-ok);
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.pra-status i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--pra-ok);
+  animation: pra-ping 1.8s infinite;
+}
+
+@keyframes pra-ping {
+  0% {
+    box-shadow: 0 0 0 0 #3ddc97aa;
+  }
+  100% {
+    box-shadow: 0 0 0 11px #3ddc9700;
+  }
+}
+
+.pra-h1 {
+  font: 800 clamp(28px, 5vw, 50px) / 1.1 var(--font-display);
+  letter-spacing: -0.02em;
+  max-width: 760px;
+  margin: 0 auto 12px;
+  background: linear-gradient(100deg, #fff 15%, #9cc8ff 50%, #38d6ff 80%, #fff);
+  background-size: 250% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: pra-sheen 7s linear infinite;
+  text-wrap: balance;
+}
+
+@keyframes pra-sheen {
+  to {
+    background-position: -250% 0;
+  }
+}
+
+.pra-sub {
+  color: var(--pra-mute);
+  font-size: 17px;
+}
+
+.pra-sub b {
+  color: var(--pra-text);
+}
+
+.pra-clock {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin: 26px 0 0;
+}
+
+.pra-clock div {
+  min-width: 84px;
+  padding: 12px 10px;
+  border-radius: 16px;
+  background: #0a1022cc;
+  border: 1px solid var(--pra-line);
+  backdrop-filter: blur(6px);
+}
+
+.pra-clock b {
+  display: block;
+  font: 700 26px/1.1 var(--font-display);
+  font-variant-numeric: tabular-nums;
+}
+
+.pra-clock b.pra-tick {
+  animation: pra-tick 0.35s;
+}
+
+@keyframes pra-tick {
+  from {
+    transform: translateY(-6px);
+    opacity: 0.3;
+  }
+}
+
+.pra-clock span {
+  font-size: 12px;
+  color: var(--pra-mute);
+}
+
+/* --------------------------- Карточка и подсветка --------------------------- */
+
+.pra-card {
+  position: relative;
+  background: var(--pra-panel);
+  border: 1px solid var(--pra-line);
+  border-radius: var(--pra-r);
+  padding: 24px;
+  overflow: hidden;
+}
+
+.pra-spot {
+  transition: border-color 0.25s, transform 0.25s;
+}
+
+.pra-spot::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s;
+  background: radial-gradient(260px circle at var(--mx, 50%) var(--my, 50%), #38d6ff26, transparent 65%);
+}
+
+.pra-spot:hover::before {
+  opacity: 1;
+}
+
+.pra-spot:hover {
+  border-color: #38d6ff66;
+  transform: translateY(-3px);
+}
+
+.pra-h2 {
+  font: 700 17px var(--font-display);
+  margin-bottom: 4px;
+}
+
+.pra-d {
+  color: var(--pra-mute);
+  font-size: 14px;
+  margin-bottom: 18px;
+}
+
+.pra-row2 {
+  display: grid;
+  grid-template-columns: 1fr 1.15fr;
+  gap: 16px;
+  margin-top: 44px;
+}
+
+.pra-row2 + .pra-section,
+.pra-section + .pra-section {
+  margin-top: 56px;
+}
+
+/* --------------------------------- Автопродление -------------------------------- */
+
+.pra-ar {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.pra-sw {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.pra-tog {
+  width: 58px;
+  height: 32px;
+  flex: none;
+  border-radius: 99px;
+  border: 1px solid var(--pra-line);
+  background: #0e1731;
+  position: relative;
+  transition: background 0.3s, box-shadow 0.3s;
+}
+
+.pra-tog::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.3s cubic-bezier(0.3, 1.5, 0.5, 1);
+}
+
+.pra-tog[aria-checked="true"] {
+  background: linear-gradient(90deg, var(--pra-blue), var(--pra-cyan));
+  box-shadow: 0 0 22px -4px var(--pra-cyan);
+}
+
+.pra-tog[aria-checked="true"]::after {
+  transform: translateX(26px);
+}
+
+.pra-note {
+  font-size: 13px;
+  color: var(--pra-mute);
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: #060b1a;
+  border: 1px dashed var(--pra-line);
+  line-height: 1.5;
+}
+
+/* ------------------------------ Продление подписки ------------------------------ */
+
+.pra-plans {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.pra-plan {
+  position: relative;
+  text-align: left;
+  padding: 14px 12px;
+  border-radius: 16px;
+  background: #070c1c;
+  border: 1px solid var(--pra-line);
+  transition: 0.25s;
+}
+
+.pra-plan b {
+  display: block;
+  font: 800 17px var(--font-display);
+  margin-bottom: 4px;
+}
+
+.pra-plan span {
+  font-size: 13px;
+  color: var(--pra-mute);
+}
+
+.pra-plan .pra-pr {
+  display: block;
+  color: var(--pra-text);
+  font-weight: 800;
+  font-size: 15px;
+}
+
+.pra-plan s {
+  color: var(--pra-mute);
+  font-weight: 500;
+  font-size: 12px;
+  margin-left: 4px;
+}
+
+.pra-plan em {
+  position: absolute;
+  top: -10px;
+  right: 10px;
+  white-space: nowrap;
+  font-style: normal;
+  font-weight: 800;
+  font-size: 11px;
+  padding: 3px 9px;
+  border-radius: 99px;
+  background: linear-gradient(90deg, var(--pra-gold), #ff9a5c);
+  color: #00242a;
+}
+
+.pra-plan[aria-pressed="true"] {
+  border-color: var(--pra-cyan);
+  box-shadow: 0 0 0 1px var(--pra-cyan), 0 14px 40px -14px #2f8bffaa;
+  transform: translateY(-3px);
+}
+
+.pra-bonus {
+  margin-top: 14px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: #8a6bff14;
+  border: 1px solid #8a6bff33;
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.pra-bonus b {
+  font: 800 16px var(--font-display);
+  color: #cdbdff;
+}
+
+.pra-bonus small {
+  display: block;
+  margin-top: 6px;
+  padding-top: 8px;
+  border-top: 1px solid #ffffff14;
+  color: var(--pra-mute);
+  font-size: 13px;
+}
+
+.pra-sum {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #2f8bff1f, #38d6ff0a);
+  border: 1px solid #38d6ff33;
+}
+
+.pra-sum small {
+  color: var(--pra-mute);
+  display: block;
+  font-size: 12px;
+}
+
+.pra-sum b {
+  font: 700 16px var(--font-display);
+}
+
+.pra-btn {
+  border: 0;
+  border-radius: 16px;
+  padding: 15px 26px;
+  font-weight: 800;
+  font-size: 16px;
+  color: #001425;
+  background: linear-gradient(90deg, var(--pra-blue), var(--pra-cyan));
+  box-shadow: 0 12px 34px -10px #2f8bffcc;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.2s;
+}
+
+.pra-btn:hover {
+  transform: translateY(-2px);
+}
+
+.pra-btn:active {
+  transform: scale(0.97);
+}
+
+.pra-btn::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 40%, #ffffff66 50%, transparent 60%);
+  transform: translateX(-120%);
+  animation: pra-glint 4s infinite;
+}
+
+@keyframes pra-glint {
+  60%,
+  100% {
+    transform: translateX(120%);
+  }
+}
+
+.pra-btn:disabled {
+  filter: saturate(0.4) brightness(0.6);
+  cursor: not-allowed;
+  transform: none;
+}
+
+.pra-btn:disabled::after {
+  display: none;
+}
+
+/* ---------------------------------- Привилегии ---------------------------------- */
+
+.pra-perks {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+
+.pra-perk {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  text-decoration: none;
+  color: inherit;
+}
+
+.pra-perk .pra-ic {
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  background: color-mix(in srgb, var(--k) 16%, #070c1c);
+  border: 1px solid color-mix(in srgb, var(--k) 45%, transparent);
+  box-shadow: 0 0 24px -8px var(--k);
+}
+
+.pra-perk .pra-ic svg {
+  width: 23px;
+  height: 23px;
+  fill: none;
+  stroke: var(--k);
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.pra-perk h3 {
+  font: 700 15px/1.3 var(--font-body);
+}
+
+.pra-perk p {
+  font-size: 13px;
+  color: var(--pra-mute);
+}
+
+.pra-perk .pra-go {
+  margin-top: auto;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--pra-cyan);
+}
+
+/* ----------------------------------- Промокод ---------------------------------- */
+
+.pra-promo {
+  display: grid;
+  grid-template-columns: 1fr 1.1fr;
+  gap: 24px;
+  align-items: center;
+}
+
+.pra-pf {
+  display: flex;
+  gap: 10px;
+}
+
+.pra-pf input {
+  flex: 1;
+  min-width: 0;
+  padding: 15px 16px;
+  border-radius: 14px;
+  background: #060b1a;
+  border: 1px solid var(--pra-line);
+  color: var(--pra-text);
+  font: 700 15px var(--font-body);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transition: 0.2s;
+}
+
+.pra-pf input:focus {
+  outline: 0;
+  border-color: var(--pra-cyan);
+  box-shadow: 0 0 0 3px #38d6ff22;
+}
+
+.pra-pf.pra-bad input {
+  border-color: #ff5c7c;
+  animation: pra-shake 0.4s;
+}
+
+@keyframes pra-shake {
+  25% {
+    transform: translateX(-6px);
+  }
+  75% {
+    transform: translateX(6px);
+  }
+}
+
+.pra-pf .pra-btn {
+  padding: 15px 20px;
+  font-size: 15px;
+}
+
+.pra-hint {
+  color: #3b8bff;
+  font-size: 13px;
+  margin-top: 10px;
+}
+
+.pra-msg {
+  min-height: 20px;
+  margin-top: 10px;
+  font-size: 13px;
+}
+
+.pra-msg.pra-ok {
+  color: var(--pra-ok);
+}
+
+.pra-msg.pra-err {
+  color: #ff7d96;
+}
+
+.pra-bottom {
+  display: flex;
+  justify-content: center;
+  gap: 28px;
+  align-items: center;
+  margin-top: 40px;
+}
+
+.pra-bottom a {
+  color: var(--pra-text);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.pra-bottom a:hover {
+  color: var(--pra-cyan);
+}
+
+/* ------------------------------------ Тост ------------------------------------ */
+
+.pra-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 28px;
+  z-index: 9;
+  transform: translate(-50%, calc(100% + 40px));
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  padding: 14px 22px;
+  border-radius: 16px;
+  background: #0c1630;
+  border: 1px solid var(--pra-cyan);
+  box-shadow: 0 18px 60px -12px #2f8bffaa;
+  font-weight: 700;
+  transition: transform 0.45s cubic-bezier(0.2, 1.3, 0.4, 1), opacity 0.25s, visibility 0s 0.45s;
+}
+
+.pra-toast.pra-show {
+  transform: translate(-50%, 0);
+  opacity: 1;
+  visibility: visible;
+  transition-delay: 0s;
+}
+
+/* ----------------------------------- Адаптив ----------------------------------- */
+
+@media (max-width: 820px) {
+  .pra-row2,
+  .pra-promo {
+    grid-template-columns: 1fr;
+  }
+  .pra-perks {
+    grid-template-columns: 1fr 1fr;
+  }
+  .pra-clock div {
+    min-width: 70px;
+  }
+}
+
+@media (max-width: 520px) {
+  .pra-perks {
+    grid-template-columns: 1fr;
+  }
+  /* Сдвиг рамки нельзя задавать инлайном (его ставит наклон за курсором),
+     поэтому масштаб циферблата — правилом с !important, как в макете */
+  .pra-dial {
+    transform: scale(0.85) !important;
+  }
+  .pra-sum {
+    flex-direction: column;
+    align-items: stretch;
+    text-align: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pra-aurora,
+  .pra-orbit2,
+  .pra-moon,
+  .pra-crownicon,
+  .pra-status i,
+  .pra-h1,
+  .pra-btn::after {
+    animation: none !important;
+  }
+  .pra-arc,
+  .pra-spot,
+  .pra-card,
+  .pra-plan,
+  .pra-btn,
+  .pra-tog,
+  .pra-toast {
+    transition: none !important;
+  }
+}

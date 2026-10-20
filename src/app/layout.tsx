@@ -1,34 +1,115 @@
 import type { Metadata, Viewport } from "next";
-import { Unbounded } from "next/font/google";
+import { Cinzel, Montserrat, Onest, Unbounded } from "next/font/google";
 import "./globals.css";
+import "./ag-theme.css";
 import "./effects.css";
 import "./ag-tag.css";
+import "./ag-tag-premium.css";
+import "./premium-chip.css";
+import "../components/section-mark.css";
+import "./rating-gold.css";
+import "./next-episode.css";
+import "./schedule.css";
+import "./settings-premium.css";
+import "./wardrobe-premium.css";
+import "./store-premium.css";
+import "./quests.css";
+import "./frame-search.css";
+import "./streak-capsule.css";
+import "./nickname.css";
 import "./ag-comments.css";
+import "./catalog.css";
+import "./watch-together.css";
+import "./aniswipe.css";
+import "./cosmetics-shop.css";
+import "./ags-premium.css";
+import "./avatar-frame.css";
 import "./level-emblem.css";
 import "./achievement-emblem.css";
+import "./achievements.css";
 import "./stats-block.css";
+import "./list-stats.css";
+import "./guest-sidebar.css";
+import "./guest-dialogs.css";
+import "./guest-follows-report.css";
+import "./profile-fx.css";
 import "./battle-pass.css";
 import "./clans.css";
 import "./clans-game.css";
+import "./profile-premium.css";
 import { AuthDialogHost } from "@/components/AuthDialogHost";
 import { ChatWidget } from "@/components/ChatWidget";
 import { DailyBonusHost } from "@/components/DailyBonusHost";
 import { Footer } from "@/components/Footer";
-import { Header } from "@/components/Header";
+import { HeaderShell } from "@/components/site/HeaderShell";
+import "@/components/site/header.css";
+import "@/components/site/header-promo.css";
+import "@/components/site/search.css";
+import "@/components/row-highlight.css";
 import { getFeatures } from "@/lib/features";
 import { getSiteConfig } from "@/lib/site-config";
 import { ProgressionBoot } from "@/components/ProgressionBoot";
+import { EpisodeNotifier } from "@/components/EpisodeNotifier";
 import { DevPanel } from "@/components/progression/DevPanel";
 import { EcoBoot } from "@/components/progression/EcoBoot";
 import { LevelEmblemIO } from "@/components/progression/LevelEmblemIO";
 import { AchievementEmblemIO } from "@/components/progression/AchievementEmblemIO";
 import { ToastHost } from "@/components/progression/ToastHost";
+import { ReferralPremiumFlush } from "@/components/ReferralPremiumFlush";
+import { SkyBackdrop } from "@/components/design/SkyBackdrop";
 
-/** Крупные числа статистики профиля — только цифры, weight 900 */
+/**
+ * Дисплейный шрифт сайта — Montserrat 800.
+ *
+ * Заголовки, названия разделов, крупные числа и надпись логотипа. Раньше на
+ * эту роль стояли сразу три гарнитуры (Unbounded, Outfit и Dela); теперь
+ * одна на все места — она же лежит в `--font-display`.
+ *
+ * Подключены латиница и кириллица: русские заголовки не должны уходить в
+ * системный запасной шрифт.
+ */
+const montserrat = Montserrat({
+  weight: ["800"],
+  variable: "--font-display",
+  subsets: ["latin", "cyrillic"],
+  display: "swap",
+});
+
+/**
+ * Основной шрифт — Onest.
+ *
+ * Весь текст: интерфейс, меню, кнопки, формы, описания. Лежит в
+ * `--font-body`; размеры начертаний не менялись, менялась только гарнитура.
+ *
+ * Начертаний шесть, а не четыре (400/500/600/700): по коду идёт 116
+ * `font-extrabold`, 199 `font-black` и 226 CSS-правил на 800/900 — без
+ * этих двух файлов браузер рисовал бы на них синтетический жирный, и
+ * начертание «плавало» по толщине. Сами объявления весов в разметке не
+ * трогались.
+ */
+const onest = Onest({
+  weight: ["400", "500", "600", "700", "800", "900"],
+  variable: "--font-body",
+  subsets: ["latin", "cyrillic"],
+  display: "swap",
+});
+
+/**
+ * Шрифты новых разделов: Unbounded — заголовки совместного просмотра,
+ * Cinzel — логотип AniSwipe. Подключены через next/font, поэтому
+ * self-hosted и без внешних запросов в рантайме.
+ */
 const unbounded = Unbounded({
-  weight: "900",
+  weight: ["500", "700", "800"],
   variable: "--font-unbounded",
   subsets: ["latin", "cyrillic"],
+  display: "swap",
+});
+
+const cinzel = Cinzel({
+  weight: ["600"],
+  variable: "--font-cinzel",
+  subsets: ["latin"],
   display: "swap",
 });
 
@@ -106,7 +187,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
     <html
       lang="ru"
       data-scroll-behavior="smooth"
-      className={`${unbounded.variable} h-full antialiased`}
+      className={`${montserrat.variable} ${onest.variable} ${unbounded.variable} ${cinzel.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col">
         {/*
@@ -157,12 +238,23 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
         >
           Перейти к содержимому
         </a>
-        <Header features={features} />
+        {/* Шапка перенесена из прототипа Header_AniGalaxy_flat: стили лежат в
+            components/site/header.css (под контейнером .agh), состояние
+            палитры поиска держит HeaderShell. При слиянии с веткой календаря
+            старый Header в разметку не выводится. */}
+        <HeaderShell />
+        {/* Фон макетов: один на весь сайт, показывается только под .ag-root —
+            см. body:has(.ag-root) в ag-theme.css. Идёт до <main>, чтобы лежать
+            под содержимым, и без участия в раскладке: обе картинки fixed. */}
+        <SkyBackdrop />
         {/* min-w-0 обязателен: main — флекс-элемент колоночного body, а у
             флекс-элементов min-width:auto. Без него любой широкий потомок
             (лента разделов магазина, карусели) растягивал всю страницу, и
             фиксированная шапка становилась шире экрана. */}
-        <main id="main" className="relative z-[1] min-w-0 flex-1 pt-16">
+        {/* Отступ сверху больше не нужен: новая шапка (.agh .hd) — sticky,
+            то есть сама занимает место в потоке. pt-16 остался от прежней
+            фиксированной шапки и давал пустую полосу под шапкой. */}
+        <main id="main" className="relative z-[1] min-w-0 flex-1">
           {children}
         </main>
         <Footer features={features} />
@@ -184,6 +276,9 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
         {/* Ежедневный вход прогрессии: событие шлётся только в браузере (useEffect) */}
         <ProgressionBoot />
 
+        {/* Уведомления о выходе серий: расписание → тост, колокольчик, браузер */}
+        <EpisodeNotifier />
+
         {/* Dev-панель прогрессии (§15 этап 7): рендерится только в dev-сборке
             и только с ?dev=1 — в production условие вырезается на этапе сборки */}
         <DevPanel />
@@ -197,16 +292,19 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
         {/* Пауза анимаций эмблем достижений вне экрана */}
         <AchievementEmblemIO />
 
+        {/* Дни Premium за приглашённых: начисляются при первом открытии */}
+        <ReferralPremiumFlush />
+
         {/* Общий чат: плавающая кнопка + боковая панель (локальная симуляция) */}
         <ChatWidget showChat={features?.chat !== false} showClans={features?.clans !== false} />
 
         {/*
-          Апскейл плеера живёт в самом WatchBox: кадры чужого iframe Kodik
-          захватываются через Element Capture и обрабатываются WebGL-шейдером
-          прямо поверх плеера (см. lib/live-upscale + lib/upscale-shader).
-          SVG-фильтр здесь был удалён: Chromium молча не применяет url(#…)-
-          фильтры к кадрам кросс-доменного iframe (проверено замерами — 0/255),
-          оставалась только цветокоррекция CSS-функциями.
+          Обработки картинки плеера здесь нет и не было: у Kodik кадр
+          чужого iframe, SVG url(#…)-фильтры Chromium к нему молча не
+          применяет (проверено замерами — 0/255), CSS остаётся цветокоррекцией,
+          а WebGL-апскейл поверх iframe требовал от браузера разрешения
+          показывать вкладку — кнопку с ним убрали. Свой апскейл с целями
+          2K/4K живёт у альтернативного плеера AniLiberty (см. AltPlayer).
         */}
       </body>
     </html>

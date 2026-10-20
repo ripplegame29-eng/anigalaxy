@@ -53,6 +53,8 @@ interface TagParts {
   };
   /** слои капсулы */
   body: ReactNode;
+  /** окошко с описанием — рендерится рядом с капсулой, внутри обёртки */
+  tip: ReactNode;
 }
 
 /**
@@ -134,13 +136,34 @@ function tagParts(tag: TagDef, options: RenderTagOptions): TagParts {
     </>
   );
 
-  return { spanProps, body };
+  return { spanProps, body, tip: <TagTip text={tag.description} /> };
+}
+
+/**
+ * Окошко с описанием — всплывает при наведении.
+ *
+ * Живёт СНАРУЖИ капсулы, в обёртке: у фаски (MYTHIC) и у Гуля силуэт режется
+ * `clip-path`, и подсказка внутри капсулы обрезалась бы по контуру. Поэтому
+ * корень компонента — обёртка, а сама капсула с классами и `data-*` лежит
+ * внутри неё, и все стили проекта продолжают попадать по `.ag-tag`.
+ */
+function TagTip({ text }: { text: string }) {
+  return (
+    <span className="ag-tip" role="tooltip">
+      {text}
+    </span>
+  );
 }
 
 /** Чистая разметка капсулы — тестируема и переиспользуема без DOM. */
 export function renderTag(tag: TagDef, options: RenderTagOptions = {}): ReactElement {
-  const { spanProps, body } = tagParts(tag, options);
-  return <span {...spanProps}>{body}</span>;
+  const { spanProps, body, tip } = tagParts(tag, options);
+  return (
+    <span className="ag-tag-wrap">
+      <span {...spanProps}>{body}</span>
+      {tip}
+    </span>
+  );
 }
 
 interface AgTagProps extends RenderTagOptions {
@@ -179,10 +202,11 @@ export function AgTag({ tag, ...options }: AgTagProps) {
     return () => observer.unobserve(el);
   }, []);
 
-  const { spanProps, body } = tagParts(tag, options);
+  const { spanProps, body, tip } = tagParts(tag, options);
   return (
-    <span ref={ref} {...spanProps}>
-      {body}
+    <span className="ag-tag-wrap" ref={ref}>
+      <span {...spanProps}>{body}</span>
+      {tip}
     </span>
   );
 }
