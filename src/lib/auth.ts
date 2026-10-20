@@ -316,6 +316,30 @@ export function loginTelegramDemo(username: string): AuthResult {
 }
 
 /**
+ * Вход через Telegram после серверной проверки подписи.
+ */
+export function loginTelegramVerified(payload: {
+  nickname: string;
+  telegram: { id: number; username: string | null; firstName: string | null; lastName: string | null; photoUrl: string | null };
+}): AuthResult {
+  if (!available()) return { ok: false, error: "Хранилище браузера недоступно" };
+  const nickError = validateNickname(payload.nickname);
+  if (nickError) return { ok: false, error: nickError };
+
+  const existing = readAccount();
+  saveAccount({
+    nickname: payload.nickname,
+    email: payload.telegram.username ? payload.telegram.username + "@t.me" : payload.nickname + "@t.me",
+    passHash: hashPassword("telegram:" + payload.telegram.id),
+    createdAt: existing ? existing.createdAt : Date.now(),
+    premiumUntil: existing ? existing.premiumUntil : 0,
+    premiumSince: existing ? existing.premiumSince : 0,
+    premiumTotalDays: existing ? existing.premiumTotalDays : 0,
+  });
+  return { ok: true };
+}
+
+/**
  * Смена пароля.
  *
  * Проверяет текущий пароль по тому же хэшу, что и вход, и требует новый
