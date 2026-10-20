@@ -18,6 +18,7 @@ const SLIDE_MS = 7000;
 export function HeroSlider({ items }: { items: AnimeCard[] }) {
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
+  const touchX = useRef<number | null>(null);
   const timer = useRef<ReturnType<typeof setInterval> | null>(null);
   /** Фоновые ролики по индексу слайда (у слайда может не быть своего видео) */
   const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
@@ -73,6 +74,15 @@ export function HeroSlider({ items }: { items: AnimeCard[] }) {
       className="relative isolate h-[74vh] min-h-[520px] w-full overflow-hidden sm:h-[78vh] lg:h-[82vh]"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
+      onTouchStart={(e) => {
+        touchX.current = e.touches[0].clientX;
+      }}
+      onTouchEnd={(e) => {
+        if (touchX.current == null) return;
+        const dx = e.changedTouches[0].clientX - touchX.current;
+        touchX.current = null;
+        if (Math.abs(dx) > 50) go(index + (dx < 0 ? 1 : -1));
+      }}
       aria-roledescription="carousel"
       aria-label="Рекомендуемые тайтлы"
     >

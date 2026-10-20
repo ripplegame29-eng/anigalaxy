@@ -283,7 +283,7 @@ export default async function TitlePage({ params }: PageParams) {
 
               {/* Описание */}
               {card.description && (
-                <p className="mt-5 max-w-3xl text-sm leading-relaxed text-muted sm:text-[15px]">
+                <p className="mt-5 line-clamp-4 max-w-3xl text-sm leading-relaxed text-muted sm:line-clamp-none sm:text-[15px]">
                   {card.description}
                 </p>
               )}
@@ -301,7 +301,7 @@ export default async function TitlePage({ params }: PageParams) {
       </section>
 
       {/* --------------------------- Плеер --------------------------- */}
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
+      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8">
         <div className="mb-4 flex items-center gap-3">
           <span className="h-6 w-1.5 rounded-full bg-accent" />
           <h2 className="text-lg font-extrabold tracking-tight sm:text-xl">Смотреть онлайн</h2>
