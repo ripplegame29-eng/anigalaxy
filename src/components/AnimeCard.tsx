@@ -24,9 +24,7 @@ export function AnimeCard({
   const kind = kindLabel(card.kind);
   const status = statusLabel(card.status);
   // Манга приходит из MangaDex — там id это uuid, они не пересекаются с Kodik
-  const isManga = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
-    card.id,
-  );
+  const isManga = !/^(serial|movie)-/i.test(card.id);
   const rootClass = `group relative block focus:outline-none ${className}`;
 
   // Тело карточки общее для обеих обёрток: у манги свой id и своя ссылка
