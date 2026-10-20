@@ -225,7 +225,7 @@ body.as-modal-open {
   border: 1px solid rgba(255, 255, 255, 0.08);
   font-size: 12px;
   font-weight: 800;
-  color: #f5b94a;
+  color: #4ac3f5;
 }
 
 .as-card-meta h2 {
@@ -297,8 +297,8 @@ body.as-modal-open {
   left: 50%;
   top: 18px;
   transform: translateX(-50%) rotate(-4deg);
-  border: 3px solid #f5b94a;
-  color: #f5b94a;
+  border: 3px solid #4ac3f5;
+  color: #4ac3f5;
 }
 
 .as-acts {
@@ -341,8 +341,8 @@ body.as-modal-open {
 }
 
 .as-later:hover {
-  border-color: #f5b94a;
-  background: rgba(245, 185, 74, 0.12);
+  border-color: #4ac3f5;
+  background: rgba(74, 195, 245, 0.12);
 }
 
 .as-like:hover {

@@ -20,7 +20,7 @@
 
 .sx {
   --sx-accent: var(--blue, #2b7fff);
-  --sx-star: var(--gold, #f5b74a);
+  --sx-star: var(--color-accent-2);
   --sx-ok: var(--mint, #34d399);
 
   position: fixed;
@@ -335,7 +335,7 @@
   color: #c3c9e0;
 }
 .sx .tag--star {
-  background: rgba(255, 176, 32, 0.15);
+  background: rgba(32, 191, 255, 0.15);
   color: var(--sx-star);
   font-weight: 700;
 }

@@ -27,7 +27,7 @@
      такие заливки берут затемнённую производную. Сам бренд (градиенты,
      свечения, текст-акцент на тёмном) остаётся на исходных токенах. */
   --color-accent-deep: color-mix(in oklab, var(--color-accent) 86%, black);
-  --color-gold: #ffb020;
+  --color-gold: #20bfff;
   --color-mint: #3ddc97;
 
   /* Шрифты: Montserrat — акцентный (--font-display), Onest — основной
@@ -255,7 +255,7 @@
   transform: translateY(0) scale(0.985);
 }
 .btn-premium svg {
-  filter: drop-shadow(0 0 6px rgba(255, 176, 32, 0.65));
+  filter: drop-shadow(0 0 6px rgba(32, 191, 255, 0.65));
 }
 
 /* Яркая голубая кнопка «Войти» с плавным свечением */
@@ -707,13 +707,12 @@
 
 /* Разрядка заголовков: -0.03em из типографики Montserrat. Правило вне
    @layer — иначе утилиты разрядки перебили бы базовое значение.
-   `.tracking-tight` оставлен как был (0.01em): это утилита всего сайта,
-   и её значение не входит в задачу по шрифтам. */
+   `.tracking-tight` теперь действительно «тесная» (-0.02em): раньше была +0.01em. */
 h1 {
   letter-spacing: -0.03em;
 }
 .tracking-tight {
-  letter-spacing: 0.01em;
+  letter-spacing: -0.02em;
 }
 
 /*
@@ -730,6 +729,6 @@ h1 {
   --pm-text: var(--color-bright);
   --pm-muted: var(--color-muted);
   --pm-line: var(--color-line);
-  --pm-gold: var(--color-gold);
+  --pm-gold: var(--color-accent-2);
   --pm-red: #f14c4c;
 }

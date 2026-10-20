@@ -375,7 +375,7 @@ export function CommandPalette({ open, onOpenChange, onPick }: CommandPalettePro
                       {card.studios?.[0] && <div className="row__studio">{card.studios[0]}</div>}
                       <div className="row__meta">
                         {card.rating != null && (
-                          <span className="row__rating" style={{ color: "var(--gold)" }}>
+                          <span className="row__rating" style={{ color: "var(--color-accent-2)" }}>
                             ★ {card.rating}
                           </span>
                         )}

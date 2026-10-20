@@ -168,8 +168,8 @@ export function DailyLoginModal({ open, onClose, premium }: { open: boolean; onC
             <stop offset="1" stopColor="#22d3ee" />
           </linearGradient>
           <linearGradient id="dm-gc" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stopColor="#fde68a" />
-            <stop offset="1" stopColor="#f59e0b" />
+            <stop offset="0" stopColor="#8acdfd" />
+            <stop offset="1" stopColor="#0bb5f5" />
           </linearGradient>
         </defs>
       </svg>

@@ -224,7 +224,7 @@ export function TitleActions({ anime }: Props) {
                     onClick={() => onRate(score)}
                     className={`grid h-7 w-7 place-items-center rounded-lg text-[11px] font-bold ring-1 transition ${
                       active
-                        ? "bg-gold text-ink ring-gold/60"
+                        ? "bg-accent-2 text-ink ring-accent-2/60"
                         : "bg-white/8 text-muted ring-white/12 hover:bg-white/14 hover:text-white"
                     }`}
                   >

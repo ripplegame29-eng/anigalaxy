@@ -236,7 +236,7 @@ const CINEMA_INITIAL: CinemaMessage[] = [
 
 const CINEMA_POOL: Omit<CinemaMessage, "id">[] = [
   { author: "Кен", text: "Синхронно, идём дальше", color: "#22d3ee" },
-  { author: "Ами", text: "Опенинг на повтор!", color: "#f5b94a" },
+  { author: "Ами", text: "Опенинг на повтор!", color: "#4ac3f5" },
   { author: "Рин", text: "Вот это поворот…", color: "#2d7dff" },
   { author: "Юки", text: "Чат, вы лучшие 💙", color: "#34e5a0" },
 ];
@@ -252,7 +252,7 @@ const SEATS = [
   { initial: "Р", from: "#2d7dff", to: "#8a5cff" },
   { initial: "А", from: "#22d3ee", to: "#2d7dff" },
   { initial: "Ю", from: "#34e5a0", to: "#22d3ee" },
-  { initial: "К", from: "#f5b94a", to: "#ff7d90" },
+  { initial: "К", from: "#4ac3f5", to: "#ff7d90" },
   { initial: "М", from: "#8a5cff", to: "#ff7d90" },
 ];
 
@@ -410,7 +410,7 @@ export function WatchTogetherHero() {
                     key={item.emoji}
                     onClick={() => react(index)}
                     aria-label={item.label}
-                    style={{ ["--k" as string]: index === 0 ? "#2d7dff" : index === 1 ? "#8a5cff" : index === 2 ? "#f5b94a" : "#22d3ee" }}
+                    style={{ ["--k" as string]: index === 0 ? "#2d7dff" : index === 1 ? "#8a5cff" : index === 2 ? "#4ac3f5" : "#22d3ee" }}
                   >
                     <span className="e">{item.emoji}</span>
                     <span className="n">{counts[index]}</span>
@@ -1228,7 +1228,7 @@ function RoomPanel({ room, onLeave }: { room: WatchRoom; onLeave: () => void }) 
                 }`}
               >
                 <span
-                  className={`block text-[11px] font-black ${m.self ? "text-accent-2" : "text-gold"}`}
+                  className={`block text-[11px] font-black ${m.self ? "text-accent-2" : "text-accent-2"}`}
                 >
                   {m.author}
                 </span>

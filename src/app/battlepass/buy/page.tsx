@@ -65,7 +65,7 @@ export default function PassBuyPage() {
         aria-hidden
       />
       <div
-        className="pointer-events-none absolute -left-40 top-[45%] h-[420px] w-[420px] rounded-full bg-gold/8 blur-3xl"
+        className="pointer-events-none absolute -left-40 top-[45%] h-[420px] w-[420px] rounded-full bg-accent-2/8 blur-3xl"
         aria-hidden
       />
 

@@ -18,7 +18,7 @@
   /* ---------- Токены страницы ---------- */
   .bp-page {
     --bp-cy: var(--color-accent-2);
-    --bp-go: var(--color-gold);
+    --bp-go: var(--color-accent-2);
     --bp-ok: var(--color-mint);
     --bp-vi: #b06bff;
     --bp-glass: linear-gradient(160deg, rgb(20 22 34 / 74%), rgb(9 10 18 / 70%));
@@ -226,8 +226,8 @@
     color: var(--bp-ok);
   }
   .bp-btn.vip {
-    background: linear-gradient(135deg, rgb(255 176 32 / 18%), rgb(255 138 31 / 14%));
-    border-color: rgb(255 176 32 / 50%);
+    background: linear-gradient(135deg, rgb(32 191 255 / 18%), rgb(31 223 255 / 14%));
+    border-color: rgb(32 191 255 / 50%);
     color: #ffe9a8;
   }
   .bp-btn.vip.on {
@@ -420,7 +420,7 @@
     min-width: 0;
   }
   .bp-slot.vip {
-    border-color: rgb(255 176 32 / 14%);
+    border-color: rgb(32 191 255 / 14%);
   }
   .bp-slot.has {
     border-style: solid;
@@ -457,8 +457,8 @@
   }
   .bp-col.key .bp-num {
     color: var(--bp-go);
-    border-color: rgb(255 176 32 / 55%);
-    background: rgb(255 176 32 / 8%);
+    border-color: rgb(32 191 255 / 55%);
+    background: rgb(32 191 255 / 8%);
   }
   .bp-col.cur .bp-num {
     color: #fff;
@@ -563,7 +563,7 @@
   }
   .bp-rw.vip .bp-pill {
     color: var(--bp-go);
-    border-color: rgb(255 176 32 / 35%);
+    border-color: rgb(32 191 255 / 35%);
   }
 
   /* Значок комплекта (бандл ×2/×3) */
@@ -629,7 +629,7 @@
     width: 3px;
     height: 28px;
     margin-left: -1.5px;
-    background: rgb(255 176 32 / 55%);
+    background: rgb(32 191 255 / 55%);
     border-radius: 3px;
     pointer-events: none;
   }
@@ -820,8 +820,8 @@
   }
   .bp-mdl .btn.vip {
     border: 0;
-    background: linear-gradient(135deg, #ffd04d, #ff8a1f);
-    color: #2a1500;
+    background: linear-gradient(135deg, #4dbeff, #1fdfff);
+    color: #00232a;
   }
   .bp-mdl .btn:disabled {
     opacity: 0.5;

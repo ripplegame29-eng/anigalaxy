@@ -1072,7 +1072,7 @@ export function AltPlayer({
           <div className="h-0.5 bg-gradient-to-r from-transparent via-amber-400/70 to-transparent" />
 
           {!premiumActive && (
-            <p className="mx-2 mb-1.5 rounded-lg bg-gold/10 px-3 py-2 text-[11px] leading-relaxed text-gold/90 ring-1 ring-gold/25">
+            <p className="mx-2 mb-1.5 rounded-lg bg-accent-2/10 px-3 py-2 text-[11px] leading-relaxed text-accent-2/90 ring-1 ring-accent-2/25">
               {hqFreeForEpisode(episode) ? (
                 <>
                   4K и 2K открыты на первых {FREE_HQ_EPISODES} сериях — это апскейл
@@ -1145,7 +1145,7 @@ export function AltPlayer({
                     )}
                   </span>
                   {locked ? (
-                    <span className="flex shrink-0 items-center gap-1.5 rounded-lg bg-gold/18 px-2 py-1 text-[10px] font-black uppercase tracking-wide text-gold ring-1 ring-gold/35">
+                    <span className="flex shrink-0 items-center gap-1.5 rounded-lg bg-accent-2/18 px-2 py-1 text-[10px] font-black uppercase tracking-wide text-accent-2 ring-1 ring-accent-2/35">
                       <svg
                         viewBox="0 0 24 24"
                         className="h-3.5 w-3.5"
@@ -1189,7 +1189,7 @@ export function AltPlayer({
             tabIndex={-1}
             className="w-full max-w-md rounded-2xl border border-line bg-[#0d0d15]/98 p-5 text-center shadow-[0_36px_80px_-28px_rgba(0,0,0,1)] outline-none animate-fade-in"
           >
-            <span className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-gold/15 text-gold ring-1 ring-gold/30">
+            <span className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-accent-2/15 text-accent-2 ring-1 ring-accent-2/30">
               <svg
                 viewBox="0 0 24 24"
                 className="h-6 w-6"

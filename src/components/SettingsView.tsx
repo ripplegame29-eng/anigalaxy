@@ -161,7 +161,7 @@ export function SettingsView() {
                   <h1 className="ag-shop-h1 truncate text-2xl font-black tracking-tight text-white sm:text-3xl">
                     Настройки
                   </h1>
-                  {premium && <span className={`${CHIP} border-gold/40 bg-gold/15 text-gold`}>Premium</span>}
+                  {premium && <span className={`${CHIP} border-accent-2/40 bg-accent-2/15 text-accent-2`}>Premium</span>}
                 </div>
                 <p className="mt-1 text-sm text-muted">
                   Твоя орбита, твои правила — профиль, внешний вид, приватность и подписка
@@ -234,7 +234,7 @@ export function SettingsView() {
                 </Link>
                 <Link
                   href="/premium"
-                  className={`${CHIP} border-gold/40 bg-gold/10 text-gold transition hover:bg-gold/18`}
+                  className={`${CHIP} border-accent-2/40 bg-accent-2/10 text-accent-2 transition hover:bg-accent-2/18`}
                 >
                   Premium
                 </Link>

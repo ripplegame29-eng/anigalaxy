@@ -23,7 +23,7 @@
   --pra-blue: #2f8bff;
   --pra-cyan: #38d6ff;
   --pra-violet: #8a6bff;
-  --pra-gold: #ffc861;
+  --pra-gold: #61d1ff;
   --pra-ok: #3ddc97;
   --pra-r: 22px;
 
@@ -155,7 +155,7 @@
   stroke-width: 1.8;
   stroke-linecap: round;
   stroke-linejoin: round;
-  filter: drop-shadow(0 0 8px #ffc86199);
+  filter: drop-shadow(0 0 8px #61d1ff99);
   animation: pra-bob 3.4s ease-in-out infinite;
 }
 
@@ -444,7 +444,7 @@
   padding: 3px 9px;
   border-radius: 99px;
   background: linear-gradient(90deg, var(--pra-gold), #ff9a5c);
-  color: #2a1400;
+  color: #00242a;
 }
 
 .pra-plan[aria-pressed="true"] {

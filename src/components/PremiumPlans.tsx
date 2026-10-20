@@ -211,7 +211,7 @@ export function PremiumPlans() {
         );
       })}
     </div>
-    <p className="mt-5 text-center text-xs leading-relaxed text-gold/80">
+    <p className="mt-5 text-center text-xs leading-relaxed text-accent-2/80">
       Демо: платёжный шлюз не подключён. Кнопка активирует подписку на выбранный
       срок без оплаты — это единственный способ проверить привилегии Premium.
     </p>
@@ -226,7 +226,7 @@ export function PremiumLoginNote() {
   const account = useAccount();
   if (account) return null;
   return (
-    <p className="mt-4 text-sm text-gold">
+    <p className="mt-4 text-sm text-accent-2">
       Для оформления подписки необходимо{" "}
       <AuthTrigger
         tab="login"
@@ -310,7 +310,7 @@ export function PromoCode() {
           </p>
         )
       ) : (
-        <p className="mt-3 text-sm text-gold/85">Войди в аккаунт, чтобы применить промокод</p>
+        <p className="mt-3 text-sm text-accent-2/85">Войди в аккаунт, чтобы применить промокод</p>
       )}
     </section>
   );

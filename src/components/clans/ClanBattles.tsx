@@ -243,7 +243,7 @@ function WarPanel({ clan, now }: { clan: Clan; now: number }) {
         {view.premiumBoost && (
           <div>
             <span className="cl-lbl !mb-1">Ставка заданий</span>
-            <p className="text-sm font-semibold text-gold">×{PREMIUM_CLAN_MULT} за единицу</p>
+            <p className="text-sm font-semibold text-accent-2">×{PREMIUM_CLAN_MULT} за единицу</p>
           </div>
         )}
       </div>

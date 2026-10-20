@@ -52,7 +52,7 @@ export function ClanExpeditionView({
               key={route.id}
               type="button"
               className="cl-building text-left"
-              style={{ ["--c" as string]: route.id === "abyss" ? "#ff4d6d" : route.id === "hunter" ? "#ffb020" : "#00c2a8" }}
+              style={{ ["--c" as string]: route.id === "abyss" ? "#ff4d6d" : route.id === "hunter" ? "#20bfff" : "#00c2a8" }}
               onClick={() => {
                 const result = startExpedition(route.id);
                 say(result.ok ? `Поход по маршруту «${route.name}»` : (result.reason ?? "Не удалось"));
@@ -147,7 +147,7 @@ export function ClanExpeditionView({
                       : (result.reason ?? "Не удалось"),
                   );
                 }}
-                style={{ ["--c" as string]: route.id === "abyss" ? "#ff4d6d" : route.id === "hunter" ? "#ffb020" : "#00c2a8" }}
+                style={{ ["--c" as string]: route.id === "abyss" ? "#ff4d6d" : route.id === "hunter" ? "#20bfff" : "#00c2a8" }}
               >
                 {route.glyph} Сменить на «{route.name}»
               </button>
@@ -250,7 +250,7 @@ export function ClanExpeditionView({
                   const result = startExpedition(route.id as ExpeditionRoute);
                   say(result.ok ? `Поход по маршруту «${route.name}»` : (result.reason ?? "Не удалось"));
                 }}
-                style={{ ["--c" as string]: route.id === "abyss" ? "#ff4d6d" : route.id === "hunter" ? "#ffb020" : "#00c2a8" }}
+                style={{ ["--c" as string]: route.id === "abyss" ? "#ff4d6d" : route.id === "hunter" ? "#20bfff" : "#00c2a8" }}
               >
                 {route.glyph} «{route.name}»
               </button>

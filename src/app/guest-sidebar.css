@@ -17,7 +17,7 @@
 .gst {
   --vio: #8b5cf6;
   --cy: #22d3ee;
-  --gold: #f5c76b;
+  --gold: #6bcbf5;
   --rose: #f472b6;
   --ok: #34d399;
   --mut: #8792b4;
@@ -375,13 +375,13 @@
 .gst-btn.is-prem {
   height: 52px;
   border: 1px solid transparent;
-  color: var(--gold);
+  color: var(--color-accent-2);
   background:
     linear-gradient(#120e22, #120e22) padding-box,
-    linear-gradient(120deg, var(--gold), var(--rose), var(--vio), var(--gold)) border-box;
+    linear-gradient(120deg, var(--color-accent-2), var(--rose), var(--vio), var(--color-accent-2)) border-box;
   background-size: 100% 100%, 300% 100%;
   animation: gst-foil 6s linear infinite;
-  box-shadow: 0 0 34px -12px rgba(245, 199, 107, 0.55);
+  box-shadow: 0 0 34px -12px rgba(107, 203, 245, 0.55);
 }
 
 @keyframes gst-foil {
@@ -395,14 +395,14 @@
 }
 
 .gst-btn.is-prem span {
-  background: linear-gradient(90deg, #ffe8b0, #f5c76b, #f9a8d4);
+  background: linear-gradient(90deg, #ffe8b0, #6bcbf5, #f9a8d4);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
 }
 
 .gst-btn.is-prem .gst-i {
-  color: var(--gold);
+  color: var(--color-accent-2);
 }
 
 .gst-sp {
@@ -411,7 +411,7 @@
   height: 3px;
   border-radius: 50%;
   background: #fff;
-  box-shadow: 0 0 6px 1px var(--gold);
+  box-shadow: 0 0 6px 1px var(--color-accent-2);
   animation: gst-spk 2.6s ease-in-out infinite;
   opacity: 0;
 }

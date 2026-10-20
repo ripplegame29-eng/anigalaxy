@@ -241,7 +241,7 @@ export function AccountCard({ onNavigate }: { onNavigate?: () => void }) {
         <span className="flex items-center gap-1.5">
           <span className="truncate text-sm font-extrabold text-white">{account.nickname}</span>
           {premium && (
-            <span className="shrink-0 rounded bg-gold/20 px-1.5 py-0.5 text-[9px] font-black tracking-wide text-gold">
+            <span className="shrink-0 rounded bg-accent-2/20 px-1.5 py-0.5 text-[9px] font-black tracking-wide text-accent-2">
               PREMIUM
             </span>
           )}

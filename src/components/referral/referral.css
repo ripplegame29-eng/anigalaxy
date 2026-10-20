@@ -18,8 +18,8 @@
 .ref-page{
   box-sizing:border-box;color-scheme:dark;
   --bg:#050810;--text:#eef2fb;--muted:#8d98b4;--line:rgba(96,150,255,.16);
-  --blue:#2b7fff;--cyan:#22d3ee;--gold:#f5b74a;--green:#34e0a1;
-  --c-common:#7f9bd1;--c-rare:#22d3ee;--c-epic:#9b86ff;--c-leg:#f5b74a;
+  --blue:#2b7fff;--cyan:#22d3ee;--gold:#4ac5f5;--green:#34e0a1;
+  --c-common:#7f9bd1;--c-rare:#22d3ee;--c-epic:#9b86ff;--c-leg:#4ac5f5;
   --disp:var(--font-display),"var(--font-body)",sans-serif;
 }
 .ref-page .sky{position:fixed;inset:0;z-index:-2;pointer-events:none;background:radial-gradient(1000px 600px at 78% 8%,rgba(43,127,255,.2),transparent 65%),radial-gradient(800px 600px at 0% 55%,rgba(124,92,255,.1),transparent 60%),radial-gradient(700px 500px at 100% 90%,rgba(34,211,238,.07),transparent 60%),var(--bg)}
@@ -163,13 +163,13 @@
 .ref-page .pod .p{text-align:center}
 .ref-page .pod .pw{position:relative;display:inline-grid;place-items:center;margin-bottom:8px}
 .ref-page .pod .pw::after{content:"";position:absolute;inset:-10px;border-radius:50%;border:1px dashed rgba(124,192,255,.45);animation:spin 18s linear infinite}
-.ref-page .pod .p1 .pw::after{border-color:rgba(245,183,74,.6)}
+.ref-page .pod .p1 .pw::after{border-color:rgba(74,197,245,.6)}
 .ref-page .pod b{display:flex;gap:5px;align-items:center;justify-content:center;font-size:14px}
 .ref-page .pod small{display:block;font-size:11px;color:var(--muted);margin-top:2px}
 .ref-page .pod small em{font-style:normal;color:#fff;font:800 15px var(--font-display)}
 .ref-page .pod .rkn{display:inline-block;margin-top:8px;font:800 12px var(--font-display);padding:3px 11px;border-radius:99px;border:1px solid var(--line)}
-.ref-page .p1 .rkn{color:var(--gold);border-color:rgba(245,183,74,.5)}
-.ref-page .crown{width:14px;height:14px;color:var(--gold);flex:none}
+.ref-page .p1 .rkn{color:var(--color-accent-2);border-color:rgba(74,197,245,.5)}
+.ref-page .crown{width:14px;height:14px;color:var(--color-accent-2);flex:none}
 .ref-page .lr{position:relative;display:flex;align-items:center;gap:12px;padding:9px 20px;border-top:1px solid var(--line);overflow:hidden}
 .ref-page .lr .rb{position:absolute;left:0;top:0;bottom:0;width:var(--w);background:linear-gradient(90deg,rgba(43,127,255,.2),transparent);transition:width .8s}
 .ref-page .lr>*{position:relative}

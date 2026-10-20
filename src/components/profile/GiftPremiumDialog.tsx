@@ -24,14 +24,14 @@ const WR = [
   ["Лазурь", "#38bdf8", "#2563eb"],
   ["Сакура", "#f472b6", "#fb7185"],
   ["Неон", "#22d3ee", "#34d399"],
-  ["Золото", "#f5c76b", "#b45309"],
+  ["Золото", "#6bcbf5", "#b45309"],
 ];
 
 const FR = [
   ["Weiz", "#2563eb,#ec4899"],
   ["Аки", "#f472b6,#2563eb"],
   ["Рин", "#94a3b8,#334155"],
-  ["Юки", "#fbbf24,#b45309"],
+  ["Юки", "#24affb,#b45309"],
   ["Хана", "#fb7185,#9f1239"],
 ];
 
@@ -762,14 +762,14 @@ export function GiftPremiumDialog({ className, label }: GiftPremiumDialogProps) 
                       y1="24"
                       x2={xOf(after)}
                       y2="24"
-                      stroke="#f5c76b"
+                      stroke="#6bcbf5"
                       strokeWidth="3"
                       strokeDasharray="4 4"
-                      style={{ filter: "drop-shadow(0 0 4px #f5c76b)" }}
+                      style={{ filter: "drop-shadow(0 0 4px #6bcbf5)" }}
                     />
                     {MS.map((m, i) => {
                       const x = 14 + i * st;
-                      const c = m <= CUR ? "#3b9eff" : m <= after ? "#f5c76b" : "#2a3150";
+                      const c = m <= CUR ? "#3b9eff" : m <= after ? "#6bcbf5" : "#2a3150";
                       return (
                         <g key={m}>
                           <circle
@@ -779,7 +779,7 @@ export function GiftPremiumDialog({ className, label }: GiftPremiumDialogProps) 
                             fill={m <= after ? c : "#0b1024"}
                             stroke={c}
                             strokeWidth="2"
-                            style={m <= after && m > CUR ? { filter: "drop-shadow(0 0 6px #f5c76b)" } : undefined}
+                            style={m <= after && m > CUR ? { filter: "drop-shadow(0 0 6px #6bcbf5)" } : undefined}
                           />
                           <text x={x} y="50" fill="#8792b4" fontSize="9" fontWeight="700" textAnchor="middle">
                             {m}

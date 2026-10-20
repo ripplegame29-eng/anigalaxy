@@ -60,7 +60,7 @@ export function AnimeCard({
 
         {/* Рейтинг */}
         {rating && (
-          <span className="absolute left-2 top-2 flex items-center gap-1 rounded-lg bg-ink/80 px-2 py-1 text-[11px] font-extrabold text-gold ring-1 ring-white/10 backdrop-blur-sm transition-colors group-hover:bg-ink/95">
+          <span className="absolute left-2 top-2 flex items-center gap-1 rounded-lg bg-ink/80 px-2 py-1 text-[11px] font-extrabold text-accent-2 ring-1 ring-white/10 backdrop-blur-sm transition-colors group-hover:bg-ink/95">
             <svg viewBox="0 0 24 24" className="h-3 w-3" fill="currentColor">
               <path d="m12 17.3-6.16 3.7 1.64-7.03L2 9.24l7.19-.61L12 2l2.81 6.63 7.19.61-5.48 4.73L18.16 21z" />
             </svg>

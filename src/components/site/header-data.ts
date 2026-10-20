@@ -130,7 +130,7 @@ export const NOTIFICATIONS: HeaderNotification[] = [
     icon: "trophy",
     title: "Новое достижение",
     text: "«Хранитель пасхалок» получено",
-    color: "#f5b74a",
+    color: "#4ac5f5",
     ago: "2 мин",
     unread: true,
   },

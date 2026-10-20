@@ -277,7 +277,7 @@ export default function MyList({ user = { name: 'otaku_rin' }, readOnly = false,
     upd(it.id, { ep, status: done ? 'completed' : ep > 0 && it.status === 'planned' ? 'watching' : it.status === 'completed' && it.eps && ep < it.eps ? 'watching' : it.status });
     if (done && it.status !== 'completed' && el) burst(el, SM.completed.c);
   };
-  const rate = (it: ListItem, n: number, el: Element) => { upd(it.id, { rating: it.rating === n ? 0 : n }); if (n === 10 && it.rating !== 10) burst(el, '#fbbf24'); };
+  const rate = (it: ListItem, n: number, el: Element) => { upd(it.id, { rating: it.rating === n ? 0 : n }); if (n === 10 && it.rating !== 10) burst(el, '#24affb'); };
   const toggleCol = (cid: string, id: string) => setData((d) => ({ ...d, cols: d.cols.map((c) => (c.id !== cid ? c : { ...c, ids: c.ids.includes(id) ? c.ids.filter((x) => x !== id) : [...c.ids, id] })) }));
   const removeItems = (ids: string[]) => {
     const set = new Set(ids), removed = data.items.filter((i) => set.has(i.id)); if (!removed.length) return;
@@ -760,7 +760,7 @@ const CSS = `
 .al-rh{display:flex;align-items:stretch;gap:7px;height:92px;margin-top:20px}
 .al-rh>div{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0}
 .al-rbw{flex:1;display:flex;align-items:flex-end;width:100%}
-.al-rbw i{display:block;width:100%;border-radius:6px 6px 3px 3px;background:linear-gradient(180deg,#fcd34d,#f59e0b);box-shadow:0 0 14px -4px #f59e0b;transform-origin:bottom;transition:transform 1s cubic-bezier(.2,.8,.2,1)}
+.al-rbw i{display:block;width:100%;border-radius:6px 6px 3px 3px;background:linear-gradient(180deg,#4db8fc,#0bb5f5);box-shadow:0 0 14px -4px #0bb5f5;transform-origin:bottom;transition:transform 1s cubic-bezier(.2,.8,.2,1)}
 .al-rh .z i{background:rgba(255,255,255,.08);box-shadow:none}
 .al-rh span{font-size:10px;font-weight:700;color:var(--dim)}
 .al-sm{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:16px;font-size:13px;font-weight:600;color:var(--mut)}.al-sm b{color:#fff;font-variant-numeric:tabular-nums}
@@ -839,7 +839,7 @@ const CSS = `
 .al-card:hover .al-poster::before,.al-card:hover .al-poster::after{opacity:1}
 .al-b{position:absolute;z-index:3;display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:9px;background:rgba(6,8,18,.74);backdrop-filter:blur(8px);font-size:11px;font-weight:800;color:#e8edff}
 .al-b i{width:6px;height:6px;border-radius:50%;background:currentColor;box-shadow:0 0 8px currentColor}
-.al-b.tl{left:9px;top:9px}.al-b u{text-decoration:none;color:#fbbf24}.al-b.tr{right:9px;top:9px}.al-b.bl{left:9px;bottom:13px}
+.al-b.tl{left:9px;top:9px}.al-b u{text-decoration:none;color:#24affb}.al-b.tr{right:9px;top:9px}.al-b.bl{left:9px;bottom:13px}
 .al-ep{transition:opacity .25s}.al-card:hover .al-ep,.al-card:focus-within .al-ep{opacity:0}
 .al-pb{position:absolute;z-index:3;left:0;right:0;bottom:0;height:4px;background:rgba(255,255,255,.1)}
 .al-pb i{display:block;height:100%;background:var(--s);box-shadow:0 0 12px var(--s);transition:width .6s cubic-bezier(.2,.8,.2,1)}
@@ -866,7 +866,7 @@ const CSS = `
 .al-lt h3{font-size:15px;font-weight:800;line-height:1.3;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
 .al-lpg{display:grid;gap:7px;font-size:12px;font-weight:700;color:var(--mut)}
 .al-pb.s{position:relative;display:block;height:5px;border-radius:99px;overflow:hidden}
-.al-lr{font-size:14px;font-weight:800;text-align:center}.al-lr u{text-decoration:none;color:#fbbf24}
+.al-lr{font-size:14px;font-weight:800;text-align:center}.al-lr u{text-decoration:none;color:#24affb}
 .al-lq{display:flex;gap:6px}.al-lq button{height:32px}
 .al-ck.inl{position:static}
 
@@ -953,8 +953,8 @@ const CSS = `
 .al-step input:hover::-webkit-slider-thumb{transform:scale(1.18)}
 .al-rate{display:flex;flex-direction:row-reverse;gap:5px}
 .al-rate button{flex:1;min-width:0;aspect-ratio:1;border-radius:10px;border:1px solid var(--ib);background:#0a1124;font-size:13px;font-weight:700;color:var(--mut);transition:.15s}
-.al-rate button:hover:not(:disabled),.al-rate button:hover:not(:disabled)~button,.al-rate button.on{background:linear-gradient(180deg,#fcd34d,#f59e0b);border-color:transparent;color:#1a1204}
-.al-rate button:hover:not(:disabled){transform:translateY(-4px) scale(1.08);box-shadow:0 0 16px -4px #fbbf24}
+.al-rate button:hover:not(:disabled),.al-rate button:hover:not(:disabled)~button,.al-rate button.on{background:linear-gradient(180deg,#4db8fc,#0bb5f5);border-color:transparent;color:#04141a}
+.al-rate button:hover:not(:disabled){transform:translateY(-4px) scale(1.08);box-shadow:0 0 16px -4px #24affb}
 .al-drawer textarea{width:100%;min-height:136px;resize:vertical;padding:15px;border-radius:15px;background:var(--in);border:1px solid var(--ib);font-size:14px;line-height:1.6;transition:.25s}
 .al-drawer textarea:focus{outline:0;border-color:var(--acc);box-shadow:0 0 28px -8px var(--acc)}
 .al-chips{display:flex;flex-wrap:wrap;gap:8px}

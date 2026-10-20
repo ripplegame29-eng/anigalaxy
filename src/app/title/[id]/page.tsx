@@ -5,6 +5,7 @@ import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { Poster } from "@/components/Poster";
 import { AnimeRow } from "@/components/AnimeRow";
 import { WatchBox } from "@/components/WatchBox";
+import { WatchButton } from "@/components/WatchButton";
 import { TitleActions } from "@/components/TitleActions";
 import { FranchiseTimeline, type FranchiseItem } from "@/components/FranchiseTimeline";
 import { ScreenshotsGallery } from "@/components/ScreenshotsGallery";
@@ -236,7 +237,7 @@ export default async function TitlePage({ params }: PageParams) {
               <div className="mt-5 flex flex-wrap items-center gap-5">
                 {rating && (
                   <div className="flex items-center gap-3 rounded-2xl bg-white/6 px-4 py-3 ring-1 ring-white/10">
-                    <span className="text-3xl font-extrabold tabular-nums text-gold">{rating}</span>
+                    <span className="text-3xl font-extrabold tabular-nums text-accent-2">{rating}</span>
                     <span className="text-xs leading-tight text-muted">
                       {card.ratingSource === "shikimori"
                         ? "Shikimori"
@@ -289,12 +290,7 @@ export default async function TitlePage({ params }: PageParams) {
 
               {/* Действия */}
               <div className="mt-6 flex flex-wrap items-center gap-3">
-                <a href="#watch" className="btn-primary inline-flex items-center gap-2 rounded-xl px-6 py-3 text-sm font-bold text-white">
-                  <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor">
-                    <path d="M8 5.14v13.72c0 .8.87 1.3 1.56.88l10.9-6.86a1.04 1.04 0 0 0 0-1.76L9.56 4.26A1.04 1.04 0 0 0 8 5.14Z" />
-                  </svg>
-                  Смотреть онлайн
-                </a>
+                <WatchButton id={card.id} />
 
                 {/* «В избранное» и «В подборку» (localStorage + модалка) */}
                 <TitleActions anime={{ id: card.id, title: card.title, poster: card.poster }} />

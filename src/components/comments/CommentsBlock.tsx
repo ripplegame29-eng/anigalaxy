@@ -71,10 +71,10 @@ const ERA_TONES = [
   "from-accent to-accent-2",
   "from-accent-2 to-mint",
   "from-mint to-accent-2",
-  "from-gold to-accent-2",
-  "from-gold to-mint",
-  "from-gold to-accent",
-  "from-gold via-rose-400 to-accent-2",
+  "from-accent-2 to-accent-2",
+  "from-accent-2 to-mint",
+  "from-accent-2 to-accent",
+  "from-accent-2 via-rose-400 to-accent-2",
 ];
 
 export type CommentsScope = typeof PROFILE_SCOPE | { kind: "title"; titleId: string };

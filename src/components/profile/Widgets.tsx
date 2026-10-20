@@ -733,7 +733,7 @@ function StatsWidget() {
       { label: "Просмотрено", value: Math.floor(stats.minutes / 60), icon: "clock", color: "#5b7cff", color2: "#9a6bff", format: fmtHours },
       { label: "Аниме", value: stats.titles, icon: "tv", color: "#1fd6a0", color2: "#18a0ff" },
       { label: "Серий", value: stats.episodes, icon: "play", color: "#38b6e8", color2: "#5b7cff" },
-      { label: "Достижения", value: unlocked, icon: "trophy", color: "#ffc233", color2: "#ff8a1f" },
+      { label: "Достижения", value: unlocked, icon: "trophy", color: "#33bbff", color2: "#1fdfff" },
     ],
     [stats.minutes, stats.titles, stats.episodes, unlocked],
   );

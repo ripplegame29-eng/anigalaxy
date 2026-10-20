@@ -68,12 +68,12 @@ export function toastsForEffect(effect: ProgressEffect): ToastInput[] {
 
 const KIND_CLASS: Record<ToastItem["kind"], string> = {
   xp: "ring-accent/45 bg-accent/12 text-accent-2",
-  level: "ring-gold/50 bg-gold/14 text-gold",
-  achievement: "ring-gold/40 bg-gold/10 text-gold",
+  level: "ring-accent-2/50 bg-accent-2/14 text-accent-2",
+  achievement: "ring-accent-2/40 bg-accent-2/10 text-accent-2",
   tag: "ring-accent-2/45 bg-accent-2/12 text-accent-2",
   quest: "ring-mint/40 bg-mint/12 text-mint",
   ac: "ring-accent-2/45 bg-accent-2/12 text-accent-2",
-  premium: "ring-gold/50 bg-gold/14 text-gold",
+  premium: "ring-accent-2/50 bg-accent-2/14 text-accent-2",
 };
 
 function ToastCard({ toast }: { toast: ToastItem }) {

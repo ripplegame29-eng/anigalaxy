@@ -58,7 +58,7 @@ export function PassPurchase({ premium, level, totals }: PassPurchaseProps) {
         <p className="text-[10px] font-black uppercase tracking-[0.18em] text-accent-2">
           Боевой пропуск
         </p>
-        <span className="rounded-full bg-gold/15 px-2 py-0.5 text-[10px] font-black text-gold ring-1 ring-gold/40">
+        <span className="rounded-full bg-accent-2/15 px-2 py-0.5 text-[10px] font-black text-accent-2 ring-1 ring-accent-2/40">
           ~20% выгоднее
         </span>
       </div>

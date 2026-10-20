@@ -32,7 +32,7 @@ export function StoreView() {
           одно и то же дважды на странице незачем. */}
       <section className="ag-card relative overflow-hidden">
         <div
-          className="pointer-events-none absolute inset-0 bg-gradient-to-r from-accent/18 via-accent-2/8 to-gold/10"
+          className="pointer-events-none absolute inset-0 bg-gradient-to-r from-accent/18 via-accent-2/8 to-accent-2/10"
           aria-hidden
         />
         <div
@@ -65,7 +65,7 @@ export function StoreView() {
                   <Link href="/profile?tab=quests" className={`${CHIP} bg-mint/12 text-mint ring-mint/35 hover:bg-mint/20`}>
                     Квесты дня
                   </Link>
-                  <Link href="/premium" className={`${CHIP} border-gold/40 bg-gold/10 text-gold hover:bg-gold/18`}>
+                  <Link href="/premium" className={`${CHIP} border-accent-2/40 bg-accent-2/10 text-accent-2 hover:bg-accent-2/18`}>
                     Premium
                   </Link>
                 </div>
@@ -590,7 +590,7 @@ function CoinPacks() {
       {/* ---------------------------- Шапка секции --------------------------- */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="flex items-center gap-2.5 text-lg font-black uppercase tracking-tight text-white">
-          <span className="grid h-9 w-9 place-items-center rounded-xl bg-gold/15 text-gold ring-1 ring-gold/35">
+          <span className="grid h-9 w-9 place-items-center rounded-xl bg-accent-2/15 text-accent-2 ring-1 ring-accent-2/35">
             <svg
               viewBox="0 0 24 24"
               className="h-5 w-5"
@@ -628,7 +628,7 @@ function CoinPacks() {
               <span
                 className={`absolute right-0 top-0 z-10 rounded-md px-1.5 py-0.5 text-[10px] font-black ring-1 ${
                   pack.tone === "gold"
-                    ? "bg-gold/15 text-gold ring-gold/40"
+                    ? "bg-accent-2/15 text-accent-2 ring-accent-2/40"
                     : "bg-accent/18 text-accent-2 ring-accent/40"
                 }`}
               >

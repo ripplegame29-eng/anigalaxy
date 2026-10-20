@@ -150,7 +150,7 @@ export function LevelsView() {
                   <span className="text-muted">
                     {num(info.into)} / {num(info.need)} XP до {info.level + 1}
                   </span>
-                  <span className="text-gold">{info.percent}%</span>
+                  <span className="text-accent-2">{info.percent}%</span>
                 </div>
                 <div
                   className="mt-2 h-3 overflow-hidden rounded-full bg-ink-soft ring-1 ring-line"
@@ -161,7 +161,7 @@ export function LevelsView() {
                   aria-label={`Прогресс до уровня ${info.level + 1}`}
                 >
                   <div
-                    className="h-full rounded-full bg-gradient-to-r from-gold via-accent to-accent-2 transition-[width] duration-700"
+                    className="h-full rounded-full bg-gradient-to-r from-accent-2 via-accent to-accent-2 transition-[width] duration-700"
                     style={{ width: `${Math.max(info.percent, 2)}%` }}
                   />
                 </div>
@@ -234,7 +234,7 @@ export function LevelsView() {
                 key={item.level}
                 className={`relative overflow-hidden rounded-2xl border p-4 text-center transition ${
                   current
-                    ? "border-gold/70 bg-gradient-to-b from-gold/15 to-card shadow-[0_0_40px_-16px_rgba(255,176,32,0.9)]"
+                    ? "border-accent-2/70 bg-gradient-to-b from-accent-2/15 to-card shadow-[0_0_40px_-16px_rgba(32,191,255,0.9)]"
                     : done
                       ? "border-line bg-card/70"
                       : "border-line bg-ink-soft/60"
@@ -480,7 +480,7 @@ function MilestoneRail({ current, next }: { current: number; next: number }) {
     <div className="relative mt-8 hidden sm:block" aria-hidden>
       <div className="absolute left-0 right-0 top-4 h-0.5 rounded-full bg-line" />
       <div
-        className="absolute left-0 top-4 h-0.5 rounded-full bg-gradient-to-r from-accent to-gold"
+        className="absolute left-0 top-4 h-0.5 rounded-full bg-gradient-to-r from-accent to-accent-2"
         style={{ width: `${Math.min(100, (current / MILESTONES[MILESTONES.length - 1]) * 100)}%` }}
       />
       <ol className="relative flex justify-between">
@@ -492,7 +492,7 @@ function MilestoneRail({ current, next }: { current: number; next: number }) {
               <span
                 className={`grid h-8 w-8 place-items-center rounded-full border-2 text-[11px] font-black transition ${
                   isNext
-                    ? "border-gold bg-gold text-ink shadow-[0_0_24px_-4px_rgba(255,176,32,0.9)]"
+                    ? "border-accent-2 bg-accent-2 text-ink shadow-[0_0_24px_-4px_rgba(32,191,255,0.9)]"
                     : done
                       ? "border-accent bg-accent text-white"
                       : "border-line bg-card text-muted"
@@ -501,7 +501,7 @@ function MilestoneRail({ current, next }: { current: number; next: number }) {
                 {level}
               </span>
               {isNext && (
-                <span className="rounded-full bg-gold/15 px-2 py-0.5 text-[10px] font-black text-gold">
+                <span className="rounded-full bg-accent-2/15 px-2 py-0.5 text-[10px] font-black text-accent-2">
                   Вы — {current}
                 </span>
               )}

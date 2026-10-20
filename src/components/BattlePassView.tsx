@@ -413,7 +413,7 @@ function StickyBar({
         </div>
 
         {premium && (
-          <span className="hidden shrink-0 text-[11px] font-black text-gold md:inline">✦ Premium</span>
+          <span className="hidden shrink-0 text-[11px] font-black text-accent-2 md:inline">✦ Premium</span>
         )}
 
         <button
@@ -448,11 +448,11 @@ function LineCard({
     <div
       className={`rounded-2xl border p-4 ${
         isPremium
-          ? "border-gold/25 bg-gradient-to-br from-gold/[0.08] to-transparent"
+          ? "border-accent-2/25 bg-gradient-to-br from-accent-2/[0.08] to-transparent"
           : "border-accent/20 bg-gradient-to-br from-accent/[0.07] to-transparent"
       }`}
     >
-      <p className={`text-[11px] font-black uppercase tracking-wide ${isPremium ? "text-gold" : "text-accent"}`}>
+      <p className={`text-[11px] font-black uppercase tracking-wide ${isPremium ? "text-accent-2" : "text-accent"}`}>
         {title}
         {locked && <span className="ml-2 font-bold text-muted">· нужен Premium</span>}
       </p>
@@ -608,13 +608,13 @@ function ExclusiveShowcase({
 
                   <span
                     className={`absolute left-2 top-2 rounded-md px-1.5 py-0.5 text-[10px] font-black tabular-nums ring-1 ${
-                      isPremium ? "bg-black/60 text-gold ring-gold/45" : "bg-black/60 text-white ring-white/25"
+                      isPremium ? "bg-black/60 text-accent-2 ring-accent-2/45" : "bg-black/60 text-white ring-white/25"
                     }`}
                   >
                     L{card.level}
                   </span>
                   {isPremium && (
-                    <span className="absolute right-2 top-2 rounded-md bg-black/60 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wide text-gold ring-1 ring-gold/45">
+                    <span className="absolute right-2 top-2 rounded-md bg-black/60 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wide text-accent-2 ring-1 ring-accent-2/45">
                       Premium
                     </span>
                   )}
@@ -644,9 +644,9 @@ function ExclusiveShowcase({
                     className="bp-btn w-full !py-1.5 !text-[11px]"
                     style={{
                       background: isPremium
-                        ? "linear-gradient(135deg,#ffd04d,#ff8a1f)"
+                        ? "linear-gradient(135deg,#4dbeff,#1fdfff)"
                         : "linear-gradient(135deg,#34e08a,#6cf0ff)",
-                      color: isPremium ? "#2a1500" : "#04140b",
+                      color: isPremium ? "#00232a" : "#04140b",
                       borderColor: "transparent",
                     }}
                     aria-label={`Каталог: выдать эксклюзив L${card.level} ${card.line}`}
@@ -658,7 +658,7 @@ function ExclusiveShowcase({
                     Получено
                   </span>
                 ) : isPremium && !statusCtx.premium ? (
-                  <span className="inline-block rounded-lg bg-gold/12 px-2.5 py-1 text-[11px] font-bold text-gold ring-1 ring-gold/30">
+                  <span className="inline-block rounded-lg bg-accent-2/12 px-2.5 py-1 text-[11px] font-bold text-accent-2 ring-1 ring-accent-2/30">
                     Нужен Premium
                   </span>
                 ) : (

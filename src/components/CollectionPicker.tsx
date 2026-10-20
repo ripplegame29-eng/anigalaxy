@@ -158,7 +158,7 @@ export function CollectionPicker({ open, onClose, anime, onToggle, onCreate, onC
   const burst = useCallback((el: Element | null) => {
     if (!el) return;
     const r = el.getBoundingClientRect();
-    const colors = ["#38e1ff", "#4dffb0", "#8b5cff", "#ffc861", "#2aa7ff"];
+    const colors = ["#38e1ff", "#4dffb0", "#8b5cff", "#61d1ff", "#2aa7ff"];
     const created: Particle[] = [];
     for (let i = 0; i < 10; i += 1) {
       particleId.current += 1;

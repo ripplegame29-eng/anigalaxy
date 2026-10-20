@@ -2,7 +2,7 @@
    Цвета меняются переменными на .pm-root. Шрифт наследуется от страницы. */
 .pm-root{
   --pm-accent:#2b7fff; --pm-text:#f2f2f5; --pm-muted:#8a8a96; --pm-line:rgba(255,255,255,.1);
-  --pm-gold:#e8a53a; --pm-red:#ff4d5e; --pm-ring-a:#ff6a6a; --pm-ring-b:#c1121f;
+  --pm-gold:#3abbe8; --pm-red:#ff4d5e; --pm-ring-a:#ff6a6a; --pm-ring-b:#c1121f;
   font-family:inherit; color:var(--pm-text); line-height:1.4;
 }
 .pm-root *,.pm-root *::before,.pm-root *::after{box-sizing:border-box}
@@ -129,7 +129,7 @@
 .pm-pbtn svg{flex:none;width:17px;height:17px}
 .pm-pbtn::after{content:"";background:linear-gradient(105deg,transparent 35%,rgba(255,255,255,.22) 50%,transparent 65%);
   animation:3.4s ease-in-out infinite pm-shine;position:absolute;inset:0;transform:translateX(-120%)}
-.pm-pbtn-on svg{color:#f5b74a}
+.pm-pbtn-on svg{color:#4ac5f5}
 @media (max-width:700px){.pm-pbtn{padding:0 12px}.pm-pbtn span{display:none}}
 @media (prefers-reduced-motion:reduce){.pm-pbtn,.pm-pbtn::after{transition-duration:.01ms!important;animation:none!important}}
 

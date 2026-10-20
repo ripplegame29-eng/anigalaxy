@@ -41,6 +41,8 @@ dev*.err
 
 # env files (can opt-in for committing if needed)
 .env*
+# шаблон без секретов — в git нужен
+!.env.example
 
 # Ролики главной страницы: 195 МБ, в историю не идут.
 # Инструкция по распаковке — public/video/README.md.

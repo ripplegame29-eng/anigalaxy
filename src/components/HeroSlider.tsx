@@ -146,7 +146,7 @@ export function HeroSlider({ items }: { items: AnimeCard[] }) {
               {active.status === "ongoing" ? "Выходит сейчас" : "Рекомендуем"}
             </span>
             {active.rating != null && (
-              <span className="flex items-center gap-1 rounded-full bg-white/8 px-3 py-1 text-xs font-bold text-gold ring-1 ring-white/10 backdrop-blur">
+              <span className="flex items-center gap-1 rounded-full bg-white/8 px-3 py-1 text-xs font-bold text-accent-2 ring-1 ring-white/10 backdrop-blur">
                 <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="currentColor">
                   <path d="m12 17.3-6.16 3.7 1.64-7.03L2 9.24l7.19-.61L12 2l2.81 6.63 7.19.61-5.48 4.73L18.16 21z" />
                 </svg>
@@ -213,6 +213,32 @@ export function HeroSlider({ items }: { items: AnimeCard[] }) {
           </div>
         </div>
       </div>
+
+      {/* Стрелки: влево/вправо по краям, на телефоне компактнее */}
+      {slides.length > 1 && (
+        <>
+          <button
+            type="button"
+            onClick={() => go(index - 1)}
+            aria-label="Предыдущий слайд"
+            className="absolute left-2 top-1/2 z-20 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-black/40 text-white ring-1 ring-white/15 backdrop-blur transition hover:bg-black/60 hover:ring-white/30 focus-visible:outline-2 focus-visible:outline-accent-2 sm:left-5 sm:h-12 sm:w-12"
+          >
+            <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+              <path d="m15 5-7 7 7 7" />
+            </svg>
+          </button>
+          <button
+            type="button"
+            onClick={() => go(index + 1)}
+            aria-label="Следующий слайд"
+            className="absolute right-2 top-1/2 z-20 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-black/40 text-white ring-1 ring-white/15 backdrop-blur transition hover:bg-black/60 hover:ring-white/30 focus-visible:outline-2 focus-visible:outline-accent-2 sm:right-5 sm:h-12 sm:w-12"
+          >
+            <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+              <path d="m9 5 7 7-7 7" />
+            </svg>
+          </button>
+        </>
+      )}
 
       {/* Навигация: точки по центру снизу */}
       {slides.length > 1 && (

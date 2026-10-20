@@ -26,7 +26,7 @@
   --blue: #2aa7ff;
   --cyan: #38e1ff;
   --violet: #8b5cff;
-  --gold: #ffc861;
+  --gold: #61d1ff;
   --pink: #ff5c9d;
 
   background: #05060a;
@@ -404,9 +404,9 @@
   letter-spacing: 0.14em;
   padding: 6px 12px;
   border-radius: 99px;
-  background: linear-gradient(120deg, rgba(255, 200, 97, 0.2), rgba(255, 92, 157, 0.15));
-  color: var(--gold);
-  border: 1px solid rgba(255, 200, 97, 0.3);
+  background: linear-gradient(120deg, rgba(97, 209, 255, 0.2), rgba(255, 92, 157, 0.15));
+  color: var(--color-accent-2);
+  border: 1px solid rgba(97, 209, 255, 0.3);
 }
 
 .col-page .col-slide h2 {
@@ -553,7 +553,7 @@
 .col-page .col-rk {
   font-size: 11px;
   font-weight: 800;
-  color: var(--gold);
+  color: var(--color-accent-2);
   margin-left: 4px;
 }
 
@@ -974,8 +974,8 @@
   letter-spacing: 0.1em;
   padding: 3px 8px;
   border-radius: 99px;
-  background: linear-gradient(120deg, rgba(255, 200, 97, 0.2), rgba(255, 92, 157, 0.16));
-  color: var(--gold);
+  background: linear-gradient(120deg, rgba(97, 209, 255, 0.2), rgba(255, 92, 157, 0.16));
+  color: var(--color-accent-2);
   font-weight: 800;
 }
 

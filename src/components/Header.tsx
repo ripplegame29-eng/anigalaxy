@@ -327,7 +327,7 @@ export function Header() {
               </div>
 
               {/* Разделы сайта */}
-              <p className="mb-1.5 mt-5 px-5 text-[10px] font-bold uppercase tracking-[0.16em] text-[#6e6e78]">
+              <p className="mb-1.5 mt-5 px-5 text-[10px] font-bold uppercase tracking-[0.16em] text-muted">
                 Разделы
               </p>
               <nav className="grid gap-0.5 px-2" aria-label="Разделы сайта">
@@ -382,7 +382,7 @@ export function Header() {
                   обещал разделы, которых у него нет */}
               {hasAccount && (
                 <>
-                  <p className="mb-1.5 mt-5 px-5 text-[10px] font-bold uppercase tracking-[0.16em] text-[#6e6e78]">
+                  <p className="mb-1.5 mt-5 px-5 text-[10px] font-bold uppercase tracking-[0.16em] text-muted">
                     Сообщество
                   </p>
                   <nav className="grid gap-0.5 px-2" aria-label="Разделы аккаунта">
@@ -398,7 +398,7 @@ export function Header() {
                 а выдуманные страницы в меню — это тупики, поэтому здесь только
                 та же строка, что в футере сайта */}
             <div className="shrink-0 border-t border-line px-5 py-3">
-              <p className="text-[11px] leading-relaxed text-[#55555e]">
+              <p className="text-[11px] leading-relaxed text-muted">
                 © 2026 AniGalaxy. Все права на контент принадлежат правообладателям.
               </p>
             </div>

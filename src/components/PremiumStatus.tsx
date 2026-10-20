@@ -88,12 +88,12 @@ const ICONS: Record<PremiumIcon, React.ReactNode> = {
 /** Цвет иконки привилегии — круг из макета, по порядку карточек */
 const ICON_COLOR: Record<PremiumIcon, string> = {
   quality: "#38d6ff",
-  boost: "#ffc861",
+  boost: "#61d1ff",
   clan: "#3ddc97",
   pass: "#60a5fa",
   cosmetics: "#a78bfa",
   gifts: "#22d3ee",
-  tag: "#ffc861",
+  tag: "#61d1ff",
 };
 
 /**

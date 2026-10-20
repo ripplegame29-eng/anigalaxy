@@ -336,7 +336,7 @@ export function CollectionsView({ posters, initialId }: CollectionsViewProps) {
       canvas.remove();
       return;
     }
-    const colors = ["#38e1ff", "#8b5cff", "#ff5c9d", "#ffc861", "#4dffb0"];
+    const colors = ["#38e1ff", "#8b5cff", "#ff5c9d", "#61d1ff", "#4dffb0"];
     const parts = Array.from({ length: 140 }, () => ({
       x: window.innerWidth / 2,
       y: window.innerHeight * 0.6,

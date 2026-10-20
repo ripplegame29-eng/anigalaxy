@@ -88,7 +88,7 @@ export function RewardModal({ card, status, premium, nickname, onClaim, onClose 
           </div>
           <div className="row">
             Линия
-            <b style={{ color: vip ? "var(--color-gold)" : "var(--bp-cy)" }}>
+            <b style={{ color: vip ? "var(--color-accent-2)" : "var(--bp-cy)" }}>
               {vip ? "Premium" : "Free"}
             </b>
           </div>

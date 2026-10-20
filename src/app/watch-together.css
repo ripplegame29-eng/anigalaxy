@@ -404,7 +404,7 @@
 }
 
 .wtv-sync.off {
-  color: #f5b94a;
+  color: #4ac3f5;
 }
 
 .wtv-rx {
@@ -712,9 +712,9 @@
   top: 22px;
   right: 22px;
   padding: 3px 10px;
-  border: 1px solid rgba(245, 185, 74, 0.4);
+  border: 1px solid rgba(74, 195, 245, 0.4);
   border-radius: 99px;
-  color: #f5b94a;
+  color: #4ac3f5;
   font-size: 11px;
   font-weight: 700;
 }
@@ -983,10 +983,10 @@
 
 .wtv-error {
   padding: 12px 16px;
-  border: 1px solid rgba(245, 185, 74, 0.35);
+  border: 1px solid rgba(74, 195, 245, 0.35);
   border-radius: 12px;
-  background: rgba(245, 185, 74, 0.1);
-  color: #f5b94a;
+  background: rgba(74, 195, 245, 0.1);
+  color: #4ac3f5;
   font-size: 14px;
   font-weight: 600;
 }

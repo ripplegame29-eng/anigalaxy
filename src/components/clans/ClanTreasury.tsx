@@ -150,7 +150,7 @@ export function ClanTreasury({ clan, game }: { clan: Clan; game: ClanGameState }
       <section
         data-reveal
         className="cl-reveal cl-panel cl-vault p-6 sm:p-8"
-        style={{ ["--c" as string]: art?.color ?? "#ffb020" }}
+        style={{ ["--c" as string]: art?.color ?? "#20bfff" }}
       >
         <VaultStage art={art} opened={Boolean(result?.ok)} />
 

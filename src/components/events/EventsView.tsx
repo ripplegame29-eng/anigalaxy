@@ -33,15 +33,15 @@ import "../../app/events.css";
 
 /* ───────────────────────────── Иконки макета ──────────────────────────── */
 
-const LANTERN_SVG = `<svg viewBox="0 0 24 32" aria-hidden="true"><path d="M12 0v4" stroke="#ffc861" stroke-width="1.6" fill="none"/><rect x="9" y="3.5" width="6" height="3" rx="1" fill="#ffc861"/><path d="M12 6c7 0 10 5 10 10s-3 10-10 10S2 21 2 16 5 6 12 6z" fill="#ff5a2a"/><path d="M12 6c-3 0-4 5-4 10s1 10 4 10M12 6c3 0 4 5 4 10s-1 10-4 10" stroke="#ffb066" stroke-width=".9" fill="none"/><rect x="9" y="25.5" width="6" height="3" rx="1" fill="#ffc861"/><path d="M10 28.5v3M12 28.5v3.5M14 28.5v3" stroke="#ffc861" stroke-width="1" fill="none"/></svg>`;
+const LANTERN_SVG = `<svg viewBox="0 0 24 32" aria-hidden="true"><path d="M12 0v4" stroke="#61d1ff" stroke-width="1.6" fill="none"/><rect x="9" y="3.5" width="6" height="3" rx="1" fill="#61d1ff"/><path d="M12 6c7 0 10 5 10 10s-3 10-10 10S2 21 2 16 5 6 12 6z" fill="#ff5a2a"/><path d="M12 6c-3 0-4 5-4 10s1 10 4 10M12 6c3 0 4 5 4 10s-1 10-4 10" stroke="#66e8ff" stroke-width=".9" fill="none"/><rect x="9" y="25.5" width="6" height="3" rx="1" fill="#61d1ff"/><path d="M10 28.5v3M12 28.5v3.5M14 28.5v3" stroke="#61d1ff" stroke-width="1" fill="none"/></svg>`;
 
 /* Одна монетка на весь сайт: та же `/coin.png`, а не нарисованное золотое
    «A» — иначе атомы в событиях выглядели другой валютой. */
 const COIN_SVG = `<img src="/coin.png" alt="" style="width:100%;height:100%;object-fit:contain" />`;
 
-const FIRE_SVG = `<svg viewBox="0 0 100 120" aria-hidden="true"><path class="ev-f1" d="M50 118C20 118 8 92 22 66c4 12 12 14 14 10C30 50 44 28 52 4c4 22 26 34 30 62 8 22-4 52-32 52z" fill="#ff5a2a"/><path class="ev-f2" d="M50 118c-18 0-26-16-16-34 4 8 9 8 11 4-2-18 4-30 9-42 3 14 16 22 18 40 5 16-3 32-22 32z" fill="#ff9a3d"/><path class="ev-f3" d="M50 118c-9 0-13-9-8-19 3 4 6 4 7 1 0-8 2-13 4-19 2 8 8 11 9 20 2 9-3 17-12 17z" fill="#ffd98a"/><path class="ev-lg" d="M12 117 88 101M88 117 12 101" stroke="#3a1a10" stroke-width="8" stroke-linecap="round"/></svg>`;
+const FIRE_SVG = `<svg viewBox="0 0 100 120" aria-hidden="true"><path class="ev-f1" d="M50 118C20 118 8 92 22 66c4 12 12 14 14 10C30 50 44 28 52 4c4 22 26 34 30 62 8 22-4 52-32 52z" fill="#ff5a2a"/><path class="ev-f2" d="M50 118c-18 0-26-16-16-34 4 8 9 8 11 4-2-18 4-30 9-42 3 14 16 22 18 40 5 16-3 32-22 32z" fill="#3de3ff"/><path class="ev-f3" d="M50 118c-9 0-13-9-8-19 3 4 6 4 7 1 0-8 2-13 4-19 2 8 8 11 9 20 2 9-3 17-12 17z" fill="#8adaff"/><path class="ev-lg" d="M12 117 88 101M88 117 12 101" stroke="#3a1a10" stroke-width="8" stroke-linecap="round"/></svg>`;
 
-const CROWN_SVG = `<svg viewBox="0 0 40 28" aria-hidden="true"><path d="M3 24 1 6l10 8 9-12 9 12 10-8-2 18z" fill="#ffc861" stroke="#fff3d6" stroke-width="1.2" stroke-linejoin="round"/><circle cx="20" cy="4" r="2" fill="#fff3d6"/></svg>`;
+const CROWN_SVG = `<svg viewBox="0 0 40 28" aria-hidden="true"><path d="M3 24 1 6l10 8 9-12 9 12 10-8-2 18z" fill="#61d1ff" stroke="#fff3d6" stroke-width="1.2" stroke-linejoin="round"/><circle cx="20" cy="4" r="2" fill="#fff3d6"/></svg>`;
 
 const FOX_MASK_SVG = `<svg viewBox="0 0 64 64" aria-hidden="true"><path d="M8 10 24 20h16L56 10c2 18-2 34-24 46C10 44 6 28 8 10z" fill="#f4efff"/><path d="M19 30c3 2 6 2 9 0M36 30c3 2 6 2 9 0M26 23l-3 6M38 23l3 6" stroke="#d92b3a" stroke-width="2.6" fill="none" stroke-linecap="round"/><path d="M32 39v5" stroke="#2a1a55" stroke-width="3" stroke-linecap="round"/></svg>`;
 
@@ -224,7 +224,7 @@ export function EventsView() {
           window.innerWidth / 2,
           window.innerHeight * 0.36,
           100,
-          ["#ffc861", "#ff8a3d", "#ff4f8b", "#fff3d6"],
+          ["#61d1ff", "#ff8a3d", "#ff4f8b", "#fff3d6"],
           1.7,
         );
         window.navigator.vibrate?.(60);
@@ -611,7 +611,7 @@ export function EventsView() {
           </p>
           <div className="ev-ex">
             <div className="ev-card">
-              <div className="ev-av" style={{ "--fr": "conic-gradient(#ff4f8b,#ff8a3d,#ffc861,#ff4f8b)", "--fg": "#ff4f8b" } as React.CSSProperties}>
+              <div className="ev-av" style={{ "--fr": "conic-gradient(#ff4f8b,#ff8a3d,#61d1ff,#ff4f8b)", "--fg": "#ff4f8b" } as React.CSSProperties}>
                 <span dangerouslySetInnerHTML={{ __html: FOX_MASK_SVG }} />
               </div>
               <h4>Рамка «Кицунэ»</h4>

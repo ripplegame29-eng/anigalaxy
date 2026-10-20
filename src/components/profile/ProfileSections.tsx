@@ -205,7 +205,7 @@ function Bar({
     <div className="h-2 w-full overflow-hidden rounded-full bg-white/10">
       <div
         className={`h-full rounded-full transition-[width] duration-700 ${
-          tone === "gold" ? "bg-gradient-to-r from-gold/70 to-gold" : "bg-gradient-to-r from-accent to-accent-2"
+          tone === "gold" ? "bg-gradient-to-r from-accent-2/70 to-accent-2" : "bg-gradient-to-r from-accent to-accent-2"
         } ${shine ? "ah-shine" : ""}`}
         style={{ width: `${value}%` }}
       />
@@ -323,7 +323,7 @@ function PremiumCard({ account }: { account: Account | null }) {
   if (!premium) {
     return (
       <Panel className="relative overflow-hidden">
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-gold/10 via-transparent to-transparent" />
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-accent-2/10 via-transparent to-transparent" />
         <div className="relative flex flex-wrap items-center justify-between gap-4">
           <div>
             <p className="text-base font-extrabold text-white">Premium не подключён</p>
@@ -342,17 +342,17 @@ function PremiumCard({ account }: { account: Account | null }) {
 
   return (
     <Panel className="relative overflow-hidden">
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-gold/14 via-transparent to-transparent" />
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-accent-2/14 via-transparent to-transparent" />
       <div className="relative flex flex-wrap items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2.5">
-            <span className="grid h-9 w-9 place-items-center rounded-xl bg-gold/15 text-gold ring-1 ring-gold/40">
+            <span className="grid h-9 w-9 place-items-center rounded-xl bg-accent-2/15 text-accent-2 ring-1 ring-accent-2/40">
               <svg viewBox="0 0 24 24" className="h-4.5 w-4.5" fill="none" stroke="currentColor" strokeWidth="2">
                 <path strokeLinecap="round" strokeLinejoin="round" d="m3 8 4 3 5-6 5 6 4-3-2 11H5L3 8Z" />
               </svg>
             </span>
             <div>
-              <p className="text-sm font-extrabold text-gold">Premium активен</p>
+              <p className="text-sm font-extrabold text-accent-2">Premium активен</p>
               <p className="text-xs text-muted">
                 Осталось {daysLeft} дн. · до {formatPremiumUntil(account)}
               </p>
@@ -363,7 +363,7 @@ function PremiumCard({ account }: { account: Account | null }) {
         <div className="flex items-center gap-3">
           <span className="flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.18em] text-muted">
             ON
-            <span className="relative h-5 w-9 rounded-full bg-gold/70">
+            <span className="relative h-5 w-9 rounded-full bg-accent-2/70">
               <span className="absolute right-0.5 top-0.5 h-4 w-4 rounded-full bg-white" />
             </span>
           </span>
@@ -563,7 +563,7 @@ export function AchievementsStrip({
                 Получено {unlocked.length} из {views.length}
               </span>
               <span className="text-right">
-                <span className="block text-sm font-black tabular-nums text-gold">
+                <span className="block text-sm font-black tabular-nums text-accent-2">
                   {progress.progress.trophyPoints.toLocaleString("ru-RU")}
                 </span>
                 <span className="block text-[9px] font-bold uppercase tracking-wider text-muted">
@@ -715,7 +715,7 @@ function QuestsSection({ go, account }: SectionProps) {
             onClick={() => claim(inst.questId)}
             className={`shrink-0 rounded-xl px-3.5 py-2 text-xs font-bold transition ${
               inst.claimed
-                ? "bg-gold/15 text-gold ring-1 ring-gold/40"
+                ? "bg-accent-2/15 text-accent-2 ring-1 ring-accent-2/40"
                 : ready
                   ? "btn-primary text-white"
                   : "bg-white/6 text-muted ring-1 ring-white/10"
@@ -1368,7 +1368,7 @@ function AchievementsSection({ go }: { go: (id: SectionId) => void }) {
                         {unlockedLabel(item.unlockedAt)}
                       </span>
                     </span>
-                    <span className="shrink-0 text-xs font-black tabular-nums text-gold">
+                    <span className="shrink-0 text-xs font-black tabular-nums text-accent-2">
                       {item.def.trophy.toLocaleString("ru-RU")}
                     </span>
                   </button>
@@ -1552,7 +1552,7 @@ function AchievementDialog({ item, onClose }: { item: AchievementItem; onClose: 
             </div>
             <div className="mt-1 flex justify-between text-xs">
               <span className="text-muted">Трофеи</span>
-              <span className="font-bold" style={{ color: "#ffb02e" }}>
+              <span className="font-bold" style={{ color: "#2ec7ff" }}>
                 +{def.trophy}
               </span>
             </div>
@@ -1603,7 +1603,7 @@ const RARITY_DOT: Record<string, string> = {
   UNCOMMON: "#4ade80",
   RARE: "#38bdf8",
   EPIC: "#a78bfa",
-  LEGENDARY: "#fbbf24",
+  LEGENDARY: "#24affb",
   MYTHIC: "#f472b6",
   SECRET: "#e5e7eb",
 };
@@ -2496,7 +2496,7 @@ function DailyDealBanner({
   const mounted = useHydrated();
 
   return (
-    <div className="flex flex-wrap items-center gap-4 rounded-2xl border border-gold/30 bg-gradient-to-r from-gold/14 to-white/[0.02] p-3.5 transition hover:-translate-y-0.5 hover:shadow-[0_14px_34px_-12px_rgba(245,183,74,0.25)]">
+    <div className="flex flex-wrap items-center gap-4 rounded-2xl border border-accent-2/30 bg-gradient-to-r from-accent-2/14 to-white/[0.02] p-3.5 transition hover:-translate-y-0.5 hover:shadow-[0_14px_34px_-12px_rgba(74,197,245,0.25)]">
       <span
         className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl text-lg font-black text-white/90"
         style={{
@@ -2511,7 +2511,7 @@ function DailyDealBanner({
       <div className="min-w-0 flex-1">
         <p className="flex flex-wrap items-center gap-2 text-[15px] font-black text-white">
           Витрина дня: {name}
-          <span className="rounded-lg bg-gold px-2 py-0.5 text-xs font-black text-[#1a1204]">
+          <span className="rounded-lg bg-accent-2 px-2 py-0.5 text-xs font-black text-[#04141a]">
             −{DEAL_PERCENT}%
           </span>
         </p>
@@ -2523,10 +2523,10 @@ function DailyDealBanner({
 
       <div className="ml-auto flex items-center gap-4">
         <span className="text-right">
-          <strong className="block font-black tabular-nums text-gold">
+          <strong className="block font-black tabular-nums text-accent-2">
             {mounted ? dealClock(now, endsAt) : "\u2013\u2013:\u2013\u2013\u2013\u2013"}
           </strong>
-          <span className="text-[10px] font-black uppercase tracking-[0.12em] text-gold/70">
+          <span className="text-[10px] font-black uppercase tracking-[0.12em] text-accent-2/70">
             до конца акции
           </span>
         </span>
@@ -2860,7 +2860,7 @@ const REFERRAL_ICON_NAMES = [
 ] as const;
 
 /** Цвета редкостей — те же, что у плашек хранилища */
-const MILESTONE_COLORS = ["#9aa3b5", "#22d3ee", "#a78bfa", "#f5b74a", "#ff4d8a"];
+const MILESTONE_COLORS = ["#9aa3b5", "#22d3ee", "#a78bfa", "#4ac5f5", "#ff4d8a"];
 
 /**
  * Шаги для карты орбит: тот же набор рубежей, что у хранилища, плюс
@@ -3006,7 +3006,7 @@ export function ReferralsSection({ account }: StandaloneSectionProps) {
           )}
           {referrer && (
             <p className="ag-sub">
-              Вас пригласил код <b className="text-gold">{referrer.code}</b> — ваш друг получил награду.
+              Вас пригласил код <b className="text-accent-2">{referrer.code}</b> — ваш друг получил награду.
             </p>
           )}
         </div>

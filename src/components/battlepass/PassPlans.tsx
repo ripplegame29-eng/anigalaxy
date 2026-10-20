@@ -50,7 +50,7 @@ export function PassLoginNote() {
   const account = useAccount();
   if (account) return null;
   return (
-    <p className="mt-4 text-sm text-gold">
+    <p className="mt-4 text-sm text-accent-2">
       Для оформления пропуска необходимо{" "}
       <AuthTrigger
         tab="login"
@@ -103,7 +103,7 @@ export function PassPlans({ daysLeft }: { daysLeft: number }) {
               {new Date(BATTLEPASS.to).toLocaleDateString("ru-RU", { day: "numeric", month: "long" })}
             </p>
           </div>
-          <span className="shrink-0 rounded-full bg-gold/15 px-2.5 py-1 text-[10px] font-black text-gold ring-1 ring-gold/40">
+          <span className="shrink-0 rounded-full bg-accent-2/15 px-2.5 py-1 text-[10px] font-black text-accent-2 ring-1 ring-accent-2/40">
             ~20% выгоднее
           </span>
         </div>
@@ -154,7 +154,7 @@ export function PassPlans({ daysLeft }: { daysLeft: number }) {
                 ? "Продажи пропуска закрыты вместе с сезоном."
                 : `Подписка откроется на ${days} дн. — столько осталось в сезоне, плюс 30 дней запаса.`}
           </p>
-          <p className="mt-1 text-center text-[10px] leading-snug text-gold/80">
+          <p className="mt-1 text-center text-[10px] leading-snug text-accent-2/80">
             Демо: платёжный шлюз не подключён, деньги не списываются — активация нужна для проверки механики.
           </p>
         </div>

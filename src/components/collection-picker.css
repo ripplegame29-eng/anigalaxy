@@ -7,7 +7,7 @@
  */
 
 /* CollectionPicker — окно «Добавить в подборки». Все классы с префиксом cp-. Цвета: переменные на .cp-root */
-.cp-root{--cp-a:#2aa7ff;--cp-b:#8b5cff;--cp-c:#38e1ff;--cp-gold:#ffc861;--cp-ok:#4dffb0;--cp-tx:#f2f5fb;--cp-mut:#8a93a8;--cp-ln:rgba(255,255,255,.08);font-family:inherit;color:var(--cp-tx);line-height:1.4}
+.cp-root{--cp-a:#2aa7ff;--cp-b:#8b5cff;--cp-c:#38e1ff;--cp-gold:#61d1ff;--cp-ok:#4dffb0;--cp-tx:#f2f5fb;--cp-mut:#8a93a8;--cp-ln:rgba(255,255,255,.08);font-family:inherit;color:var(--cp-tx);line-height:1.4}
 .cp-root *,.cp-root *::before,.cp-root *::after{box-sizing:border-box}
 .cp-root button{font:inherit;color:inherit;cursor:pointer;border:0;background:none;padding:0}
 .cp-root input{font:inherit;color:inherit}

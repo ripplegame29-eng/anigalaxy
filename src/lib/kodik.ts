@@ -23,7 +23,8 @@ import type {
 } from "./types";
 
 const BASE_URL = process.env.KODIK_API_URL ?? "https://kodik-api.com";
-const TOKEN = process.env.KODIK_TOKEN ?? "1bbfc5f8aac7419ba7f482ad7859cfb6";
+/** Токен берётся только из окружения (.env.local / настройки хостинга). В коде его нет. */
+const TOKEN = process.env.KODIK_TOKEN ?? "";
 
 const USER_AGENT =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 " +
@@ -84,6 +85,11 @@ async function kodikPost<T>(
   path: string,
   params: Record<string, string | number | undefined | null> = {},
 ): Promise<T> {
+  // Без токена запрос всё равно не пройдёт: говорим об этом прямо, а не ждём ответа 4xx
+  if (!TOKEN) {
+    throw new KodikError("Не задан KODIK_TOKEN: добавьте его в .env.local (см. .env.example)", 500);
+  }
+
   const search = new URLSearchParams();
   search.set("token", TOKEN);
   for (const [k, v] of Object.entries(params)) {

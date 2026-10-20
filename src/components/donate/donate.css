@@ -23,7 +23,7 @@
   --mute: #8d9bbd;
   --blue: #2f8bff;
   --cyan: #38d6ff;
-  --gold: #ffc861;
+  --gold: #61d1ff;
   --violet: #8a6bff;
   --r: 20px;
 
@@ -289,8 +289,8 @@
   position: absolute;
   top: -12px;
   left: 20px;
-  background: linear-gradient(90deg, var(--gold), #ff9a5c);
-  color: #2a1400;
+  background: linear-gradient(90deg, var(--color-accent-2), #ff9a5c);
+  color: #00242a;
   font-weight: 800;
   font-size: 12px;
   padding: 4px 12px;
