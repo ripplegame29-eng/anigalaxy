@@ -43,14 +43,15 @@
 .lb2-aura {
   position: absolute;
   left: 50%;
-  top: -40%;
-  width: 120%;
+  top: -18%;
+  width: 90%;
   aspect-ratio: 1;
   translate: -50% 0;
   z-index: -1;
-  background: conic-gradient(from 0deg, transparent, rgba(var(--c), 0.16), transparent 40%);
-  animation: lb2-spin 9s linear infinite;
-  opacity: 0.8;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(var(--c), 0.2), transparent 72%);
+  animation: lb2-pulse 5s ease-in-out infinite;
+  opacity: 0.85;
 }
 .lb2-crown {
   position: absolute;
@@ -255,4 +256,12 @@
   .lb2-card .lb2-meter { grid-area: meter; margin: 6px 0 4px; }
   .lb2-card .lb2-stats.lb2-s { grid-area: stats; grid-template-columns: repeat(2, auto); justify-content: start; gap: 18px; padding: 0; margin: 0; border: 0; }
   .lb2-card .lb2-duel-btn.lb2-s { grid-area: btn; width: auto; margin: 0; padding: 6px 12px; opacity: 1; }
+}
+
+/* Сенсорные экраны: облегчённо */
+@media (max-width: 767px), (hover: none) {
+  .lb2-aura, .lb2-crown, .lb2-vs-mark { animation: none; }
+  .lb2-pod::before, .lb2-card::before { display: none; }
+  .lb2-pod:hover, .lb2-card:hover { transform: none; }
+  .lb-dock, .lb2-duel { backdrop-filter: blur(8px); }
 }

@@ -16,8 +16,8 @@ import { effectSet } from "../../.tsc-tests/lib/progression/visual.js";
 const ICON_TAGS = new Set(["path", "circle", "rect", "ellipse", "line", "polyline", "polygon"]);
 const TEXT_STYLES = new Set(["plain", "glitch", "neon", "metal", "tremor"]);
 
-test("титулы: 12 штук, id и имена уникальны, описания заполнены, Donater присутствует", () => {
-  assert.equal(TITLES.length, 12);
+test("титулы: 15 штук, id и имена уникальны, описания заполнены, Donater присутствует", () => {
+  assert.equal(TITLES.length, 15);
   const ids = new Set();
   const names = new Set();
   for (const item of TITLES) {
@@ -105,20 +105,18 @@ test("титулы: белый текст капсулы даёт контрас
   assert.ok(min < 20, `расчёт контраста выродился: ${min.toFixed(2)}`);
 });
 
-test("титул Donater: красный стиль, за Premium, редкость epic", () => {
+test("титул Donater: яркий розово-фиолетовый стиль, за Premium, редкость legendary", () => {
   const item = TITLES.find((t) => t.id === "t-donater");
   assert.ok(item, "нет титула t-donater");
   assert.equal(item.name, "Donater");
-  assert.equal(item.rarity, "epic");
+  assert.equal(item.rarity, "legendary");
   assert.equal(item.unlock.premium, true, "Donater открывается подпиской");
-  // красная палитра: светлый красный акцент на тёмно-бордовом
-  assert.equal(item.visual.c, "#ff5c5c");
-  assert.equal(item.visual.c2, "#7f1d1d");
-  const [r, g, b] = [1, 3, 5].map((i) => parseInt(item.visual.c.slice(i, i + 2), 16));
-  assert.ok(r > 200 && g < 140 && b < 140, `акцент должен быть красным: ${item.visual.c}`);
-  assert.ok(item.visual.effects.includes("flame"), "красный стиль — с пламенем");
+  assert.equal(item.visual.c, "#ff4fb8");
+  assert.equal(item.visual.c2, "#8b3dff");
+  assert.ok(item.visual.effects.includes("shine"), "яркий стиль — с блеском");
+  assert.ok(item.visual.effects.includes("aura"), "яркий стиль — с аурой");
   // и капсула получает его корректно
   const tag = titleTag(item);
-  assert.equal(tag.rarity, "EPIC");
-  assert.ok(effectSet(tag).includes("flame"));
+  assert.equal(tag.rarity, "LEGENDARY");
+  assert.ok(effectSet(tag).includes("shine"));
 });

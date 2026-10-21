@@ -24,13 +24,16 @@
     "src/lib/progression/**/*.ts",
     "src/lib/battlepass/**/*.ts",
     "src/lib/mangadex.ts",
-    "src/lib/clans.ts",
     "src/lib/store.ts",
     "src/lib/cosmetics.ts",
     "src/lib/backup.ts",
     "src/lib/auth.ts",
     "src/lib/comments.ts",
     "src/lib/streak-capsule.ts",
-    "src/lib/nickname.ts"
+    "src/lib/nickname.ts",
+    "src/lib/anime-map-data.ts",
+    "src/lib/leaderboard-prizes.ts",
+    "src/lib/clan2/data.ts",
+    "src/lib/clan2/shop.ts"
   ]
 }

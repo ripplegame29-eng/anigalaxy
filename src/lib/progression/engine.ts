@@ -15,15 +15,17 @@
 
 import {
   BATTLEPASS,
+  bpDecorExists,
   bpFrameExists,
   bpFrameOwned,
   bpKey,
   bpLevelFromXp,
+  bpMissionValue,
   bpPickFrame,
   bpRewards,
   type BpOwnedCtx,
 } from "../battlepass/logic";
-import type { BpExtras, BpReward } from "../battlepass/config";
+import { BP_MISSIONS, type BpExtras, type BpReward } from "../battlepass/config";
 import { eraFor, levelAcReward, levelFromXp, totalXpFor } from "./curve";
 import { expectedPrice } from "./deals";
 import { displayNameError, nickColorTotal, normalizeNickStyle } from "../nickname";
@@ -827,14 +829,14 @@ function watchTick(env: Env, event: Extract<DomainEvent, { type: "EPISODE_TICK" 
 /** Смена сезона: XP и отметки прошлого сезона обнуляются один раз */
 function syncSeason(env: Env): void {
   if (env.doc.battlepass.season === BATTLEPASS.seasonId) return;
-  env.doc.battlepass = { season: BATTLEPASS.seasonId, xp: 0, claimed: [] };
+  env.doc.battlepass = { season: BATTLEPASS.seasonId, xp: 0, claimed: [], missions: [] };
 }
 
 /** Одна операция плана выдачи пакета наград */
 type BpOp =
   | { type: "ac"; amount: number }
   | { type: "bpXp"; amount: number }
-  | { type: "item"; id: string; kind: "tag" | "frame"; duplicate: boolean; dupeAc: number };
+  | { type: "item"; id: string; kind: "tag" | "frame" | "decor"; duplicate: boolean; dupeAc: number };
 
 /**
  * План выдачи одной награды: предметы валидируются ДО первого начисления,
@@ -863,6 +865,20 @@ function planReward(
       id: reward.itemId,
       kind: "tag",
       duplicate: Boolean(doc.tags[reward.itemId]),
+      dupeAc: reward.dupeAc,
+    };
+  }
+
+  if (reward.kind === "decor") {
+    if (!bpDecorExists(reward.itemId)) {
+      logRejected(env, event.type, "bp_item_missing");
+      return null;
+    }
+    return {
+      type: "item",
+      id: reward.itemId,
+      kind: "decor",
+      duplicate: owned.purchased.includes(reward.itemId),
       dupeAc: reward.dupeAc,
     };
   }
@@ -952,7 +968,7 @@ function claimBundle(env: Env, event: Extract<DomainEvent, { type: "BATTLEPASS_C
   const source = `BP_${event.line.toUpperCase()}_L${event.level}`;
   let ac = 0;
   let bpXp = 0;
-  const items: Array<{ id: string; kind: "tag" | "frame"; duplicate: boolean }> = [];
+  const items: Array<{ id: string; kind: "tag" | "frame" | "decor"; duplicate: boolean }> = [];
 
   plan.forEach((op, index) => {
     const baseKey = `${key}:${index}`;
@@ -1000,7 +1016,7 @@ function claimBundle(env: Env, event: Extract<DomainEvent, { type: "BATTLEPASS_C
       return;
     }
     if (op.kind === "tag") grantTag(env, op.id, "battlepass");
-    else env.effects.push({ type: "ITEM_GRANTED", itemId: op.id, kind: "frame" });
+    else env.effects.push({ type: "ITEM_GRANTED", itemId: op.id, kind: op.kind === "decor" ? "effect" : "frame" });
   });
 
   doc.battlepass.claimed.push(key);
@@ -1254,6 +1270,18 @@ function dispatch(env: Env, event: DomainEvent): void {
       return;
     }
 
+    case "LEADERBOARD_REWARD": {
+      const xp = Math.max(0, Math.floor(event.xp));
+      const ac = Math.max(0, Math.floor(event.ac));
+      if (xp > 0) {
+        grant(env, { currency: "XP", raw: xp, ruleClass: "EXEMPT", type: "LEADERBOARD", source: "LEADERBOARD", baseKey: `LEADERBOARD:${event.key}`, metadata: { key: event.key } });
+      }
+      if (ac > 0) {
+        grant(env, { currency: "AC", raw: ac, ruleClass: "EXEMPT", type: "LEADERBOARD", source: "LEADERBOARD", baseKey: `LEADERBOARD:${event.key}`, metadata: { key: event.key } });
+      }
+      return;
+    }
+
     case "EASTER_EGG": {
       const target = event.target.replace(/[^a-z0-9_-]/gi, "").slice(0, 32);
       if (!target) return;
@@ -1366,7 +1394,53 @@ function dispatch(env: Env, event: DomainEvent): void {
       claimBundle(env, event);
       return;
     }
+
+    case "BP_MISSION_CLAIMED": {
+      claimBpMission(env, event.missionId);
+      return;
+    }
   }
+}
+
+/* ------------------------- Задания сезона (пропуск) ---------------------- */
+
+function claimBpMission(env: Env, missionId: string): void {
+  const { doc } = env;
+  const mission = BP_MISSIONS.find((item) => item.id === missionId);
+  if (!mission) {
+    logRejected(env, "BP_MISSION_CLAIMED", "mission_not_found");
+    return;
+  }
+  if (bpMissionValue(mission, doc.battlepass) < mission.target) {
+    logRejected(env, "BP_MISSION_CLAIMED", "mission_not_done");
+    return;
+  }
+  if (doc.battlepass.missions.includes(mission.id)) {
+    logRejected(env, "BP_MISSION_CLAIMED", "mission_already_claimed");
+    return;
+  }
+
+  doc.battlepass.missions.push(mission.id);
+  const baseKey = `BPM:${env.ctx.userId}:${BATTLEPASS.seasonId}:${mission.id}`;
+  const res = grant(env, {
+    currency: "XP",
+    raw: mission.xp,
+    ruleClass: "EXEMPT",
+    type: mission.id,
+    source: "QUEST",
+    baseKey,
+    metadata: { missionId: mission.id },
+  });
+  const acRes = grant(env, {
+    currency: "AC",
+    raw: mission.ac,
+    ruleClass: "EXEMPT",
+    type: mission.id,
+    source: "QUEST",
+    baseKey,
+    metadata: { missionId: mission.id },
+  });
+  env.effects.push({ type: "QUEST_DONE", questId: mission.id, xp: res.credited, ac: acRes.credited });
 }
 
 /* ------------------------------- Квесты --------------------------------- */
@@ -1405,7 +1479,7 @@ function claimQuest(env: Env, questId: string): void {
     baseKey,
     metadata: { questId },
   });
-  grant(env, {
+  const acRes = grant(env, {
     currency: "AC",
     raw: def.ac,
     ruleClass: "EXEMPT",
@@ -1414,7 +1488,7 @@ function claimQuest(env: Env, questId: string): void {
     baseKey,
     metadata: { questId },
   });
-  env.effects.push({ type: "QUEST_DONE", questId, xp: res.credited, ac: def.ac });
+  env.effects.push({ type: "QUEST_DONE", questId, xp: res.credited, ac: acRes.credited });
 }
 
 /* ------------------------------- Магазин -------------------------------- */

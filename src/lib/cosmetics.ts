@@ -26,6 +26,8 @@ export interface Unlock {
   price?: number;
   /** Открывается за N приглашённых друзей (рубеж реферальной программы) */
   referral?: number;
+  /** Выдаётся только за итоги лидерборда; значение — подпись условия */
+  grant?: string;
 }
 
 export interface BackgroundItem {
@@ -73,6 +75,8 @@ export interface FrameItem {
    * единиц). Таким рамкам карточка в магазине нужна шире — см. ags-card-wide.
    */
   wide?: boolean;
+  /** Палитра живых эффектов вокруг рамки (frame-fx.css): аура, частицы, дыхание */
+  fx?: string;
   unlock: Unlock;
 }
 
@@ -357,17 +361,65 @@ export const TITLES: TitleItem[] = [
     // Отдельный знак поддержки проекта — красный стиль (§FIX-запрос)
     id: "t-donater",
     name: "Donater",
-    rarity: "epic",
-    color: "#ff5c5c",
+    rarity: "legendary",
+    color: "#ff4fb8",
     unlock: { premium: true },
-    description: "Особый красный знак поддержки проекта",
+    description: "Герой, без которого сюжет бы застопорился. Ты подпитываешь AniGalaxy своей силой — и все вокруг это видят.",
     visual: {
-      c: "#ff5c5c",
-      c2: "#7f1d1d",
-      effects: ["flame"],
-      text: "neon",
+      c: "#ff4fb8",
+      c2: "#8b3dff",
+      effects: ["shine", "aura"],
+      text: "metal",
       // сердце
       icon: `<path d="M12 20.4C7.1 16.4 3.6 13.2 3.6 9.6 3.6 7.1 5.6 5.1 8 5.1c1.6 0 3.1.8 4 2.1.9-1.3 2.4-2.1 4-2.1 2.4 0 4.4 2 4.4 4.5 0 3.6-3.5 6.8-8.4 10.8z"/>`,
+    },
+  },
+  {
+    id: "t-lb-conqueror",
+    name: "Покоритель",
+    rarity: "legendary",
+    color: "#ffd86b",
+    unlock: { grant: "1 место недели в лидерборде" },
+    description: "Первое место недельного лидерборда: ни один соперник не набрал больше очков",
+    visual: {
+      c: "#ffd86b",
+      c2: "#7c3a05",
+      effects: ["shine", "flame"],
+      text: "metal",
+      // корона
+      icon: `<path d="M3.5 18.5h17"/><path d="m4.5 17.5-1-9 4.5 3.6L12 5l4 7.1 4.5-3.6-1 9z"/>`,
+    },
+  },
+  {
+    id: "t-lb-elite",
+    name: "Элита недели",
+    rarity: "epic",
+    color: "#e9b3ff",
+    unlock: { grant: "места 2–5 недели в лидерборде" },
+    description: "Пятёрка сильнейших недельного лидерборда",
+    visual: {
+      c: "#e9b3ff",
+      c2: "#5b1a7a",
+      effects: ["aura"],
+      text: "neon",
+      // кубок
+      icon: `<path d="M8 4h8v5a4 4 0 0 1-8 0z"/><path d="M8 6H4.5c0 3 1.5 4.5 3.7 4.8M16 6h3.5c0 3-1.5 4.5-3.7 4.8"/><path d="M12 13v4M8.5 20h7M9.5 17h5"/>`,
+    },
+  },
+  {
+    id: "t-lb-top10",
+    name: "Десятка недели",
+    rarity: "rare",
+    color: "#86efac",
+    unlock: { grant: "места 6–10 недели в лидерборде" },
+    description: "Попадание в десятку недельного лидерборда",
+    visual: {
+      c: "#86efac",
+      c2: "#14532d",
+      effects: ["shine"],
+      text: "plain",
+      // шеврон вверх
+      icon: `<path d="m5 15 7-7 7 7"/><path d="m5 20 7-7 7 7"/>`,
     },
   },
 ];
@@ -450,33 +502,63 @@ export const FRAMES: FrameItem[] = [
      Ранг легендарный, цена 6000 AC — выше самой дорогой рамки магазина
      («Золотые крылья», 5000). */
 
-  { id: "frame-lunar-feather", name: "Лунное перо", rarity: "legendary", img: "/frames/frame-lunar-feather.svg?v=2", scale: 1.95, unlock: { price: 6000 } },
-  { id: "frame-golden-laurel", name: "Золотой лавр", rarity: "legendary", img: "/frames/frame-golden-laurel.svg?v=2", scale: 1.95, unlock: { price: 6000 } },
-  { id: "frame-emerald-laurel", name: "Изумрудный лавр", rarity: "legendary", img: "/frames/frame-emerald-laurel.svg?v=2", scale: 1.95, unlock: { price: 6000 } },
-  { id: "frame-sakura", name: "Сакура", rarity: "legendary", img: "/frames/frame-sakura.svg?v=2", scale: 1.95, unlock: { price: 6000 } },
-  { id: "frame-ruby-laurel", name: "Рубиновый лавр", rarity: "legendary", img: "/frames/frame-ruby-laurel.svg?v=2", scale: 1.95, unlock: { price: 6000 } },
-  { id: "frame-sapphire-night", name: "Сапфировая ночь", rarity: "legendary", img: "/frames/frame-sapphire-night.svg?v=2", scale: 1.95, unlock: { price: 6000 } },
-  { id: "frame-amethyst", name: "Аметист", rarity: "legendary", img: "/frames/frame-amethyst.svg?v=2", scale: 1.95, unlock: { price: 6000 } },
-  { id: "frame-platinum", name: "Платина", rarity: "legendary", img: "/frames/frame-platinum.svg?v=2", scale: 1.95, unlock: { price: 6000 } },
-  { id: "frame-turquoise-laurel", name: "Бирюзовый лавр", rarity: "legendary", img: "/frames/frame-turquoise-laurel.svg?v=2", scale: 1.95, unlock: { price: 6000 } },
-  { id: "frame-sunset", name: "Закат", rarity: "legendary", img: "/frames/frame-sunset.svg?v=2", scale: 1.95, unlock: { price: 6000 } },
-  { id: "frame-obsidian", name: "Обсидиан", rarity: "legendary", img: "/frames/frame-obsidian.svg?v=2", scale: 1.95, unlock: { price: 6000 } },
-  { id: "frame-royal-purple", name: "Королевский пурпур", rarity: "legendary", img: "/frames/frame-royal-purple.svg?v=2", scale: 1.95, unlock: { price: 6000 } },
-  { id: "frame-blue-flame", name: "Синее пламя", rarity: "legendary", img: "/frames/frame-blue-flame.svg?v=2", scale: 1.95, unlock: { price: 6000 } },
-  { id: "frame-ghost-flame", name: "Призрачный огонь", rarity: "legendary", img: "/frames/frame-ghost-flame.svg?v=2", scale: 1.95, unlock: { price: 6000 } },
-  { id: "frame-golden-seal", name: "Золотая печать", rarity: "legendary", img: "/frames/frame-golden-seal.svg?v=2", scale: 1.95, unlock: { price: 6000 } },
-  { id: "frame-crimson-seal", name: "Багровая печать", rarity: "legendary", img: "/frames/frame-crimson-seal.svg?v=2", scale: 1.95, unlock: { price: 6000 } },
-  { id: "frame-golden-moths", name: "Золотые бабочки", rarity: "legendary", img: "/frames/frame-golden-moths.svg?v=2", scale: 1.95, unlock: { price: 6000 } },
-  { id: "frame-lunar-moths", name: "Лунные мотыльки", rarity: "legendary", img: "/frames/frame-lunar-moths.svg?v=2", scale: 1.95, unlock: { price: 6000 } },
+  { id: "frame-lunar-feather", name: "Лунное перо", rarity: "epic", img: "/frames/frame-lunar-feather.svg?v=2", scale: 1.95, unlock: { price: 3500 } },
+  { id: "frame-golden-laurel", name: "Золотой лавр", rarity: "epic", img: "/frames/frame-golden-laurel.svg?v=2", scale: 1.95, unlock: { price: 3500 } },
+  { id: "frame-emerald-laurel", name: "Изумрудный лавр", rarity: "epic", img: "/frames/frame-emerald-laurel.svg?v=2", scale: 1.95, unlock: { price: 3500 } },
+  { id: "frame-sakura", name: "Сакура", rarity: "epic", img: "/frames/frame-sakura.svg?v=2", scale: 1.95, unlock: { price: 3500 } },
+  { id: "frame-ruby-laurel", name: "Рубиновый лавр", rarity: "epic", img: "/frames/frame-ruby-laurel.svg?v=2", scale: 1.95, unlock: { price: 3500 } },
+  { id: "frame-sapphire-night", name: "Сапфировая ночь", rarity: "epic", img: "/frames/frame-sapphire-night.svg?v=2", scale: 1.95, unlock: { price: 3500 } },
+  { id: "frame-amethyst", name: "Аметист", rarity: "epic", img: "/frames/frame-amethyst.svg?v=2", scale: 1.95, unlock: { price: 3500 } },
+  { id: "frame-platinum", name: "Платина", rarity: "epic", img: "/frames/frame-platinum.svg?v=2", scale: 1.95, unlock: { price: 3500 } },
+  { id: "frame-turquoise-laurel", name: "Бирюзовый лавр", rarity: "epic", img: "/frames/frame-turquoise-laurel.svg?v=2", scale: 1.95, unlock: { price: 3500 } },
+  { id: "frame-sunset", name: "Закат", rarity: "epic", img: "/frames/frame-sunset.svg?v=2", scale: 1.95, unlock: { price: 3500 } },
+  { id: "frame-obsidian", name: "Обсидиан", rarity: "epic", img: "/frames/frame-obsidian.svg?v=2", scale: 1.95, unlock: { price: 3500 } },
+  { id: "frame-royal-purple", name: "Королевский пурпур", rarity: "epic", img: "/frames/frame-royal-purple.svg?v=2", scale: 1.95, unlock: { price: 3500 } },
+  { id: "frame-blue-flame", name: "Синее пламя", rarity: "epic", img: "/frames/frame-blue-flame.svg?v=2", scale: 1.95, unlock: { price: 3500 } },
+  { id: "frame-ghost-flame", name: "Призрачный огонь", rarity: "epic", img: "/frames/frame-ghost-flame.svg?v=2", scale: 1.95, unlock: { price: 3500 } },
+  { id: "frame-golden-seal", name: "Золотая печать", rarity: "epic", img: "/frames/frame-golden-seal.svg?v=2", scale: 1.95, unlock: { price: 3500 } },
+  { id: "frame-crimson-seal", name: "Багровая печать", rarity: "epic", img: "/frames/frame-crimson-seal.svg?v=2", scale: 1.95, unlock: { price: 3500 } },
+  { id: "frame-golden-moths", name: "Золотые бабочки", rarity: "epic", img: "/frames/frame-golden-moths.svg?v=2", scale: 1.95, unlock: { price: 3500 } },
+  { id: "frame-lunar-moths", name: "Лунные мотыльки", rarity: "epic", img: "/frames/frame-lunar-moths.svg?v=2", scale: 1.95, unlock: { price: 3500 } },
+  /* Арт-рамки (растровые, вырезаны из готовых макетов): масштаб считан по
+     диаметру внутреннего кольца, чтобы аватар садился точно в кольцо. */
+  { id: "frame-art-lunar-star", name: "Лунная звезда", rarity: "epic", img: "/frames/art-lunar-star.webp", scale: 1.68, unlock: { price: 3500 } },
+  { id: "frame-art-dead-tree", name: "Мёртвое древо", rarity: "epic", img: "/frames/art-dead-tree.webp", scale: 1.92, unlock: { price: 3500 } },
+  { id: "frame-art-bone-horns", name: "Костяные рога", rarity: "legendary", img: "/frames/art-bone-horns.webp", scale: 1.86, unlock: { price: 6500 } },
+  { id: "frame-art-void-rift", name: "Пустотный разлом", rarity: "legendary", img: "/frames/art-void-rift.webp", scale: 2.12, unlock: { price: 6500 } },
+  { id: "frame-art-sun-crown", name: "Солнечный венец", rarity: "legendary", img: "/frames/art-sun-crown.webp", scale: 2.42, unlock: { price: 7000 } },
+  { id: "frame-art-gothic-castle", name: "Готический замок", rarity: "legendary", img: "/frames/art-gothic-castle.webp", scale: 2.41, unlock: { price: 7000 } },
+  /* Рамки сезона «Хуэко Мундо» (Bleach): растровые вырезки + живые эффекты (frame-fx.css).
+     Только за боевой пропуск: unlock с ценой, которой нет в магазине. */
+  { id: "frame-bleach-hollow-mask", name: "Маска Пустого", rarity: "legendary", img: "/frames/bleach-hollow-mask.webp?v=2", scale: 2.4, fx: "crimson", unlock: { price: 9000 } },
+  { id: "frame-bleach-espada-blade", name: "Клинок Эспады", rarity: "legendary", img: "/frames/bleach-espada-blade.webp?v=2", scale: 2.25, fx: "teal", unlock: { price: 9000 } },
+  { id: "frame-bleach-blood-moon", name: "Кровавая луна", rarity: "legendary", img: "/frames/bleach-blood-moon.webp?v=2", scale: 2.26, fx: "crimson", unlock: { price: 9000 } },
+  { id: "frame-bleach-gotei-13", name: "Готей-13", rarity: "legendary", img: "/frames/bleach-gotei-13.webp?v=2", scale: 2.21, fx: "gold", unlock: { price: 9000 } },
+  { id: "frame-bleach-captain-smoke", name: "Дым капитана", rarity: "epic", img: "/frames/bleach-captain-smoke.webp?v=2", scale: 2.25, fx: "smoke", unlock: { price: 9000 } },
+  { id: "frame-bleach-espada-four", name: "Четвёртая Эспада", rarity: "legendary", img: "/frames/bleach-espada-four.webp?v=2", scale: 1.96, fx: "violet", unlock: { price: 9000 } },
+  { id: "frame-bleach-crimson-blades", name: "Алые клинки", rarity: "epic", img: "/frames/bleach-crimson-blades.webp?v=2", scale: 2.16, fx: "crimson", unlock: { price: 9000 } },
+  { id: "frame-bleach-void-seal", name: "Печать Пустоты", rarity: "epic", img: "/frames/bleach-void-seal.webp?v=2", scale: 2.24, fx: "ice", unlock: { price: 9000 } },
+  { id: "frame-bleach-gold-haori", name: "Золотое хаори", rarity: "legendary", img: "/frames/bleach-gold-haori.webp?v=2", scale: 2.77, fx: "gold", unlock: { price: 9000 } },
+  { id: "frame-bleach-las-noches", name: "Ледяной Лас-Ночес", rarity: "epic", img: "/frames/bleach-las-noches.webp?v=2", scale: 2.34, fx: "ice", unlock: { price: 9000 } },
+  { id: "frame-bleach-hollow-chains", name: "Цепи Пустого", rarity: "epic", img: "/frames/bleach-hollow-chains.webp?v=2", scale: 2.07, fx: "crimson", unlock: { price: 9000 } },
+  { id: "frame-bleach-blue-flame", name: "Синий огонь Пустого", rarity: "epic", img: "/frames/bleach-blue-flame.webp?v=2", scale: 2.65, fx: "ice", unlock: { price: 9000 } },
+  { id: "frame-bleach-red-thorns", name: "Алые шипы", rarity: "epic", img: "/frames/bleach-red-thorns.webp?v=2", scale: 2.59, fx: "crimson", unlock: { price: 9000 } },
+  { id: "frame-bleach-sakura-blade", name: "Лепестки сакуры", rarity: "rare", img: "/frames/bleach-sakura-blade.webp?v=2", scale: 2.47, fx: "sakura", unlock: { price: 9000 } },
+  { id: "frame-bleach-violet-crystal", name: "Фиолетовый кристалл", rarity: "epic", img: "/frames/bleach-violet-crystal.webp?v=2", scale: 2.81, fx: "violet", unlock: { price: 9000 } },
+  { id: "frame-bleach-wings-of-light", name: "Крылья света", rarity: "epic", img: "/frames/bleach-wings-of-light.webp?v=2", scale: 2.94, fx: "gold", unlock: { price: 9000 } },
+  { id: "frame-bleach-black-moon", name: "Чёрная луна", rarity: "epic", img: "/frames/bleach-black-moon.webp?v=2", scale: 2.75, fx: "teal", unlock: { price: 9000 } },
+  { id: "frame-bleach-bankai", name: "Банкай", rarity: "legendary", img: "/frames/bleach-bankai.webp?v=2", scale: 2.65, fx: "crimson", unlock: { price: 9000 } },
+  { id: "frame-bleach-twilight-reaper", name: "Шинигами в сумерках", rarity: "legendary", img: "/frames/bleach-twilight-reaper.webp?v=2", scale: 2.11, fx: "violet", unlock: { price: 9000 } },
+  { id: "frame-bleach-black-flag", name: "Чёрный флаг Пустого", rarity: "legendary", img: "/frames/bleach-black-flag.webp?v=2", scale: 1.91, fx: "crimson", unlock: { price: 9000 } },
   /* — legendary — */
-  { id: "frame-37", name: "Безграничные глаза", rarity: "legendary", img: "/frames/frame-37.svg?v=2", unlock: { level: 35 } },
-  { id: "frame-26", name: "Пират-соломенная шляпа", rarity: "legendary", img: "/frames/frame-26.svg?v=2", unlock: { level: 40 } },
-  { id: "frame-06", name: "Обратный отсчёт 1000−7", rarity: "legendary", img: "/frames/frame-06.svg?v=2", unlock: { level: 50 } },
-  { id: "frame-17", name: "Молния", rarity: "legendary", img: "/frames/frame-17.svg?v=2", unlock: { achievement: "level-10" } },
-  { id: "frame-11", name: "Они", rarity: "legendary", img: "/frames/frame-11.svg?v=2", unlock: { achievement: "claims-10" } },
-  { id: "frame-07", name: "ZXC Cyber", rarity: "legendary", img: "/frames/frame-07.svg?v=2", unlock: { achievement: "showcase" } },
+  { id: "frame-37", name: "Безграничные глаза", rarity: "epic", img: "/frames/frame-37.svg?v=2", unlock: { level: 35 } },
+  { id: "frame-26", name: "Пират-соломенная шляпа", rarity: "epic", img: "/frames/frame-26.svg?v=2", unlock: { level: 40 } },
+  { id: "frame-06", name: "Обратный отсчёт 1000−7", rarity: "epic", img: "/frames/frame-06.svg?v=2", unlock: { level: 50 } },
+  { id: "frame-17", name: "Молния", rarity: "epic", img: "/frames/frame-17.svg?v=2", unlock: { achievement: "level-10" } },
+  { id: "frame-11", name: "Они", rarity: "epic", img: "/frames/frame-11.svg?v=2", unlock: { achievement: "claims-10" } },
+  { id: "frame-07", name: "ZXC Cyber", rarity: "epic", img: "/frames/frame-07.svg?v=2", unlock: { achievement: "showcase" } },
   // награда достижения прогрессии «Хранитель» (reward.frameId)
-  { id: "frame-14", name: "Король поля", rarity: "legendary", img: "/frames/frame-14.svg?v=2", unlock: {} },
+  { id: "frame-14", name: "Король поля", rarity: "epic", img: "/frames/frame-14.svg?v=2", unlock: {} },
   { id: "frame-18", name: "Золотые крылья", rarity: "legendary", img: "/frames/frame-18.svg?v=2", unlock: { price: 5000 } },
 ];
 
@@ -507,6 +589,7 @@ export interface UnlockContext {
 }
 
 export function isUnlocked(unlock: Unlock, ctx: UnlockContext): boolean {
+  if (unlock.grant) return false;
   if (unlock.level && ctx.level < unlock.level) return false;
   if (unlock.achievement && !ctx.claimed.includes(unlock.achievement)) return false;
   if (unlock.premium && !ctx.premium) return false;
@@ -537,7 +620,8 @@ export function findItem(id: string): BackgroundItem | TitleItem | FrameItem | u
 
 /** Человекочитаемое условие открытия */
 export function unlockHint(unlock: Unlock): string {
-  if (unlock.price) return `${unlock.price} монет`;
+  if (unlock.grant) return unlock.grant;
+  if (unlock.price) return `${unlock.price} AC`;
   if (unlock.referral) return `${unlock.referral} ${friendWord(unlock.referral)}`;
   if (unlock.premium) return "нужен Premium";
   if (unlock.achievement) return "за достижение";
@@ -553,3 +637,17 @@ function friendWord(n: number): string {
   if (a >= 2 && a <= 4 && (b < 10 || b >= 20)) return "друга";
   return "друзей";
 }
+
+/**
+ * Сезонные оформления профиля (виджет-декор): красная луна, лепестки, фонари
+ * и ленты вокруг шапки профиля. Выдаются боевым пропуском; владение хранится
+ * в `profile.purchased`, как у рамок и эффектов.
+ */
+export interface ProfileDecorItem {
+  id: string;
+  name: string;
+  rarity: Rarity;
+}
+export const PROFILE_DECORS: ProfileDecorItem[] = [
+  { id: "decor-hueco-mundo", name: "Хуэко Мундо", rarity: "legendary" },
+];

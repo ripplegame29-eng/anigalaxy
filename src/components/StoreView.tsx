@@ -1,16 +1,18 @@
 "use client";
 
+import { openCheckout } from "@/lib/checkout";
 import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
-import { isPremiumActive } from "@/lib/auth";
 import { openAuthDialog } from "@/lib/auth-dialog";
 import { useAccount } from "@/lib/use-account";
-import { useLevelInfo, useProgress } from "@/lib/progression/events";
+import { useProgress } from "@/lib/progression/events";
 import { PROGRESSION_CONFIG } from "@/lib/progression/progression.config";
 import { sourceLabel } from "@/lib/progression/labels";
 import type { ProgressDoc } from "@/lib/progression/types";
 import { timeAgo } from "@/lib/history";
+import { addCoins } from "@/lib/profile";
+import { dailyCalendarAvgAc } from "@/lib/daily-login";
 import { ShopSection } from "@/components/profile/ProfileSections";
 import { PremiumChip } from "@/components/profile/PremiumChip";
 
@@ -434,7 +436,7 @@ function PackChip({ children }: { children: React.ReactNode }) {
 function CoinPackBanner() {
   const questAcMax =
     Math.max(...PROGRESSION_CONFIG.quests.dailyPool.map((quest) => quest.ac)) * PROGRESSION_CONFIG.quests.dailyPick;
-  const dayMax = questAcMax + PROGRESSION_CONFIG.economy.dailyLoginAc;
+  const dayMax = questAcMax + PROGRESSION_CONFIG.economy.dailyLoginAc + dailyCalendarAvgAc();
   const yearMax = dayMax * 365;
   const fmt = (n: number) => n.toLocaleString("ru-RU");
 
@@ -506,7 +508,7 @@ function CoinPackBanner() {
                   <Image src="/coin.png" alt="" aria-hidden width={28} height={28} className="ag-coin-mini h-7 w-7" />
                   <span className="text-3xl font-black leading-none text-white">{fmt(dayMax)}</span>
                 </p>
-                <p className="mt-2 text-[11px] text-muted">вход + три квеста</p>
+                <p className="mt-2 text-[11px] text-muted">вход, календарь и три квеста</p>
               </div>
               <div className="p-3.5">
                 <StatCaption>Каждый день</StatCaption>
@@ -545,7 +547,7 @@ function CoinPackBanner() {
                 </span>
                 <PackChip>Серия +50</PackChip>
                 <PackChip>Подарки 50 AC</PackChip>
-                <PackChip>71 достижение</PackChip>
+                <PackChip>{PROGRESSION_CONFIG.achievements.length} достижений</PackChip>
               </div>
             </div>
           </div>
@@ -708,8 +710,23 @@ function CoinPacks() {
                 <span className="sp-price-now">{fmt(pack.price)}&nbsp;₽</span>
                 {pack.oldPrice && <s className="sp-price-old">{fmt(pack.oldPrice)}&nbsp;₽</s>}
               </p>
-              <button type="button" onClick={() => setPicked(pack)} className="sp-buy">
-                Купить (демо)
+              <button
+                type="button"
+                onClick={() =>
+                  openCheckout({
+                    title: `Пакет AC · ${pack.name}`,
+                    caption: `${fmt(pack.amount)} AC${pack.gift ? ` · ${pack.gift}` : ""}`,
+                    price: pack.price,
+                    oldPrice: pack.oldPrice,
+                    onPaid: () => {
+                      addCoins(pack.amount);
+                      setPicked(pack);
+                    },
+                  })
+                }
+                className="sp-buy"
+              >
+                Купить
                 <span aria-hidden>→</span>
               </button>
             </div>
@@ -721,7 +738,7 @@ function CoinPacks() {
       <p aria-live="polite" className="min-h-4 text-xs font-bold text-muted">
         {picked ? (
           <span className="text-mint">
-            💰 {picked.name} ({fmt(picked.price)} ₽) — выбор отмечен, оплата не подключена: AC не начислены.
+            💰 {picked.name}: {fmt(picked.amount)} AC зачислены на баланс.
           </span>
         ) : null}
       </p>

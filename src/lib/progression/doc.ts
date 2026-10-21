@@ -40,7 +40,7 @@ export const EMPTY_DOC: ProgressDoc = Object.freeze({
   sets: { genres: [], genreTitles: {} },
   daily: { date: -1, week: -1, xpActivity: 0, xpTotal: 0, secondsWatched: 0, counts: {}, weekCounts: {} },
   quests: { day: -1, daily: [], week: -1, weekly: [] },
-  battlepass: { season: BATTLEPASS.seasonId, xp: 0, claimed: [] },
+  battlepass: { season: BATTLEPASS.seasonId, xp: 0, claimed: [], missions: [] },
   sessions: [],
   achievements: {},
   tags: {},
@@ -123,6 +123,9 @@ export function parseDoc(raw: string): ProgressDoc | null {
           xp: Math.max(0, num(bp.xp)),
           claimed: Array.isArray(bp.claimed)
             ? (bp.claimed as unknown[]).filter((key): key is string => typeof key === "string")
+            : [],
+          missions: Array.isArray(bp.missions)
+            ? (bp.missions as unknown[]).filter((key): key is string => typeof key === "string")
             : [],
         };
       })(),

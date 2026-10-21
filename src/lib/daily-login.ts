@@ -46,6 +46,9 @@ export const DAILY_CATCHUP_BASE = 10;
 /** Награда за вход сама по себе — «+10 аникоинов за вход» из макета */
 export const DAILY_ENTRY_AC = 10;
 
+/** Главный приз месяца */
+const GRAND_AC = 400;
+
 const KEY = "animehub:daily-login:v2";
 
 export interface DailyState {
@@ -119,15 +122,25 @@ export function dailyCell(day: number): DailyCell {
   if (day === 14) return { day, kind: "frame", amount: 0 };
   /* Коробки правда открываются: сумма лежит в ячейке, а не только в подписи */
   if (day === 7 || day === 21 || day === 28) {
-    return { day, kind: "box", amount: day === 7 ? 150 : day === 21 ? 200 : 250 };
+    return { day, kind: "box", amount: day === 7 ? 40 : day === 21 ? 60 : 80 };
   }
-  if (day === 31) return { day, kind: "grand", amount: 2000 };
+  if (day === 31) return { day, kind: "grand", amount: GRAND_AC };
   if (day === 3 || day === 10 || day === 20 || day === 27) {
     return { day, kind: "exp", amount: day === 3 ? 600 : day === 10 ? 600 : day === 20 ? 1000 : 1200 };
   }
   if (day === 9 || day === 23) return { day, kind: "skip", amount: day === 9 ? 1 : 3 };
-  const base = day <= 7 ? 80 : day <= 14 ? 100 : day <= 19 ? 120 : day <= 26 ? 140 : 160;
+  const base = day <= 7 ? 15 : day <= 14 ? 20 : day <= 19 ? 25 : day <= 26 ? 30 : 35;
   return { day, kind: "ac", amount: base };
+}
+
+/** Средний дневной доход AC от календаря входа (31-дневный месяц, без Premium) */
+export function dailyCalendarAvgAc(): number {
+  let sum = 0;
+  for (let day = 1; day <= 31; day += 1) {
+    const cell = dailyCell(day);
+    if (cell.kind === "ac" || cell.kind === "box" || cell.kind === "grand") sum += cell.amount;
+  }
+  return Math.round(sum / 31);
 }
 
 /** Текущий месяц с готовой сеткой ячеек */
@@ -139,7 +152,7 @@ export function dailyMonth(date = new Date()): DailyMonth {
   for (let day = 1; day <= days; day += 1) cells.push(dailyCell(day));
   /* Гранд — главный приз месяца, а не приз «31-го числа»: в феврале и
      30-дневных месяцах 31-го просто нет, и гранд не выпадал бы никогда. */
-  if (days < 31) cells[days - 1] = { day: days, kind: "grand", amount: 2000 };
+  if (days < 31) cells[days - 1] = { day: days, kind: "grand", amount: GRAND_AC };
   return { month, year, days, cells };
 }
 
@@ -192,7 +205,8 @@ export function dailyView(): DailyModalView {
     claimed: state.days.length,
     claimedDays: state.days,
     today,
-    entryAc: DAILY_ENTRY_AC,
+    /* Вход (+10 AC) платит сам движок при первом заходе дня — календарь его не дублирует */
+    entryAc: 0,
     todayAc:
       cell && (cell.kind === "ac" || cell.kind === "box" || cell.kind === "grand")
         ? cell.amount
@@ -270,9 +284,7 @@ export function claimDailyCell(
     if (cell.kind === "grand") xp += 1000;
     if (cell.kind === "skip") xp += DAILY_ENTRY_AC * 3 * Math.max(1, cell.amount);
   }
-  // +10 AC за сам вход; с Premium множитель применяется и к ячейке, и к входу.
-  // При возврате, когда сегодня уже забрано, вход не оплачивается повторно.
-  if (!targetClaimed) ac += DAILY_ENTRY_AC;
+  // Вход оплачивает движок (SESSION_START), здесь — только награды ячеек.
   ac = ac * mult;
   xp = xp * mult;
   addCoins(ac);

@@ -167,6 +167,8 @@ export type DomainEvent =
    * конфигу сезона (`lib/battlepass`), идемпотентность — ключ в журнале.
    */
   | { type: "BATTLEPASS_CLAIMED"; line: BattlepassLine; level: number; at?: number }
+  /** Забрать награду за задание сезона: цель и суммы считает движок по конфигу */
+  | { type: "BP_MISSION_CLAIMED"; missionId: string; at?: number }
   /**
    * Вклад AC в клан. Сумму считает клановая логика (сколько реально
    * поместилось в клетки), движок только проверяет баланс и списывает.
@@ -181,7 +183,9 @@ export type DomainEvent =
    * Личная награда из сундука сокровищницы. `key` — ключ открытия
    * (`chest:<tier>:<n>`): повторная выдача по тому же ключу отклоняется.
    */
-  | { type: "CLAN_CHEST_REWARD"; key: string; amount: number; at?: number };
+  | { type: "CLAN_CHEST_REWARD"; key: string; amount: number; at?: number }
+  /** Приз недельного итога лидерборда; `key` — неделя, повтор отклоняется */
+  | { type: "LEADERBOARD_REWARD"; key: string; xp: number; ac: number; at?: number };
 
 export type EventType = DomainEvent["type"];
 
@@ -236,7 +240,7 @@ export type ProgressEffect =
       /** Сколько XP боевого пропуска начислено пакетом */
       bpXp: number;
       /** Выданные предметы (duplicate — вместо предмета начислен AC) */
-      items: Array<{ id: string; kind: "tag" | "frame"; duplicate: boolean }>;
+      items: Array<{ id: string; kind: "tag" | "frame" | "decor"; duplicate: boolean }>;
       /** XP пропуска после выдачи */
       xpAfter: number;
       /** Уровень пропуска после выдачи */
@@ -332,6 +336,8 @@ export interface BattlepassState {
   xp: number;
   /** Ключи полученных пакетов: `<season>:<line>:<level>` */
   claimed: string[];
+  /** id заданий сезона, награда за которые уже забрана (текущий сезон) */
+  missions: string[];
 }
 
 /** Сессия просмотра серии (heartbeat-накопление) */

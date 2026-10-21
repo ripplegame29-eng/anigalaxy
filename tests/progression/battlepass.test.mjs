@@ -341,3 +341,27 @@ test("пустой документ содержит раздел боевого
   assert.equal(EMPTY_DOC.battlepass.xp, 0);
   assert.deepEqual(EMPTY_DOC.battlepass.claimed, []);
 });
+
+test("супер-приз 100 уровня: оформление профиля выдаётся один раз, дубль даёт AC", () => {
+  const xp = bpTotalFor(100);
+
+  const fresh = claim(freshDoc(), "premium", 100, EXTRAS_PREMIUM, xp);
+  assert.equal(fresh.rejected, undefined);
+  const grants = fresh.effects.filter((item) => item.type === "ITEM_GRANTED");
+  assert.ok(
+    grants.some((item) => item.itemId === "decor-hueco-mundo" && item.kind === "effect"),
+    "оформление попадает в гардероб профиля",
+  );
+  const done = fresh.effects.find((item) => item.type === "BATTLEPASS_CLAIMED");
+  assert.ok(done.items.some((item) => item.kind === "decor" && item.duplicate === false));
+
+  const duplicate = claim(freshDoc(), "premium", 100, { premium: true, purchased: ["decor-hueco-mundo"] }, xp);
+  assert.equal(duplicate.rejected, undefined);
+  const dup = duplicate.effects.find((item) => item.type === "BATTLEPASS_CLAIMED");
+  assert.ok(dup.items.some((item) => item.kind === "decor" && item.duplicate === true));
+  assert.equal(
+    duplicate.effects.some((item) => item.type === "ITEM_GRANTED" && item.itemId === "decor-hueco-mundo"),
+    false,
+    "дубль не выдаётся второй раз",
+  );
+});

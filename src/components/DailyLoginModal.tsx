@@ -235,16 +235,16 @@ export function DailyLoginModal({ open, onClose, premium }: { open: boolean; onC
             <div className="dm-pills">
               <span className="dm-pill">
                 <Image src="/coin.png" alt="" width={18} height={18} />
-                + {view.entryAc} AC за вход
+                + {DAILY_ENTRY_AC} AC за вход — автоматически
               </span>
               {premium ? (
                 <span className="dm-pill pr">
-                  <Image src="/coin.png" alt="" width={18} height={18} />+ {view.entryAc * PREMIUM_QUEST_MULT} AC за вход с <em>Premium</em>
+                  <Image src="/coin.png" alt="" width={18} height={18} />×{PREMIUM_QUEST_MULT} к наградам с <em>Premium</em>
                 </span>
               ) : (
                 <span className="dm-pill pr off">
                   <Image src="/coin.png" alt="" width={18} height={18} />
-                  + {view.entryAc * PREMIUM_QUEST_MULT} AC с <em>Premium</em>
+                  ×{PREMIUM_QUEST_MULT} с <em>Premium</em>
                 </span>
               )}
             </div>

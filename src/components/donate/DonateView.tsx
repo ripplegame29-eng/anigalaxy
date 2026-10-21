@@ -1,11 +1,13 @@
 "use client";
 
+import { openCheckout } from "@/lib/checkout";
 import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { AgTag } from "@/components/progression/AgTag";
 import { PremiumChip } from "@/components/profile/PremiumChip";
 import { TITLES, titleTag } from "@/lib/cosmetics";
+import { DONATE_LEFT, DONATE_TOTAL } from "@/lib/donate-campaign";
 import "./donate.css";
 
 /**
@@ -49,7 +51,7 @@ const TIERS: Tier[] = [
     id: "start",
     name: "Старт",
     price: 199,
-    coins: 3000,
+    coins: 1200,
     prem: "1 месяц Premium",
     premShort: "1 месяц",
     perks: ["Тег «Донатер» навсегда"],
@@ -58,7 +60,7 @@ const TIERS: Tier[] = [
     id: "action",
     name: "Акционный набор",
     price: 499,
-    coins: 7000,
+    coins: 2000,
     prem: "6 месяцев Premium",
     premShort: "6 месяцев",
     perks: ["Эксклюзивный глитч-эффект", "Тег «Донатер» навсегда"],
@@ -69,7 +71,7 @@ const TIERS: Tier[] = [
     id: "space",
     name: "Космос",
     price: 999,
-    coins: 15000,
+    coins: 4000,
     prem: "Premium на год",
     premShort: "целый год",
     perks: ["Всё из акционного набора", "Максимальный набор акции"],
@@ -81,8 +83,8 @@ const TIERS: Tier[] = [
 const CAMPAIGN_MS = 5 * 864e5 + 7 * 36e5;
 
 /** Осталось наборов акции */
-const LEFT = 1000;
-const TOTAL = 1000;
+const LEFT = DONATE_LEFT;
+const TOTAL = DONATE_TOTAL;
 
 const nf = new Intl.NumberFormat("ru-RU");
 
@@ -139,7 +141,7 @@ export function DonateView() {
         s.y += s.z * 0.15;
         if (s.y > cv.height) s.y = 0;
         const a = 0.4 + 0.6 * Math.abs(Math.sin(t / 1200 + s.p));
-        cx.fillStyle = `rgba(160,210,255,${a * s.z})`;
+        cx.fillStyle = `rgba(255,200,235,${a * s.z})`;
         cx.beginPath();
         cx.arc(s.x - pointer.x * 30 * s.z, s.y - pointer.y * 30 * s.z, s.z * 1.6, 0, 7);
         cx.fill();
@@ -282,13 +284,34 @@ useEffect(() => {
 
   /* ------------------------------- Покупка ------------------------------ */
   const buy = () => {
-    setToast(true);
-    burst(window.innerWidth / 2, window.innerHeight / 2, 40, 420);
+    openCheckout({
+      title: `Поддержка · ${tier.name}`,
+      caption: `${nf.format(tier.coins)} AC · ${tier.prem}`,
+      price: tier.price,
+      onPaid: () => {
+        setToast(true);
+        burst(window.innerWidth / 2, window.innerHeight / 2, 40, 420);
+      },
+    });
   };
 
   /* ------------------------------- Разметка ----------------------------- */
   return (
     <div className="don-page" ref={rootRef}>
+      <div className="don-scene" aria-hidden />
+      <div className="don-sakura" aria-hidden>
+        {Array.from({ length: 16 }, (_, i) => (
+          <i
+            key={i}
+            style={{
+              ["--x" as string]: `${(i * 37) % 100}%`,
+              ["--s" as string]: `${10 + ((i * 7) % 12)}px`,
+              ["--d" as string]: `${11 + ((i * 5) % 9)}s`,
+              ["--dl" as string]: `-${(i * 13) % 17}s`,
+            }}
+          />
+        ))}
+      </div>
       <canvas className="don-stars" id="stars" ref={canvasRef} aria-hidden />
       <div className="don-spot" ref={spotRef} aria-hidden />
 
@@ -378,7 +401,7 @@ useEffect(() => {
             </div>
             <div className="don-bal">
               <span>
-                <Image
+                <Image unoptimized
                   className="don-ci"
                   style={{ width: 24, height: 24, verticalAlign: "-6px", marginRight: 6 }}
                   src="/coin.png"
@@ -425,7 +448,19 @@ useEffect(() => {
               ))}
             </div>
             <div className="don-note">
-              <span>⚡</span>
+              <svg className="don-bolt" viewBox="0 0 32 32" aria-hidden>
+                <defs>
+                  <linearGradient id="don-bg" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0" stopColor="#fff3c4" />
+                    <stop offset=".45" stopColor="#ff7ac8" />
+                    <stop offset="1" stopColor="#8b5cff" />
+                  </linearGradient>
+                </defs>
+                <circle className="don-bolt-r" cx="16" cy="16" r="14.5" />
+                <circle className="don-bolt-r2" cx="16" cy="16" r="11" />
+                <path className="don-bolt-z" d="M18.6 4.5 8.8 17.6h6.1l-1.5 9.9 9.8-13.4h-6.2z" fill="url(#don-bg)" />
+                <path d="M18.6 4.5 8.8 17.6h6.1" stroke="#fff" strokeOpacity=".7" strokeWidth=".8" fill="none" strokeLinecap="round" />
+              </svg>
               <span>
                 Каждый набор выдаётся один раз на аккаунт. <b>Все {nf.format(TOTAL)} наборов ещё доступны.</b>
               </span>
@@ -469,7 +504,7 @@ useEffect(() => {
 
       <div className={`don-toast${toast ? " don-show" : ""}`} role="dialog" aria-modal="true" aria-label="Спасибо за поддержку">
         <div>
-          <Image
+          <Image unoptimized
             className="don-ci"
             style={{ width: 90, height: 90, animation: "don-flip 3s infinite" }}
             src="/coin.png"

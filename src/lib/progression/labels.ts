@@ -37,6 +37,7 @@ const SOURCE_LABELS: Record<string, string> = {
   LEGACY_DELTA: "Перенос из старой системы",
   REVERSAL: "Откат награды",
   SEASON: "Сезонное событие",
+  LEADERBOARD: "Итоги недели лидерборда",
   TAG: "Тег",
   FREEZE: "Заморозка серии",
 };

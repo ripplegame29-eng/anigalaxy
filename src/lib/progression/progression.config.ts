@@ -78,8 +78,9 @@ export const PROGRESSION_CONFIG = {
     referralPremiumDays: 5,
     freezePrice: 300,
     freezeMax: 2,
-    // Ориентир «окупаемости» в магазине: ~40 AC/сутки у активного пользователя
-    dailyAcEstimate: 40,
+    // Ориентир «окупаемости» в магазине: ~70 AC/сутки у активного пользователя
+    // (вход 10 + календарь ≈35 + часть квестов)
+    dailyAcEstimate: 70,
   },
 
   /* --------------------- Отображаемое имя и его стиль ------------------ */
@@ -107,13 +108,13 @@ export const PROGRESSION_CONFIG = {
 
   /* ------------------------------- Эры --------------------------------- */
   eras: [
-    { from: 1, name: "Новичок" },
-    { from: 5, name: "Зритель" },
-    { from: 15, name: "Знаток" },
-    { from: 30, name: "Мастер" },
-    { from: 50, name: "Чемпион" },
-    { from: 75, name: "Легенда" },
-    { from: 100, name: "Трансцендент" },
+    { from: 1, name: "Новобранец" },
+    { from: 5, name: "Странник" },
+    { from: 15, name: "Охотник" },
+    { from: 30, name: "Ронин" },
+    { from: 50, name: "Сэнсэй" },
+    { from: 75, name: "Сёгун" },
+    { from: 100, name: "Небожитель" },
   ],
 
   /* ------------------- Теги за достижение уровня ----------------------- */
@@ -2035,11 +2036,11 @@ export const PROGRESSION_CONFIG = {
   /* ------------------------------- Тома XP ------------------------------ */
   // Раз в сутки на том. Эффективность падает с размером: 2.0 → 1.44 XP за AC,
   // поэтому большой том никогда не выгоднее серии мелких. Цены — отстройка
-  // от ориентира ~40 AC/сутки активного пользователя (economy.dailyAcEstimate).
+  // от ориентира ~70 AC/сутки активного пользователя (economy.dailyAcEstimate).
   tomes: [
     {
       id: "tome_small",
-      name: "Том",
+      name: "Свиток новичка",
       xp: 300,
       price: 150,
       rarity: "COMMON",
@@ -2047,7 +2048,7 @@ export const PROGRESSION_CONFIG = {
     },
     {
       id: "tome_folio",
-      name: "Фолиант",
+      name: "Свиток ветра",
       xp: 720,
       price: 400,
       rarity: "UNCOMMON",
@@ -2055,7 +2056,7 @@ export const PROGRESSION_CONFIG = {
     },
     {
       id: "tome_chapter",
-      name: "Глава",
+      name: "Сутра духа",
       xp: 1200,
       price: 700,
       rarity: "RARE",
@@ -2064,7 +2065,7 @@ export const PROGRESSION_CONFIG = {
     },
     {
       id: "tome_codex",
-      name: "Кодекс",
+      name: "Кодекс самурая",
       xp: 1440,
       price: 900,
       rarity: "EPIC",
@@ -2073,7 +2074,7 @@ export const PROGRESSION_CONFIG = {
     },
     {
       id: "tome_grimdor",
-      name: "Гримдар",
+      name: "Скрижаль небожителей",
       xp: 3600,
       price: 2500,
       rarity: "LEGENDARY",
@@ -2095,25 +2096,26 @@ export const PROGRESSION_CONFIG = {
     { id: "frame-13", name: "Синее пламя эго", kind: "frame", price: 600, rarity: "RARE", description: "Синее пламя по краю" },
     { id: "frame-24", name: "Проклятая энергия", kind: "frame", price: 1500, rarity: "RARE", description: "Мерцающая аура" },
     { id: "frame-30", name: "Бензопила", kind: "frame", price: 3000, rarity: "EPIC", description: "Ревущие зубья" },
-    { id: "frame-lunar-feather", name: "Лунное перо", kind: "frame", price: 6000, rarity: "LEGENDARY", description: "Перламутр и мерцающая волна" },
-    { id: "frame-golden-laurel", name: "Золотой лавр", kind: "frame", price: 6000, rarity: "LEGENDARY", description: "Золото и тёплое сияние" },
-    { id: "frame-emerald-laurel", name: "Изумрудный лавр", kind: "frame", price: 6000, rarity: "LEGENDARY", description: "Глубокий зелёный и серебро" },
-    { id: "frame-sakura", name: "Сакура", kind: "frame", price: 6000, rarity: "LEGENDARY", description: "Вращающиеся лепестки" },
-    { id: "frame-ruby-laurel", name: "Рубиновый лавр", kind: "frame", price: 6000, rarity: "LEGENDARY", description: "Глубокий красный" },
-    { id: "frame-sapphire-night", name: "Сапфировая ночь", kind: "frame", price: 6000, rarity: "LEGENDARY", description: "Синее перо и серебро" },
-    { id: "frame-amethyst", name: "Аметист", kind: "frame", price: 6000, rarity: "LEGENDARY", description: "Фиолетовый и пурпур" },
-    { id: "frame-platinum", name: "Платина", kind: "frame", price: 6000, rarity: "LEGENDARY", description: "Серебряное перо" },
-    { id: "frame-turquoise-laurel", name: "Бирюзовый лавр", kind: "frame", price: 6000, rarity: "LEGENDARY", description: "Морская волна" },
-    { id: "frame-sunset", name: "Закат", kind: "frame", price: 6000, rarity: "LEGENDARY", description: "Оранжевый в розовый" },
-    { id: "frame-obsidian", name: "Обсидиан", kind: "frame", price: 6000, rarity: "LEGENDARY", description: "Чёрный камень и золото" },
-    { id: "frame-royal-purple", name: "Королевский пурпур", kind: "frame", price: 6000, rarity: "LEGENDARY", description: "Лавр с золотым кантом" },
-    { id: "frame-blue-flame", name: "Синее пламя", kind: "frame", price: 6000, rarity: "LEGENDARY", description: "Холодный огонь и пунктир" },
-    { id: "frame-ghost-flame", name: "Призрачный огонь", kind: "frame", price: 6000, rarity: "LEGENDARY", description: "Зелёные языки, много искр" },
-    { id: "frame-golden-seal", name: "Золотая печать", kind: "frame", price: 6000, rarity: "LEGENDARY", description: "Солнечные лучи и квадрат" },
-    { id: "frame-crimson-seal", name: "Багровая печать", kind: "frame", price: 6000, rarity: "LEGENDARY", description: "Кровавые руны" },
-    { id: "frame-golden-moths", name: "Золотые бабочки", kind: "frame", price: 6000, rarity: "LEGENDARY", description: "Четыре бабочки с хвостиками" },
-    { id: "frame-lunar-moths", name: "Лунные мотыльки", kind: "frame", price: 6000, rarity: "LEGENDARY", description: "Пять белых мотыльков, медленно" },
+    { id: "frame-lunar-feather", name: "Лунное перо", kind: "frame", price: 3500, rarity: "EPIC", description: "Перламутр и мерцающая волна" },
+    { id: "frame-golden-laurel", name: "Золотой лавр", kind: "frame", price: 3500, rarity: "EPIC", description: "Золото и тёплое сияние" },
+    { id: "frame-emerald-laurel", name: "Изумрудный лавр", kind: "frame", price: 3500, rarity: "EPIC", description: "Глубокий зелёный и серебро" },
+    { id: "frame-sakura", name: "Сакура", kind: "frame", price: 3500, rarity: "EPIC", description: "Вращающиеся лепестки" },
+    { id: "frame-ruby-laurel", name: "Рубиновый лавр", kind: "frame", price: 3500, rarity: "EPIC", description: "Глубокий красный" },
+    { id: "frame-sapphire-night", name: "Сапфировая ночь", kind: "frame", price: 3500, rarity: "EPIC", description: "Синее перо и серебро" },
+    { id: "frame-amethyst", name: "Аметист", kind: "frame", price: 3500, rarity: "EPIC", description: "Фиолетовый и пурпур" },
+    { id: "frame-platinum", name: "Платина", kind: "frame", price: 3500, rarity: "EPIC", description: "Серебряное перо" },
+    { id: "frame-turquoise-laurel", name: "Бирюзовый лавр", kind: "frame", price: 3500, rarity: "EPIC", description: "Морская волна" },
+    { id: "frame-sunset", name: "Закат", kind: "frame", price: 3500, rarity: "EPIC", description: "Оранжевый в розовый" },
+    { id: "frame-obsidian", name: "Обсидиан", kind: "frame", price: 3500, rarity: "EPIC", description: "Чёрный камень и золото" },
+    { id: "frame-royal-purple", name: "Королевский пурпур", kind: "frame", price: 3500, rarity: "EPIC", description: "Лавр с золотым кантом" },
+    { id: "frame-blue-flame", name: "Синее пламя", kind: "frame", price: 3500, rarity: "EPIC", description: "Холодный огонь и пунктир" },
+    { id: "frame-ghost-flame", name: "Призрачный огонь", kind: "frame", price: 3500, rarity: "EPIC", description: "Зелёные языки, много искр" },
+    { id: "frame-golden-seal", name: "Золотая печать", kind: "frame", price: 3500, rarity: "EPIC", description: "Солнечные лучи и квадрат" },
+    { id: "frame-crimson-seal", name: "Багровая печать", kind: "frame", price: 3500, rarity: "EPIC", description: "Кровавые руны" },
+    { id: "frame-golden-moths", name: "Золотые бабочки", kind: "frame", price: 3500, rarity: "EPIC", description: "Четыре бабочки с хвостиками" },
+    { id: "frame-lunar-moths", name: "Лунные мотыльки", kind: "frame", price: 3500, rarity: "EPIC", description: "Пять белых мотыльков, медленно" },
     { id: "frame-18", name: "Золотые крылья", kind: "frame", price: 5000, rarity: "LEGENDARY", description: "Расправленные крылья" },
+    // арт-рамки (растровые)
     // — фоны баннера —
     { id: "preset-neon", name: "Неон", kind: "background", price: 800, rarity: "RARE", description: "Фон баннера" },
     { id: "preset-sakura", name: "Сакура", kind: "background", price: 1000, rarity: "RARE", description: "Фон баннера" },

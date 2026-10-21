@@ -33,6 +33,7 @@ import { useTagSelection, useTitleSelection } from "@/lib/selection";
 import { useAccount } from "@/lib/use-account";
 import { useProfile } from "@/lib/profile";
 import { watchStats, watchStore } from "@/lib/history";
+import { PERIOD_SCALE, PRIZES, botPoints, noise, prizeFor, weekPoints, weeklyRank, useLeaderboardState } from "@/lib/leaderboard-rewards";
 import "./leaderboard.css";
 import "./leaderboard-premium.css";
 import { PremiumChip } from "@/components/profile/PremiumChip";
@@ -45,9 +46,6 @@ const NAMES = [
   "Nox", "Сумрак", "Aoi", "Дракон_7", "Mitsuki", "Эхо", "Raiko", "Лунная", "Sora",
 ];
 
-/** Множитель очков за период: неделя / месяц / всё время */
-const PERIOD_SCALE = [1, 4.3, 28];
-const TOP_POINTS = 4702;
 const TOTAL_ROWS = 50;
 
 /**
@@ -60,6 +58,9 @@ const TOTAL_ROWS = 50;
 const MAX_BADGES = 2;
 
 /** Настоящие рамки проекта (без «без рамки») */
+/** Титулы за итоги лидерборда у сгенерированных соперников не показываем */
+const BOT_TITLES = TITLES.filter((t) => !t.unlock.grant);
+
 const REAL_FRAMES = FRAMES.filter((f) => f.id !== "f-none");
 
 /**
@@ -93,13 +94,6 @@ interface Entry {
   me?: boolean;
 }
 
-/** Детерминированный псевдослучайный шум: без него строки менялись бы при
- *  каждом рендере и «прыгали» бы между фильтрами. */
-function noise(i: number, salt: number): number {
-  const x = Math.sin(i * 127.1 + salt * 311.7) * 43758.5453;
-  return x - Math.floor(x);
-}
-
 /**
  * Генерация соперников.
  *
@@ -123,12 +117,12 @@ function buildRoster(period: number): Entry[] {
     }
 
     const totalMinutes = Math.round((64 - i * 0.7) * PERIOD_SCALE[period] * 0.9 * 60);
-    const title = i < 10 ? TITLES[0] : TITLES[Math.floor(noise(i + 31, period) * TITLES.length)];
+    const title = i < 10 ? BOT_TITLES[0] : BOT_TITLES[Math.floor(noise(i + 31, period) * BOT_TITLES.length)];
 
     entries.push({
       rank: i + 1,
       name: NAMES[k] + (i >= NAMES.length ? `_${i + 1}` : ""),
-      points: TOP_POINTS * PERIOD_SCALE[period] * Math.pow(0.982, i) * (1 - noise(i, period) * 0.01),
+      points: botPoints(period, i),
       level: 12 + Math.floor(noise(i + 9, period) * 70),
       series: Math.round((240 - i * 2) * PERIOD_SCALE[period] * 0.9),
       chapters: Math.round((420 - i * 3.2) * PERIOD_SCALE[period] * (0.7 + noise(i + 5, period) * 0.6)),
@@ -409,6 +403,7 @@ export function LeaderboardView() {
   const levelInfo = useLevelInfo();
   const tagSel = useTagSelection();
   const titleSel = useTitleSelection();
+  const lb = useLeaderboardState();
   const watch = watchStore.useStore();
   const stats = watchStats(watch);
 
@@ -429,7 +424,7 @@ export function LeaderboardView() {
     () => ({
       rank: 0,
       name: account?.nickname ?? "Гость",
-      points: progress.progress.xpTotal,
+      points: period === 0 ? weekPoints(lb, progress.progress.xpTotal) : progress.progress.xpTotal,
       level: levelInfo.level,
       series: stats.episodes,
       chapters: 0,
@@ -456,7 +451,7 @@ export function LeaderboardView() {
       ].slice(0, MAX_BADGES - 1),
       me: true,
     }),
-    [account, profile, progress, levelInfo, stats, tagSel.primary, tagSel.extras, titleSel.primary, titleSel.extras],
+    [account, profile, progress, levelInfo, stats, period, lb, tagSel.primary, tagSel.extras, titleSel.primary, titleSel.extras],
   );
 
   const shown = useMemo(() => {
@@ -512,6 +507,7 @@ export function LeaderboardView() {
 
   /* Сколько очков до сотого места — для дока внизу */
   const gapTo100 = Math.max(0, Math.round((entries[99]?.points ?? 0) - meEntry.points));
+  const myRank = period === 0 ? weeklyRank(meEntry.points) : null;
   const top100 = entries[99]?.points ?? 1;
   const gapPct = Math.max(0, Math.min(100, (meEntry.points / top100) * 100));
 
@@ -526,7 +522,7 @@ export function LeaderboardView() {
           </div>
           <h1 className="lb-h1">Лидерборд</h1>
           <p className="lb-lead">
-            Самые упорные зрители AniGalaxy. Очки обновляются каждый день, итоги — в понедельник в 00:00 по МСК.
+            Самые упорные зрители AniGalaxy. Очки — это XP за неделю. Итоги — в понедельник в 00:00 по UTC (03:00 по Москве).
           </p>
         </div>
 
@@ -607,32 +603,26 @@ export function LeaderboardView() {
       {period === 0 && (
         <section className="lb-lad">
           <div className="lb-lg">
-            <div className="lb-lc g">
-              <b>1 место</b>
-              <span>8 000 XP и 1 500 AC, титул «Покоритель», золотая рамка</span>
-            </div>
-            <div className="lb-lc">
-              <b>2–5</b>
-              <span>4 000 XP и 800 AC, титул, рамка</span>
-            </div>
-            <div className="lb-lc">
-              <b>6–10</b>
-              <span>2 500 XP и 400 AC, титул</span>
-            </div>
-            <div className="lb-lc">
-              <b>11–25</b>
-              <span>1 200 XP и 200 AC</span>
-            </div>
-            <div className="lb-lc">
-              <b>26–100</b>
-              <span>400 XP и 80 AC</span>
-            </div>
+            {PRIZES.map((p, i) => (
+              <div key={p.place} className={`lb-lc${i === 0 ? " g" : ""}`}>
+                <b>{p.place}</b>
+                <span>{p.text}</span>
+              </div>
+            ))}
           </div>
           <div className="lb-note">
-            <b>Демо-витрина наград:</b> сервера лидерборда и сезонных выплат нет, поэтому
-            XP, AC и предметы за места сейчас не начисляются. Титула «Покоритель» и
-            золотой рамки из макета в каталоге тоже нет — награды за квесты,
-            достижения и боевой пропуск остаются настоящими.
+            <b>Как считаются места:</b> очки недели — это XP, набранный с понедельника.
+            Когда неделя закрывается, место определяется среди 100 лучших, а XP и AC
+            начисляются сами, титулы и рамки появляются в профиле.
+            {lb.history[0] && (
+              <>
+                {" "}
+                <b>Прошлая неделя:</b>{" "}
+                {lb.history[0].rank
+                  ? `${lb.history[0].rank} место, ${fmt(lb.history[0].points)} очков${prizeFor(lb.history[0].rank) ? ` — ${prizeFor(lb.history[0].rank)!.text}` : ""}.`
+                  : `${fmt(lb.history[0].points)} очков — до топ-100 не хватило.`}
+              </>
+            )}
           </div>
         </section>
       )}
@@ -662,7 +652,7 @@ export function LeaderboardView() {
       <div className="lb-dock">
         <div className="lb-dk">{fmt(meEntry.points)}</div>
         <div className="lb-dx">
-          <small>Твоё место</small>
+          <small>Твоё место{myRank ? ` · #${myRank}` : ""}</small>
           <b>{meEntry.name}</b>
           <div className="lb-gap">
             <i style={{ width: `${gapPct}%` }} />

@@ -20,6 +20,7 @@
  * расхождение разметки при гидрации.
  */
 
+import { openCheckout } from "@/lib/checkout";
 import {
   useCallback,
   useEffect,
@@ -43,7 +44,7 @@ import {
   applyPromo,
   type PremiumIcon,
 } from "@/lib/premium-perks";
-import { QUESTS } from "@/lib/quests";
+import { PROGRESSION_CONFIG } from "@/lib/progression/progression.config";
 import { AUTORENEW_DAYS, autoRenewEnabled, setAutoRenew } from "@/lib/premium-autorenew";
 import { PLANS } from "./PremiumPlans";
 
@@ -117,11 +118,15 @@ const PERK_HREF: Record<string, string | undefined> = {
 /**
  * Сколько монет в день даёт Premium.
  *
- * Считается из настоящих наград за дневные квесты (`QUESTS`) и множителя
+ * Считается из настоящих наград за дневные квесты (конфиг прогрессии) и множителя
  * подписки: в макете стояли круглые «+300 при активации» и «+120 в день», но
  * таких наград в проекте нет, а обещать их можно только всерьёз.
  */
-const QUEST_COINS = QUESTS.reduce((sum, quest) => sum + quest.coins, 0);
+const DAILY_POOL = PROGRESSION_CONFIG.quests.dailyPool;
+const QUEST_COINS = Math.round(
+  (DAILY_POOL.reduce((sum, quest) => sum + quest.ac, 0) / DAILY_POOL.length) * PROGRESSION_CONFIG.quests.dailyPick +
+    (PROGRESSION_CONFIG.rules.SESSION_START.ac ?? 0),
+);
 const COINS_PER_DAY = QUEST_COINS * PREMIUM_QUEST_MULT;
 
 const MONTHS = [
@@ -389,12 +394,18 @@ export function PremiumStatus({ account }: { account: Account }) {
     showToast(next ? "Автопродление включено" : "Автопродление выключено");
   };
 
-  /** Продление на выбранный тариф. Денег не берём — об этом сказано и на кнопке, и в тосте */
+  /** Продление на выбранный тариф: оплата в общем окне, подписка — после неё */
   const onExtend = () => {
-    activatePremium(plan.days);
-    showToast(
-      `Подписка продлена на ${plan.days} дн. Денег мы не списываем: платёжных данных у проекта нет.`,
-    );
+    openCheckout({
+      title: `Premium · ${plan.title}`,
+      caption: `Продление · ${plan.perMonth}`,
+      price: plan.price,
+      oldPrice: plan.oldPrice,
+      onPaid: () => {
+        activatePremium(plan.days);
+        showToast(`Подписка продлена на ${plan.days} дн.`);
+      },
+    });
   };
 
   const onApplyPromo = (event: React.FormEvent) => {
@@ -553,8 +564,7 @@ export function PremiumStatus({ account }: { account: Account }) {
             </div>
 
             <div className="pra-note" style={{ marginTop: 16 }}>
-              Платёжных данных у проекта нет: кнопка продлевает подписку сразу, без
-              списания — цена показывает, сколько стоил бы тариф.
+              Оплата откроется в защищённом окне. Подписка продлится сразу после платежа.
             </div>
           </section>
         </div>

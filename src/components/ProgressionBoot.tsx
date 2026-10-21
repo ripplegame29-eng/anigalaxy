@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect } from "react";
-import { startProgressionSession } from "@/lib/progression/events";
+import { startProgressionSession, useProgress } from "@/lib/progression/events";
+import { trackLeaderboardWeek } from "@/lib/leaderboard-rewards";
 
 /**
  * Точка входа ежедневного входа: шлёт SESSION_START один раз после
@@ -10,8 +11,13 @@ import { startProgressionSession } from "@/lib/progression/events";
  * отсекает гонки. Само событие чисто считается в lib (нет Date.now в UI).
  */
 export function ProgressionBoot() {
+  const xpTotal = useProgress().progress.xpTotal;
   useEffect(() => {
     startProgressionSession();
   }, []);
+  /* Недельный итог лидерборда: точка отсчёта, смена недели и выплата призов */
+  useEffect(() => {
+    trackLeaderboardWeek(xpTotal);
+  }, [xpTotal]);
   return null;
 }
