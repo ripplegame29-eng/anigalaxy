@@ -3,43 +3,33 @@
 import { use } from "react";
 import Link from "next/link";
 import { useAccount } from "@/lib/use-account";
-import { useProfile } from "@/lib/profile";
-import { DEMO_PERSONAS } from "@/lib/comments";
-import { PROGRESSION_CONFIG } from "@/lib/progression/progression.config";
-import { AgTag } from "@/components/progression/AgTag";
-import { FRAMES } from "@/lib/cosmetics";
-import { AvatarFrame } from "@/components/profile/AvatarFrame";
-import { isPremiumActive } from "@/lib/auth";
-import type { TagDef } from "@/lib/progression/types";
+import { usePublicProfile } from "@/lib/profiles-cloud";
 
-const TAG_BY_ID = new Map(PROGRESSION_CONFIG.tags.map((tag) => [tag.id, tag]));
+/** Дата регистрации: фиксированная зона и локаль, чтобы сервер и клиент совпадали */
+const formatJoined = (ms: number): string =>
+  new Date(ms).toLocaleDateString("ru-RU", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
 
 export default function PublicProfilePage({ params }: { params: Promise<{ nickname: string }> }) {
   const { nickname } = use(params);
   const decoded = decodeURIComponent(nickname);
   const account = useAccount();
-  const profile = useProfile();
-
+  const state = usePublicProfile(decoded);
   const isMe = account?.nickname?.toLowerCase() === decoded.toLowerCase();
-  const persona = DEMO_PERSONAS.find((item) => item.name.toLowerCase() === decoded.toLowerCase());
 
-  if (isMe) {
+  if (state.status === "loading") {
     return (
       <div className="mx-auto max-w-3xl px-4 py-10">
-        <h1 className="text-2xl font-extrabold">{account?.nickname}</h1>
-        <p className="mt-2 text-muted">Это ваш профиль.</p>
-        <Link href="/u/me" className="mt-4 inline-block text-accent hover:underline">
-          Открыть полный профиль
-        </Link>
+        <h1 className="text-2xl font-extrabold">{decoded}</h1>
+        <p className="mt-2 text-muted">Загружаем профиль…</p>
       </div>
     );
   }
 
-  if (!persona) {
+  if (state.status === "missing") {
     return (
       <div className="mx-auto max-w-3xl px-4 py-10">
         <h1 className="text-2xl font-extrabold">{decoded}</h1>
-        <p className="mt-2 text-muted">Профиль пользователя пока недоступен.</p>
+        <p className="mt-2 text-muted">Игрок с таким ником не найден.</p>
         <Link href="/" className="mt-4 inline-block text-accent hover:underline">
           На главную
         </Link>
@@ -47,22 +37,50 @@ export default function PublicProfilePage({ params }: { params: Promise<{ nickna
     );
   }
 
-  const tag = TAG_BY_ID.get(persona.tagId) as TagDef | undefined;
-  const frame = FRAMES.find((item) => item.id === profile.frameId);
+  const { profile } = state;
+  const stats: { label: string; value: string }[] = [
+    { label: "Уровень", value: String(profile.level) },
+    { label: "Опыт", value: profile.xpTotal.toLocaleString("ru-RU") },
+    { label: "Место в рейтинге", value: profile.rank ? `#${profile.rank}` : "—" },
+  ];
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">
       <div className="flex items-center gap-4">
-        <AvatarFrame nickname={decoded} avatar={undefined} frame={frame} size="md" />
-        <div>
-          <h1 className="text-2xl font-extrabold">{decoded}</h1>
-          <p className="text-sm text-muted">Уровень {persona.level} · {persona.premium ? "Premium" : "Без Premium"}</p>
-          {tag && <AgTag tag={tag} size="sm" />}
+        <span className="grid h-16 w-16 shrink-0 place-items-center rounded-full bg-gradient-to-br from-[#2AABEE] to-[#229ED9] text-2xl font-black text-white">
+          {profile.nickname.slice(0, 1).toUpperCase()}
+        </span>
+        <div className="min-w-0">
+          <h1 className="flex flex-wrap items-center gap-2 text-2xl font-extrabold">
+            <span className="truncate">{profile.nickname}</span>
+            {profile.clan && (
+              <span className="rounded-md bg-white/8 px-2 py-0.5 text-xs font-bold text-muted">[{profile.clan.tag}]</span>
+            )}
+            {profile.premium && (
+              <span className="rounded-md bg-accent/15 px-2 py-0.5 text-xs font-bold text-accent">Premium</span>
+            )}
+          </h1>
+          <p className="text-sm text-muted">
+            С нами с {formatJoined(profile.joinedAt)}
+            {profile.clan ? ` · клан «${profile.clan.name}»` : ""}
+          </p>
         </div>
       </div>
-      <p className="mt-6 text-muted">
-        Это демо-профиль. Полные данные профиля доступны только владельцу аккаунта.
-      </p>
+
+      <div className="mt-6 grid grid-cols-3 gap-3">
+        {stats.map((item) => (
+          <div key={item.label} className="rounded-xl border border-white/10 bg-white/[0.03] px-3 py-4 text-center">
+            <b className="block text-xl font-extrabold text-white">{item.value}</b>
+            <span className="text-xs text-muted">{item.label}</span>
+          </div>
+        ))}
+      </div>
+
+      {isMe && (
+        <Link href="/profile" className="mt-6 inline-block text-accent hover:underline">
+          Открыть мой полный профиль
+        </Link>
+      )}
     </div>
   );
 }

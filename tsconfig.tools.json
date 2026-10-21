@@ -53,6 +53,7 @@
     "src/app/api/friends/**/*.ts",
     "src/app/api/ratings/**/*.ts",
     "src/app/api/notifications/**/*.ts",
-    "src/app/api/chat/**/*.ts"
+    "src/app/api/chat/**/*.ts",
+    "src/app/api/users/**/*.ts"
   ]
 }
