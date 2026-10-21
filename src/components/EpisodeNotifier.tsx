@@ -14,6 +14,7 @@
  * push, — у проекта его нет.
  */
 
+import { readAccount } from "@/lib/auth";
 import { useEffect } from "react";
 import { watchStore } from "@/lib/history";
 import { loadFavorites } from "@/lib/collections";
@@ -48,6 +49,8 @@ export function EpisodeNotifier() {
     let alive = true;
 
     const check = async () => {
+      // Уведомления о сериях — только для вошедших игроков
+      if (!readAccount()) return;
       const reminders = new Set(readList(REMIND_KEY));
       const prefs = readPrefs();
       const auto = prefs.notify.newEpisodes;

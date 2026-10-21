@@ -380,6 +380,11 @@ export function subscribeEffects(listener: EffectListener): () => void {
 /** Обработать одно событие: валидация → движок → запись → эффекты */
 export function emit(event: DomainEvent): EmitResult {
   const st = ensureInit();
+  // Гость ничего не зарабатывает: ни опыта, ни достижений, ни тостов.
+  // Награды начинают копиться после входа в аккаунт.
+  if (typeof window !== "undefined" && !readAccount()) {
+    return { effects: [], doc: st.get() };
+  }
   const cfg = PROGRESSION_CONFIG;
   const now = Date.now();
   const current = st.get();

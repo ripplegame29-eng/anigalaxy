@@ -233,6 +233,8 @@ function pushNotice(state: ProfileState, text: string): ProfileState {
  * не знает — сообщение собирает вызывающая сторона (service.applySideEffects).
  */
 export function addNotice(text: string): void {
+  // Уведомления только у вошедших игроков (ключ аккаунта — тот же, что в auth.ts)
+  if (typeof window !== "undefined" && !window.localStorage.getItem("animehub:account:v1")) return;
   profileStore.update((state) => pushNotice(state, text));
 }
 
