@@ -1,0 +1,16 @@
+/* Страница тайтла: подсветка плеера и список серий (префикс wb-) */
+.wb-shell{position:relative;transition:box-shadow .6s}
+.wb-shell.wb-shell{box-shadow:0 0 0 1px rgba(var(--accent-rgb),.35),0 0 38px -4px rgba(var(--accent-rgb),.38),0 0 120px -10px rgba(139,92,246,.3),0 40px 80px -40px #000;animation:wb-breathe 6s ease-in-out infinite alternate}
+@keyframes wb-breathe{to{box-shadow:0 0 0 1px rgba(var(--accent-rgb),.55),0 0 54px -2px rgba(var(--accent-rgb),.5),0 0 150px -6px rgba(34,211,238,.3),0 40px 80px -40px #000}}
+
+.wb-aside{border-color:rgba(var(--accent-rgb),.25)!important;background:linear-gradient(180deg,rgba(var(--accent-rgb),.07),rgba(12,14,24,.85))!important;box-shadow:0 0 60px -30px rgba(var(--accent-rgb),.6)}
+.wb-eps{scrollbar-width:thin;scrollbar-color:rgba(var(--accent-rgb),.5) transparent}
+.wb-ep{background:rgba(255,255,255,.06)!important;box-shadow:inset 0 0 0 1px rgba(255,255,255,.1);transition:transform .2s,background .2s,box-shadow .2s}
+.wb-ep:hover{transform:translateY(-2px);background:rgba(var(--accent-rgb),.22)!important;box-shadow:inset 0 0 0 1px rgba(var(--accent-rgb),.6)}
+.wb-ep--on{background:linear-gradient(135deg,rgb(var(--accent-rgb)),#6d5cff)!important;color:#fff!important;box-shadow:0 0 0 2px rgba(255,255,255,.25),0 10px 24px -8px rgba(var(--accent-rgb),1)!important;transform:scale(1.06)}
+
+@media(max-width:767px),(hover:none){
+  .wb-shell.wb-shell{animation:none;box-shadow:0 0 0 1px rgba(var(--accent-rgb),.35),0 0 40px -8px rgba(var(--accent-rgb),.4)}
+  .wb-ep:hover{transform:none}
+}
+@media(prefers-reduced-motion:reduce){.wb-shell.wb-shell{animation:none}}

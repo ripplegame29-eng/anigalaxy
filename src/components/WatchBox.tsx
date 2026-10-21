@@ -429,7 +429,7 @@ export function WatchBox({
             {/* Оболочка плеера — см. AltPlayer: тот ищет своё «плеер» по этому id */}
           <div
             id="player-shell"
-            className={`relative aspect-video w-full overflow-hidden rounded-2xl bg-black ring-1 ring-white/12 shadow-[0_40px_80px_-40px_rgba(0,0,0,1)] ${
+            className={`wb-shell relative aspect-video w-full overflow-hidden rounded-2xl bg-black ring-1 ring-white/12 shadow-[0_40px_80px_-40px_rgba(0,0,0,1)] ${
               ambient ? "ag-ambient" : ""
             }`}
           >
@@ -449,6 +449,14 @@ export function WatchBox({
                 season={activeSeason?.number ?? season}
                 onBack={() => switchSource("kodik")}
                 malId={detail.card.shikimoriId}
+                nav={isSerial ? {
+                  seasons: detail.seasons,
+                  season: activeSeason?.number ?? season,
+                  voices: studioList,
+                  voiceId: transId,
+                  onPickEpisode: (sn, ep) => { setSeason(sn); setEpisode(ep); },
+                  onPickVoice: (id) => { const o = studioList.find((x) => x.id === id); if (o) void switchTranslation(o, { keepEpisode: episode, season: activeSeason?.number }); },
+                } : undefined}
                 hasNext={(activeSeason?.episodes.findIndex((e) => e.number === episode) ?? -1) + 1 > 0 && (activeSeason?.episodes.findIndex((e) => e.number === episode) ?? -1) + 1 < (activeSeason?.episodes.length ?? 0)}
                 onNextEpisode={() => {
                   const eps = activeSeason?.episodes ?? [];
@@ -525,7 +533,7 @@ export function WatchBox({
         </div>
 
         {/* ------------------- Боковая панель ------------------- */}
-        <aside className="flex min-w-0 flex-col overflow-hidden rounded-2xl border border-line bg-surface/75 backdrop-blur-sm">
+        <aside className="wb-aside flex min-w-0 flex-col overflow-hidden rounded-2xl border border-line bg-surface/75 backdrop-blur-sm">
           {/* Озвучка */}
           <div className="border-b border-line p-3">
             <div className="mb-2 flex items-center justify-between">
@@ -624,7 +632,7 @@ export function WatchBox({
               </div>
 
               {/* Сетка серий */}
-              <div className="max-h-[260px] overflow-y-auto p-3 lg:max-h-[420px]">
+              <div className="wb-eps max-h-[300px] overflow-y-auto p-3 lg:max-h-[460px]">
                 {switching ? (
                   <div className="grid grid-cols-5 gap-2">
                     {Array.from({ length: 15 }).map((_, i) => (
@@ -642,7 +650,8 @@ export function WatchBox({
                           onClick={() => setEpisode(ep.number)}
                           title={truncate(ep.title, 60) ?? `Серия ${ep.number}`}
                           aria-pressed={active}
-                          className={`btn-ghost h-9 rounded-lg text-[13px] font-bold tabular-nums ring-1 transition-all ${
+                          className={`wb-ep btn-ghost h-10 rounded-lg text-sm font-bold tabular-nums ring-1 transition-all ${
+                            active ? "wb-ep--on" : ""} ${
                             active
                               ? "bg-gradient-to-br from-accent to-accent-2 text-white ring-transparent shadow-[0_10px_22px_-12px_rgba(31,123,255,1)]"
                               : "bg-white/5 text-white/75 ring-white/10 hover:bg-white/12 hover:text-white"

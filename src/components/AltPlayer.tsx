@@ -38,6 +38,7 @@ type StreamQuality = "480" | "720" | "1080";
 const QUALITIES = ["auto", "2160", "1440", "1080", "720", "480", "360"] as const;
 type Quality = (typeof QUALITIES)[number];
 
+
 /** 2K/4K открыты всем: замок по подписке снят по решению владельца сайта */
 const qualityNeedsPremium_ = (...args: unknown[]): boolean => args.length < 0;
 const SHOW_HQ_NOTE = false;
@@ -78,6 +79,9 @@ const CBAR_BTN =
 /** Тонкие SVG-иконки: stroke currentColor, как во всём интерфейсе */
 const PATHS: Record<string, string[]> = {
   play: ["M8 5.5v13l11-6.5z"],
+  list: ["M4 6h16", "M4 12h16", "M4 18h10"],
+  voices: ["M4 5h9", "M8 3v2", "M6 5c0 4 3 7 7 8", "M12 5c0 3-2 6-6 8", "m13 20 4-9 4 9", "M14.5 17h5"],
+  close: ["M6 6l12 12", "M18 6 6 18"],
   pause: ["M9 5v14", "M15 5v14"],
   volume: ["M11 5 6 9H3v6h3l5 4V5z", "M15.5 8.5a5 5 0 0 1 0 7"],
   volumeOff: ["M11 5 6 9H3v6h3l5 4V5z", "m16.5 9.5 5 5", "m21.5 9.5-5 5"],
@@ -85,6 +89,7 @@ const PATHS: Record<string, string[]> = {
     "M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z",
     "M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z",
   ],
+  fill: ["M4 9V4h5", "M20 9V4h-5", "M4 15v5h5", "M20 15v5h-5"],
   pip: ["M3 5h18v14H3z", "M12 12h8v6h-8z"],
   expand: [
     "M8 3H5a2 2 0 0 0-2 2v3",
@@ -105,6 +110,7 @@ const PATHS: Record<string, string[]> = {
   fwd10: ["M21 12a9 9 0 1 1-3-6.7", "M21 4v5h-5"],
   next: ["M6 5l9 7-9 7z", "M19 5v14"],
   skip: ["M5 5l8 7-8 7z", "M13 5l8 7-8 7z"],
+  bookmark: ["M6 3h12v18l-6-4-6 4z"],
   glow: ["M12 3v2", "M12 19v2", "M3 12h2", "M19 12h2", "M5.6 5.6 7 7", "M17 17l1.4 1.4", "M5.6 18.4 7 17", "M17 7l1.4-1.4", "M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8z"],
 };
 
@@ -197,6 +203,9 @@ function DragBar({
   label,
   valueText,
   className = "",
+  marks,
+  hintAt,
+  pins,
 }: {
   /** Заполнение 0..1 */
   ratio: number;
@@ -206,8 +215,15 @@ function DragBar({
   label: string;
   valueText: string;
   className?: string;
+  /** Отмеченные участки (опенинг/эндинг) в долях 0..1 */
+  marks?: { a: number; b: number; label: string }[];
+  /** Подпись времени под курсором: «03:20 (Опенинг)» */
+  hintAt?: (ratio: number) => string;
+  /** Закладки в долях 0..1 */
+  pins?: number[];
 }) {
   const activeRef = useRef(false);
+  const [hover, setHover] = useState<number | null>(null);
   const pct = Math.min(100, Math.max(0, ratio * 100));
   const pick = (e: React.PointerEvent<HTMLDivElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -229,7 +245,12 @@ function DragBar({
       }}
       onPointerMove={(e) => {
         if (activeRef.current) pick(e);
+        if (hintAt) {
+          const rect = e.currentTarget.getBoundingClientRect();
+          setHover(Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width)));
+        }
       }}
+      onPointerLeave={() => setHover(null)}
       onPointerUp={(e) => {
         activeRef.current = false;
         if (e.currentTarget.hasPointerCapture(e.pointerId)) {
@@ -251,14 +272,37 @@ function DragBar({
       className={`group/bar relative cursor-pointer touch-none ${className}`}
     >
       <div className="h-full w-full rounded-full bg-white/25" />
+      {marks?.map((m) => (
+        <div
+          key={m.label}
+          className="absolute inset-y-0 rounded-sm bg-amber-400/80"
+          style={{ left: `${m.a * 100}%`, width: `${Math.max(0, m.b - m.a) * 100}%` }}
+        />
+      ))}
       <div
-        className="absolute inset-y-0 left-0 rounded-full bg-accent"
+        className="absolute inset-y-0 left-0 rounded-full bg-white"
         style={{ width: `${pct}%` }}
       />
       <div
-        className="absolute top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white opacity-0 shadow transition-opacity group-hover/bar:opacity-100"
+        className="absolute top-1/2 h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white shadow-[0_0_0_4px_rgba(255,255,255,0.18)] transition-transform group-hover/bar:scale-125"
         style={{ left: `${pct}%` }}
       />
+      {pins?.map((r) => (
+        <span
+          key={r}
+          aria-hidden
+          className="pointer-events-none absolute -top-2 h-2.5 w-2.5 -translate-x-1/2 rotate-45 rounded-[2px] bg-cyan-300 shadow-[0_0_8px_rgba(34,211,238,0.9)]"
+          style={{ left: `${r * 100}%` }}
+        />
+      ))}
+      {hover !== null && hintAt && (
+        <div
+          className="pointer-events-none absolute bottom-full mb-3 -translate-x-1/2 whitespace-nowrap rounded-full bg-black/70 px-3 py-1 text-xs font-bold text-white backdrop-blur"
+          style={{ left: `${Math.min(92, Math.max(8, hover * 100))}%` }}
+        >
+          {hintAt(hover)}
+        </div>
+      )}
     </div>
   );
 }
@@ -276,6 +320,7 @@ export function AltPlayer({
   onNextEpisode,
   hasNext: hasNextProp,
   malId,
+  nav,
 }: {
   /** Название тайтла — запрос поиска AniLiberty и заголовок в оверлее */
   query: string;
@@ -305,6 +350,15 @@ export function AltPlayer({
   hasNext?: boolean;
   /** MAL-id (= shikimori_id Kodik): по нему берём точные тайм-коды опенинга и эндинга */
   malId?: number;
+  /** Сезоны/серии и озвучки: панели «Сезоны и эпизоды» и «Озвучки» прямо в плеере */
+  nav?: {
+    seasons: { number: number; title?: string; episodes: { number: number }[] }[];
+    season: number;
+    voices: { id: number; title: string; type: "voice" | "subtitles" }[];
+    voiceId: number | null;
+    onPickEpisode: (season: number, episode: number) => void;
+    onPickVoice: (id: number) => void;
+  };
 }) {
   const [detail, setDetail] = useState<AniTitleDetail | null>(null);
   const [status, setStatus] = useState<"loading" | "ok" | "empty">("loading");
@@ -337,23 +391,81 @@ export function AltPlayer({
   const [savedPos, setSavedPos] = useState(0);
   const [volume, setVolume] = useState(1);
   const [muted, setMuted] = useState(false);
-  const [rate, setRate] = useState(1);
+  const [rate, setRateState] = useState(() => {
+    try {
+      const v = Number(localStorage.getItem("ag:rate"));
+      return SPEEDS.includes(v) ? v : 1;
+    } catch {
+      return 1;
+    }
+  });
+  /** Скорость запоминается между сериями и визитами */
+  const setRate = (v: number) => {
+    setRateState(v);
+    try {
+      localStorage.setItem("ag:rate", String(v));
+    } catch {
+      /* хранилище недоступно — не страшно */
+    }
+  };
   const [settingsOpen, setSettingsOpen] = useState(false);
+  /** Левая панель озвучек и оверлей сезонов/серий */
+  const [panel, setPanel] = useState<null | "voices" | "episodes">(null);
+  const [openSeason, setOpenSeason] = useState<number | null>(null);
   const [qualityOpen, setQualityOpen] = useState(false);
   /** Окно «2K/4K — по подписке»: замкнуто на текущую серию, не серию из localStorage */
   const [hqModal, setHqModal] = useState(false);
-  const [autoNext, setAutoNext] = useState(true);
+  const [autoNext, setAutoNextState] = useState(() => {
+    try {
+      return localStorage.getItem("ag:autonext") !== "0";
+    } catch {
+      return true;
+    }
+  });
+  const setAutoNext = (fn: (v: boolean) => boolean) => {
+    setAutoNextState((v) => {
+      const next = fn(v);
+      try {
+        localStorage.setItem("ag:autonext", next ? "1" : "0");
+      } catch {
+        /* ignore */
+      }
+      return next;
+    });
+  };
+  /** Секунды до автоперехода на следующую серию; null — отсчёта нет */
+  const [countdown, setCountdown] = useState<number | null>(null);
+  /** Закладки на моменты серии (секунды) */
+  const bmKey = `ag:bm:${titleId}:${season}:${episode}`;
+  const [bookmarks, setBookmarks] = useState<number[]>([]);
+  const [bmLoaded, setBmLoaded] = useState<string>("");
+  if (bmLoaded !== bmKey) {
+    setBmLoaded(bmKey);
+    let list: number[] = [];
+    try {
+      const raw = JSON.parse(localStorage.getItem(bmKey) ?? "[]");
+      if (Array.isArray(raw)) list = raw.filter((n): n is number => typeof n === "number").slice(0, 30);
+    } catch {
+      /* битые данные — начинаем с пустого списка */
+    }
+    setBookmarks(list);
+    setCountdown(null);
+  }
   /** Фоновая подсветка: цвет кадра льётся за рамку плеера */
   const [glow, setGlow] = useState(() => {
     try {
-      return localStorage.getItem(GLOW_KEY) !== "0";
+      // На телефоне подсветка по умолчанию выключена: съём кадров и широкая тень
+      // каждые 300 мс заметно греют устройство. Включается вручную в настройках.
+      const saved = localStorage.getItem(GLOW_KEY);
+      if (saved !== null) return saved !== "0";
+      return !window.matchMedia("(pointer: coarse)").matches;
     } catch {
       return true;
     }
   });
   /** Вспышка перемотки: сторона, шаг и счётчик для перезапуска анимации */
   /** Тайм-коды пропуска из AniSkip; null — ещё грузятся или для серии их нет */
-  const [skips, setSkips] = useState<{ op: [number, number] | null; ed: [number, number] | null } | null>(null);
+  const [skips, setSkips] = useState<{ op: [number, number] | null; ed: [number, number] | null; exact?: boolean } | null>(null);
   /** Авто-пропуск опенинга без нажатия (настройка плеера) */
   const [autoSkip, setAutoSkip] = useState(() => {
     try {
@@ -363,6 +475,9 @@ export function AltPlayer({
     }
   });
   const autoSkippedRef = useRef<string | null>(null);
+  /** «Смотреть опенинг»: подсказка пропуска скрыта до конца этой серии */
+  const [watchOp, setWatchOp] = useState<string | null>(null);
+  const epKey = `${titleId}:${season}:${episode}`;
   const [flash, setFlash] = useState<{ side: "l" | "r"; sec: number; n: number } | null>(null);
   const [isFs, setIsFs] = useState(false);
   /** Anime4K не запустился (нет WebGL / canvas заблокирован CORS) */
@@ -371,6 +486,8 @@ export function AltPlayer({
   const videoRef = useRef<HTMLVideoElement>(null);
   /** Канвас поверх видео: на нём Anime4K рисует апскейленные кадры */
   const a4kCanvasRef = useRef<HTMLCanvasElement>(null);
+  /** Растянуть кадр на весь экран (старые 4:3 аниме): обрезает края вместо чёрных полос */
+  const [fillScreen, setFillScreen] = useState(false);
   /** Диалог «2K/4K по подписке» — на него ставим фокус при открытии */
   const hqDialogRef = useRef<HTMLDivElement>(null);
   /** true, пока управление ошибками у hls.js (чтобы onError не дублировал) */
@@ -675,6 +792,14 @@ export function AltPlayer({
     return () => document.removeEventListener("fullscreenchange", onChange);
   }, []);
 
+  // Панели озвучек/серий: закрытие по Escape
+  useEffect(() => {
+    if (!panel) return;
+    const onEsc = (e: KeyboardEvent) => e.key === "Escape" && setPanel(null);
+    document.addEventListener("keydown", onEsc);
+    return () => document.removeEventListener("keydown", onEsc);
+  }, [panel]);
+
   // Настройки/качество: закрытие кликом мимо и по Escape
   useEffect(() => {
     if (!settingsOpen && !qualityOpen) return;
@@ -763,6 +888,21 @@ export function AltPlayer({
     if (video) video.playbackRate = next;
   };
 
+  /** Закладка в текущий момент: повторное нажатие рядом с ней — снимает */
+  const toggleBookmark = () => {
+    const video = videoRef.current;
+    if (!video) return;
+    const t = Math.round(video.currentTime);
+    const near = bookmarks.find((b) => Math.abs(b - t) <= 3);
+    const next = near !== undefined ? bookmarks.filter((b) => b !== near) : [...bookmarks, t].sort((a, b) => a - b).slice(0, 30);
+    setBookmarks(next);
+    try {
+      localStorage.setItem(bmKey, JSON.stringify(next));
+    } catch {
+      /* ignore */
+    }
+  };
+
   const seekTo = (ratio: number) => {
     const video = videoRef.current;
     if (!video || !dur) return;
@@ -817,8 +957,13 @@ export function AltPlayer({
   const goNext = () => {
     if (!hasNextEp || !onNextEpisode) return;
     forcePlayRef.current = true;
+    setCountdown(null);
     onNextEpisode();
   };
+  const goNextRef = useRef(goNext);
+  useEffect(() => {
+    goNextRef.current = goNext;
+  });
 
   /** Перемотка на шаг с вспышкой-подсказкой на нужной половине экрана */
   const skipBy = (sec: number) => {
@@ -867,10 +1012,13 @@ export function AltPlayer({
   };
 
   /* ---------------------- Тайм-коды опенинга/эндинга ------------------ */
+  const durKey = dur > 0 ? Math.round(dur) : 0;
   useEffect(() => {
-    if (!malId) return;
+    /* Ждём длину видео: AniSkip хранит метки отдельно для каждого релиза, и
+       нужный выбирается по длине серии — без неё метки могли быть чужими */
+    if (!malId || durKey <= 0) return;
     let alive = true;
-    fetch(`/api/skip?mal=${malId}&ep=${episode}`)
+    fetch(`/api/skip?mal=${malId}&ep=${episode}&len=${durKey}`)
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => alive && setSkips(data && (data.op || data.ed) ? data : null))
       .catch(() => alive && setSkips(null));
@@ -878,12 +1026,13 @@ export function AltPlayer({
       alive = false;
       setSkips(null);
     };
-  }, [malId, episode]);
+  }, [malId, episode, durKey]);
 
   /* Авто-пропуск: один раз за серию, как только дошли до начала опенинга */
   useEffect(() => {
     const op = skips?.op;
-    if (!autoSkip || !op || !playing) return;
+    /* Авто-пропуск только по меткам нашего релиза: из чужого он мог бы перепрыгнуть не туда */
+    if (!autoSkip || !op || !playing || skips?.exact === false) return;
     const key = `${titleId}:${episode}`;
     if (autoSkippedRef.current === key) return;
     if (curTime >= op[0] - 0.5 && curTime < op[1] - 2) {
@@ -928,6 +1077,7 @@ export function AltPlayer({
       f: toggleFullscreen,
       n: goNext,
       o: skipOpening,
+      b: toggleBookmark,
     };
     const fn = act[k];
     if (!fn) return;
@@ -936,6 +1086,16 @@ export function AltPlayer({
     revealUi();
   };
   });
+  /* Отсчёт до следующей серии: по секунде, в конце — переход */
+  useEffect(() => {
+    if (countdown === null) return;
+    const id = window.setTimeout(() => {
+      if (countdown <= 0) goNextRef.current();
+      else setCountdown(countdown - 1);
+    }, countdown <= 0 ? 0 : 1000);
+    return () => window.clearTimeout(id);
+  }, [countdown]);
+
   useEffect(() => {
     const on = (e: KeyboardEvent) => keysRef.current(e);
     document.addEventListener("keydown", on);
@@ -1011,7 +1171,7 @@ export function AltPlayer({
         ref={videoRef}
         playsInline
         preload="metadata"
-        className="absolute inset-0 h-full w-full bg-black object-contain"
+        className={`absolute inset-0 h-full w-full bg-black ${fillScreen ? "object-cover" : "object-contain"}`}
         onPlay={() => {
           setStarted(true);
           setPlaying(true);
@@ -1027,10 +1187,7 @@ export function AltPlayer({
         onEnded={() => {
           setPlaying(false);
           setUiVisible(true);
-          if (autoNext && hasNextEp && onNextEpisode) {
-            forcePlayRef.current = true;
-            onNextEpisode();
-          }
+          if (autoNext && hasNextEp && onNextEpisode) setCountdown(5);
         }}
         onTimeUpdate={() => {
           const v = videoRef.current;
@@ -1072,7 +1229,7 @@ export function AltPlayer({
         <canvas
           ref={a4kCanvasRef}
           aria-hidden
-          className="pointer-events-none absolute inset-0 h-full w-full object-contain"
+          className={`pointer-events-none absolute inset-0 h-full w-full ${fillScreen ? "object-cover" : "object-contain"}`}
         />
       )}
 
@@ -1087,10 +1244,20 @@ export function AltPlayer({
         />
       )}
 
-      {/* Пауза: центральная кнопка пуска — акцентная, со свечением */}
-      {started && !playing && mediaReady && (
-        <div className="pointer-events-none absolute left-1/2 top-1/2 z-[6] grid h-20 w-20 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-accent text-white shadow-[0_0_50px_rgba(31,123,255,0.65)] backdrop-blur-sm transition-transform hover:scale-105">
-          <Icon d={PATHS.play} className="ml-1 h-9 w-9" />
+      {/* Центр: −10 с, пуск/пауза, +10 с — как в референсе */}
+      {started && mediaReady && (
+        <div className={`absolute left-1/2 top-1/2 z-[8] flex -translate-x-1/2 -translate-y-1/2 items-center gap-12 transition-opacity duration-300 sm:gap-20 ${uiVisible || !playing ? "opacity-100" : "pointer-events-none opacity-0"}`}>
+          <button type="button" aria-label="Назад на 10 секунд" title="−10 с (J)" onClick={() => skipBy(-10)} className="relative grid h-14 w-14 place-items-center rounded-full text-white/90 transition hover:scale-110 hover:text-white">
+            <Icon d={PATHS.back10} className="h-9 w-9" />
+            <span className="absolute text-[10px] font-black">10</span>
+          </button>
+          <button type="button" aria-label={playing ? "Пауза" : "Воспроизвести"} onClick={toggle} className="grid h-16 w-16 place-items-center rounded-full text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.6)] transition hover:scale-110">
+            <Icon d={playing ? PATHS.pause : PATHS.play} className="h-11 w-11" />
+          </button>
+          <button type="button" aria-label="Вперёд на 10 секунд" title="+10 с (L)" onClick={() => skipBy(10)} className="relative grid h-14 w-14 place-items-center rounded-full text-white/90 transition hover:scale-110 hover:text-white">
+            <Icon d={PATHS.fwd10} className="h-9 w-9" />
+            <span className="absolute text-[10px] font-black">10</span>
+          </button>
         </div>
       )}
 
@@ -1101,17 +1268,18 @@ export function AltPlayer({
         </div>
       )}
 
-      {/* ---------------- Верхняя плашка: название + источник ------------ */}
+      {/* ---------------- Верхняя плашка: название по центру ------------ */}
       {showTopBar && (
-        <div className="pointer-events-none absolute inset-x-0 top-0 z-20 flex items-start justify-between gap-3 bg-gradient-to-b from-black/80 via-black/40 to-transparent px-4 pb-10 pt-3">
-          <div className="min-w-0">
-            <p className="truncate text-base font-black text-white md:text-lg">{query}</p>
-            <span className="mt-1.5 inline-block rounded-md bg-white/15 px-2 py-0.5 text-[11px] font-bold text-white ring-1 ring-white/20 backdrop-blur">
-              Серия {episode}
-            </span>
-          </div>
-          <div className="flex shrink-0 items-center gap-2">
-          </div>
+        <div className="pointer-events-none absolute inset-x-0 top-0 z-20 bg-gradient-to-b from-black/75 via-black/35 to-transparent px-4 pb-12 pt-4 text-center">
+          {isFs && (
+            <button type="button" aria-label="Выйти из полноэкранного режима" onClick={toggleFullscreen} className="pointer-events-auto absolute left-4 top-4 grid h-10 w-10 place-items-center rounded-full text-white/90 transition hover:bg-white/12 hover:text-white">
+              <Icon d={PATHS.close} className="h-6 w-6" />
+            </button>
+          )}
+          <p className="mx-auto max-w-[70%] truncate text-lg font-semibold text-white md:text-xl">{query}</p>
+          <p className="mt-2 text-xs font-medium text-white/65">
+            {nav ? `${nav.season} сезон, ` : season > 1 ? `${season} сезон, ` : ""}{episode} серия
+          </p>
         </div>
       )}
 
@@ -1140,6 +1308,26 @@ export function AltPlayer({
         </>
       )}
 
+      {/* Автопереход: отсчёт с возможностью отмены */}
+      {countdown !== null && hasNextEp && (
+        <div className="absolute inset-0 z-[24] grid place-items-center bg-black/55 backdrop-blur-sm">
+          <div className="flex flex-col items-center gap-4 text-center text-white">
+            <span className="text-sm font-bold text-white/70">Следующая серия через</span>
+            <span className="grid h-24 w-24 place-items-center rounded-full border-4 border-white/20 border-t-accent text-5xl font-black tabular-nums">
+              {countdown}
+            </span>
+            <div className="flex gap-3">
+              <button type="button" className="ag-skipbtn ag-skipbtn--white" onClick={goNext}>
+                Смотреть сейчас
+              </button>
+              <button type="button" className="ag-skipbtn" onClick={() => setCountdown(null)}>
+                Отмена
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Пропустить опенинг / эндинг */}
       {started && mediaReady && dur > 0 && (() => {
         const opStart = readNum(`${OP_KEY}:${titleId}`);
@@ -1156,26 +1344,42 @@ export function AltPlayer({
           ? curTime >= skips.ed[0] - 1 && curTime < dur - 1
           : curTime > dur * 0.8 && remain <= 130;
         if (!inOpening && !inEnding) return null;
+        const showOp = inOpening && !inEnding && watchOp !== epKey;
+        const showEd = inEnding && watchOp !== `${epKey}:ed`;
+        if (!showOp && !showEd) return null;
         return (
-          <div className={`absolute right-4 z-[21] flex gap-2 transition-all duration-300 ${uiVisible || !playing ? "bottom-24" : "bottom-6"}`}>
-            {inOpening && !inEnding && (
-              <button type="button" onClick={skipOpening} title="Пропустить опенинг (O)" className="ag-skipbtn">
-                <Icon d={PATHS.skip} className="h-4 w-4" />
-                Пропустить опенинг
-              </button>
-            )}
-            {inEnding && (
+          <div className={`absolute right-5 z-[21] flex items-center gap-3 transition-all duration-300 ${uiVisible || !playing ? "bottom-40" : "bottom-8"}`}>
+            {showOp && (
               <>
-                <button type="button" onClick={skipEnding} className="ag-skipbtn">
+                <button type="button" onClick={skipOpening} title="Пропустить опенинг (O)" className="ag-skipbtn ag-skipbtn--white">
                   <Icon d={PATHS.skip} className="h-4 w-4" />
-                  Пропустить эндинг
+                  Пропустить
                 </button>
-                {hasNextEp && (
-                  <button type="button" onClick={goNext} title="Следующая серия (N)" className="ag-skipbtn ag-skipbtn--next">
-                    Следующая серия
-                    <Icon d={PATHS.next} className="h-4 w-4" />
-                  </button>
-                )}
+                <button type="button" onClick={() => setWatchOp(epKey)} className="ag-skipbtn">
+                  <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor" aria-hidden="true">
+                    <path d="M12 2a10 10 0 100 20 10 10 0 000-20zm1 15h-2v-6h2zm0-8h-2V7h2z" />
+                  </svg>
+                  Смотреть опенинг
+                </button>
+              </>
+            )}
+            {showEd && (
+              <>
+                <button
+                  type="button"
+                  onClick={hasNextEp ? goNext : skipEnding}
+                  title="Следующая серия (N)"
+                  className="ag-skipbtn ag-skipbtn--white"
+                >
+                  <Icon d={PATHS.skip} className="h-4 w-4" />
+                  {hasNextEp ? "Следующая серия" : "Пропустить"}
+                </button>
+                <button type="button" onClick={() => setWatchOp(`${epKey}:ed`)} className="ag-skipbtn">
+                  <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor" aria-hidden="true">
+                    <path d="M12 2a10 10 0 100 20 10 10 0 000-20zm1 15h-2v-6h2zm0-8h-2V7h2z" />
+                  </svg>
+                  Смотреть эндинг
+                </button>
               </>
             )}
           </div>
@@ -1185,10 +1389,53 @@ export function AltPlayer({
       {/* ------------------ Нижняя панель управления ------------------- */}
       {started && mediaReady && (
         <div
-          className={`absolute inset-x-0 bottom-0 z-20 bg-gradient-to-t from-black/90 via-black/55 to-transparent px-3 pb-3 pt-9 transition-opacity duration-300 ${
+          className={`absolute inset-x-0 bottom-0 z-20 bg-gradient-to-t from-black/85 via-black/45 to-transparent px-5 pb-4 pt-16 transition-opacity duration-300 ${
             uiVisible || !playing ? "opacity-100" : "pointer-events-none opacity-0"
           }`}
         >
+          {/* Ряд над прогрессом: звук слева, время по центру, инструменты справа */}
+          <div className="mb-3 flex items-center gap-2">
+            <div className="group/vol flex flex-1 items-center gap-1">
+              <button type="button" aria-label={muted ? "Включить звук" : "Выключить звук"} onClick={toggleMute} className="grid h-10 w-10 place-items-center rounded-full text-white transition hover:bg-white/12">
+                <Icon d={muted || volume === 0 ? PATHS.volumeOff : PATHS.volume} className="h-5 w-5" />
+              </button>
+              <DragBar
+                className="hidden h-1.5 w-0 overflow-hidden opacity-0 transition-all duration-200 group-hover/vol:w-24 group-hover/vol:opacity-100 focus-within:w-24 focus-within:opacity-100 sm:block"
+                ratio={muted ? 0 : volume}
+                onPick={setVol}
+                onStep={(dir) => setVol((muted ? 0 : volume) + dir * 0.05)}
+                label="Громкость"
+                valueText={`${Math.round((muted ? 0 : volume) * 100)}%`}
+              />
+            </div>
+
+            <span className="rounded-full bg-black/45 px-4 py-1.5 text-xs font-bold tabular-nums text-white ring-1 ring-white/10 backdrop-blur">
+              {fmt(curTime)} / {fmt(dur)}
+            </span>
+
+            <div className="flex flex-1 items-center justify-end gap-1">
+              <button type="button" aria-label="Качество" aria-expanded={qualityOpen} onClick={() => setQualityOpen(true)} className={`${CBAR_CHIP} ${qualityOpen ? "bg-white/18" : ""}`}>
+                {quality === "2160" ? <span className="rounded bg-red-600 px-1.5 py-0.5 font-black text-white">4K</span> : qualityLabel}
+              </button>
+              <button type="button" aria-label="Скорость" onClick={cycleSpeed} className={`${CBAR_CHIP} max-sm:hidden`}>{rate}x</button>
+              <button type="button" aria-label="Закладка на этот момент" aria-pressed={bookmarks.some((b) => Math.abs(b - curTime) <= 3)} title="Закладка (B)" onClick={toggleBookmark} className={`${CBAR_BTN} max-sm:hidden`}>
+                <Icon d={PATHS.bookmark} className="h-5 w-5" />
+              </button>
+              <button type="button" aria-label={fillScreen ? "Вернуть исходный формат" : "Растянуть на весь экран"} aria-pressed={fillScreen} title={fillScreen ? "Исходный формат" : "Расширить на весь экран"} onClick={() => setFillScreen((v) => !v)} className={`${CBAR_BTN} ${fillScreen ? "bg-white/18" : ""}`}>
+                <Icon d={PATHS.fill} className="h-5 w-5" />
+              </button>
+              <button type="button" aria-label="Картинка в картинке" onClick={togglePip} className={`${CBAR_BTN} max-sm:hidden`}>
+                <Icon d={PATHS.pip} className="h-5 w-5" />
+              </button>
+              <button type="button" aria-label="Настройки" aria-expanded={settingsOpen} onClick={() => setSettingsOpen((v) => !v)} className={`${CBAR_BTN} ${settingsOpen ? "bg-white/15" : ""}`}>
+                <Icon d={PATHS.gear} className="h-5 w-5" />
+              </button>
+              <button type="button" aria-label={isFs ? "Выйти из полноэкранного режима" : "На весь экран"} onClick={toggleFullscreen} className={CBAR_BTN}>
+                <Icon d={isFs ? PATHS.compress : PATHS.expand} className="h-5 w-5" />
+              </button>
+            </div>
+          </div>
+
           {/* Прогресс */}
           <DragBar
             className="h-1.5 w-full transition-[height] hover:h-2"
@@ -1197,90 +1444,119 @@ export function AltPlayer({
             onStep={seekStep}
             label="Перемотка"
             valueText={`${fmt(curTime)} из ${fmt(dur)}`}
+            pins={dur > 0 ? bookmarks.map((b) => Math.min(1, b / dur)) : undefined}
+            marks={
+              dur > 0
+                ? [
+                    ...(skips?.op ? [{ a: skips.op[0] / dur, b: Math.min(1, skips.op[1] / dur), label: "Опенинг" }] : []),
+                    ...(skips?.ed ? [{ a: skips.ed[0] / dur, b: Math.min(1, skips.ed[1] / dur), label: "Эндинг" }] : []),
+                  ]
+                : undefined
+            }
+            hintAt={(r) => {
+              const t = r * dur;
+              const inOp = skips?.op && t >= skips.op[0] && t <= skips.op[1];
+              const inEd = skips?.ed && t >= skips.ed[0] && t <= skips.ed[1];
+              return `${fmt(t)}${inOp ? " (Опенинг)" : inEd ? " (Эндинг)" : ""}`;
+            }}
           />
 
-          <div className="mt-2 flex items-center gap-2">
-            {/* Влево: play (акцентная), звук, время */}
-            <button
-              type="button"
-              aria-label={playing ? "Пауза" : "Воспроизвести"}
-              onClick={toggle}
-              className="grid h-11 w-11 place-items-center rounded-full bg-accent text-white shadow-[0_0_22px_rgba(31,123,255,0.55)] transition hover:scale-105 hover:bg-accent/85"
-            >
-              <Icon d={playing ? PATHS.pause : PATHS.play} className="h-5 w-5" />
-            </button>
-            <button type="button" aria-label="Назад на 10 секунд" title="−10 с (J)" onClick={() => skipBy(-10)} className={`${CBAR_BTN} relative max-sm:hidden`}>
-              <Icon d={PATHS.back10} className="h-6 w-6" />
-              <span className="absolute text-[8px] font-black">10</span>
-            </button>
-            <button type="button" aria-label="Вперёд на 10 секунд" title="+10 с (L)" onClick={() => skipBy(10)} className={`${CBAR_BTN} relative max-sm:hidden`}>
-              <Icon d={PATHS.fwd10} className="h-6 w-6" />
-              <span className="absolute text-[8px] font-black">10</span>
-            </button>
+          {/* Ряд под прогрессом: панели слева, следующая серия справа */}
+          <div className="mt-3 flex items-center gap-2">
+            {nav && (
+              <>
+                <button type="button" aria-label="Сезоны и эпизоды" aria-expanded={panel === "episodes"} onClick={() => { setOpenSeason(nav.season); setPanel("episodes"); }} className={`${CBAR_CHIP} inline-flex items-center gap-2 max-sm:hidden`}>
+                  <Icon d={PATHS.list} className="h-4 w-4" />
+                  Сезоны и эпизоды
+                </button>
+                {nav.voices.length > 1 && (
+                  <button type="button" aria-label="Озвучки" aria-expanded={panel === "voices"} onClick={() => setPanel("voices")} className={`${CBAR_CHIP} inline-flex items-center gap-2 max-sm:hidden`}>
+                    <Icon d={PATHS.voices} className="h-4 w-4" />
+                    Озвучки
+                  </button>
+                )}
+              </>
+            )}
+            <div className="flex-1" />
             {hasNextEp && (
-              <button type="button" aria-label="Следующая серия" title="Следующая серия (N)" onClick={goNext} className={`${CBAR_BTN} max-sm:hidden`}>
+              <button type="button" aria-label="Следующая серия" title="Следующая серия (N)" onClick={goNext} className="flex items-center gap-3 rounded-xl bg-white/8 px-3 py-1.5 text-left ring-1 ring-white/10 transition hover:bg-white/14">
                 <Icon d={PATHS.next} className="h-5 w-5" />
+                <span className="grid">
+                  <b className="text-xs font-bold text-white">Следующая серия</b>
+                  <small className="text-[10px] text-white/60">{nav ? `${nav.season} сезон, ` : ""}{episode + 1} эпизод</small>
+                </span>
               </button>
             )}
-            <button
-              type="button"
-              aria-label={muted ? "Включить звук" : "Выключить звук"}
-              onClick={toggleMute}
-              className={CBAR_BTN}
-            >
-              <Icon d={muted || volume === 0 ? PATHS.volumeOff : PATHS.volume} className="h-5 w-5" />
-            </button>
-            <DragBar
-              className="hidden h-1.5 w-20 transition-[height] hover:h-2 sm:block"
-              ratio={muted ? 0 : volume}
-              onPick={setVol}
-              onStep={(dir) => setVol((muted ? 0 : volume) + dir * 0.05)}
-              label="Громкость"
-              valueText={`${Math.round((muted ? 0 : volume) * 100)}%`}
-            />
-            <span className="text-xs font-bold tabular-nums text-white/90">
-              {fmt(curTime)} <span className="text-white/50">/ {fmt(dur)}</span>
-            </span>
+          </div>
+        </div>
+      )}
 
-            <div className="flex-1" />
+      {/* ------------- Озвучки и сезоны/серии (оверлеи плеера) ------------- */}
+      {nav && panel === "voices" && (
+        <div className="absolute inset-0 z-[45] flex animate-fade-in" role="dialog" aria-label="Озвучки">
+          <div className="flex w-[min(20rem,85%)] flex-col gap-1 overflow-y-auto bg-[#0b0a14]/96 p-5 shadow-2xl backdrop-blur-xl">
+            <h3 className="mb-3 flex items-center justify-between text-2xl font-black text-white">
+              Озвучки
+              <button type="button" aria-label="Закрыть" onClick={() => setPanel(null)} className="grid h-8 w-8 place-items-center rounded-full text-white/70 hover:bg-white/10 hover:text-white">
+                <Icon d={PATHS.close} className="h-4 w-4" />
+              </button>
+            </h3>
+            {nav.voices.map((v) => (
+              <button
+                key={v.id}
+                type="button"
+                onClick={() => { setPanel(null); if (v.id !== nav.voiceId) nav.onPickVoice(v.id); }}
+                className={`flex items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-bold transition ${v.id === nav.voiceId ? "bg-white/14 text-white" : "text-white/80 hover:bg-white/8"}`}
+              >
+                <span className="truncate">{v.title}</span>
+                {v.type === "subtitles" && <span className="rounded bg-white/12 px-1.5 py-0.5 text-[10px] font-black">СУБ</span>}
+              </button>
+            ))}
+          </div>
+          <button type="button" aria-label="Закрыть панель" className="flex-1 cursor-default" onClick={() => setPanel(null)} />
+        </div>
+      )}
 
-            {/* Вправо: качество, скорость, настройки, PiP, фулскрин */}
-            <button
-              type="button"
-              aria-label="Качество"
-              aria-expanded={qualityOpen}
-              onClick={() => setQualityOpen(true)}
-              className={`${CBAR_CHIP} ${qualityOpen ? "bg-white/18" : ""}`}
-            >
-              {quality === "2160" ? (
-                <span className="rounded bg-red-600 px-1.5 py-0.5 font-black text-white">4K</span>
-              ) : (
-                qualityLabel
-              )}
+      {nav && panel === "episodes" && (
+        <div className="absolute inset-0 z-[45] overflow-y-auto bg-black/88 p-6 backdrop-blur-xl animate-fade-in" role="dialog" aria-label="Сезоны и эпизоды">
+          <div className="mb-5 flex items-center justify-between">
+            <h3 className="text-2xl font-black text-white">Сезоны и эпизоды</h3>
+            <button type="button" aria-label="Закрыть" onClick={() => setPanel(null)} className="grid h-10 w-10 place-items-center rounded-full text-white/80 hover:bg-white/10 hover:text-white">
+              <Icon d={PATHS.close} className="h-5 w-5" />
             </button>
-            <button type="button" aria-label="Скорость" onClick={cycleSpeed} className={`${CBAR_CHIP} max-sm:hidden`}>
-              {rate}x
-            </button>
-            <button
-              type="button"
-              aria-label="Настройки"
-              aria-expanded={settingsOpen}
-              onClick={() => setSettingsOpen((v) => !v)}
-              className={`${CBAR_BTN} ${settingsOpen ? "bg-white/15" : ""}`}
-            >
-              <Icon d={PATHS.gear} className="h-5 w-5" />
-            </button>
-            <button type="button" aria-label="Картинка в картинке" onClick={togglePip} className={`${CBAR_BTN} max-sm:hidden`}>
-              <Icon d={PATHS.pip} className="h-5 w-5" />
-            </button>
-            <button
-              type="button"
-              aria-label={isFs ? "Выйти из полноэкранного режима" : "На весь экран"}
-              onClick={toggleFullscreen}
-              className={CBAR_BTN}
-            >
-              <Icon d={isFs ? PATHS.compress : PATHS.expand} className="h-5 w-5" />
-            </button>
+          </div>
+          <div className="grid gap-4">
+            {nav.seasons.map((s) => {
+              const open = openSeason === s.number;
+              return (
+                <section key={s.number}>
+                  <button type="button" aria-expanded={open} onClick={() => setOpenSeason(open ? null : s.number)} className="flex items-center gap-3 text-left text-base font-black text-white">
+                    <span className="grid h-8 w-8 place-items-center rounded-full bg-white/12">
+                      <svg viewBox="0 0 24 24" className={`h-4 w-4 transition ${open ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="m6 9 6 6 6-6" /></svg>
+                    </span>
+                    {s.title || `${s.number} сезон`}
+                    <span className="text-xs font-bold text-white/50">{s.episodes.length}</span>
+                  </button>
+                  {open && (
+                    <div className="mt-3 grid grid-cols-[repeat(auto-fill,minmax(7.5rem,1fr))] gap-2.5">
+                      {s.episodes.map((e) => {
+                        const cur = s.number === nav.season && e.number === episode;
+                        return (
+                          <button
+                            key={e.number}
+                            type="button"
+                            onClick={() => { setPanel(null); if (!cur) nav.onPickEpisode(s.number, e.number); }}
+                            className={`rounded-xl px-3 py-4 text-left text-sm font-black transition ${cur ? "bg-accent/30 text-white ring-2 ring-accent" : "bg-white/8 text-white/85 ring-1 ring-white/10 hover:bg-white/14"}`}
+                          >
+                            {e.number} серия
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </section>
+              );
+            })}
           </div>
         </div>
       )}
@@ -1289,7 +1565,7 @@ export function AltPlayer({
       {settingsOpen && mediaReady && (
         <div
           data-alt-settings
-          className="absolute bottom-20 right-3 z-30 w-60 rounded-2xl border border-line bg-[#0d0d15]/95 p-3.5 shadow-[0_28px_60px_-24px_rgba(0,0,0,1)] backdrop-blur-xl animate-fade-in"
+          className="absolute bottom-28 right-3 z-30 w-60 rounded-2xl border border-line bg-[#0d0d15]/95 p-3.5 shadow-[0_28px_60px_-24px_rgba(0,0,0,1)] backdrop-blur-xl animate-fade-in"
         >
           <p className="mb-3 text-[11px] font-black uppercase tracking-wider text-muted">
             Настройки
@@ -1380,7 +1656,7 @@ export function AltPlayer({
       {qualityOpen && mediaReady && (
         <div
           data-alt-quality
-          className="absolute bottom-20 right-3 z-30 w-64 overflow-hidden rounded-2xl border border-line bg-[#0d0d15]/95 shadow-[0_28px_60px_-24px_rgba(0,0,0,1)] backdrop-blur-xl animate-fade-in"
+          className="absolute bottom-28 right-3 z-30 w-64 overflow-hidden rounded-2xl border border-line bg-[#0d0d15]/95 shadow-[0_28px_60px_-24px_rgba(0,0,0,1)] backdrop-blur-xl animate-fade-in"
         >
           <div className="relative flex items-center justify-center px-4 pb-2.5 pt-3.5">
             <button
