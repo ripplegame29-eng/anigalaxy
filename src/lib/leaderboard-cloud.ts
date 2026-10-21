@@ -58,6 +58,14 @@ async function call<T>(path: string, body?: unknown): Promise<T | null> {
 /* ------------------------------ Таблица лидеров -------------------------- */
 
 const EMPTY: BoardReply = { period: "week", rows: [], me: null, ready: false };
+/** Стабильные заглушки на каждый период — важно отдавать один и тот же
+    объект, пока не пришёл ответ, иначе useSyncExternalStore решит, что
+    снапшот меняется на каждом рендере, и уйдёт в бесконечный цикл
+    (Maximum update depth exceeded). */
+const FALLBACK: Record<"week" | "all", BoardReply> = {
+  week: { ...EMPTY, period: "week" },
+  all: { ...EMPTY, period: "all" },
+};
 const cache = new Map<string, BoardReply>();
 const listeners = new Map<string, Set<() => void>>();
 const requested = new Set<string>();
@@ -89,8 +97,8 @@ export function useLeaderboardBoard(period: "week" | "all"): BoardReply {
     },
     [period],
   );
-  const getSnapshot = useCallback(() => cache.get(period) ?? { ...EMPTY, period }, [period]);
-  const getServerSnapshot = useCallback(() => EMPTY, []);
+  const getSnapshot = useCallback(() => cache.get(period) ?? FALLBACK[period], [period]);
+  const getServerSnapshot = useCallback(() => FALLBACK[period], [period]);
   return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 }
 
