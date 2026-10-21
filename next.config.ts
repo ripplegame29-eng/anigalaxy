@@ -1,8 +1,6 @@
 import type { NextConfig } from "next";
 
 const isProd = process.env.NODE_ENV === "production";
-/** Включать после настройки домена и сертификата: SITE_HTTPS=1 */
-const httpsOnly = process.env.SITE_HTTPS === "1";
 
 /**
  * Политика безопасности контента. Внешние хосты (Kodik, AniLibria, Shikimori,
@@ -10,7 +8,8 @@ const httpsOnly = process.env.SITE_HTTPS === "1";
  * разрешён любой https; жёстко закрыты объекты, <base>, чужие формы и
  * встраивание сайта в чужие фреймы. Скрипты — только свои и виджет Telegram.
  */
-const CSP = [
+function buildCsp(httpsOnly: boolean): string {
+  return [
   "default-src 'self'",
   "script-src 'self' 'unsafe-inline' https://telegram.org",
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
@@ -28,6 +27,7 @@ const CSP = [
   // браузер иначе «апгрейдит» CSS/JS до https и страница ломается
   ...(httpsOnly ? ["upgrade-insecure-requests"] : []),
 ].join("; ");
+}
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
@@ -60,6 +60,8 @@ const nextConfig: NextConfig = {
   // Небольшой кэш роутов: данные каталога меняются нечасто
   outputFileTracingIncludes: {},
   async headers() {
+    const httpsOnly = process.env.SITE_HTTPS === "1";
+    const CSP = buildCsp(httpsOnly);
     return [
       {
         // Рамки аватаров — их перерисовывают генераторы в tools/, а адрес
