@@ -550,8 +550,8 @@ export function AuthDialog() {
             )}
 
             <p className="mt-5 text-center text-xs leading-relaxed text-muted/70">
-              Аккаунт создаётся только в этом браузере: проект работает без сервера, данные никуда
-              не отправляются.
+              Аккаунт и прогресс сохраняются на сервере AniGalaxy и доступны на любом устройстве
+              после входа.
             </p>
           </div>
         </div>
