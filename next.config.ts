@@ -11,7 +11,7 @@ const isProd = process.env.NODE_ENV === "production";
 function buildCsp(httpsOnly: boolean): string {
   return [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' https://telegram.org",
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://telegram.org",
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "font-src 'self' data: https://fonts.gstatic.com",
   "img-src 'self' data: blob: https:",
