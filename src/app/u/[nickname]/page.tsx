@@ -1,86 +1,87 @@
-"use client";
-
-import { use } from "react";
+import { Suspense } from "react";
+import type { Metadata } from "next";
+import { cookies } from "next/headers";
 import Link from "next/link";
-import { useAccount } from "@/lib/use-account";
-import { usePublicProfile } from "@/lib/profiles-cloud";
+import { redirect } from "next/navigation";
+import { ProfileView } from "@/components/ProfileView";
+import { ViewShell } from "@/components/profile/ViewShell";
+import { dbAvailable, getDb } from "@/lib/server/db";
+import { buildProfileView } from "@/lib/server/profile-view";
+import { SESSION_COOKIE, sessionUser } from "@/lib/server/users";
+import { VIEW_FLAG } from "@/lib/view-mode";
 
-/** Дата регистрации: фиксированная зона и локаль, чтобы сервер и клиент совпадали */
-const formatJoined = (ms: number): string =>
-  new Date(ms).toLocaleDateString("ru-RU", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
+export const dynamic = "force-dynamic";
+export const metadata: Metadata = { title: "Профиль игрока · AniGalaxy", robots: { index: false, follow: false } };
 
-export default function PublicProfilePage({ params }: { params: Promise<{ nickname: string }> }) {
-  const { nickname } = use(params);
-  const decoded = decodeURIComponent(nickname);
-  const account = useAccount();
-  const state = usePublicProfile(decoded);
-  const isMe = account?.nickname?.toLowerCase() === decoded.toLowerCase();
+/** JSON в <script>: экранируем всё, что могло бы закрыть тег или сломать строку */
+const LINE_SEP = String.fromCharCode(0x2028);
+const PARA_SEP = String.fromCharCode(0x2029);
+const safeJson = (value: unknown): string =>
+  JSON.stringify(value)
+    .replace(/</g, "\\u003c")
+    .split(LINE_SEP)
+    .join("\\u2028")
+    .split(PARA_SEP)
+    .join("\\u2029");
 
-  if (state.status === "loading") {
-    return (
-      <div className="mx-auto max-w-3xl px-4 py-10">
-        <h1 className="text-2xl font-extrabold">{decoded}</h1>
-        <p className="mt-2 text-muted">Загружаем профиль…</p>
-      </div>
-    );
-  }
-
-  if (state.status === "missing") {
-    return (
-      <div className="mx-auto max-w-3xl px-4 py-10">
-        <h1 className="text-2xl font-extrabold">{decoded}</h1>
-        <p className="mt-2 text-muted">Игрок с таким ником не найден.</p>
-        <Link href="/" className="mt-4 inline-block text-accent hover:underline">
-          На главную
-        </Link>
-      </div>
-    );
-  }
-
-  const { profile } = state;
-  const stats: { label: string; value: string }[] = [
-    { label: "Уровень", value: String(profile.level) },
-    { label: "Опыт", value: profile.xpTotal.toLocaleString("ru-RU") },
-    { label: "Место в рейтинге", value: profile.rank ? `#${profile.rank}` : "—" },
-  ];
-
+function Message({ title, text }: { title: string; text: string }) {
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">
-      <div className="flex items-center gap-4">
-        <span className="grid h-16 w-16 shrink-0 place-items-center rounded-full bg-gradient-to-br from-[#2AABEE] to-[#229ED9] text-2xl font-black text-white">
-          {profile.nickname.slice(0, 1).toUpperCase()}
-        </span>
-        <div className="min-w-0">
-          <h1 className="flex flex-wrap items-center gap-2 text-2xl font-extrabold">
-            <span className="truncate">{profile.nickname}</span>
-            {profile.clan && (
-              <span className="rounded-md bg-white/8 px-2 py-0.5 text-xs font-bold text-muted">[{profile.clan.tag}]</span>
-            )}
-            {profile.premium && (
-              <span className="rounded-md bg-accent/15 px-2 py-0.5 text-xs font-bold text-accent">Premium</span>
-            )}
-          </h1>
-          <p className="text-sm text-muted">
-            С нами с {formatJoined(profile.joinedAt)}
-            {profile.clan ? ` · клан «${profile.clan.name}»` : ""}
-          </p>
-        </div>
-      </div>
-
-      <div className="mt-6 grid grid-cols-3 gap-3">
-        {stats.map((item) => (
-          <div key={item.label} className="rounded-xl border border-white/10 bg-white/[0.03] px-3 py-4 text-center">
-            <b className="block text-xl font-extrabold text-white">{item.value}</b>
-            <span className="text-xs text-muted">{item.label}</span>
-          </div>
-        ))}
-      </div>
-
-      {isMe && (
-        <Link href="/profile" className="mt-6 inline-block text-accent hover:underline">
-          Открыть мой полный профиль
-        </Link>
-      )}
+      <h1 className="text-2xl font-extrabold">{title}</h1>
+      <p className="mt-2 text-muted">{text}</p>
+      <Link href="/leaderboard" className="mt-4 inline-block text-accent hover:underline">
+        К рейтингу
+      </Link>
     </div>
+  );
+}
+
+/**
+ * Чужой профиль — `/u/<ник>`: тот же ProfileView в гостевом режиме, но с
+ * настоящими данными игрока. Сервер кладёт их в HTML отдельным скриптом,
+ * который подменяет localStorage страницы до запуска приложения; личное
+ * (баланс, подарки, чёрный список) вырезано на сервере, а закрытые
+ * профили не отдаются совсем.
+ */
+export default async function PublicProfilePage({ params }: { params: Promise<{ nickname: string }> }) {
+  const { nickname } = await params;
+  const decoded = decodeURIComponent(nickname);
+  if (decoded.toLowerCase() === "me") redirect("/u/me");
+
+  if (!dbAvailable()) return <Message title={decoded} text="Сервер временно недоступен. Попробуйте позже." />;
+  const db = getDb();
+  const token = (await cookies()).get(SESSION_COOKIE)?.value;
+  const viewer = sessionUser(db, token);
+  if (viewer && viewer.nickname.toLowerCase() === decoded.toLowerCase()) redirect("/profile");
+
+  const view = buildProfileView(db, decoded, viewer?.id ?? null);
+  if (!view.ok) {
+    return view.reason === "closed" ? (
+      <Message title={view.nickname} text="Профиль закрыт владельцем." />
+    ) : (
+      <Message title={decoded} text="Игрок с таким ником не найден." />
+    );
+  }
+
+  const shim = `(function(){try{var d=${safeJson(view.data)},m=Object.create(null),k;for(k in d)m[k]=d[k];
+var P=Storage.prototype,g=P.getItem,s=P.setItem,r=P.removeItem,c=P.clear,y=P.key,L=Object.getOwnPropertyDescriptor(P,'length');
+var own=function(o){return o===window.localStorage};
+P.getItem=function(x){return own(this)?(x in m?m[x]:null):g.call(this,x)};
+P.setItem=function(x,v){if(own(this)){m[x]=String(v)}else{s.call(this,x,v)}};
+P.removeItem=function(x){if(own(this)){delete m[x]}else{r.call(this,x)}};
+P.clear=function(){if(own(this)){for(var z in m)delete m[z]}else{c.call(this)}};
+P.key=function(i){return own(this)?(Object.keys(m)[i]||null):y.call(this,i)};
+if(L&&L.get){Object.defineProperty(P,'length',{configurable:true,get:function(){return own(this)?Object.keys(m).length:L.get.call(this)}})}
+window.${VIEW_FLAG}=${safeJson(view.nickname)};document.documentElement.setAttribute('data-ag-view','1')}catch(e){}})();`;
+
+  return (
+    <>
+      <script dangerouslySetInnerHTML={{ __html: shim }} />
+      <ViewShell nickname={view.nickname}>
+        <Suspense fallback={null}>
+          <ProfileView mode="guest" basePath={`/u/${encodeURIComponent(view.nickname)}`} />
+        </Suspense>
+      </ViewShell>
+    </>
   );
 }

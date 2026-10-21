@@ -93,7 +93,11 @@ function PodiumCard({ row, place }: { row: BoardRow; place: 1 | 2 | 3 }) {
       <div className="lb2-av">
         <InitialAvatar nickname={row.nickname} size="md" />
       </div>
-      <h3 className="lb2-name">{row.nickname}</h3>
+      <h3 className="lb2-name">
+        <Link href={`/u/${encodeURIComponent(row.nickname)}`} className="lb2-link">
+          {row.nickname}
+        </Link>
+      </h3>
       <div className="lb2-badges">
         <span className="lb2-lv"><LevelBadge level={row.level} size={46} state="current" minor /></span>
         {row.premium && <PremiumChip />}
@@ -132,7 +136,11 @@ function RankRow({ row, max, index }: { row: BoardRow; max: number; index: numbe
       <div className="lb2-av lb2-s">
         <InitialAvatar nickname={row.nickname} size="xs" />
       </div>
-      <h4 className="lb2-name lb2-s">{row.nickname}</h4>
+      <h4 className="lb2-name lb2-s">
+        <Link href={`/u/${encodeURIComponent(row.nickname)}`} className="lb2-link">
+          {row.nickname}
+        </Link>
+      </h4>
       <div className="lb2-badges lb2-s">
         <span className="lb2-lv"><LevelBadge level={row.level} size={34} state="current" rich={false} minor /></span>
         {row.premium && <PremiumChip />}

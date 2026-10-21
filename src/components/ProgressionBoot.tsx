@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { startProgressionSession } from "@/lib/progression/events";
+import { isViewMode } from "@/lib/view-mode";
 
 /**
  * Точка входа ежедневного входа: шлёт SESSION_START один раз после
@@ -16,7 +17,7 @@ import { startProgressionSession } from "@/lib/progression/events";
  */
 export function ProgressionBoot() {
   useEffect(() => {
-    startProgressionSession();
+    if (!isViewMode()) startProgressionSession();
   }, []);
   return null;
 }

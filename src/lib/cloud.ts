@@ -25,6 +25,7 @@ import {
 } from "./auth";
 import { captureReferralOnRegister } from "./referrals";
 import { PROGRESS_DOC_KEY, isSyncKey } from "./sync-keys";
+import { isViewMode } from "./view-mode";
 
 const META_KEY = "animehub:sync:meta:v1";
 const PUSH_DELAY_MS = 2500;
@@ -197,6 +198,7 @@ interface PutResult {
 
 /** Отправляет изменённые документы. true — отправлять больше нечего */
 export function push(keepalive = false): Promise<boolean> {
+  if (isViewMode()) return Promise.resolve(false);
   if (pushing) return pushing;
   pushing = doPush(keepalive).finally(() => {
     pushing = null;
@@ -486,6 +488,7 @@ async function signOutCloud(): Promise<void> {
 
 /** Запускается один раз при открытии сайта */
 export function startCloudSync(): void {
+  if (isViewMode()) return;
   if (started || typeof window === "undefined" || !nativeSet) return;
   started = true;
 

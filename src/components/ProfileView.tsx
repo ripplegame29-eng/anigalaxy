@@ -55,7 +55,7 @@ import {
  * а состав меню задан настройками приватности. Служит и заготовкой под
  * чужие профили: когда появится сервер, сюда придёт чужой документ.
  */
-export function ProfileView({ mode = "owner" }: { mode?: "owner" | "guest" }) {
+export function ProfileView({ mode = "owner", basePath: basePathProp }: { mode?: "owner" | "guest"; basePath?: string }) {
   const isGuest = mode === "guest";
   const account = useAccount();
   const profile = useProfile();
@@ -96,7 +96,7 @@ export function ProfileView({ mode = "owner" }: { mode?: "owner" | "guest" }) {
     ? section
     : "main";
 
-  const basePath = isGuest ? "/u/me" : "/profile";
+  const basePath = basePathProp ?? (isGuest ? "/u/me" : "/profile");
   const go = useCallback(
     (id: SectionId) => {
       router.replace(id === "main" ? basePath : `${basePath}?tab=${id}`, { scroll: false });
