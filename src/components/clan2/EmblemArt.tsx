@@ -17,9 +17,10 @@
  * `filter: url(#cl-heat)` — часть эмблем выпадала из сетки.
  */
 import { useEffect, useRef, useState } from "react";
+import "../../app/clan-emblem.css";
 import type { ClanEmblemArt as EmblemArt } from "@/lib/emblems.data";
 
-export function ClanEmblemView({
+export function EmblemArt({
   emblem,
   size = 160,
   interactive = true,

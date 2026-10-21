@@ -1,18 +1,18 @@
 import type { Metadata } from "next";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
-import { ClansView } from "@/components/clans/ClansView";
+import { ClanApp } from "@/components/clan2/ClanApp";
 
 export const metadata: Metadata = {
   title: "Кланы",
   description:
-    "Кланы AniGalaxy: состав, роли и специализации, задания за реальную активность на сайте, штаб-квартира, захват территорий и лиги сезона. Клановые очки считаются из прогресса сайта, а не из отдельного счётчика.",
+    "Кланы AniGalaxy: босс недели, общий сундук и казна, роли и управление составом, карта территорий и осады соперников. Всё считается из реальной активности на сайте.",
 };
 
 export default function ClansPage() {
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10">
       <Breadcrumbs items={[{ label: "Кланы" }]} />
-      <ClansView />
+      <ClanApp />
     </div>
   );
 }

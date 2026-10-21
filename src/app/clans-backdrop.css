@@ -1,0 +1,21 @@
+.cb-bg{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;background:radial-gradient(110% 70% at 50% -8%,color-mix(in srgb,var(--c) 16%,#07070e),#06070d 62%)}
+.cb-bg i,.cb-bg span,.cb-bg svg,.cb-bg canvas{position:absolute;display:block}
+.cb-aur{width:64vmax;height:64vmax;border-radius:50%;filter:blur(100px);mix-blend-mode:screen;will-change:transform}
+.cb-aur.a1{left:-22vmax;top:-26vmax;background:radial-gradient(circle,var(--c),transparent 62%);opacity:.34;animation:cb-d1 28s ease-in-out infinite alternate}
+.cb-aur.a2{right:-24vmax;top:10vmax;background:radial-gradient(circle,#8b5cff,transparent 62%);opacity:.26;animation:cb-d2 34s ease-in-out infinite alternate}
+.cb-aur.a3{left:20vw;bottom:-38vmax;background:radial-gradient(circle,#ffb020,transparent 62%);opacity:.14;animation:cb-d3 40s ease-in-out infinite alternate}
+.cb-gridfx{inset:0;background-image:linear-gradient(rgba(255,255,255,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.05) 1px,transparent 1px);background-size:48px 48px;-webkit-mask-image:radial-gradient(90% 75% at 50% 35%,#000,transparent 85%);mask-image:radial-gradient(90% 75% at 50% 35%,#000,transparent 85%)}
+.cb-dial{right:-14vmax;top:-6vmax;width:62vmax;height:62vmax;color:var(--c);opacity:.2;animation:cb-spin 140s linear infinite}
+.cb-num{font:900 clamp(90px,15vw,220px)/1 var(--font-display);color:transparent;-webkit-text-stroke:1.5px color-mix(in srgb,var(--c) 40%,transparent);opacity:.16;white-space:nowrap}
+.cb-num.n1{left:-2vw;top:38vh;animation:cb-fl 18s ease-in-out infinite alternate}
+.cb-num.n2{right:4vw;top:72vh;animation:cb-fl 22s 2s ease-in-out infinite alternate-reverse}
+.cb-num.n3{left:40vw;top:8vh;font-size:clamp(70px,10vw,150px);animation:cb-fl 26s 4s ease-in-out infinite alternate}
+.cb-canvas{inset:0}
+.cb-vig{inset:0;background:radial-gradient(120% 90% at 50% 38%,transparent 55%,rgba(3,4,9,.78))}
+@keyframes cb-d1{to{transform:translate(18vmax,14vmax) scale(1.15)}}
+@keyframes cb-d2{to{transform:translate(-16vmax,16vmax) scale(.92)}}
+@keyframes cb-d3{to{transform:translate(-14vmax,-12vmax) scale(1.2)}}
+.cb-hex{left:-10vmax;bottom:-12vmax;width:48vmax;height:48vmax;color:var(--c);opacity:.16;animation:cb-spin 190s linear infinite reverse}
+@media (prefers-reduced-motion:reduce){.cb-aur,.cb-dial,.cb-num,.cb-hex{animation:none!important}}
+@keyframes cb-spin{to{transform:rotate(360deg)}}
+@keyframes cb-fl{to{transform:translate(3vw,-6vh)}}
