@@ -1,6 +1,8 @@
 import type { NextConfig } from "next";
 
 const isProd = process.env.NODE_ENV === "production";
+/** Включать после настройки домена и сертификата: SITE_HTTPS=1 */
+const httpsOnly = process.env.SITE_HTTPS === "1";
 
 /**
  * Политика безопасности контента. Внешние хосты (Kodik, AniLibria, Shikimori,
@@ -22,7 +24,9 @@ const CSP = [
   "base-uri 'self'",
   "form-action 'self'",
   "frame-ancestors 'self'",
-  "upgrade-insecure-requests",
+  // Только если сайт отдаётся по HTTPS (SITE_HTTPS=1): по голому http://IP:3000
+  // браузер иначе «апгрейдит» CSS/JS до https и страница ломается
+  ...(httpsOnly ? ["upgrade-insecure-requests"] : []),
 ].join("; ");
 
 const nextConfig: NextConfig = {
@@ -81,7 +85,9 @@ const nextConfig: NextConfig = {
           { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()" },
           { key: "Cross-Origin-Opener-Policy", value: "same-origin-allow-popups" },
           { key: "X-DNS-Prefetch-Control", value: "on" },
-          { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains; preload" },
+          ...(httpsOnly
+            ? [{ key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains; preload" }]
+            : []),
           ...(isProd ? [{ key: "Content-Security-Policy", value: CSP }] : []),
         ],
       },
