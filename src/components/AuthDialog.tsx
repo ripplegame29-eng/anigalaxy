@@ -3,11 +3,9 @@
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { Logo } from "./Logo";
 import {
-  loginTelegramDemo,
   loginTelegramVerified,
   validateNickname,
   validateEmail,
-  TELEGRAM_DEMO_ACCOUNTS,
 } from "@/lib/auth";
 import {
   closeAuthDialog,
@@ -77,15 +75,6 @@ function CheckIcon({ className = "h-3.5 w-3.5" }: { className?: string }) {
         strokeLinecap="round"
         strokeLinejoin="round"
       />
-    </svg>
-  );
-}
-
-/** Знак Telegram (бумажный самолётик) — фирменный контур из брендбука */
-function TelegramIcon({ className = "h-4 w-4" }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" className={className} fill="currentColor" aria-hidden>
-      <path d="M21.5 3.4 2.6 10.7c-.9.35-.87 1.63.04 1.94l4.72 1.6 1.82 5.6c.26.8 1.3.99 1.84.34l2.5-3 4.7 3.46c.6.44 1.46.11 1.62-.61l3.2-15.2c.17-.8-.64-1.47-1.54-1.43ZM8.9 13.8l8.6-5.4-6.6 6.35-.24 3.1-1.76-4.05Z" />
     </svg>
   );
 }
@@ -234,15 +223,11 @@ export function AuthDialog() {
   const [confirm, setConfirm] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  /** Открыт ли выбор демо-аккаунта Telegram (вкладка «Вход») */
-  const [tgOpen, setTgOpen] = useState(false);
-  const [tgRealOpen, setTgRealOpen] = useState(false);
   const tgContainerRef = useRef<HTMLDivElement | null>(null);
 
   /** Закрытие: сбрасываем ошибку, чтобы она не всплывала при следующем открытии */
   const close = useCallback(() => {
     setError(null);
-    setTgOpen(false);
     closeAuthDialog();
   }, []);
   const panelRef = useModalBehaviour(state.open, close);
@@ -258,7 +243,6 @@ export function AuthDialog() {
 
   const switchTab = useCallback((next: AuthTab) => {
     setError(null);
-    setTgOpen(false);
     openAuthDialog(next);
   }, []);
 
@@ -306,24 +290,8 @@ export function AuthDialog() {
     [nickname, email, regPassword, confirm, close],
   );
 
-  const onTelegram = useCallback(
-    (username: string) => {
-      const result = loginTelegramDemo(username);
-      if (!result.ok) {
-        setError(result.error);
-        return;
-      }
-      setError(null);
-      setTgOpen(false);
-      setLogin("");
-      setPassword("");
-      close();
-    },
-    [close],
-  );
-
   useEffect(() => {
-    if (!tgRealOpen || !tgContainerRef.current) return;
+    if (tab !== "login" || !tgContainerRef.current) return;
     const container = tgContainerRef.current;
     container.innerHTML = "";
     const botUsername = process.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME || "anigalaxy_bot";
@@ -347,8 +315,6 @@ export function AuthDialog() {
         }
         await adoptTelegramSession(data.account);
         setError(null);
-        setTgRealOpen(false);
-        setTgOpen(false);
         close();
       } catch {
         setError("Не удалось связаться с сервером");
@@ -359,7 +325,8 @@ export function AuthDialog() {
     script.async = true;
     script.src = "https://telegram.org/js/telegram-widget.js?22";
     script.setAttribute("data-telegram-login", botUsername);
-    script.setAttribute("data-size", "medium");
+    script.setAttribute("data-size", "large");
+    script.setAttribute("data-radius", "12");
     script.setAttribute("data-userpic", "false");
     script.setAttribute("data-request-access", "write");
     script.setAttribute("data-onauth", "onTelegramAuth(user)");
@@ -368,7 +335,7 @@ export function AuthDialog() {
     return () => {
       container.innerHTML = "";
     };
-  }, [tgRealOpen, close]);
+  }, [tab, close]);
 
   if (!state.open) return null;
 
@@ -492,8 +459,8 @@ export function AuthDialog() {
                 </p>
               </form>
 
-              {/* Демо-вход через Telegram: без токена бота подпись не проверить,
-                  поэтому аккаунт создаётся локально — это подписано в UI */}
+              {/* Вход через Telegram: один настоящий виджет, без кастомной
+                  кнопки-дублёра поверх него */}
               <div className="mt-5">
                 <div className="flex items-center gap-3 text-[11px] font-bold uppercase tracking-[0.14em] text-muted/70">
                   <span className="h-px flex-1 bg-white/10" aria-hidden />
@@ -501,81 +468,9 @@ export function AuthDialog() {
                   <span className="h-px flex-1 bg-white/10" aria-hidden />
                 </div>
 
-                <button
-                  type="button"
-                  onClick={() => setTgRealOpen((value) => !value)}
-                  aria-label="Войти через Telegram"
-                  className="mt-3 flex w-full items-center justify-center gap-2.5 rounded-xl bg-[#2AABEE] px-4 py-3 text-sm font-extrabold text-white transition hover:bg-[#229ED9] active:scale-[0.99]"
-                >
-                  <TelegramIcon className="h-4.5 w-4.5" />
-                  Войти через Telegram
-                </button>
-
-                {tgRealOpen && (
-                  <div ref={tgContainerRef} className="mt-3 flex justify-center rounded-xl border border-white/10 bg-white/[0.03] p-3" />
-                )}
-
-                {!tgOpen ? (
-                  <button
-                    type="button"
-                    onClick={() => setTgOpen(true)}
-                    aria-label="Войти через Telegram (демо)"
-                    className="mt-3 flex w-full items-center justify-center gap-2.5 rounded-xl bg-[#2AABEE] px-4 py-3 text-sm font-extrabold text-white transition hover:bg-[#229ED9] active:scale-[0.99]"
-                  >
-                    <TelegramIcon className="h-4.5 w-4.5" />
-                    Продолжить через Telegram
-                    <span className="rounded bg-black/20 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wide">
-                      демо
-                    </span>
-                  </button>
-                ) : (
-                  <div className="mt-3 rounded-xl border border-white/10 bg-white/[0.03] p-3 animate-fade-in">
-                    <p className="text-xs font-extrabold text-white">
-                      Выберите аккаунт <span className="font-bold text-muted">· демо-вход</span>
-                    </p>
-                    <div className="mt-2 space-y-1.5">
-                      {TELEGRAM_DEMO_ACCOUNTS.map((acc) => (
-                        <button
-                          key={acc.username}
-                          type="button"
-                          onClick={() => onTelegram(acc.username)}
-                          aria-label={`Войти как @${acc.username}`}
-                          className="flex w-full items-center gap-3 rounded-xl px-2.5 py-2 text-left ring-1 ring-white/8 transition hover:bg-white/8 hover:ring-accent/45"
-                        >
-                          <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-gradient-to-br from-[#2AABEE] to-[#229ED9] text-xs font-black text-white">
-                            {acc.name.slice(0, 1)}
-                          </span>
-                          <span className="min-w-0 flex-1">
-                            <span className="block truncate text-sm font-bold text-white">{acc.name}</span>
-                            <span className="block truncate text-xs text-muted">@{acc.username}</span>
-                          </span>
-                          <svg
-                            viewBox="0 0 24 24"
-                            className="h-3.5 w-3.5 shrink-0 text-muted"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2.4"
-                            aria-hidden
-                          >
-                            <path strokeLinecap="round" strokeLinejoin="round" d="m9 6 6 6-6 6" />
-                          </svg>
-                        </button>
-                      ))}
-                    </div>
-                    <div className="mt-2.5 flex items-center justify-between gap-2">
-                      <button
-                        type="button"
-                        onClick={() => setTgOpen(false)}
-                        className="text-xs font-bold text-muted transition hover:text-white"
-                      >
-                        ← Назад
-                      </button>
-                      <span className="text-right text-[10px] leading-tight text-muted/70">
-                        без бота: аккаунт создаётся локально
-                      </span>
-                    </div>
-                  </div>
-                )}
+                <div className="mt-3 flex min-h-[52px] items-center justify-center rounded-xl border border-white/10 bg-white/[0.03] p-3">
+                  <div ref={tgContainerRef} className="flex items-center justify-center" />
+                </div>
               </div>
               </>
             ) : (
