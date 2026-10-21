@@ -60,6 +60,13 @@ export interface Ctx {
   request: NextRequest;
   /** null — гость */
   user: UserRow | null;
+  /** Параметры динамического сегмента роута (`[code]`) */
+  params: Record<string, string>;
+}
+
+/** Контекст, который Next передаёт вторым аргументом динамическим роутам */
+interface RouteContext {
+  params?: Promise<Record<string, string>>;
 }
 
 /** Маршрут с базой: 503 без базы, 403 для чужого Origin на записи, пользователь из cookie */
@@ -67,14 +74,15 @@ export function route(
   handler: (ctx: Ctx) => Promise<Response> | Response,
   opts: { write?: boolean; auth?: boolean } = {},
 ) {
-  return async (request: NextRequest): Promise<Response> => {
+  return async (request: NextRequest, context?: RouteContext): Promise<Response> => {
     if (opts.write && !sameOrigin(request)) return json({ error: "Запрос с чужого сайта" }, 403);
     if (!dbAvailable()) return json({ error: "База данных недоступна", code: "no_db" }, 503);
     const db = getDb();
     const user = sessionUser(db, request.cookies.get(SESSION_COOKIE)?.value);
     if (opts.auth && !user) return json({ error: "Нужен вход", code: "unauthorized" }, 401);
     try {
-      return await handler({ db, request, user });
+      const params = context?.params ? await context.params : {};
+      return await handler({ db, request, user, params });
     } catch (error) {
       console.error("[api]", request.nextUrl.pathname, error);
       return json({ error: "Внутренняя ошибка сервера" }, 500);

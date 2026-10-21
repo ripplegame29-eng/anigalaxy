@@ -3,13 +3,17 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type Hls from "hls.js";
 import type { AniEpisode, AniTitleDetail } from "@/lib/anilibria";
+import type { RoomState, WtRoomInfo } from "@/lib/watch-together-client";
 
 /**
  * Плеер комнаты совместного просмотра: реальные серии из каталога
  * AniLiberty (HLS/m3u8 через hls.js) вместо прежней «заглушки» с
- * фейковым прогрессом. Пауза/перемотка/переходы серий синхронизируются
- * между вкладками одного браузера через BroadcastChannel (бэкенда нет —
- * с другого устройства подключиться по-прежнему нельзя).
+ * фейковым прогрессом.
+ *
+ * Синхронизация идёт через сервер: родитель раз в пару секунд забирает
+ * состояние комнаты и передаёт его в `sync`, а плеер публикует свои
+ * действия через `onPublish`. Чужое состояние применяется, только если
+ * его записал другой клиент — иначе получился бы эхо-цикл.
  */
 
 /** Качества, которые отдаёт AniLiberty */
@@ -73,23 +77,17 @@ function fmt(seconds: number): string {
   return `${minutes}:${String(rest).padStart(2, "0")}`;
 }
 
-/** Сообщение синка между вкладками одного браузера */
-interface SyncMsg {
-  number: number;
-  time: number;
-  playing: boolean;
-}
-
 export function RoomPlayer({
-  roomCode,
   title,
   poster,
   alias,
   startEpisode,
   viewers,
   limit,
+  clientId,
+  sync,
+  onPublish,
 }: {
-  roomCode: string;
   title: string;
   poster?: string;
   /** Алиас тайтла в AniLiberty; нет — ищем по названию (старые комнаты) */
@@ -98,6 +96,12 @@ export function RoomPlayer({
   startEpisode: number;
   viewers: number;
   limit: number;
+  /** id этого клиента — чтобы не применять собственное состояние */
+  clientId: string;
+  /** Состояние комнаты с сервера */
+  sync: WtRoomInfo;
+  /** Сообщить серверу о паузе/перемотке/смене серии */
+  onPublish: (state: RoomState) => void;
 }) {
   const [detail, setDetail] = useState<AniTitleDetail | null>(null);
   const [loading, setLoading] = useState(true);
@@ -117,7 +121,6 @@ export function RoomPlayer({
 
   const shellRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
-  const channelRef = useRef<BroadcastChannel | null>(null);
   /** Куда перемотать и играть ли после подключения нового источника */
   const pendingSeekRef = useRef<number | null>(null);
   const wantPlayRef = useRef(false);
@@ -125,7 +128,13 @@ export function RoomPlayer({
   const detailRef = useRef<AniTitleDetail | null>(null);
   const epIndexRef = useRef(0);
   /** Анти-спам при перетаскивании перемотки */
-  const lastPostRef = useRef(0);
+  const lastPublishRef = useRef(0);
+  /** До какого момента не публиковать своё состояние после чужого */
+  const quietUntilRef = useRef(0);
+  /** Последнее применённое `at` — чтобы не применять один срез дважды */
+  const appliedAtRef = useRef(0);
+  /** Стартовое состояние комнаты применили один раз */
+  const initialSyncRef = useRef(false);
 
   /** true, пока управление ошибками у hls.js (чтобы onError не дублировал) */
   const hlsActiveRef = useRef(false);
@@ -245,62 +254,83 @@ export function RoomPlayer({
     };
   }, [src, mediaNonce]);
 
-  /* ------------------------- Синк между вкладками --------------------- */
-  const postSync = useCallback((force = false) => {
-    const channel = channelRef.current;
-    const video = videoRef.current;
-    const current = detailRef.current?.episodes[epIndexRef.current];
-    if (!channel || !video || !current) return;
-    const now = Date.now();
-    if (!force && now - lastPostRef.current < 200) return;
-    lastPostRef.current = now;
-    const msg: SyncMsg = {
-      number: current.number,
-      time: video.currentTime,
-      playing: !video.paused,
-    };
-    channel.postMessage(msg);
-  }, []);
-
-  useEffect(() => {
-    if (typeof BroadcastChannel === "undefined") return;
-    const channel = new BroadcastChannel(`ag:wt:${roomCode}`);
-    channelRef.current = channel;
-    channel.onmessage = (event: MessageEvent<SyncMsg>) => {
-      const msg = event.data;
-      if (!msg || typeof msg.number !== "number" || typeof msg.time !== "number") return;
-      const data = detailRef.current;
+  /* -------------------- Публикация своего состояния ------------------- */
+  const publish = useCallback(
+    (override?: Partial<RoomState>) => {
       const video = videoRef.current;
-      if (!data || !video || !data.episodes.length) return; // не загрузились — догонит периодика
-      const current = data.episodes[epIndexRef.current];
-      if (current && msg.number !== current.number) {
-        const idx = data.episodes.findIndex((ep) => ep.number === msg.number);
-        if (idx >= 0) {
-          // Чужой переход серией: грузим её и выставляем позицию/паузу
-          pendingSeekRef.current = msg.time;
-          wantPlayRef.current = msg.playing;
-          setEpIndex(idx);
-          return;
-        }
-      }
-      if (Math.abs((video.currentTime || 0) - msg.time) > 1.5) video.currentTime = msg.time;
-      if (msg.playing && video.paused) video.play().catch(() => undefined);
-      else if (!msg.playing && !video.paused) video.pause();
-    };
-    return () => {
-      channel.close();
-      channelRef.current = null;
-    };
-  }, [roomCode]);
+      const current = detailRef.current?.episodes[epIndexRef.current];
+      if (!video || !current) return;
+      // Только что применили чужое состояние — не отвечаем эхом.
+      // Явные действия пользователя (override) проходят всегда.
+      if (!override && Date.now() < quietUntilRef.current) return;
+      const now = Date.now();
+      if (!override && now - lastPublishRef.current < 250) return;
+      lastPublishRef.current = now;
+      onPublish({
+        episode: override?.episode ?? current.number,
+        position: override?.position ?? video.currentTime ?? 0,
+        playing: override?.playing ?? !video.paused,
+      });
+    },
+    [onPublish],
+  );
 
-  // Пока играем — делимся своим состоянием раз в 2 с (новых зрителей
-  // сообщение догоняет: каждый сам периодически шлёт свой прогресс)
+  /* -------------------- Применение чужого состояния ------------------- */
+  useEffect(() => {
+    const video = videoRef.current;
+    const data = detailRef.current;
+    if (!video || !data || !data.episodes.length) return;
+
+    // Первый срез (даже свой): встаём на серию и секунду, где стоит комната
+    if (!initialSyncRef.current) {
+      initialSyncRef.current = true;
+      appliedAtRef.current = Math.max(appliedAtRef.current, sync.at);
+      const idx = data.episodes.findIndex((ep) => ep.number === sync.episode);
+      if (idx >= 0 && idx !== epIndexRef.current) {
+        pendingSeekRef.current = sync.position;
+        wantPlayRef.current = sync.playing;
+        setEpIndex(idx);
+        return;
+      }
+      if (sync.position > 0) {
+        if (video.readyState >= 1) video.currentTime = sync.position;
+        else pendingSeekRef.current = sync.position;
+      }
+      wantPlayRef.current = sync.playing;
+      return;
+    }
+
+    if (sync.by === clientId) return; // это наше состояние — оно уже на экране
+    if (sync.at <= appliedAtRef.current) return; // этот срез уже применяли
+    appliedAtRef.current = sync.at;
+
+    const current = data.episodes[epIndexRef.current];
+    if (current && current.number !== sync.episode) {
+      const idx = data.episodes.findIndex((ep) => ep.number === sync.episode);
+      if (idx < 0) return;
+      // Чужой переход серией: грузим её и выставляем позицию/паузу
+      pendingSeekRef.current = sync.position;
+      wantPlayRef.current = sync.playing;
+      setEpIndex(idx);
+      quietUntilRef.current = Date.now() + 1500;
+      return;
+    }
+
+    quietUntilRef.current = Date.now() + 1200;
+    if (Math.abs((video.currentTime || 0) - sync.position) > 1.5) {
+      video.currentTime = sync.position;
+    }
+    if (sync.playing && video.paused) video.play().catch(() => undefined);
+    else if (!sync.playing && !video.paused) video.pause();
+  }, [sync, detail, clientId]);
+
+  // Пока играем — раз в 3 с подтверждаем прогресс, чтобы новый зритель
+  // сразу попадал на актуальную секунду, а не на паузу десятиминутной давности
   useEffect(() => {
     if (!playing) return;
-    postSync();
-    const timer = window.setInterval(() => postSync(), 2000);
+    const timer = window.setInterval(() => publish(), 3000);
     return () => window.clearInterval(timer);
-  }, [playing, epIndex, postSync]);
+  }, [playing, epIndex, publish]);
 
   /* ---------------------------- Действия ------------------------------ */
 
@@ -322,13 +352,9 @@ export function RoomPlayer({
     pendingSeekRef.current = null;
     if (video) video.currentTime = 0;
     setEpIndex(next);
-    // Сразу сообщаем остальным вкладкам новую серию с нулевой позицией
-    if (target && channelRef.current) {
-      channelRef.current.postMessage({
-        number: target.number,
-        time: 0,
-        playing: wantPlayRef.current,
-      } satisfies SyncMsg);
+    // Сразу сообщаем серверу новую серию с нулевой позицией
+    if (target) {
+      publish({ episode: target.number, position: 0, playing: wantPlayRef.current });
     }
   };
 
@@ -337,7 +363,7 @@ export function RoomPlayer({
     if (!video) return;
     video.currentTime = value;
     setTime(value);
-    postSync(true);
+    publish({ position: value });
   };
 
   const pickQuality = (q: Quality) => {
@@ -382,6 +408,7 @@ export function RoomPlayer({
       goto(1, true);
     } else {
       setPlaying(false);
+      publish({ playing: false });
     }
   };
 
@@ -410,11 +437,11 @@ export function RoomPlayer({
           onLoadedMetadata={() => setDuration(videoRef.current?.duration ?? 0)}
           onPlay={() => {
             setPlaying(true);
-            postSync();
+            publish();
           }}
           onPause={() => {
             setPlaying(false);
-            postSync();
+            publish();
           }}
           onEnded={onEnded}
         />
