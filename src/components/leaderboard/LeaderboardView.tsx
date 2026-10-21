@@ -15,7 +15,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { LevelEmblem } from "@/components/LevelEmblem";
+import { LevelBadge } from "@/components/levels/LevelBadge";
 import { FRAMES, TITLES, type TitleItem } from "@/lib/cosmetics";
 import { isPremiumActive } from "@/lib/auth";
 import { PROGRESSION_CONFIG } from "@/lib/progression/progression.config";
@@ -95,7 +95,7 @@ function PodiumCard({ row, place }: { row: BoardRow; place: 1 | 2 | 3 }) {
       </div>
       <h3 className="lb2-name">{row.nickname}</h3>
       <div className="lb2-badges">
-        <span className="lb2-lv"><LevelEmblem level={row.level} size={34} /></span>
+        <span className="lb2-lv"><LevelBadge level={row.level} size={46} state="current" minor /></span>
         {row.premium && <PremiumChip />}
       </div>
       <div className="lb2-big">
@@ -134,7 +134,7 @@ function RankRow({ row, max, index }: { row: BoardRow; max: number; index: numbe
       </div>
       <h4 className="lb2-name lb2-s">{row.nickname}</h4>
       <div className="lb2-badges lb2-s">
-        <span className="lb2-lv"><LevelEmblem level={row.level} size={28} /></span>
+        <span className="lb2-lv"><LevelBadge level={row.level} size={34} state="current" rich={false} minor /></span>
         {row.premium && <PremiumChip />}
       </div>
       <div className="lb2-big lb2-s">
