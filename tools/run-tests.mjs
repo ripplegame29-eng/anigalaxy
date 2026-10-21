@@ -29,18 +29,23 @@ if (tsc.status !== 0) {
   process.exit(tsc.status ?? 1);
 }
 
-const testDir = path.join(root, "tests", "progression");
-const files = readdirSync(testDir).filter((f) => f.endsWith(".test.mjs"));
+const testDirs = ["progression", "server"];
+const files = testDirs.flatMap((dir) => {
+  const full = path.join(root, "tests", dir);
+  try {
+    return readdirSync(full)
+      .filter((f) => f.endsWith(".test.mjs"))
+      .map((f) => path.join("tests", dir, f));
+  } catch {
+    return [];
+  }
+});
 if (files.length === 0) {
-  console.error("[tests] нет файлов tests/progression/*.test.mjs");
+  console.error("[tests] нет файлов tests/*/*.test.mjs");
   process.exit(1);
 }
 
-const run = spawnSync(
-  process.execPath,
-  ["--test", ...files.map((f) => path.join("tests", "progression", f))],
-  { cwd: root, stdio: "inherit" },
-);
+const run = spawnSync(process.execPath, ["--test", ...files], { cwd: root, stdio: "inherit" });
 
 // сборочные артефакты храним только на время прогона
 try {

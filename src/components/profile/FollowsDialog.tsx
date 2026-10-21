@@ -1,44 +1,24 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { PremiumChip } from "@/components/profile/PremiumChip";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useFriends, type FriendRow } from "@/lib/friends-cloud";
 
 /**
  * Окно «Подписчики / Подписки / Друзья» — по макету «AniGalaxy — профиль и
  * подписки»: вкладки, поиск, фильтры и список.
  *
- * Списка в проекте нет: подписок и других аккаунтов не существует, а макет
- * рисует 64 выдуманных ника. Поэтому окно открывается и показывает честную
- * пустоту, а не притворяется, что данные есть. Как только появится бэкенд,
- * меняется только `USERS` — вся вёрстка и фильтры уже на месте.
+ * Данные теперь настоящие (`/api/friends`): вкладки читаются как входящие
+ * заявки, исходящие заявки и принятые дружбы. Без входа или без сервера
+ * список честно пуст — раздел ничего не придумывает.
  */
-
-interface User {
-  nick: string;
-  online: boolean;
-  premium: boolean;
-  level: string;
-  lastSeen: string;
-  mutual: boolean;
-}
-
-/** Пустой пул: подписок в проекте нет. См. описание выше. */
-const USERS: User[] = [];
 
 type Tab = 0 | 1 | 2;
 
 const TABS = ["Подписчики", "Подписки", "Друзья"] as const;
+/** Статус, который показывает каждая вкладка */
+const TAB_STATUS: Record<Tab, FriendRow["status"]> = { 0: "incoming", 1: "outgoing", 2: "accepted" };
 
-const SORTS = ["По имени", "Сначала онлайн"] as const;
-
-type Filter = "all" | "on" | "prem" | "mut";
-
-const FILTERS: { id: Filter; label: string }[] = [
-  { id: "all", label: "Все" },
-  { id: "on", label: "В сети" },
-  { id: "prem", label: "Premium" },
-  { id: "mut", label: "Взаимные" },
-];
+const SORTS = ["По имени", "Сначала новые"] as const;
 
 export interface FollowsDialogProps {
   /** Вкладка, с которой открывается окно */
@@ -49,19 +29,28 @@ export interface FollowsDialogProps {
   compact?: boolean;
 }
 
+function dateOf(ms: number): string {
+  if (!ms) return "";
+  return new Date(ms).toLocaleDateString("ru-RU", { day: "2-digit", month: "short" });
+}
+
 export function FollowsDialog({ tab, className, label, compact }: FollowsDialogProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const [active, setActive] = useState<Tab>(tab);
   const [query, setQuery] = useState("");
-  const [filter, setFilter] = useState<Filter>("all");
   const [sort, setSort] = useState(0);
+  const [open, setOpen] = useState(false);
+  const [addNick, setAddNick] = useState("");
+  const [addError, setAddError] = useState<string | null>(null);
+  const [addBusy, setAddBusy] = useState(false);
 
-  // Вкладку берём из пропса прямо в обработчике: ref здесь означал бы
-  // присваивание во время рендера, а `tab` и так меняется вместе с кнопкой.
+  const { friends, loading, error, request, remove } = useFriends(open);
+
   const show = () => {
     setActive(tab);
     setQuery("");
-    setFilter("all");
+    setAddError(null);
+    setOpen(true);
     dialogRef.current?.showModal();
   };
 
@@ -71,26 +60,43 @@ export function FollowsDialog({ tab, className, label, compact }: FollowsDialogP
     const onBackdrop = (e: MouseEvent) => {
       if (e.target === el) el.close();
     };
+    const onClose = () => setOpen(false);
     el.addEventListener("click", onBackdrop);
-    return () => el.removeEventListener("click", onBackdrop);
+    el.addEventListener("close", onClose);
+    return () => {
+      el.removeEventListener("click", onBackdrop);
+      el.removeEventListener("close", onClose);
+    };
   }, []);
 
-  const q = query.trim().toLowerCase();
-  const rows = USERS.filter((u) => {
-    const byQuery = !q || u.nick.toLowerCase().includes(q);
-    const byFilter =
-      filter === "all" ||
-      (filter === "on" && u.online) ||
-      (filter === "prem" && u.premium) ||
-      (filter === "mut" && u.mutual);
-    return byQuery && byFilter;
-  }).sort((a, b) => (sort === 0 ? a.nick.localeCompare(b.nick, "ru") : Number(b.online) - Number(a.online)));
+  const counts = useMemo(
+    () => ({
+      0: friends.filter((f) => f.status === "incoming").length,
+      1: friends.filter((f) => f.status === "outgoing").length,
+      2: friends.filter((f) => f.status === "accepted").length,
+    }),
+    [friends],
+  );
 
-  const counts = {
-    all: USERS.length,
-    on: USERS.filter((u) => u.online).length,
-    prem: USERS.filter((u) => u.premium).length,
-    mut: USERS.filter((u) => u.mutual).length,
+  const q = query.trim().toLowerCase();
+  const rows = friends
+    .filter((f) => f.status === TAB_STATUS[active])
+    .filter((f) => !q || f.nickname.toLowerCase().includes(q))
+    .sort((a, b) => (sort === 0 ? a.nickname.localeCompare(b.nickname, "ru") : b.since - a.since));
+
+  const onAdd = async (event: React.FormEvent) => {
+    event.preventDefault();
+    const nickname = addNick.trim();
+    if (!nickname || addBusy) return;
+    setAddBusy(true);
+    const err = await request(nickname);
+    setAddBusy(false);
+    if (err) setAddError(err);
+    else {
+      setAddError(null);
+      setAddNick("");
+      setActive(1);
+    }
   };
 
   return (
@@ -114,7 +120,7 @@ export function FollowsDialog({ tab, className, label, compact }: FollowsDialogP
                   onClick={() => setActive(i as Tab)}
                 >
                   {name}
-                  <b>{USERS.length || "—"}</b>
+                  <b>{counts[i as Tab] || "—"}</b>
                 </button>
               ))}
             </div>
@@ -125,75 +131,79 @@ export function FollowsDialog({ tab, className, label, compact }: FollowsDialogP
             </button>
           </div>
 
-          <div className="fq">
+          <form className="fq" onSubmit={onAdd}>
             <svg viewBox="0 0 24 24" aria-hidden="true">
               <circle cx="11" cy="11" r="6.5" />
               <path d="m16 16 4 4" />
             </svg>
             <input
-              value={query}
-              placeholder="Поиск по нику"
+              value={addNick}
+              placeholder="Добавить по нику"
               autoComplete="off"
-              aria-label="Поиск по нику"
-              onChange={(e) => setQuery(e.target.value)}
+              aria-label="Добавить по нику"
+              onChange={(e) => {
+                setAddNick(e.target.value);
+                setAddError(null);
+              }}
             />
-            <button
-              type="button"
-              className="fqc"
-              onClick={() => setQuery("")}
-              aria-label="Очистить"
-              hidden={!query}
-            >
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M6 6l12 12M18 6 6 18" />
-              </svg>
+            <button type="submit" className="fqc" disabled={!addNick.trim() || addBusy} aria-label="Отправить заявку">
+              +
             </button>
-          </div>
+          </form>
+          {addError && <p className="fe" style={{ padding: "0 4px" }}>{addError}</p>}
 
           <div className="ff">
-            {FILTERS.map((f) => (
-              <button
-                key={f.id}
-                type="button"
-                aria-pressed={filter === f.id}
-                onClick={() => setFilter(f.id)}
-              >
-                {f.label}
-                <em>{counts[f.id]}</em>
-              </button>
-            ))}
+            <input
+              value={query}
+              placeholder="Поиск по нику в списке"
+              autoComplete="off"
+              aria-label="Поиск по нику в списке"
+              onChange={(e) => setQuery(e.target.value)}
+              style={{ flex: 1, background: "transparent", border: "none", outline: "none", color: "inherit" }}
+            />
             <button type="button" className="so" onClick={() => setSort((s) => (s + 1) % SORTS.length)}>
               ⇅ {SORTS[sort]}
             </button>
           </div>
 
           <div className="fl">
-            {rows.length ? (
+            {error === "auth" ? (
+              <div className="fe">
+                <b>Нужен вход</b>
+                Друзья хранятся на сервере за аккаунтом — войдите, чтобы увидеть список
+              </div>
+            ) : loading ? (
+              <div className="fe">
+                <b>Загрузка…</b>
+              </div>
+            ) : rows.length ? (
               rows.map((u, i) => (
-                <div key={u.nick} className="fr" style={{ "--d": i } as React.CSSProperties}>
-                  <div
-                    className={`fa${u.premium ? " p" : ""}${u.online ? " on" : ""}`}
-                    style={{ "--bg": "linear-gradient(140deg,#8b5cf6,#3b82f6)" } as React.CSSProperties}
-                  >
-                    {u.nick[0]?.toUpperCase()}
+                <div key={u.userId} className="fr" style={{ "--d": i } as React.CSSProperties}>
+                  <div className="fa" style={{ "--bg": "linear-gradient(140deg,#8b5cf6,#3b82f6)" } as React.CSSProperties}>
+                    {u.nickname[0]?.toUpperCase()}
                   </div>
                   <div className="fn">
                     <strong>
-                      <span className="nm">{u.nick}</span>
-                      {u.premium && <PremiumChip />}
+                      <span className="nm">{u.nickname}</span>
                     </strong>
-                    <small className={u.online ? "o" : undefined}>
-                      {u.online ? "В сети" : `Был(а) ${u.lastSeen}`}
-                    </small>
+                    <small>{active === 0 ? "Хочет дружить" : active === 1 ? "Заявка отправлена" : `Друзья с ${dateOf(u.since)}`}</small>
                   </div>
-                  <div className="lvl b4">{u.level}</div>
+                  {active === 0 && (
+                    <button type="button" className="so" onClick={() => void request(u.nickname)}>
+                      Принять
+                    </button>
+                  )}
+                  {active !== 0 && (
+                    <button type="button" className="so" onClick={() => void remove(u.userId)}>
+                      {active === 1 ? "Отменить" : "Удалить"}
+                    </button>
+                  )}
                 </div>
               ))
             ) : (
               <div className="fe">
-                <b>Списка пока нет</b>
-                В проекте один аккаунт на браузер: подписок и других пользователей
-                не существует, поэтому показывать здесь нечего
+                <b>{active === 0 ? "Входящих заявок нет" : active === 1 ? "Исходящих заявок нет" : "Друзей пока нет"}</b>
+                Добавьте игрока по нику выше — заявка придёт ему в «Подписчики»
               </div>
             )}
           </div>

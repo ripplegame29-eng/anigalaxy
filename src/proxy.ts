@@ -24,7 +24,7 @@ let lastSweep = 0;
 
 const GENERAL = { windowMs: 60_000, max: 120 };
 const HEAVY = { windowMs: 60_000, max: 20 };
-const HEAVY_PREFIXES = ["/api/frame", "/api/kodik/stream", "/api/auth/"];
+const HEAVY_PREFIXES = ["/api/frame", "/api/kodik/stream", "/api/auth/", "/api/account/"];
 /** Тело запроса больше этого не принимаем (поиск по кадру — до 4×10 МБ, берём запас) */
 const MAX_BODY = 45 * 1024 * 1024;
 

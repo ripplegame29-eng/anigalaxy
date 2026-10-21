@@ -15,6 +15,7 @@ import { rememberTitle } from "@/lib/titles";
 import { progressEmit } from "@/lib/progression/events";
 import { STATUS_LABEL, STATUS_ORDER, getStatus, setStatus, type WatchStatus } from "@/lib/statuses";
 import { MAX_SCORE, MIN_SCORE, getRating, setRating } from "@/lib/ratings";
+import { syncTitleRating, useTitleAvgRating } from "@/lib/ratings-cloud";
 
 interface Props {
   /**
@@ -63,6 +64,7 @@ export function TitleActions({ anime }: Props) {
 
   const status = getStatus(anime.id);
   const rating = getRating(anime.id);
+  const avgRating = useTitleAvgRating(anime.id);
 
   /**
    * Снимок карточки для кэша тайтлов. Кроме названия и постера сюда
@@ -121,7 +123,10 @@ export function TitleActions({ anime }: Props) {
   const onRate = useCallback(
     (score: number) => {
       const applied = setRating(anime.id, score);
-      if (applied !== null) progressEmit({ type: "TITLE_RATED", titleId: anime.id, score: applied });
+      if (applied !== null) {
+        progressEmit({ type: "TITLE_RATED", titleId: anime.id, score: applied });
+        syncTitleRating(anime.id, applied);
+      }
       bump();
     },
     [anime.id, bump],
@@ -211,7 +216,14 @@ export function TitleActions({ anime }: Props) {
         </div>
 
         <div>
-          <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.14em] text-muted">Моя оценка</p>
+          <p className="mb-2 flex items-center justify-between text-[11px] font-bold uppercase tracking-[0.14em] text-muted">
+            <span>Моя оценка</span>
+            {avgRating.votes > 0 && (
+              <span className="normal-case tracking-normal text-white/55">
+                {avgRating.avg.toFixed(1)} · {avgRating.votes} {avgRating.votes === 1 ? "оценка" : "оценок"}
+              </span>
+            )}
+          </p>
           <div
             className="grid grid-cols-5 gap-1.5"
             role="group"

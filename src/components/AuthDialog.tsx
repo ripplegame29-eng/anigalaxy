@@ -3,10 +3,8 @@
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { Logo } from "./Logo";
 import {
-  loginAccount,
   loginTelegramDemo,
   loginTelegramVerified,
-  registerAccount,
   validateNickname,
   validateEmail,
   TELEGRAM_DEMO_ACCOUNTS,
@@ -20,6 +18,7 @@ import {
   type AuthTab,
 } from "@/lib/auth-dialog";
 import { useModalBehaviour } from "@/lib/use-local-storage";
+import { adoptTelegramSession, signIn, signUp } from "@/lib/cloud";
 
 /* ------------------------------ Иконки -------------------------------- */
 
@@ -263,10 +262,16 @@ export function AuthDialog() {
     openAuthDialog(next);
   }, []);
 
+  const busyRef = useRef(false);
+
   const onLogin = useCallback(
-    (event: React.FormEvent) => {
+    async (event: React.FormEvent) => {
       event.preventDefault();
-      const result = loginAccount(login, password);
+      if (busyRef.current) return;
+      busyRef.current = true;
+      const result = await signIn(login, password).finally(() => {
+        busyRef.current = false;
+      });
       if (!result.ok) {
         setError(result.error);
         return;
@@ -280,9 +285,13 @@ export function AuthDialog() {
   );
 
   const onRegister = useCallback(
-    (event: React.FormEvent) => {
+    async (event: React.FormEvent) => {
       event.preventDefault();
-      const result = registerAccount(nickname, email, regPassword, confirm);
+      if (busyRef.current) return;
+      busyRef.current = true;
+      const result = await signUp(nickname, email, regPassword, confirm).finally(() => {
+        busyRef.current = false;
+      });
       if (!result.ok) {
         setError(result.error);
         return;
@@ -336,6 +345,7 @@ export function AuthDialog() {
           setError(result.error);
           return;
         }
+        await adoptTelegramSession(data.account);
         setError(null);
         setTgRealOpen(false);
         setTgOpen(false);

@@ -3,28 +3,20 @@
 /**
  * Лидерборд AniGalaxy.
  *
- * Вёрстка 1:1 по макету (anigalaxy-leaderboard.html). Отличается ровно одно,
- * и это то, ради чего страница делалась:
- *
- *   В макете рамки, теги и уровень — заглушки: круг с инициалами и оттенком
- *   `--h`, квадратные плашки-чипы и шестиугольник с числом. Здесь на их местах
- *   настоящие предметы проекта: `AvatarView` с рамкой из каталога `FRAMES`,
- *   `AgTag` с реальными тегами из `PROGRESSION_CONFIG.tags` и `LevelEmblem`.
- *   То есть на странице видно ровно те рамки и теги, которые есть в проекте.
- *
- * ЧЕСТНО ПРО ДАННЫЕ ЗРИТЕЛЕЙ: сервера и базы пользователей у проекта нет,
- * поэтому соперники — детерминированно сгенерированные строки (имя, очки,
- * серии, часы), ровно как в макете. Это не настоящие люди, и выглядеть они
- * не должны. Настоящие здесь три вещи: косметика зрителей, уровни по
- * реальной кривой XP и строка «Твоё место» — она целиком из твоего профиля.
+ * Раньше соперники были сгенерированы на клиенте (сервера и базы игроков
+ * не было). Теперь это настоящая таблица с сервера (`/api/leaderboard`):
+ * только реально зарегистрированные игроки, очки — опыт за неделю или за
+ * всё время. Сервер не считает часы просмотра, серии или главы манги по
+ * другим игрокам, поэтому сортировка и сравнение по этим метрикам для
+ * чужих строк исчезли вместе с ботами — сортировка одна, по очкам. Своя
+ * строка внизу по-прежнему показывает настоящие локальные цифры профиля
+ * (серии, часы, рамка, тег).
  */
 
-import { Fragment, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { AvatarFrame } from "@/components/profile/AvatarFrame";
-import { AgTag } from "@/components/progression/AgTag";
 import { LevelEmblem } from "@/components/LevelEmblem";
-import { FRAMES, TITLES, titleTag, type FrameItem, type TitleItem } from "@/lib/cosmetics";
+import { FRAMES, TITLES, type TitleItem } from "@/lib/cosmetics";
 import { isPremiumActive } from "@/lib/auth";
 import { PROGRESSION_CONFIG } from "@/lib/progression/progression.config";
 import type { TagDef } from "@/lib/progression/types";
@@ -33,156 +25,31 @@ import { useTagSelection, useTitleSelection } from "@/lib/selection";
 import { useAccount } from "@/lib/use-account";
 import { useProfile } from "@/lib/profile";
 import { watchStats, watchStore } from "@/lib/history";
-import { PERIOD_SCALE, PRIZES, botPoints, noise, prizeFor, weekPoints, weeklyRank, useLeaderboardState } from "@/lib/leaderboard-rewards";
+import { PRIZES } from "@/lib/leaderboard-prizes";
+import { useLeaderboardBoard, type BoardRow } from "@/lib/leaderboard-cloud";
 import "./leaderboard.css";
 import "./leaderboard-premium.css";
 import { PremiumChip } from "@/components/profile/PremiumChip";
 
-/* ------------------------------- Данные -------------------------------- */
+type Period = "week" | "all";
 
-const NAMES = [
-  "Нова", "Kitsune9", "Мирай", "Рэйден", "Hoshi", "Tenshi", "Кайро", "Yuzu",
-  "Люмен", "Orion", "Вега", "Zeno", "Аматэру", "Ронин", "Haru", "Селена",
-  "Nox", "Сумрак", "Aoi", "Дракон_7", "Mitsuki", "Эхо", "Raiko", "Лунная", "Sora",
-];
-
-const TOTAL_ROWS = 50;
-
-/**
- * Сколько значков показывать у ника в строке.
- *
- * Два суммарно: один тег и один титул (если титула нет — до двух тегов).
- * Больше строка перестаёт читаться как список, а в шапке профиля и на
- * странице зрителя должно быть одно и то же.
- */
-const MAX_BADGES = 2;
-
-/** Настоящие рамки проекта (без «без рамки») */
-/** Титулы за итоги лидерборда у сгенерированных соперников не показываем */
-const BOT_TITLES = TITLES.filter((t) => !t.unlock.grant);
-
-const REAL_FRAMES = FRAMES.filter((f) => f.id !== "f-none");
-
-/**
- * Настоящие теги проекта.
- *
- * Приведение к TagDef нужно потому, что `PROGRESSION_CONFIG.tags` — литерал,
- * и TypeScript выводит из него узкий объединённый тип. Без него предикат
- * `t is TagDef` не считается валидным, а он нужен, чтобы отбросить
- * `undefined` из `.find()`.
- */
 const REAL_TAGS = PROGRESSION_CONFIG.tags as TagDef[];
-
-interface Entry {
-  rank: number;
-  name: string;
-  points: number;
-  level: number;
-  series: number;
-  /** Прочитано глав манги (демо; у тебя пока 0 — учёта чтения нет) */
-  chapters: number;
-  hours: number;
-  minutes: number;
-  premium: boolean;
-  /** Настоящая рамка из каталога проекта */
-  frame: FrameItem | undefined;
-  /** Настоящие теги проекта — компактные капсулы, как на референсе */
-  tags: TagDef[];
-  /** Настоящие титулы проекта — отдельными чипами */
-  titles: TitleItem[];
-  /** Это текущий пользователь: его строка рисуется живыми данными */
-  me?: boolean;
-}
-
-/**
- * Генерация соперников.
- *
- * Косметика настоящая: рамки, теги и титулы берутся из каталогов проекта.
- * Сами соперники — сгенерированные строки (сервера и базы пользователей у
- * проекта нет), и подписи к их тегам тоже выдуманные: настоящие значения
- * есть только у твоей строки, она собирается отдельно.
- */
-function buildRoster(period: number): Entry[] {
-  const entries: Entry[] = [];
-  for (let i = 0; i < TOTAL_ROWS; i++) {
-    const k = (i * 7 + period * 3) % NAMES.length;
-    const frame = REAL_FRAMES[Math.floor(noise(i + period * 11, 2) * REAL_FRAMES.length)];
-
-    // Ровно один тег и один титул на строку, без повторов
-    const tags: TagDef[] = [];
-    for (let t = 0; tags.length < 1; t++) {
-      if (t > REAL_TAGS.length) break;
-      const tag = REAL_TAGS[Math.floor(noise(i * 3 + t + period * 13, 4 + t) * REAL_TAGS.length)];
-      if (tag && !tags.includes(tag)) tags.push(tag);
-    }
-
-    const totalMinutes = Math.round((64 - i * 0.7) * PERIOD_SCALE[period] * 0.9 * 60);
-    const title = i < 10 ? BOT_TITLES[0] : BOT_TITLES[Math.floor(noise(i + 31, period) * BOT_TITLES.length)];
-
-    entries.push({
-      rank: i + 1,
-      name: NAMES[k] + (i >= NAMES.length ? `_${i + 1}` : ""),
-      points: botPoints(period, i),
-      level: 12 + Math.floor(noise(i + 9, period) * 70),
-      series: Math.round((240 - i * 2) * PERIOD_SCALE[period] * 0.9),
-      chapters: Math.round((420 - i * 3.2) * PERIOD_SCALE[period] * (0.7 + noise(i + 5, period) * 0.6)),
-      hours: Math.floor(totalMinutes / 60),
-      minutes: totalMinutes % 60,
-      premium: noise(i + 13, period) > 0.45,
-      frame,
-      tags,
-      titles: title ? [title] : [],
-    });
-  }
-  return entries;
-}
-
-type SortKey = "hours" | "series" | "manga" | "level";
-const SORTS: { key: SortKey; label: string; unit: string }[] = [
-  { key: "hours", label: "По часам", unit: "минут" },
-  { key: "series", label: "По сериям", unit: "серий" },
-  { key: "manga", label: "По манге", unit: "глав" },
-  { key: "level", label: "По уровню", unit: "уровень" },
-];
-
-function metricOf(e: Entry, sort: SortKey): number {
-  if (sort === "hours") return e.hours * 60 + e.minutes;
-  if (sort === "series") return e.series;
-  if (sort === "manga") return e.chapters;
-  return e.level;
-}
-
-function metricText(e: Entry, sort: SortKey): string {
-  if (sort === "hours") return `${fmt(e.hours)} ч`;
-  return fmt(metricOf(e, sort));
-}
 
 function fmt(n: number): string {
   return Math.round(n).toLocaleString("ru-RU");
 }
 
-/* ------------------------------ Подиум --------------------------------- */
-
-const CROWN = (
-  <svg className="lb2-crown" viewBox="0 0 34 26" fill="currentColor" aria-hidden>
-    <path d="M2 8l7 6 8-11 8 11 7-6-3 16H5z" />
-  </svg>
-);
-
 /** Плавный набор числа: очки «разгоняются» при появлении карточки */
 function useCountUp(target: number, ms = 1100): number {
   const [value, setValue] = useState(0);
-  const from = useRef(0);
   useEffect(() => {
     const start = performance.now();
-    const base = from.current;
     let raf = 0;
     const step = (now: number) => {
       const t = Math.min(1, (now - start) / ms);
       const eased = 1 - Math.pow(1 - t, 3);
-      setValue(base + (target - base) * eased);
+      setValue(target * eased);
       if (t < 1) raf = requestAnimationFrame(step);
-      else from.current = target;
     };
     raf = requestAnimationFrame(step);
     return () => cancelAnimationFrame(raf);
@@ -190,7 +57,6 @@ function useCountUp(target: number, ms = 1100): number {
   return value;
 }
 
-/** Подсветка под курсором: свет следует за мышью по карточке */
 function spotlight(event: React.PointerEvent<HTMLElement>) {
   const el = event.currentTarget;
   const rect = el.getBoundingClientRect();
@@ -198,204 +64,100 @@ function spotlight(event: React.PointerEvent<HTMLElement>) {
   el.style.setProperty("--my", `${event.clientY - rect.top}px`);
 }
 
-function Stat({ label, value }: { label: string; value: string }) {
+/** Буквенный аватар для чужой строки — мы не знаем ни рамки, ни аватара других игроков */
+function InitialAvatar({ nickname, size }: { nickname: string; size: "md" | "xs" }) {
+  const cls = size === "md" ? "h-16 w-16 text-xl" : "h-9 w-9 text-xs";
   return (
-    <div>
-      <small>{label}</small>
-      <b>{value}</b>
-    </div>
+    <span
+      className={`grid shrink-0 place-items-center rounded-full bg-gradient-to-br from-accent to-accent-2 font-black text-white ${cls}`}
+      aria-hidden
+    >
+      {nickname.slice(0, 2).toUpperCase()}
+    </span>
   );
 }
 
-function PodiumCard({ entry, place, sort, onDuel }: { entry: Entry; place: 1 | 2 | 3; sort: SortKey; onDuel: (e: Entry) => void }) {
-  const points = useCountUp(sort === "hours" ? entry.hours : metricOf(entry, sort));
+const CROWN = (
+  <svg className="lb2-crown" viewBox="0 0 34 26" fill="currentColor" aria-hidden>
+    <path d="M2 8l7 6 8-11 8 11 7-6-3 16H5z" />
+  </svg>
+);
+
+function PodiumCard({ row, place }: { row: BoardRow; place: 1 | 2 | 3 }) {
+  const points = useCountUp(row.points);
   return (
     <article className={`lb2-pod p${place}`} onPointerMove={spotlight}>
       <span className="lb2-aura" aria-hidden />
       {place === 1 && CROWN}
       <span className="lb2-medal" aria-hidden>{place}</span>
       <div className="lb2-av">
-        <AvatarFrame nickname={entry.name} frame={entry.frame} size="md" />
+        <InitialAvatar nickname={row.nickname} size="md" />
       </div>
-      <h3 className="lb2-name">{entry.name}</h3>
+      <h3 className="lb2-name">{row.nickname}</h3>
       <div className="lb2-badges">
-        <span className="lb2-lv"><LevelEmblem level={entry.level} size={34} /></span>
-        {entry.titles[0] && <LbBadge tag={titleTag(entry.titles[0])} />}
-        {entry.premium && <PremiumChip />}
+        <span className="lb2-lv"><LevelEmblem level={row.level} size={34} /></span>
+        {row.premium && <PremiumChip />}
       </div>
       <div className="lb2-big">
-        <b>{fmt(points)}{sort === "hours" ? " ч" : ""}</b>
-        <small>{sort === "hours" ? "просмотра" : SORTS.find((x) => x.key === sort)?.unit}</small>
+        <b>{fmt(points)}</b>
+        <small>опыта</small>
       </div>
-      <div className="lb2-stats">
-        <Stat label="Серий" value={fmt(entry.series)} />
-        <Stat label="Часов" value={`${entry.hours}`} />
-        <Stat label="Уровень" value={`${entry.level}`} />
-      </div>
-      <button type="button" className="lb2-duel-btn" onClick={() => onDuel(entry)}>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-          <path d="m14 4 6 6M4 20l7-7M9 15l-4 4M20 4l-6 6M9 9 4 4" />
-        </svg>
-        Бросить вызов
-      </button>
     </article>
   );
 }
 
-function Podium({ entries, sort, onDuel }: { entries: Entry[]; sort: SortKey; onDuel: (e: Entry) => void }) {
+function Podium({ rows }: { rows: BoardRow[] }) {
   // Порядок отрисовки: 2, 1, 3 — иначе первое место окажется не по центру
   const order = [1, 0, 2] as const;
   return (
     <section className="lb2-podium">
       {order.map((i) => {
-        const entry = entries[i];
-        if (!entry) return null;
-        return <PodiumCard key={`${sort}-${entry.name}`} entry={entry} place={(i + 1) as 1 | 2 | 3} sort={sort} onDuel={onDuel} />;
+        const row = rows[i];
+        if (!row) return null;
+        return <PodiumCard key={row.nickname} row={row} place={(i + 1) as 1 | 2 | 3} />;
       })}
     </section>
   );
 }
 
-/* ------------------------------- Список -------------------------------- */
-
-/**
- * Тег или титул в строке лидерборда.
- *
- * Оба показываются одним и тем же компонентом — обычным `AgTag` проекта:
- * в самом проекте титул и есть тег (`titleTag(item)` превращает его в
- * TagDef). Дизайн, анимации и эффекты не тронуты, уменьшены только
- * габариты классом `lb-tag` (см. leaderboard.css).
- *
- * Класс висит на самом теге, а не на обёртке: с `zoom` на обёртке её бокс и
- * бокс тега расходятся (у капсулы есть позиционированные слои эффектов,
- * они вылезают наружу), и капсула уезжает за пределы своей строки.
- * `width: max-content` — чтобы длинное имя не обрезалось.
- */
-function LbBadge({ tag }: { tag: TagDef }) {
-  return <AgTag tag={tag} size="sm" className="lb-tag" />;
-}
-
-function RankCard({ entry, max, index, sort, onDuel }: { entry: Entry; max: number; index: number; sort: SortKey; onDuel: (e: Entry) => void }) {
-  const top = entry.rank <= 10;
+function RankRow({ row, max, index }: { row: BoardRow; max: number; index: number }) {
+  const top = row.rank <= 10;
   return (
     <li
-      className={`lb2-card${entry.me ? " me" : ""}${top ? " top" : ""}`}
-      style={{ "--n": index, "--w": `${((metricOf(entry, sort) / Math.max(1, max)) * 100).toFixed(1)}%` } as React.CSSProperties}
+      className={`lb2-card${top ? " top" : ""}`}
+      style={{ "--n": index, "--w": `${((row.points / Math.max(1, max)) * 100).toFixed(1)}%` } as React.CSSProperties}
       onPointerMove={spotlight}
     >
-      <span className="lb2-rank">{entry.me ? "ТЫ" : `#${entry.rank}`}</span>
+      <span className="lb2-rank">{`#${row.rank}`}</span>
       <div className="lb2-av lb2-s">
-        <AvatarFrame nickname={entry.name} frame={entry.frame} size="xs" />
+        <InitialAvatar nickname={row.nickname} size="xs" />
       </div>
-      <h4 className="lb2-name lb2-s">{entry.name}</h4>
+      <h4 className="lb2-name lb2-s">{row.nickname}</h4>
       <div className="lb2-badges lb2-s">
-        <span className="lb2-lv"><LevelEmblem level={entry.level} size={28} /></span>
-        {entry.tags.slice(0, 1).map((tag, i) => (
-          <LbBadge key={`${entry.name}-tag-${i}`} tag={tag} />
-        ))}
-        {entry.premium && <PremiumChip />}
+        <span className="lb2-lv"><LevelEmblem level={row.level} size={28} /></span>
+        {row.premium && <PremiumChip />}
       </div>
       <div className="lb2-big lb2-s">
-        <b>{metricText(entry, sort)}</b>
-        <small>{sort === "hours" ? "просмотра" : SORTS.find((x) => x.key === sort)?.unit}</small>
+        <b>{fmt(row.points)}</b>
+        <small>опыта</small>
       </div>
       <div className="lb2-meter"><i /></div>
-      <div className="lb2-stats lb2-s">
-        <Stat label="Серий" value={fmt(entry.series)} />
-        <Stat label={sort === "manga" ? "Часов" : "Глав"} value={sort === "manga" ? `${entry.hours}ч` : fmt(entry.chapters)} />
-      </div>
-      {!entry.me && (
-        <button type="button" className="lb2-duel-btn lb2-s" onClick={() => onDuel(entry)} aria-label={`Сравнить себя с ${entry.name}`}>
-          Сравнить
-        </button>
-      )}
     </li>
   );
 }
 
-/** Дуэль: ты против выбранного игрока. Твои цифры настоящие, соперник — демо. */
-function Duel({ me, rival, onClose }: { me: Entry; rival: Entry; onClose: () => void }) {
-  useEffect(() => {
-    const onKey = (event: KeyboardEvent) => event.key === "Escape" && onClose();
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [onClose]);
-
-  const rows: { label: string; a: number; b: number; fmtv: (n: number) => string }[] = [
-    { label: "Очки", a: me.points, b: rival.points, fmtv: fmt },
-    { label: "Серий просмотрено", a: me.series, b: rival.series, fmtv: fmt },
-    { label: "Время просмотра", a: me.hours * 60 + me.minutes, b: rival.hours * 60 + rival.minutes, fmtv: (n) => `${Math.floor(n / 60)}ч ${n % 60}м` },
-    { label: "Уровень", a: me.level, b: rival.level, fmtv: fmt },
-  ];
-  const wins = rows.filter((row) => row.a >= row.b).length;
-  const gap = Math.max(0, Math.round(rival.points - me.points));
-
-  return (
-    <div className="lb2-duel" role="dialog" aria-modal="true" aria-label={`Дуэль с ${rival.name}`} onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
-      <div className="lb2-duel-box">
-        <button type="button" className="lb2-x" onClick={onClose} aria-label="Закрыть">×</button>
-        <div className="lb2-vs">
-          <div>
-            <AvatarFrame nickname={me.name} frame={me.frame} size="md" />
-            <b>{me.name}</b>
-            <small>Ты</small>
-          </div>
-          <span className="lb2-vs-mark">VS</span>
-          <div>
-            <AvatarFrame nickname={rival.name} frame={rival.frame} size="md" />
-            <b>{rival.name}</b>
-            <small>Место #{rival.rank}</small>
-          </div>
-        </div>
-
-        <ul className="lb2-cmp">
-          {rows.map((row, i) => {
-            const total = Math.max(1, row.a + row.b);
-            return (
-              <li key={row.label} style={{ "--i": i } as React.CSSProperties}>
-                <div className="lb2-cmp-h">
-                  <b className={row.a >= row.b ? "win" : undefined}>{row.fmtv(row.a)}</b>
-                  <span>{row.label}</span>
-                  <b className={row.b > row.a ? "win" : undefined}>{row.fmtv(row.b)}</b>
-                </div>
-                <div className="lb2-cmp-bar">
-                  <i className="a" style={{ width: `${(row.a / total) * 100}%` }} />
-                  <i className="b" style={{ width: `${(row.b / total) * 100}%` }} />
-                </div>
-              </li>
-            );
-          })}
-        </ul>
-
-        <p className="lb2-verdict">
-          {wins === rows.length
-            ? "Ты впереди по всем показателям."
-            : gap > 0
-              ? `Побед в сравнении: ${wins} из ${rows.length}. До очков соперника не хватает ${fmt(gap)}.`
-              : `Побед в сравнении: ${wins} из ${rows.length}. По очкам ты уже впереди.`}
-        </p>
-        <p className="lb2-demo">Соперник — демо-профиль: у проекта нет сервера игроков. Твои цифры настоящие.</p>
-      </div>
-    </div>
-  );
-}
-
-function Zone({ kind }: { kind: 1 | 2 | 3 }) {
-  const cls = kind === 1 ? "z1" : kind === 2 ? "z2" : "z3";
-  const text =
-    kind === 1 ? "Рамка и титул — до 5 места" : kind === 2 ? "Места 11–25 · опыт и AC" : "Места 26–100 · опыт и AC";
+function Zone({ kind }: { kind: 2 | 3 }) {
+  const cls = kind === 2 ? "z2" : "z3";
+  const text = kind === 2 ? "Места 11–25 · опыт и AC" : "Места 26–100 · опыт и AC";
   return <li className={`lb-zone ${cls}`}>{text}</li>;
 }
 
 /* ------------------------------- Страница ------------------------------ */
 
 export function LeaderboardView() {
-  const [period, setPeriod] = useState(0);
-  const [filter, setFilter] = useState<0 | 1 | 2>(0);
+  const [period, setPeriod] = useState<Period>("week");
   const [expanded, setExpanded] = useState(false);
-  const [duel, setDuel] = useState<Entry | null>(null);
-  const [sort, setSort] = useState<SortKey>("hours");
-  const [sortOpen, setSortOpen] = useState(false);
+  const [filter, setFilter] = useState<0 | 1 | 2>(0);
 
   const account = useAccount();
   const profile = useProfile();
@@ -403,83 +165,52 @@ export function LeaderboardView() {
   const levelInfo = useLevelInfo();
   const tagSel = useTagSelection();
   const titleSel = useTitleSelection();
-  const lb = useLeaderboardState();
   const watch = watchStore.useStore();
   const stats = watchStats(watch);
 
-  const entries = useMemo(
+  const board = useLeaderboardBoard(period);
+
+  const filteredRows = useMemo(
     () =>
-      buildRoster(period)
-        .sort((a, b) => metricOf(b, sort) - metricOf(a, sort) || a.rank - b.rank)
-        .map((e, i) => ({ ...e, rank: i + 1 })),
-    [period, sort],
+      board.rows.filter((row) => {
+        if (filter === 1) return row.premium;
+        if (filter === 2) return !row.premium;
+        return true;
+      }),
+    [board.rows, filter],
   );
 
-  const top = Math.max(1, metricOf(entries[0] ?? ({} as Entry), sort) || 1);
+  const podium = filteredRows.slice(0, 3);
+  const shown = filteredRows.slice(3, expanded ? 100 : 25);
+  const top = Math.max(1, filteredRows[0]?.points ?? 1);
 
-  /* Строка «Твоё место» — единственная по-настоящему: имя, очки, уровень,
-   * серии и часы берутся из твоего профиля. Если тебя нет в первых 50, строка
-   * всё равно показывается — но уже в доке внизу. */
-  const meEntry: Entry = useMemo(
+  /* Своя строка — настоящие локальные цифры профиля (рамка, тег, часы,
+   * серии); очки и место за неделю приходят с сервера, если есть аккаунт. */
+  const me = useMemo(
     () => ({
-      rank: 0,
-      name: account?.nickname ?? "Гость",
-      points: period === 0 ? weekPoints(lb, progress.progress.xpTotal) : progress.progress.xpTotal,
+      points: period === "week" ? (board.me?.points ?? 0) : progress.progress.xpTotal,
       level: levelInfo.level,
+      premium: isPremiumActive(account),
       series: stats.episodes,
-      chapters: 0,
       hours: Math.floor(stats.minutes / 60),
       minutes: stats.minutes % 60,
-      premium: isPremiumActive(account),
       frame: FRAMES.find((f) => f.id === profile.frameId),
-      // Настоящие надетые теги: сначала основной, потом дополнительные.
-      // Берём через хуки проекта — там уже разобрано, где лежит основной
-      // тег, а где дополнительные (движок против профиля).
       tags: [
-        ...tagSel.primary
-          ? REAL_TAGS.filter((t): t is TagDef => t.id === tagSel.primary)
-          : [],
-        ...tagSel.extras
-          .map((id) => REAL_TAGS.find((t): t is TagDef => t.id === id))
-          .filter((t): t is TagDef => Boolean(t)),
+        ...(tagSel.primary ? REAL_TAGS.filter((t): t is TagDef => t.id === tagSel.primary) : []),
+        ...tagSel.extras.map((id) => REAL_TAGS.find((t): t is TagDef => t.id === id)).filter((t): t is TagDef => Boolean(t)),
       ].slice(0, 1),
       titles: [
         ...(titleSel.primary ? TITLES.filter((t) => t.id === titleSel.primary) : []),
-        ...titleSel.extras
-          .map((id) => TITLES.find((t) => t.id === id))
-          .filter((t): t is TitleItem => Boolean(t)),
-      ].slice(0, MAX_BADGES - 1),
-      me: true,
+        ...titleSel.extras.map((id) => TITLES.find((t) => t.id === id)).filter((t): t is TitleItem => Boolean(t)),
+      ].slice(0, 1),
     }),
-    [account, profile, progress, levelInfo, stats, period, lb, tagSel.primary, tagSel.extras, titleSel.primary, titleSel.extras],
+    [account, profile, progress, levelInfo, stats, period, board.me, tagSel.primary, tagSel.extras, titleSel.primary, titleSel.extras],
   );
 
-  const shown = useMemo(() => {
-    const end = expanded ? TOTAL_ROWS : 25;
-    return entries.slice(3, end).filter((p) => {
-      if (filter === 1) return p.premium;
-      if (filter === 2) return !p.premium;
-      return true;
-    });
-  }, [entries, filter, expanded]);
-
-  // Вставляем свою строку в список, если по очкам ты попал в показанную часть
-  const rows = useMemo(() => {
-    const out: Entry[] = [];
-    for (const entry of shown) {
-      if (!entry.me && meEntry.points > 0 && entry.rank === 1) {
-        out.push({ ...meEntry, rank: 4 });
-      }
-      out.push(entry);
-    }
-    return out;
-  }, [shown, meEntry]);
+  const myName = account?.nickname ?? "Гость";
+  const myRank = period === "week" ? board.me?.rank ?? null : null;
 
   /* ---------------------------- Обратный отсчёт -------------------------- */
-
-  /* Тикает раз в полминуты, поэтому в состоянии лежит просто «сейчас», а сам
-   * отсчёт считается из него через useMemo. Иначе пришлось бы писать setState
-   * прямо в теле эффекта — React это справедливо запрещает. */
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
     const t = window.setInterval(() => setNow(Date.now()), 30_000);
@@ -487,29 +218,18 @@ export function LeaderboardView() {
   }, []);
 
   const left = useMemo(() => {
-    // У «Всё время» итогов нет — блок счётчика скрыт
-    if (period === 2) return null;
+    if (period === "all") return null;
     const d = new Date(now);
-    let target: number;
-    if (period === 0) {
-      const daysUntilMonday = ((8 - d.getUTCDay()) % 7) || 7;
-      target = Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() + daysUntilMonday);
-    } else {
-      target = Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 1);
-    }
+    const daysUntilMonday = ((8 - d.getUTCDay()) % 7) || 7;
+    const target = Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() + daysUntilMonday);
     const s = Math.max(0, Math.floor((target - now) / 1000));
-    return {
-      d: Math.floor(s / 86400),
-      h: Math.floor((s % 86400) / 3600),
-      m: Math.floor((s % 3600) / 60),
-    };
+    return { d: Math.floor(s / 86400), h: Math.floor((s % 86400) / 3600), m: Math.floor((s % 3600) / 60) };
   }, [period, now]);
 
-  /* Сколько очков до сотого места — для дока внизу */
-  const gapTo100 = Math.max(0, Math.round((entries[99]?.points ?? 0) - meEntry.points));
-  const myRank = period === 0 ? weeklyRank(meEntry.points) : null;
-  const top100 = entries[99]?.points ?? 1;
-  const gapPct = Math.max(0, Math.min(100, (meEntry.points / top100) * 100));
+  const lastRow = filteredRows[filteredRows.length - 1];
+  const cutoff = filteredRows.length >= 100 ? filteredRows[99] : lastRow;
+  const gapTo100 = account && cutoff ? Math.max(0, Math.round(cutoff.points - me.points)) : 0;
+  const inTop = account ? myRank !== null && (cutoff ? me.points >= cutoff.points : true) : false;
 
   return (
     <div className="lb">
@@ -522,26 +242,17 @@ export function LeaderboardView() {
           </div>
           <h1 className="lb-h1">Лидерборд</h1>
           <p className="lb-lead">
-            Самые упорные зрители AniGalaxy. Очки — это XP за неделю. Итоги — в понедельник в 00:00 по UTC (03:00 по Москве).
+            Настоящие игроки AniGalaxy. Очки — опыт за неделю. Итоги — в понедельник в 00:00 по UTC (03:00 по Москве).
           </p>
         </div>
 
         {left && (
           <div className="lb-tm">
-            <small>До итогов {period === 0 ? "недели" : "месяца"}</small>
+            <small>До итогов недели</small>
             <div className="lb-d">
-              <span>
-                <b>{left.d}</b>
-                <i>дней</i>
-              </span>
-              <span>
-                <b>{String(left.h).padStart(2, "0")}</b>
-                <i>часов</i>
-              </span>
-              <span>
-                <b>{String(left.m).padStart(2, "0")}</b>
-                <i>минут</i>
-              </span>
+              <span><b>{left.d}</b><i>дней</i></span>
+              <span><b>{String(left.h).padStart(2, "0")}</b><i>часов</i></span>
+              <span><b>{String(left.m).padStart(2, "0")}</b><i>минут</i></span>
             </div>
           </div>
         )}
@@ -550,46 +261,25 @@ export function LeaderboardView() {
       {/* --------------------------- Фильтры ----------------------------- */}
       <div className="lb-bar">
         <div className="lb-seg" role="tablist">
-          {["Неделя", "Месяц", "Всё время"].map((label, i) => (
+          {(["week", "all"] as const).map((p) => (
             <button
-              key={label}
+              key={p}
               type="button"
               role="tab"
-              aria-selected={period === i}
-              className={period === i ? "on" : ""}
+              aria-selected={period === p}
+              className={period === p ? "on" : ""}
               onClick={() => {
-                setPeriod(i);
+                setPeriod(p);
                 setExpanded(false);
               }}
             >
-              {label}
+              {p === "week" ? "Неделя" : "Всё время"}
             </button>
           ))}
         </div>
-        <div className="lb2-sort">
-          <span>Топ пользователей</span>
-          <button type="button" className="lb2-sort-btn" aria-haspopup="listbox" aria-expanded={sortOpen} onClick={() => setSortOpen((v) => !v)} onBlur={() => setTimeout(() => setSortOpen(false), 120)}>
-            {SORTS.find((x) => x.key === sort)?.label}
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="m6 9 6 6 6-6" /></svg>
-          </button>
-          {sortOpen && (
-            <ul className="lb2-sort-menu" role="listbox">
-              {SORTS.map((x) => (
-                <li key={x.key} role="option" aria-selected={sort === x.key} className={sort === x.key ? "on" : ""} onMouseDown={() => { setSort(x.key); setSortOpen(false); setExpanded(false); }}>
-                  {x.label}
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
         <div className="lb-chips">
           {(["Все", "Premium", "Free"] as const).map((label, i) => (
-            <button
-              key={label}
-              type="button"
-              className={filter === i ? "on" : ""}
-              onClick={() => setFilter(i as 0 | 1 | 2)}
-            >
+            <button key={label} type="button" className={filter === i ? "on" : ""} onClick={() => setFilter(i as 0 | 1 | 2)}>
               {label}
             </button>
           ))}
@@ -597,10 +287,10 @@ export function LeaderboardView() {
       </div>
 
       {/* ---------------------------- Подиум ------------------------------ */}
-      <Podium entries={entries} sort={sort} onDuel={setDuel} />
+      {podium.length > 0 && <Podium rows={podium} />}
 
       {/* ---------------------------- Награды ----------------------------- */}
-      {period === 0 && (
+      {period === "week" && (
         <section className="lb-lad">
           <div className="lb-lg">
             {PRIZES.map((p, i) => (
@@ -611,71 +301,69 @@ export function LeaderboardView() {
             ))}
           </div>
           <div className="lb-note">
-            <b>Как считаются места:</b> очки недели — это XP, набранный с понедельника.
-            Когда неделя закрывается, место определяется среди 100 лучших, а XP и AC
-            начисляются сами, титулы и рамки появляются в профиле.
-            {lb.history[0] && (
-              <>
-                {" "}
-                <b>Прошлая неделя:</b>{" "}
-                {lb.history[0].rank
-                  ? `${lb.history[0].rank} место, ${fmt(lb.history[0].points)} очков${prizeFor(lb.history[0].rank) ? ` — ${prizeFor(lb.history[0].rank)!.text}` : ""}.`
-                  : `${fmt(lb.history[0].points)} очков — до топ-100 не хватило.`}
-              </>
-            )}
+            <b>Как считаются места:</b> очки недели — это XP, набранный с понедельника, среди реальных игроков сайта.
+            Когда неделя закрывается, место определяется среди 100 лучших, а XP и AC начисляются сами, титулы и рамки
+            появляются в профиле.
           </div>
         </section>
       )}
 
       {/* ----------------------------- Список ----------------------------- */}
-      <ol className="lb2-grid">
-        {rows.length === 0 && <li className="lb-empty">Здесь пока никого нет.</li>}
-        {rows.map((entry, i) => (
-          // Fragment, а не div: внутри <ol> могут лежать только <li>
-          <Fragment key={`${entry.name}-${entry.rank}-${i}`}>
-            {filter === 0 && entry.rank === 11 && <Zone kind={2} />}
-            {filter === 0 && entry.rank === 26 && <Zone kind={3} />}
-            <RankCard entry={entry} max={top} index={i} sort={sort} onDuel={setDuel} />
-          </Fragment>
-        ))}
-      </ol>
+      {board.ready && filteredRows.length === 0 ? (
+        <p className="lb-empty">
+          Пока никто не набрал очков {period === "week" ? "за эту неделю" : "за всё время"} — будьте первым.
+        </p>
+      ) : (
+        <ol className="lb2-grid">
+          {shown.map((row, i) => (
+            <Zone3Wrap key={`${row.nickname}-${row.rank}`} row={row} index={i} top={top} />
+          ))}
+        </ol>
+      )}
 
-      {!expanded && (
+      {!expanded && filteredRows.length > 25 && (
         <button type="button" className="lb-more" onClick={() => setExpanded(true)}>
-          Показать места 26–50
+          Показать места 26–100
         </button>
       )}
 
-      {duel && <Duel me={{ ...meEntry, rank: 0 }} rival={duel} onClose={() => setDuel(null)} />}
-
       {/* -------------------------- Твоё место --------------------------- */}
-      <div className="lb-dock">
-        <div className="lb-dk">{fmt(meEntry.points)}</div>
-        <div className="lb-dx">
-          <small>Твоё место{myRank ? ` · #${myRank}` : ""}</small>
-          <b>{meEntry.name}</b>
-          <div className="lb-gap">
-            <i style={{ width: `${gapPct}%` }} />
+      {account && (
+        <div className="lb-dock">
+          <div className="lb-dk">{fmt(me.points)}</div>
+          <div className="lb-dx">
+            <small>Твоё место{myRank ? ` · #${myRank}` : ""}</small>
+            <b>{myName}</b>
+            <div className="lb-gap">
+              <i style={{ width: `${Math.max(0, Math.min(100, (me.points / top) * 100))}%` }} />
+            </div>
+            <em>
+              {!inTop && gapTo100 > 0 ? (
+                <>До топа ещё <strong>{fmt(gapTo100)}</strong> очков</>
+              ) : (
+                <>Уровень {me.level}, {me.series} серий</>
+              )}
+            </em>
           </div>
-          <em>
-            {gapTo100 > 0 ? (
-              <>
-                До топ-100 ещё <strong>{fmt(gapTo100)}</strong> очков
-              </>
-            ) : (
-              <>
-                Ты в топ-100: <strong>уровень {meEntry.level}</strong>, {meEntry.series} серий
-              </>
-            )}
-          </em>
+          <Link href="/" className="lb-up">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+              <path d="M12 19V5M5 12l7-7 7 7" />
+            </svg>
+            <span>Наверх</span>
+          </Link>
         </div>
-        <Link href="/" className="lb-up">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-            <path d="M12 19V5M5 12l7-7 7 7" />
-          </svg>
-          <span>Наверх</span>
-        </Link>
-      </div>
+      )}
     </div>
+  );
+}
+
+/** Зона-разделитель перед строкой + сама строка (вставляется в <ol>) */
+function Zone3Wrap({ row, index, top }: { row: BoardRow; index: number; top: number }) {
+  return (
+    <>
+      {row.rank === 11 && <Zone kind={2} />}
+      {row.rank === 26 && <Zone kind={3} />}
+      <RankRow row={row} max={top} index={index} />
+    </>
   );
 }

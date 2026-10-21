@@ -47,6 +47,7 @@ import {
   BACKUP_KEY_PREFIX,
 } from "@/lib/backup";
 import { isPremiumActive, changePassword } from "@/lib/auth";
+import { syncPasswordChange } from "@/lib/cloud";
 import {
   ACCENTS,
   NOTIFY_EVENTS,
@@ -2128,6 +2129,7 @@ function useStorageStats(): { count: number; bytes: number } {
                       setPwError(result.error);
                       return;
                     }
+                    void syncPasswordChange(pw.current, pw.next);
                     setPwError(null);
                     setPw({ current: "", next: "", confirm: "" });
                     setMessage("Пароль обновлён");

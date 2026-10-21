@@ -3,10 +3,10 @@
 /**
  * Плавающая кнопка + боковая панель общего чата (как в мессенджерах).
  *
- * Серверов у проекта нет: «онлайн» симулируется локально (`lib/chat`),
- * сообщения живут в localStorage и синхронизируются между вкладками.
- * Участники носят теги прогрессии — рядом с ником рисуется капсула
- * `ag-tag` (FIX_TAGS §2), свои сообщения подсвечиваются.
+ * Лента настоящая, одна на всех игроков (`lib/chat`, сервер). Читать
+ * может любой гость, писать — только вошедшие. Участники носят теги
+ * прогрессии — рядом с ником рисуется капсула `ag-tag` (FIX_TAGS §2),
+ * свои сообщения подсвечиваются.
  */
 
 import { useEffect, useRef, useState } from "react";
@@ -21,9 +21,9 @@ import {
   CHAT_TEXT_LIMIT,
   markChatRead,
   sendChatMessage,
-  startChatSimulation,
   unreadChatCount,
-  useChat,
+  useChatMessages,
+  useChatRead,
 } from "@/lib/chat";
 
 const timeLabel = (at: number): string =>
@@ -71,27 +71,26 @@ function tagOf(id?: string) {
 
 export function ChatWidget() {
   const account = useAccount();
-  const chat = useChat();
+  const messages = useChatMessages();
+  const read = useChatRead();
   const doc = useProgress();
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState("");
   const listRef = useRef<HTMLDivElement | null>(null);
 
-  // фоновый цикл «онлайна» — один на приложение
-  useEffect(() => startChatSimulation(), []);
-
-  const unread = unreadChatCount(chat);
+  const myName = account?.nickname ?? "";
+  const unread = unreadChatCount(messages, read, myName);
 
   // открытая панель сразу читает всё новое
   useEffect(() => {
     if (open) markChatRead();
-  }, [open, chat.messages.length]);
+  }, [open, messages.length]);
 
   // автоскролл к последнему сообщению
   useEffect(() => {
     const el = listRef.current;
     if (open && el) el.scrollTop = el.scrollHeight;
-  }, [open, chat.messages.length]);
+  }, [open, messages.length]);
 
   // Esc закрывает панель
   useEffect(() => {
@@ -107,11 +106,9 @@ export function ChatWidget() {
     if (!account) return;
     const text = draft.trim();
     if (!text) return;
-    sendChatMessage(account.nickname, text, doc.progress.equippedTagId || undefined);
+    void sendChatMessage(text, doc.progress.equippedTagId || undefined);
     setDraft("");
   };
-
-  const online = 4 + (chat.messages.length % 5);
 
   return (
     <>
@@ -168,7 +165,6 @@ export function ChatWidget() {
             </span>
             <div>
               <p className="text-sm font-extrabold text-white">Общий чат</p>
-              <p className="text-[11px] font-semibold text-mint">● {online} в сети</p>
             </div>
           </div>
           <button
@@ -184,25 +180,26 @@ export function ChatWidget() {
         </div>
 
         <div ref={listRef} className="flex-1 space-y-3.5 overflow-y-auto px-4 py-3">
-          {chat.messages.length === 0 && (
+          {messages.length === 0 && (
             <p className="rounded-xl border border-dashed border-line bg-white/[0.02] px-4 py-6 text-center text-xs text-muted">
               Тихо… напишите первым
             </p>
           )}
-          {chat.messages.map((message) => {
+          {messages.map((message) => {
+            const self = message.author === myName;
             const tag = tagOf(message.tagId);
             return (
-              <div key={message.id} className={`flex items-start gap-2.5 ${message.self ? "flex-row-reverse" : ""}`}>
+              <div key={message.id} className={`flex items-start gap-2.5 ${self ? "flex-row-reverse" : ""}`}>
                 <span
                   className={`mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-full text-[10px] font-black text-white ${
-                    message.self ? "bg-gradient-to-br from-accent to-accent-2" : "bg-white/12"
+                    self ? "bg-gradient-to-br from-accent to-accent-2" : "bg-white/12"
                   }`}
                 >
                   {message.author.slice(0, 2).toUpperCase()}
                 </span>
-                <div className={`min-w-0 max-w-[80%] ${message.self ? "text-right" : ""}`}>
-                  <div className={`flex flex-wrap items-center gap-1.5 ${message.self ? "flex-row-reverse" : ""}`}>
-                    <span className={`text-[11px] font-black ${message.self ? "text-accent-2" : "text-white"}`}>
+                <div className={`min-w-0 max-w-[80%] ${self ? "text-right" : ""}`}>
+                  <div className={`flex flex-wrap items-center gap-1.5 ${self ? "flex-row-reverse" : ""}`}>
+                    <span className={`text-[11px] font-black ${self ? "text-accent-2" : "text-white"}`}>
                       {message.author}
                     </span>
                     {tag && <AgTag tag={tag} size="sm" />}
@@ -210,7 +207,7 @@ export function ChatWidget() {
                   </div>
                   <p
                     className={`mt-1 inline-block whitespace-pre-wrap break-words rounded-xl px-3 py-1.5 text-left text-xs leading-relaxed ${
-                      message.self ? "bg-accent/18 text-white ring-1 ring-accent/30" : "bg-white/6 text-white/90 ring-1 ring-white/8"
+                      self ? "bg-accent/18 text-white ring-1 ring-accent/30" : "bg-white/6 text-white/90 ring-1 ring-white/8"
                     }`}
                   >
                     {message.text}
@@ -251,11 +248,6 @@ export function ChatWidget() {
               Читать могут все, писать — после входа в аккаунт
             </p>
           )}
-          {/* text-muted/70 давал 4.01 при 10px. Полный --muted и 11px дают 6.9:1 —
-          подпись в чате должна читаться, а не угадываться. */}
-          <p className="mt-1.5 text-center text-[11px] text-muted">
-            Серверов нет: чат локальный, «онлайн» симулируется в этом браузере
-          </p>
         </div>
       </div>
     </>

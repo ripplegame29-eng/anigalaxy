@@ -1,7 +1,11 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "lib": ["dom", "dom.iterable", "esnext"],
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
     "module": "commonjs",
     "moduleResolution": "node10",
     "jsx": "react-jsx",
@@ -9,11 +13,15 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "resolveJsonModule": true,
-    "types": ["node"],
+    "types": [
+      "node"
+    ],
     "rootDir": "src",
     "outDir": ".tsc-tests",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": [
+        "./src/*"
+      ]
     },
     "noEmit": false,
     "declaration": false,
@@ -34,6 +42,17 @@
     "src/lib/anime-map-data.ts",
     "src/lib/leaderboard-prizes.ts",
     "src/lib/clan2/data.ts",
-    "src/lib/clan2/shop.ts"
+    "src/lib/clan2/shop.ts",
+    "src/lib/server/**/*.ts",
+    "src/lib/sync-keys.ts",
+    "src/app/api/account/**/*.ts",
+    "src/app/api/sync/**/*.ts",
+    "src/app/api/leaderboard/**/*.ts",
+    "src/app/api/clans/**/*.ts",
+    "src/app/api/comments/**/*.ts",
+    "src/app/api/friends/**/*.ts",
+    "src/app/api/ratings/**/*.ts",
+    "src/app/api/notifications/**/*.ts",
+    "src/app/api/chat/**/*.ts"
   ]
 }

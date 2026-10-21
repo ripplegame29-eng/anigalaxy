@@ -54,3 +54,9 @@ dev*.err
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# база данных SQLite (файлы с данными игроков не должны попасть в git)
+/data/
+*.db
+*.db-wal
+*.db-shm

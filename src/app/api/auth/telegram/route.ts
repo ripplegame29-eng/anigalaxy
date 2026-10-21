@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "node:crypto";
 
+import { dbAvailable, getDb } from "@/lib/server/db";
+import { clientIp, setSessionCookie } from "@/lib/server/http";
+import { createSession, toPublic, upsertTelegramUser } from "@/lib/server/users";
+
 export const runtime = "nodejs";
 
 const RATE_LIMIT_WINDOW_MS = 60_000;
@@ -90,8 +94,30 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ ok: false, error: "Invalid Telegram signature" }, { status: 403 });
   }
 
-  const nickname = (body.username || body.first_name || `tg_${body.id}`).trim();
-  return NextResponse.json({
+  let nickname = (body.username || body.first_name || `tg_${body.id}`).trim();
+  let account: ReturnType<typeof toPublic> | null = null;
+  let token: string | null = null;
+
+  /* Если база подключена — заводим (или находим) игрока и выдаём сессию:
+     тогда прогресс и кланы привязаны к Telegram-аккаунту на любом устройстве. */
+  if (dbAvailable()) {
+    try {
+      const db = getDb();
+      const upserted = upsertTelegramUser(db, { telegramId: String(body.id), nickname });
+      if (upserted.ok) {
+        nickname = upserted.value.nickname;
+        account = toPublic(upserted.value);
+        token = createSession(db, upserted.value.id, {
+          userAgent: request.headers.get("user-agent") ?? "",
+          ip: clientIp(request),
+        }).token;
+      }
+    } catch {
+      /* база недоступна — остаёмся с локальным входом */
+    }
+  }
+
+  const response = NextResponse.json({
     ok: true,
     telegram: {
       id: body.id,
@@ -101,5 +127,8 @@ export async function POST(request: NextRequest) {
       photoUrl: body.photo_url ?? null,
     },
     nickname,
+    account,
   });
+  if (token) setSessionCookie(response, request, token);
+  return response;
 }

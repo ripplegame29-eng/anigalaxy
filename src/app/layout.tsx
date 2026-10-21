@@ -45,6 +45,7 @@ import { AuthDialogHost } from "@/components/AuthDialogHost";
 import { ChatWidget } from "@/components/ChatWidget";
 import { DailyBonusHost } from "@/components/DailyBonusHost";
 import { Footer } from "@/components/Footer";
+import CloudSync from "@/components/CloudSync";
 import { HeaderShell } from "@/components/site/HeaderShell";
 import { PwaBoot } from "@/components/PwaBoot";
 import "@/components/site/header.css";
@@ -223,6 +224,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           {children}
         </main>
         <Footer />
+        <CloudSync />
         {/* Модалка авторизации живёт в layout, а не в шапке: у <header> есть
           backdrop-blur, а элементы с backdrop-filter/filter становятся
           containing block для position:fixed — панель тогда центрируется по

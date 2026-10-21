@@ -15,7 +15,7 @@
  * сноской под композером.
  */
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { AvatarView } from "@/components/profile/AvatarView";
 import { AgTag } from "@/components/progression/AgTag";
 import { PremiumChip } from "@/components/profile/PremiumChip";
@@ -40,12 +40,12 @@ import {
   removeTitleComments,
   repliesOf,
   rootsOf,
-  seedTitleComments,
   useTitleComments,
   voteTitleComment,
   type CommentMsg,
   type CommentSort,
 } from "@/lib/comments";
+import { SERVER_PREFIX, useServerComments } from "@/lib/comments-cloud";
 
 const TAGS = PROGRESSION_CONFIG.tags;
 const TAG_BY_ID = new Map(TAGS.map((tag) => [tag.id, tag]));
@@ -162,6 +162,8 @@ function CommentCard({
   const [revealed, setRevealed] = useState(false);
   const [menu, setMenu] = useState(false);
   const meta = metaFor(item.author);
+  // Чужой серверный комментарий не удалить — это запись другого игрока
+  const canDelete = !item.id.startsWith(SERVER_PREFIX);
 
   return (
     <li
@@ -197,6 +199,7 @@ function CommentCard({
             {meta.premium && <PremiumChip />}
             <span className="shrink-0 text-[11px] text-muted">{timeAgo(item.at)}</span>
 
+            {canDelete && (
             <span
               className="relative ml-auto"
               onBlur={(event) => {
@@ -232,6 +235,7 @@ function CommentCard({
                 </div>
               )}
             </span>
+            )}
           </div>
 
           {item.spoiler && !revealed ? (
@@ -336,7 +340,12 @@ export function CommentsBlock({ scope }: { scope: CommentsScope }) {
   const frame = FRAMES.find((item) => item.id === profile.frameId);
 
   const titleItems = useTitleComments(titleId);
-  const list = titleId ? titleItems : profile.comments;
+  const serverCloud = useServerComments(titleId, name);
+  // Демо-посев больше не включается; старые засеянные записи (если остались
+  // в браузере с прошлых версий) не показываем — это не настоящие зрители.
+  // Свои комментарии уже показаны локально (мгновенно и с наградой);
+  // с сервера подмешиваются только чужие — видимые всем реальным игрокам.
+  const list = titleId ? [...titleItems.filter((item) => !item.demo), ...serverCloud.foreign] : profile.comments;
 
   const [draft, setDraft] = useState("");
   const [spoilerOn, setSpoilerOn] = useState(false);
@@ -344,12 +353,6 @@ export function CommentsBlock({ scope }: { scope: CommentsScope }) {
   const [replyTo, setReplyTo] = useState<CommentMsg | null>(null);
   const [hint, setHint] = useState<string | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-
-  // Демо-посев страницы тайтла: первый визит — локальные персоны
-  // (запись в стор, не setState: подписка useSyncExternalStore обновит UI)
-  useEffect(() => {
-    if (titleId) seedTitleComments(titleId);
-  }, [titleId]);
 
   /** Мета автора: текущий аккаунт — реально, остальные — декор */
   const metaFor = (author: string): AuthorMeta => {
@@ -380,6 +383,8 @@ export function CommentsBlock({ scope }: { scope: CommentsScope }) {
     if (titleId) {
       const item = addTitleComment(titleId, name, clean, { spoiler: spoilerOn, parentId });
       id = item?.id ?? null;
+      // На сервер — чтобы увидели остальные игроки; награда от сети не зависит
+      if (id) void serverCloud.post(clean, parentId);
     } else {
       id = addComment(name, clean, { spoiler: spoilerOn, parentId });
     }
@@ -412,11 +417,17 @@ export function CommentsBlock({ scope }: { scope: CommentsScope }) {
   };
 
   const vote = (id: string, dir: "up" | "down") => {
-    if (titleId) voteTitleComment(titleId, id, dir);
+    if (id.startsWith(SERVER_PREFIX)) void serverCloud.vote(id, dir);
+    else if (titleId) voteTitleComment(titleId, id, dir);
     else voteComment(id, dir);
   };
 
   const remove = (id: string) => {
+    if (id.startsWith(SERVER_PREFIX)) {
+      void serverCloud.remove(id);
+      if (replyTo?.id === id) setReplyTo(null);
+      return;
+    }
     const ids = cascadeIds(list, id);
     if (titleId) removeTitleComments(titleId, ids);
     else ids.forEach(removeComment);
@@ -542,7 +553,7 @@ export function CommentsBlock({ scope }: { scope: CommentsScope }) {
 
       <p className="mt-2 text-[11px] leading-relaxed text-muted">
         {titleId
-          ? "Комментарии локальные: видны только в этом браузере, на сервер не уходят. Часть комментариев — демо-посев, а не живые зрители."
+          ? "Комментарии видны всем игрокам сайта. Несколько строк в начале — демо-посев, а не живые зрители."
           : "Стена локальная: комментарии видны только в этом браузере, на сервер они не уходят."}
       </p>
 
