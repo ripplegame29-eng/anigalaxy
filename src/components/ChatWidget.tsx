@@ -199,9 +199,12 @@ export function ChatWidget() {
                 </span>
                 <div className={`min-w-0 max-w-[80%] ${self ? "text-right" : ""}`}>
                   <div className={`flex flex-wrap items-center gap-1.5 ${self ? "flex-row-reverse" : ""}`}>
-                    <span className={`text-[11px] font-black ${self ? "text-accent-2" : "text-white"}`}>
+                    <Link
+                      href={self ? "/u/me" : `/u/${encodeURIComponent(message.author)}`}
+                      className={`text-[11px] font-black ${self ? "text-accent-2" : "text-white"} hover:underline`}
+                    >
                       {message.author}
-                    </span>
+                    </Link>
                     {tag && <AgTag tag={tag} size="sm" />}
                     <span className="text-[10px] font-semibold text-muted">{timeLabel(message.at)}</span>
                   </div>
