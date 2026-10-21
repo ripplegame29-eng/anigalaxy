@@ -123,7 +123,7 @@ function toCard(item: SenkuManga): AnimeCard {
     rating: item.average_rating ?? item.score ?? undefined,
     kind: undefined,
     status: statusOf(item.status),
-    genres: (item.genres ?? item.tags ?? []).map((g: any) => (typeof g === "string" ? g : g.russian || g.text || g.slug)).filter(Boolean),
+    genres: (item.genres ?? item.tags ?? []).map((g: string | { russian?: string; text?: string; slug?: string }) => (typeof g === "string" ? g : g.russian || g.text || g.slug)).filter((g): g is string => Boolean(g)),
     manga: true,
     description: item.description,
   };

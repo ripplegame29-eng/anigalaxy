@@ -69,6 +69,13 @@ export async function generateMetadata({ params }: PageParams): Promise<Metadata
         images: card.poster ? [{ url: card.poster, alt: card.title }] : undefined,
         type: "video.tv_show",
       },
+      alternates: { canonical: `/title/${id}` },
+      twitter: {
+        card: "summary_large_image",
+        title: card.title,
+        description: truncate(card.description, 155),
+        images: card.poster ? [card.poster] : undefined,
+      },
     };
   } catch {
     return { title: "Тайтл" };
@@ -460,7 +467,7 @@ export default async function TitlePage({ params }: PageParams) {
       {/* JSON-LD для поисковиков */}
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
       />
     </>
   );

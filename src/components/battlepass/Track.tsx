@@ -14,13 +14,13 @@
  *    колонки.
  */
 
+import { BpIcon } from "./BpIcons";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 import type { CSSProperties, ReactNode } from "react";
 
 import { AE_RARITY } from "@/components/progression/AchievementEmblem";
 import { RewardArt } from "@/components/battlepass/RewardArt";
-import { TrackSlider, type TrackSliderHandle } from "@/components/battlepass/TrackSlider";
-import { cardsAtLevel, ITEM_LEVELS, type BpRewardCard } from "@/components/battlepass/model";
+import { cardsAtLevel, ITEM_LEVELS, TRACK_CARDS, type BpRewardCard } from "@/components/battlepass/model";
 import { bpRewardStatus, type BpStatusCtx } from "@/lib/battlepass/logic";
 
 export const MAX_LEVEL = 100;
@@ -49,9 +49,8 @@ export function scrollTrackTo(rail: HTMLElement | null, level: number, behavior:
   rail.scrollTo({ left, behavior });
 }
 
-export function Track({ statusCtx, currentLevel, fraction, nickname, onOpen }: TrackProps) {
+export function Track({ statusCtx, currentLevel, nickname, onOpen }: TrackProps) {
   const railRef = useRef<HTMLDivElement>(null);
-  const sliderRef = useRef<TrackSliderHandle>(null);
   const [label, setLabel] = useState(currentLevel);
   const drag = useRef<{ x: number; left: number; moved: boolean } | null>(null);
   const frame = useRef(0);
@@ -69,9 +68,6 @@ export function Track({ statusCtx, currentLevel, fraction, nickname, onOpen }: T
   const sync = useCallback(() => {
     const rail = railRef.current;
     if (!rail) return;
-    const max = Math.max(1, rail.scrollWidth - rail.clientWidth);
-    const ratio = rail.scrollLeft / max;
-
     const first = rail.firstElementChild as HTMLElement | null;
     const second = first?.nextElementSibling as HTMLElement | null;
     let next = 1;
@@ -82,7 +78,6 @@ export function Track({ statusCtx, currentLevel, fraction, nickname, onOpen }: T
       next = Math.min(MAX_LEVEL, Math.max(1, index + 1));
     }
 
-    sliderRef.current?.setWindow(ratio, next);
     setLabel((prev) => (prev === next ? prev : next));
   }, []);
 
@@ -174,51 +169,34 @@ export function Track({ statusCtx, currentLevel, fraction, nickname, onOpen }: T
     scrollTrackTo(railRef.current, level, instant ? "auto" : "smooth");
   }, []);
 
-  return (
-    <section className="bp-panel bp-track" aria-labelledby="bp-track-title">
-      <h2 id="bp-track-title" className="font-display text-xl font-black tracking-wide text-white">
-        🏁 Дорожка наград
-      </h2>
-      <p className="mt-1 text-sm text-muted">
-        100 уровней, две линии. Нажмите на награду — подробности и выдача; собрать всё разом можно
-        кнопкой в шапке.
-      </p>
+  const done = TRACK_CARDS.filter((card) => bpRewardStatus(card.level, card.line, statusCtx) === "claimed").length;
+  const jumps = [1, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
 
-      <div className="bp-bar mt-3">
-        <div className="bp-legend">
-          <span>
-            <i style={{ background: "#2a78ff" }} />
-            FREE
-          </span>
-          <span>
-            <i style={{ background: "var(--color-gold)" }} />
-            PREMIUM
-          </span>
-          <span>
-            <i style={{ background: "var(--color-mint)" }} />
-            МОЖНО ЗАБРАТЬ
-          </span>
-          <span>
-            <i style={{ background: "#555" }} />
-            ПОЛУЧЕНО
-          </span>
+  return (
+    <section className="bp2-sec bp-track" aria-labelledby="bp-track-title">
+      <div className="bp2-shd">
+        <div>
+          <h2 id="bp-track-title">Награды сезона</h2>
+          <p>
+            Получено {done} из {TRACK_CARDS.length} · нажмите на награду — подробности и выдача
+          </p>
         </div>
-        <div className="bp-nav">
-          <button type="button" className="bp-btn sm" aria-label="Назад" onClick={() => seek(Math.max(1, label - 5))}>
-            ←
+        <div className="bp2-chips" role="group" aria-label="Быстрый переход по уровням">
+          <button type="button" className={`bp2-pl${label === currentLevel ? " on" : ""}`} onClick={() => seek(currentLevel)}>
+            Сейчас
           </button>
-          <button type="button" className="bp-btn sm" onClick={() => seek(currentLevel)}>
-            К текущему
-          </button>
-          <button
-            type="button"
-            className="bp-btn sm"
-            aria-label="Вперёд"
-            onClick={() => seek(Math.min(MAX_LEVEL, label + 5))}
-          >
-            →
-          </button>
+          {jumps.map((lv) => (
+            <button key={lv} type="button" className={`bp2-pl${label !== currentLevel && Math.abs(label - lv) < 5 ? " on" : ""}`} onClick={() => seek(lv)}>
+              {lv}
+            </button>
+          ))}
         </div>
+      </div>
+
+      <div className="bp2-legend">
+        <span><i />Сверху — бесплатная лента</span>
+        <span><i className="g" />Снизу — лента пропуска (откроется после покупки)</span>
+        <span><i className="m" />Можно забрать</span>
       </div>
 
       <div
@@ -258,14 +236,10 @@ export function Track({ statusCtx, currentLevel, fraction, nickname, onOpen }: T
         ))}
       </div>
 
-      <TrackSlider
-        ref={sliderRef}
-        label={label}
-        level={currentLevel}
-        fraction={fraction}
-        maxLevel={MAX_LEVEL}
-        onSeek={seek}
-      />
+      <div className="bp2-arrows">
+        <button type="button" className="bp2-arr" aria-label="Назад" onClick={() => seek(Math.max(1, label - 5))}>‹</button>
+        <button type="button" className="bp2-arr" aria-label="Вперёд" onClick={() => seek(Math.min(MAX_LEVEL, label + 5))}>›</button>
+      </div>
     </section>
   );
 }
@@ -296,7 +270,7 @@ const TrackColumn = memo(function TrackColumn({
       data-level={level}
     >
       <TrackSlot card={free} statusCtx={statusCtx} nickname={nickname} onOpen={onOpen} />
-      <div className="bp-num">{level}</div>
+      <div className="bp-num"><b>{level}</b></div>
       <TrackSlot card={prem} statusCtx={statusCtx} nickname={nickname} onOpen={onOpen} />
     </div>
   );
@@ -326,14 +300,6 @@ const TrackSlot = memo(function TrackSlot({
   const canClaim = status === "claimable";
   const isPremium = card.line === "premium";
   const cls = status === "claimed" ? "got" : canClaim ? "can" : "locked";
-  const pill =
-    status === "claimed"
-      ? "✓ Получено"
-      : canClaim
-        ? "Забрать"
-        : isPremium && !statusCtx.premium
-          ? "♛ Premium"
-          : `🔒 Ур. ${card.level}`;
 
   return (
     <div className={`bp-slot ${card.line} has`}>
@@ -347,17 +313,39 @@ const TrackSlot = memo(function TrackSlot({
         }, ${status === "claimable" ? "можно забрать" : status === "claimed" ? "получено" : "закрыто"}`}
         onClick={() => onOpen(card)}
       >
-        <span className="tg">{card.kindLabel}</span>
-        <RewardArt
-          card={card}
-          size="md"
-          live={canClaim}
-          claimable={canClaim}
-          locked={status === "locked"}
-          nickname={nickname}
-        />
-        <b>{card.label}</b>
-        <span className="bp-pill">{pill}</span>
+        {status === "locked" && <span className="bp2-lk" aria-hidden><BpIcon name="lock" size={13} /></span>}
+        {status === "claimed" && <span className="bp2-lk ok" aria-hidden>✓</span>}
+        {card.kind === "ac" || card.kind === "bpXp" ? (
+          <>
+            <span className="bp2-ic" aria-hidden>
+              {card.kind === "ac" ? (
+                // eslint-disable-next-line @next/next/no-img-element -- монетка 26px в плотной клетке
+                <img src="/coin.png" alt="" width={26} height={26} />
+              ) : (
+                "✦"
+              )}
+            </span>
+            <span className={`bp2-v${card.view.kind !== "tag" && card.view.kind !== "frame" && card.view.kind !== "decor" && String(card.view.amount).length > 3 ? " sm" : ""}`}>
+              +{card.view.kind === "ac" || card.view.kind === "bpXp" ? card.view.amount.toLocaleString("ru-RU") : ""}
+            </span>
+            <small>{card.kind === "ac" ? "AC" : "Опыт"}</small>
+          </>
+        ) : (
+          <>
+            <RewardArt
+              card={card}
+              size="sm"
+              live={canClaim}
+              claimable={canClaim}
+              locked={status === "locked" && card.view.kind !== "tag"}
+              nickname={nickname}
+            />
+            <small className="bp2-nm">
+              {card.view.kind === "tag" ? "Титул" : card.label}
+            </small>
+          </>
+        )}
+        {canClaim && <span className="bp2-take">Забрать</span>}
         {card.bundle > 1 && <span className="bp-bundle">×{card.bundle}</span>}
       </button>
     </div>

@@ -9,6 +9,7 @@
  * (`service.applySideEffects`), поэтому тост можно пропустить — запись останется.
  */
 
+import { BP_MISSIONS } from "@/lib/battlepass/config";
 import { useCallback, useEffect, useSyncExternalStore } from "react";
 import { AgTag } from "@/components/progression/AgTag";
 import { sourceLabel } from "@/lib/progression/labels";
@@ -56,6 +57,17 @@ export function toastsForEffect(effect: ProgressEffect): ToastInput[] {
       if (effect.ac > 0) parts.push(`+${effect.ac} AC`);
       return [{ kind: "achievement", title: "Достижение получено", text: `«${def.name}»${parts.length ? ` · ${parts.join(" + ")}` : ""}` }];
     }
+    case "QUEST_DONE": {
+      const title =
+        PROGRESSION_CONFIG.quests.dailyPool.find((q) => q.id === effect.questId)?.title ??
+        PROGRESSION_CONFIG.quests.weeklyPool.find((q) => q.id === effect.questId)?.title ??
+        BP_MISSIONS.find((m) => m.id === effect.questId)?.title ??
+        "Задание";
+      const parts: string[] = [];
+      if (effect.xp > 0) parts.push(`+${effect.xp} XP`);
+      if (effect.ac > 0) parts.push(`+${effect.ac} AC`);
+      return [{ kind: "quest", title: "Награда за задание", text: `«${title}»${parts.length ? ` · ${parts.join(" + ")}` : ""}` }];
+    }
     case "TAG_UNLOCKED": {
       const def = PROGRESSION_CONFIG.tags.find((item) => item.id === effect.tagId);
       if (!def) return [];
@@ -71,7 +83,7 @@ const KIND_CLASS: Record<ToastItem["kind"], string> = {
   level: "ring-gold/50 bg-gold/14 text-gold",
   achievement: "ring-gold/40 bg-gold/10 text-gold",
   tag: "ring-accent-2/45 bg-accent-2/12 text-accent-2",
-  quest: "ring-mint/40 bg-mint/12 text-mint",
+  quest: "ring-rose-400/45 bg-rose-500/14 text-rose-200",
   ac: "ring-accent-2/45 bg-accent-2/12 text-accent-2",
   premium: "ring-gold/50 bg-gold/14 text-gold",
 };
@@ -133,7 +145,7 @@ export function ToastHost() {
 
   return (
     <div
-      className="pointer-events-none fixed bottom-4 right-4 z-[90] flex w-[min(92vw,340px)] flex-col items-stretch gap-2"
+      className="pointer-events-none fixed bottom-4 max-[900px]:bottom-[calc(92px+env(safe-area-inset-bottom))] right-4 z-[90] flex w-[min(92vw,340px)] flex-col items-stretch gap-2"
       role="status"
       aria-live="polite"
       aria-label="Уведомления о наградах"

@@ -1,0 +1,64 @@
+/* Тематические фоны страниц: квесты / расписание / AniSwipe (префикс bd-) */
+.bd{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden;--c1:var(--accent-rgb);--c2:130,90,255;--c3:0,200,255}
+.bd--schedule{--c1:120,100,255;--c2:210,90,255;--c3:60,170,255}
+.bd--swipe{--c1:255,90,170;--c2:150,90,255;--c3:80,170,255}
+.bd i{position:absolute;display:block}
+.bd-blob{border-radius:50%;filter:blur(110px);opacity:.42;will-change:transform}
+.bd-b1{width:46vw;height:46vw;max-width:740px;max-height:740px;left:-10vw;top:-8vh;background:rgb(var(--c1));animation:bd-drift 19s ease-in-out infinite alternate}
+.bd-b2{width:40vw;height:40vw;max-width:660px;max-height:660px;right:-8vw;top:20vh;background:rgb(var(--c2));opacity:.3;animation:bd-drift 24s ease-in-out -7s infinite alternate-reverse}
+.bd-b3{width:34vw;height:34vw;max-width:560px;max-height:560px;left:30vw;bottom:-14vh;background:rgb(var(--c3));opacity:.2;animation:bd-drift 28s ease-in-out -13s infinite alternate}
+@keyframes bd-drift{to{transform:translate3d(6vw,7vh,0) scale(1.12)}}
+
+.bd-pattern{inset:0;-webkit-mask-image:radial-gradient(ellipse at 50% 20%,#000,transparent 75%);mask-image:radial-gradient(ellipse at 50% 20%,#000,transparent 75%)}
+/* квесты: сетка-радар */
+.bd--quests .bd-pattern{background-image:linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px);background-size:56px 56px}
+.bd-ring{left:50%;top:26vh;border-radius:50%;border:1px solid rgba(var(--c1),.28);translate:-50% -50%;animation:bd-pulse 9s ease-out infinite}
+.bd-r1{width:30vmin;height:30vmin}
+.bd-r2{width:56vmin;height:56vmin;animation-delay:-3s}
+.bd-r3{width:86vmin;height:86vmin;animation-delay:-6s}
+@keyframes bd-pulse{0%{opacity:0;scale:.6}25%{opacity:1}100%{opacity:0;scale:1.25}}
+/* расписание: вертикальные «временные» линии и световые полосы */
+.bd--schedule .bd-pattern{background-image:repeating-linear-gradient(90deg,rgba(255,255,255,.04) 0 1px,transparent 1px 11.11%);}
+.bd-streak{top:-20vh;width:2px;height:60vh;background:linear-gradient(transparent,rgba(var(--c3),.7),transparent);opacity:0;animation:bd-fall 9s linear infinite}
+.bd-s1{left:18%}.bd-s2{left:52%;animation-delay:-3.5s;animation-duration:11s}.bd-s3{left:81%;animation-delay:-6s;animation-duration:8s}
+@keyframes bd-fall{0%{transform:translateY(-10vh);opacity:0}15%{opacity:.8}100%{transform:translateY(140vh);opacity:0}}
+/* AniSwipe: дрейфующие полупрозрачные карточки */
+.bd--swipe .bd-pattern{background-image:radial-gradient(rgba(255,255,255,.07) 1px,transparent 1.5px);background-size:30px 30px}
+.bd-card{width:min(18vw,220px);aspect-ratio:2/3;border-radius:22px;border:1px solid rgba(255,255,255,.1);background:linear-gradient(160deg,rgba(var(--c1),.22),rgba(var(--c2),.08));backdrop-filter:blur(2px);opacity:.55;animation:bd-float 14s ease-in-out infinite alternate}
+.bd-c1{left:6%;top:22vh;rotate:-14deg}
+.bd-c2{right:7%;top:14vh;rotate:11deg;animation-delay:-5s}
+.bd-c3{right:16%;bottom:8vh;rotate:-6deg;scale:.8;animation-delay:-9s}
+@keyframes bd-float{to{transform:translateY(-4vh) rotate(5deg)}}
+/* искры */
+.bd-embers{position:absolute;inset:0}
+.bd-embers b{position:absolute;bottom:-10px;left:calc(var(--x)*1%);width:var(--s);height:var(--s);border-radius:50%;background:radial-gradient(#fff,rgba(var(--c1),.85) 40%,transparent 70%);opacity:0;animation:bd-ember var(--d) linear infinite;animation-delay:var(--w)}
+@keyframes bd-ember{0%{transform:translateY(0);opacity:0}10%{opacity:.9}100%{transform:translateY(-105vh) translateX(24px);opacity:0}}
+
+@media(max-width:767px),(hover:none){
+  .bd-blob{filter:blur(70px);animation:none}
+  .bd-card,.bd-ring,.bd-streak{animation:none}
+  .bd-card{display:none}
+  .bd-embers b:nth-child(n+6){display:none}
+}
+@media(prefers-reduced-motion:reduce){.bd *{animation:none!important}}
+.bd--swipe .bd-blob{opacity:.6}.bd--swipe .bd-b2,.bd--swipe .bd-b3{opacity:.4}
+
+/* Совместный просмотр: кинозал — лучи проектора и всплывающие реакции */
+.bd--together{--c1:45,125,255;--c2:150,90,255;--c3:34,211,238}
+.bd--together .bd-pattern{background-image:radial-gradient(rgba(255,255,255,.06) 1px,transparent 1.5px);background-size:28px 28px}
+.bd-cone{top:-10vh;width:38vw;height:110vh;background:linear-gradient(180deg,rgba(var(--c1),.22),transparent 75%);clip-path:polygon(42% 0,58% 0,100% 100%,0 100%);filter:blur(14px);transform-origin:50% 0;animation:bd-sway 12s ease-in-out infinite alternate}
+.bd-k1{left:2%;rotate:-10deg}
+.bd-k2{right:2%;rotate:10deg;animation-delay:-6s;background:linear-gradient(180deg,rgba(var(--c2),.2),transparent 75%)}
+@keyframes bd-sway{to{transform:rotate(7deg)}}
+.bd-react{position:absolute;inset:0}
+.bd-react b{position:absolute;bottom:-40px;left:calc(var(--x)*1%);font-size:22px;opacity:0;filter:saturate(1.2);animation:bd-rise var(--d) ease-in infinite;animation-delay:var(--w)}
+@keyframes bd-rise{0%{transform:translateY(0) scale(.7);opacity:0}12%{opacity:.55}100%{transform:translateY(-110vh) translateX(30px) scale(1.15);opacity:0}}
+.wtv-page{background:transparent!important}
+.wtv-bgfx,.wtv-stars{z-index:-1!important}
+@media(max-width:767px),(hover:none){.bd-cone{animation:none}.bd-react b:nth-child(n+4){display:none}}
+
+/* Уведомления: волны от «колокольчика» в правом верхнем углу */
+.bd--notices{--c1:var(--accent-rgb);--c2:139,92,255;--c3:34,211,238}
+.bd--notices .bd-pattern{background-image:radial-gradient(rgba(255,255,255,.05) 1px,transparent 1.5px);background-size:30px 30px}
+.bd-n1,.bd-n2,.bd-n3{left:auto;right:6vw;top:14vh;translate:50% -50%}
+.bd-n1{width:34vmin;height:34vmin}.bd-n2{width:62vmin;height:62vmin;animation-delay:-3s}.bd-n3{width:96vmin;height:96vmin;animation-delay:-6s}

@@ -46,7 +46,7 @@ const NAV: Record<string, string> = {
   cosmetics: "/cosmetics",
   invite: "/referrals",
   events: "/events",
-  notices: "/profile?tab=notices",
+  notices: "/notifications",
   settings: "/settings",
   premium: "/premium",
 };

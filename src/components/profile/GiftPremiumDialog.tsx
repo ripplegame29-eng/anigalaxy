@@ -1,5 +1,6 @@
 "use client";
 
+import { openCheckout } from "@/lib/checkout";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 /**
@@ -15,9 +16,9 @@ import { useCallback, useEffect, useRef, useState } from "react";
 /* ----------------------------- Данные макета ----------------------------- */
 
 const TF = [
-  { n: "Месяц", d: 30, p: 149, t: "1 месяц" },
-  { n: "3 месяца", d: 90, p: 349, t: "3 месяца", hit: 1 },
-  { n: "Год", d: 365, p: 1290, t: "1 год" },
+  { n: "Месяц", d: 30, p: 99, t: "1 месяц" },
+  { n: "3 месяца", d: 90, p: 249, t: "3 месяца", hit: 1 },
+  { n: "Год", d: 365, p: 790, t: "1 год" },
 ];
 
 const WR = [
@@ -814,11 +815,18 @@ export function GiftPremiumDialog({ className, label }: GiftPremiumDialogProps) 
                 disabled={payDisabled}
                 onClick={() => {
                   if (payDisabled) return;
-                  set({
-                    code: Math.random().toString(36).slice(2, 8).toUpperCase(),
-                    order: String(Math.floor(1e5 + Math.random() * 9e5)),
+                  openCheckout({
+                    title: S.m === "f" ? `Подарок Premium · ${TF[S.t].t}` : `Подарки Premium × ${S.n}`,
+                    caption: S.m === "f" ? `Для ${S.to}` : "Случайным зрителям",
+                    price: cur,
+                    onPaid: () => {
+                      set({
+                        code: Math.random().toString(36).slice(2, 8).toUpperCase(),
+                        order: String(Math.floor(1e5 + Math.random() * 9e5)),
+                      });
+                      setFin(true);
+                    },
                   });
-                  setFin(true);
                 }}
               >
                 <svg className="gd-i" viewBox="0 0 24 24" aria-hidden="true">
@@ -826,8 +834,8 @@ export function GiftPremiumDialog({ className, label }: GiftPremiumDialogProps) 
                 </svg>
                 <span>
                   {S.m === "r"
-                    ? `Оформить демо: ${S.n} ${pl(S.n, ["подарок", "подарка", "подарков"])}`
-                    : "Оформить демо-подарок"}
+                    ? `Оплатить: ${S.n} ${pl(S.n, ["подарок", "подарка", "подарков"])}`
+                    : "Оплатить подарок"}
                 </span>
               </button>
               <p className="gd-legal">

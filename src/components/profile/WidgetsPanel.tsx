@@ -12,6 +12,7 @@
  * кнопку.
  */
 
+import { openProfileDialog } from "@/lib/profile-dialog";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { pushToast } from "@/lib/toasts";
 import { useProgress } from "@/lib/progression/events";
@@ -20,6 +21,7 @@ import {
   DEFAULT_LAYOUT,
   MAX_WIDGETS,
   WIDGETS,
+  WIDGET_CATS,
   WIDGET_ACCENTS,
   accentVars,
   WIDGET_BY_ID,
@@ -206,6 +208,10 @@ export function WidgetsPanel({
             <Toggle label="Кольцо списков" on={opts.rings} onChange={(v) => setOpts({ ...opts, rings: v })} />
             <Toggle label="Разделители" on={opts.sep} onChange={(v) => setOpts({ ...opts, sep: v })} />
             <span className="ag-wp-sp" />
+            <button type="button" className="btn g" onClick={() => openProfileDialog("theme")}>
+              <WidgetIcon name="pal" />
+              Тема профиля
+            </button>
             <span className={`ag-wp-state${dirty ? " is-dirty" : ""}`}>
               {dirty ? "Есть несохранённые изменения" : "Сохранено"}
             </span>
@@ -229,6 +235,10 @@ export function WidgetsPanel({
               Так вас видят гости
             </span>
             <span className="ag-wp-sp" />
+            <button type="button" className="btn g" onClick={() => openProfileDialog("theme")}>
+              <WidgetIcon name="pal" />
+              Тема профиля
+            </button>
             {onPreview && (
               <button type="button" className="btn g" onClick={onPreview}>
                 <WidgetIcon name="eye" />
@@ -407,28 +417,32 @@ export function WidgetsPanel({
       {editing && (
         <div className="ag-wp-pal">
           <h4>ДОБАВИТЬ ВИДЖЕТ</h4>
-          <div className="ag-wp-pal-list">
-            {hidden.length === 0 ? (
-              <span className="ag-w-sub">Все виджеты уже на витрине</span>
-            ) : (
-              hidden.map((def) => {
-                const owned = isWidgetUnlocked(def, doc.purchases);
-                const price = priceOf(def.service);
-                return (
-                  <button
-                    key={def.id}
-                    type="button"
-                    className={`btn g ag-wp-add ${owned ? "" : "is-locked"}`}
-                    onClick={() => add(def.id)}
-                  >
-                    <WidgetIcon name={owned ? def.icon : "lock"} />
-                    {def.title}
-                    {!owned && <em>{price.toLocaleString("ru-RU")} AC</em>}
-                  </button>
-                );
-              })
-            )}
-          </div>
+          {hidden.length === 0 ? (
+            <span className="ag-w-sub">Все виджеты уже на витрине</span>
+          ) : (
+            WIDGET_CATS.map((cat) => {
+              const items = hidden.filter((def) => cat.ids.includes(def.id));
+              if (items.length === 0) return null;
+              return (
+                <div key={cat.id} className="pc-cat">
+                  <p className="pc-cat-t">{cat.label}</p>
+                  <div className="ag-wp-pal-list">
+                    {items.map((def) => {
+                      const owned = isWidgetUnlocked(def, doc.purchases);
+                      const price = priceOf(def.service);
+                      return (
+                        <button key={def.id} type="button" className={`btn g ag-wp-add ${owned ? "" : "is-locked"}`} onClick={() => add(def.id)}>
+                          <WidgetIcon name={owned ? def.icon : "lock"} />
+                          {def.title}
+                          {!owned && <em>{price.toLocaleString("ru-RU")} AC</em>}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })
+          )}
           <p className="ag-w-sub" style={{ marginTop: 10, fontSize: 12 }}>
             Блоки с замком продаются за AC: примерить можно в сетке, сохранить — после покупки.
           </p>

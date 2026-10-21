@@ -71,7 +71,7 @@ export function HeroSlider({ items }: { items: AnimeCard[] }) {
 
   return (
     <section
-      className="relative isolate h-[74vh] min-h-[520px] w-full overflow-hidden sm:h-[78vh] lg:h-[82vh]"
+      className="hero2 relative isolate h-[66vh] min-h-[480px] w-full overflow-hidden sm:h-[62vh] lg:h-[64vh] lg:max-h-[680px]"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       onTouchStart={(e) => {
@@ -140,18 +140,23 @@ export function HeroSlider({ items }: { items: AnimeCard[] }) {
                 />
               )}
 
-              <div className="absolute inset-0 bg-gradient-to-r from-ink via-ink/85 to-ink/25" />
-              <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/20 to-ink/70" />
+              <div className="absolute inset-0 bg-gradient-to-r from-ink via-ink/70 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-ink via-transparent to-ink/55" />
+              <div className="hero2-tint absolute inset-0" aria-hidden />
             </div>
           </div>
         );
       })}
 
       {/* Контент активного слайда */}
-      <div className="relative z-10 mx-auto flex h-full max-w-7xl items-end px-4 pb-24 sm:pb-28 lg:items-center lg:pb-16">
+      <div className="relative z-10 mx-auto flex h-full max-w-7xl items-end px-4 pb-24 sm:pb-28 lg:items-center lg:pb-20">
         <div key={active.id} className="max-w-2xl animate-fade-up">
           {/* Плашки */}
           <div className="mb-4 flex flex-wrap items-center gap-2">
+            <span className="hero2-count" aria-hidden>
+              {String(index + 1).padStart(2, "0")}
+              <i /> {String(slides.length).padStart(2, "0")}
+            </span>
             <span className="rounded-full bg-accent-2/15 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.14em] text-accent-2 ring-1 ring-accent-2/30">
               {active.status === "ongoing" ? "Выходит сейчас" : "Рекомендуем"}
             </span>
@@ -165,7 +170,7 @@ export function HeroSlider({ items }: { items: AnimeCard[] }) {
             )}
           </div>
 
-          <h1 className="text-3xl font-extrabold leading-[1.05] tracking-tight sm:text-5xl lg:text-6xl">
+          <h1 className="text-3xl font-extrabold leading-[1.05] tracking-tight sm:text-4xl lg:text-5xl">
             <span className="text-white">{active.title}</span>
           </h1>
 
@@ -198,8 +203,8 @@ export function HeroSlider({ items }: { items: AnimeCard[] }) {
 
           {/* Описание */}
           {active.description && (
-            <p className="mt-4 line-clamp-3 max-w-xl text-sm leading-relaxed text-muted sm:text-base">
-              {truncate(active.description, 280)}
+            <p className="mt-4 line-clamp-2 max-w-xl text-sm leading-relaxed text-white/65 sm:text-[15px]">
+              {truncate(active.description, 210)}
             </p>
           )}
 
@@ -250,10 +255,10 @@ export function HeroSlider({ items }: { items: AnimeCard[] }) {
         </>
       )}
 
-      {/* Навигация: точки по центру снизу */}
+      {/* Навигация: на телефоне — полоски, на десктопе — карточки следующих тайтлов */}
       {slides.length > 1 && (
-        <div className="absolute bottom-5 left-1/2 z-20 flex -translate-x-1/2 items-center gap-2 sm:bottom-8">
-          <div className="flex items-center gap-2">
+        <>
+          <div className="absolute bottom-5 left-1/2 z-20 flex -translate-x-1/2 items-center gap-2 sm:bottom-8 lg:hidden">
             {slides.map((s, i) => (
               <button
                 key={s.id + i}
@@ -267,9 +272,7 @@ export function HeroSlider({ items }: { items: AnimeCard[] }) {
                   {i === index && (
                     <span
                       key={`${index}-${paused}`}
-                      className={`block h-full rounded-full bg-gradient-to-r from-accent to-accent-2 ${
-                        paused ? "" : "animate-progress"
-                      }`}
+                      className={`block h-full rounded-full bg-gradient-to-r from-accent to-accent-2 ${paused ? "" : "animate-progress"}`}
                       style={{ animationDuration: `${SLIDE_MS}ms` }}
                     />
                   )}
@@ -277,7 +280,33 @@ export function HeroSlider({ items }: { items: AnimeCard[] }) {
               </button>
             ))}
           </div>
-        </div>
+
+          <div className="hero2-rail absolute bottom-7 right-[max(1rem,calc((100vw-80rem)/2+1rem))] z-20 hidden items-end gap-3 lg:flex">
+            {slides.map((slide, i) => (
+              <button
+                key={slide.id + i}
+                type="button"
+                onClick={() => go(i)}
+                aria-label={slide.title}
+                aria-current={i === index}
+                className={`hero2-thumb${i === index ? " is-on" : ""}`}
+              >
+                <span className="hero2-thumb-img">
+                  <Poster src={slide.poster ?? slide.screenshots?.[0]} alt="" sizes="96px" className="object-cover" />
+                </span>
+                <span className="hero2-thumb-bar" aria-hidden>
+                  {i === index && (
+                    <i
+                      key={`${index}-${paused}`}
+                      className={paused ? "" : "animate-progress"}
+                      style={{ animationDuration: `${SLIDE_MS}ms` }}
+                    />
+                  )}
+                </span>
+              </button>
+            ))}
+          </div>
+        </>
       )}
     </section>
   );

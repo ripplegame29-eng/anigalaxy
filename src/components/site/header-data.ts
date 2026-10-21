@@ -78,6 +78,7 @@ export const CATALOG_LINKS: CatalogLink[] = [
   // «64» в меню врёт (как и счётчик каталога выше — см. `countHint`).
   { icon: "layers", label: "Подборки", hint: "Тематические коллекции аниме", color: "#4a9dff", href: "/collections" },
   { icon: "trophy", label: "Лидерборд", hint: "Топ самых активных зрителей", color: "#4a9dff", href: "/leaderboard" },
+  { icon: "target", label: "Карта аниме", hint: "Маршруты, задания и награды", color: "#a78bfa", href: "/map", badge: "new" },
   // Публичный роадмап проекта: что готово, что в работе и что в планах
   { icon: "spark", label: "Обновления", hint: "Что нового в AniGalaxy", color: "#22d3ee", href: "/updates", badge: "new" },
 ];
@@ -150,7 +151,7 @@ export const NOTIFICATIONS: HeaderNotification[] = [
 ];
 
 /** Ссылка «Прочитать все» и строки уведомлений ведут сюда */
-export const NOTICES_HREF = "/profile?tab=notices";
+export const NOTICES_HREF = "/notifications";
 
 /* --------------------------- Меню профиля ------------------------------ */
 
@@ -171,6 +172,7 @@ export const MENU_LINKS: MenuLink[] = [
   { icon: "heart", label: "Любимое", href: "/profile?tab=favorites" },
   // Прототип вёл на отдельную /quests, у проекта это вкладка профиля
   { icon: "target", label: "Квесты", href: "/quests", badge: "quests" },
+  { icon: "compass", label: "Карта аниме", href: "/map" },
   { icon: "store", label: "Магазин", href: "/store" },
   { icon: "users", label: "Пригласи друзей", href: "/referrals" },
   { icon: "gear", label: "Настройки", href: "/settings" },

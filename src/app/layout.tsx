@@ -13,6 +13,9 @@ import "./schedule.css";
 import "./settings-premium.css";
 import "./wardrobe-premium.css";
 import "./store-premium.css";
+import "./premium-page.css";
+import "./watchbox-premium.css";
+import "./backdrops.css";
 import "./quests.css";
 import "./frame-search.css";
 import "./streak-capsule.css";
@@ -24,6 +27,7 @@ import "./aniswipe.css";
 import "./cosmetics-shop.css";
 import "./ags-premium.css";
 import "./avatar-frame.css";
+import "./frame-fx.css";
 import "./level-emblem.css";
 import "./achievement-emblem.css";
 import "./achievements.css";
@@ -34,14 +38,15 @@ import "./guest-dialogs.css";
 import "./guest-follows-report.css";
 import "./profile-fx.css";
 import "./battle-pass.css";
-import "./clans.css";
-import "./clans-game.css";
+import "./battlepass-premium.css";
+import "./profile-custom.css";
 import "./profile-premium.css";
 import { AuthDialogHost } from "@/components/AuthDialogHost";
 import { ChatWidget } from "@/components/ChatWidget";
 import { DailyBonusHost } from "@/components/DailyBonusHost";
 import { Footer } from "@/components/Footer";
 import { HeaderShell } from "@/components/site/HeaderShell";
+import { PwaBoot } from "@/components/PwaBoot";
 import "@/components/site/header.css";
 import "@/components/site/header-promo.css";
 import "@/components/site/search.css";
@@ -128,12 +133,17 @@ export const metadata: Metadata = {
     description: "Свежие релизы, онгоинги и классика аниме. Смотрите онлайн с выбором озвучки.",
   },
   robots: { index: true, follow: true },
+  applicationName: "AniGalaxy",
+  appleWebApp: { capable: true, title: "AniGalaxy", statusBarStyle: "black-translucent" },
+  icons: { apple: "/pwa/icon-192.png" },
+  formatDetection: { telephone: false },
 };
 
 export const viewport: Viewport = {
   themeColor: "#07070c",
   width: "device-width",
   initialScale: 1,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
@@ -197,6 +207,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             палитры поиска держит HeaderShell. Старый Header импортирован
             ниже на время отката и в разметку не выводится. */}
         <HeaderShell />
+        <PwaBoot />
         {/* Фон макетов: один на весь сайт, показывается только под .ag-root —
             см. body:has(.ag-root) в ag-theme.css. Идёт до <main>, чтобы лежать
             под содержимым, и без участия в раскладке: обе картинки fixed. */}

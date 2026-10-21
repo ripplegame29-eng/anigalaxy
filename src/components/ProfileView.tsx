@@ -1,5 +1,8 @@
 "use client";
 
+import { ProfileThemeLayers, themeVars } from "./profile/ProfileThemeLayers";
+import { useProfileTheme } from "@/lib/ptheme";
+import { ProfileDecor } from "@/components/battlepass/ProfilePreview";
 import { useCallback, useEffect, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
@@ -7,6 +10,7 @@ import { openAuthDialog } from "@/lib/auth-dialog";
 import { isPremiumActive, displayNameOf } from "@/lib/auth";
 import { useAccount } from "@/lib/use-account";
 import { useProfile, unreadCount } from "@/lib/profile";
+import { levelInfo } from "@/lib/levels";
 import { watchStore } from "@/lib/history";
 import { BACKGROUNDS, FRAMES, TITLES, titleTag } from "@/lib/cosmetics";
 import { COLLECTIONS_KEY, FAVORITES_KEY, type Collection } from "@/lib/collections";
@@ -177,6 +181,9 @@ export function ProfileView({ mode = "owner" }: { mode?: "owner" | "guest" }) {
      нужно знать, включать ли жёсткие призраки и разломы карточек. На первом
      уровне профиль только слегка подлаживается, на втором и третьем —
      уже ломается. */
+  const levelData = levelInfo(progress.progress.xpTotal);
+  const hueco = profile.decorFx === "decor-hueco-mundo" && ownedFx.has("decor-hueco-mundo");
+  const theme = useProfileTheme();
   const levelClass = `fx-lv-${profile.fxLevel}`;
 
   // Гостю показываем профиль всегда: его смотрят снаружи, и требовать вход,
@@ -222,7 +229,8 @@ export function ProfileView({ mode = "owner" }: { mode?: "owner" | "guest" }) {
     : [
         { id: "share", label: "Поделиться", icon: "share", run: () => openProfileDialog("share") },
         { id: "preview", label: "Как видят другие", icon: "eye", run: () => openProfileDialog("preview") },
-        { id: "appearance", label: "Внешний вид", icon: "pal", run: () => openProfileDialog("appearance"), primary: true },
+        { id: "theme", label: "Тема", icon: "pal", run: () => openProfileDialog("theme") },
+        { id: "effects", label: "Эффекты", icon: "bolt", run: () => openProfileDialog("effects"), primary: true },
       ];
 
   const badge = (item: SectionMeta) =>
@@ -230,10 +238,11 @@ export function ProfileView({ mode = "owner" }: { mode?: "owner" | "guest" }) {
 
   return (
     <div
-      className={`ag-root ${isGuest ? "is-guest" : ""} ${styleClasses} ${levelClass}`}
-      style={fxVars}
+      className={`ag-root ${theme.on ? "has-ptheme" : ""} ${hueco ? "has-hueco" : ""} ${isGuest ? "is-guest" : ""} ${styleClasses} ${levelClass}`}
+      style={{ ...fxVars, ...themeVars(theme) }}
       data-fx-level={profile.fxLevel}
     >
+      <ProfileThemeLayers />
       {/* ----------------------------- Баннер -----------------------------
           Полная ширина экрана: страница кладёт содержимое в контейнер с
           полями, а баннер в макете идёт от края до края. Полосы в .ag-pf-full
@@ -261,6 +270,7 @@ export function ProfileView({ mode = "owner" }: { mode?: "owner" | "guest" }) {
       </div>
 
       <div className="ag-pf-wrap">
+        {hueco && <ProfileDecor />}
         {/* ------------------------------ Герой ------------------------------ */}
         <div className="ag-pf-hero">
           {/* Аватар у гостя не кликабелен: открывать «Внешний вид» ему нельзя */}
@@ -276,7 +286,7 @@ export function ProfileView({ mode = "owner" }: { mode?: "owner" | "guest" }) {
           ) : (
             <button
               type="button"
-              onClick={() => openProfileDialog("appearance")}
+              onClick={() => openProfileDialog("avatar")}
               aria-label="Изменить аватар"
               className="ag-pf-av"
               data-fx
@@ -288,6 +298,9 @@ export function ProfileView({ mode = "owner" }: { mode?: "owner" | "guest" }) {
                 frame={frame}
                 size="md"
               />
+              <span className="ag-av-edit" aria-hidden>
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 16V5m0 0-4 4m4-4 4 4M5 19h14" /></svg>
+              </span>
             </button>
           )}
 

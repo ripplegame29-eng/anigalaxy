@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { PageBackdrop } from "@/components/PageBackdrop";
 import { ScheduleView } from "@/components/schedule/ScheduleView";
 import { getSchedule } from "@/lib/schedule";
 
@@ -12,5 +13,10 @@ export const metadata: Metadata = {
 
 export default async function SchedulePage() {
   const items = await getSchedule().catch(() => []);
-  return <ScheduleView items={items} />;
+  return (
+    <>
+      <PageBackdrop variant="schedule" />
+      <ScheduleView items={items} />
+    </>
+  );
 }

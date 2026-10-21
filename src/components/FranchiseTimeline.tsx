@@ -99,12 +99,12 @@ export function FranchiseTimeline({ items }: { items: FranchiseItem[] }) {
           className="no-scrollbar -mx-1 flex overflow-x-auto px-1 pb-2"
           style={{ scrollbarWidth: "none" }}
         >
-          <ol className="mx-auto flex flex-none gap-3">
+          <ol className="mx-auto flex flex-none gap-3 sm:gap-4">
             {items.map((item, index) => (
               <li
                 key={`${item.id}-${index}`}
                 ref={item.current ? activeRef : undefined}
-                className={`w-[118px] shrink-0 overflow-hidden rounded-xl border bg-white/[0.03] transition-all duration-200 sm:w-[130px] ${
+                className={`w-[150px] shrink-0 overflow-hidden rounded-2xl border bg-white/[0.03] transition-all duration-300 hover:-translate-y-1 sm:w-[190px] lg:w-[210px] ${
                   item.current
                     ? "border-accent/60 bg-accent/10 shadow-[0_0_24px_-8px_rgba(31,123,255,0.7)] ring-1 ring-accent/40"
                     : "border-line hover:border-accent/35 hover:bg-white/[0.07]"
@@ -120,30 +120,30 @@ export function FranchiseTimeline({ items }: { items: FranchiseItem[] }) {
                       src={item.poster}
                       alt={item.title}
                       title={item.title}
-                      sizes="(max-width: 640px) 118px, 130px"
+                      sizes="(max-width: 640px) 150px, 210px"
                       className="object-cover transition-transform duration-300 group-hover:scale-105"
                     />
                     <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink/90 via-transparent to-transparent" />
                     {item.current && (
-                      <span className="absolute left-1.5 top-1.5 rounded-md bg-accent px-1.5 py-0.5 text-[9px] font-extrabold uppercase tracking-wider text-white shadow-lg">
+                      <span className="absolute left-2 top-2 rounded-md bg-accent px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wider text-white shadow-lg">
                         Сейчас
                       </span>
                     )}
-                    <span className="absolute bottom-1.5 right-1.5 rounded-md bg-ink/80 px-1.5 py-0.5 text-[10px] font-bold tabular-nums text-white/90 ring-1 ring-white/15 backdrop-blur">
+                    <span className="absolute bottom-2 right-2 rounded-md bg-ink/80 px-2 py-0.5 text-xs font-bold tabular-nums text-white/90 ring-1 ring-white/15 backdrop-blur">
                       {item.year ?? "—"}
                     </span>
                   </div>
 
-                  <div className="space-y-1 px-2 py-2">
+                  <div className="space-y-1.5 px-3 py-3">
                     <p
-                      className={`line-clamp-2 text-[11px] font-semibold leading-snug ${
+                      className={`line-clamp-2 text-[13px] font-semibold leading-snug ${
                         item.current ? "text-white" : "text-white/85"
                       }`}
                       title={item.title}
                     >
                       {item.title}
                     </p>
-                    <span className="inline-block rounded bg-white/8 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-muted ring-1 ring-white/10">
+                    <span className="inline-block rounded bg-white/8 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-muted ring-1 ring-white/10">
                       {kindLabel(item.kind) ?? "Аниме"}
                     </span>
                   </div>

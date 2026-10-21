@@ -37,6 +37,7 @@ import { rarityWeight, romanTier } from "@/lib/progression/visual";
 import { AchievementCode } from "@/components/progression/AchievementCode";
 import { useTagSelection, useTitleSelection } from "@/lib/selection";
 import type { TagDef } from "@/lib/progression/types";
+import { ProfileMini } from "@/components/battlepass/ProfilePreview";
 import { AgTag } from "@/components/progression/AgTag";
 import { CFG_RARITY_CLASS, CFG_RARITY_LABEL } from "@/lib/progression/rarity-chips";
 import { DEAL_PERCENT, dailyDeal, dayIndex } from "@/lib/progression/deals";
@@ -45,6 +46,7 @@ import { collectStats } from "@/lib/achievements";
 import {
   BACKGROUNDS,
   FRAMES,
+  PROFILE_DECORS,
   TITLES,
   isOwned,
   isUnlocked,
@@ -57,11 +59,10 @@ import { openProfileDialog } from "@/lib/profile-dialog";
 import { Poster } from "@/components/Poster";
 import { AvatarFrame, type AvSize } from "@/components/profile/AvatarFrame";
 import { AchievementEmblem } from "@/components/progression/AchievementEmblem";
-import { LevelEmblem } from "@/components/LevelEmblem";
+import { LevelBadge, ERA_THEME, eraIndex } from "@/components/levels/LevelBadge";
 import { emblemMeta } from "@/lib/progression/achievements.config";
 import { AchievementsGallery, badgeRarity } from "@/components/progression/AchievementsGallery";
 import { AchievementBadge } from "@/components/progression/AchievementBadges";
-import { ERAS as EMBLEM_ERAS, eraOf } from "@/lib/levelEmblem";
 import type { CSSProperties } from "react";
 import { CommentsBlock, PROFILE_SCOPE } from "@/components/comments/CommentsBlock";
 import { AvatarView } from "./AvatarView";
@@ -118,10 +119,10 @@ export const SECTIONS: SectionMeta[] = [
   { id: "main", label: "Основное" },
   { id: "showcase", label: "Виджеты", fresh: true },
   { id: "favorites", label: "Любимое" },
-  { id: "collections", label: "Подборки" },
+  { id: "collections", label: "Подборки", hidden: true },
   { id: "achievements", label: "Достижения" },
   { id: "gifts", label: "Подарки" },
-  { id: "history", label: "История" },
+  { id: "history", label: "История", hidden: true },
   { id: "comments", label: "Комментарии" },
   { id: "blacklist", label: "Чёрный список" },
   // Живые разделы, скрытые из меню профиля: см. SectionMeta.hidden
@@ -402,13 +403,14 @@ export function LevelCard() {
   const { progress } = useProfileData();
   const info = levelInfo(progress.progress.xpTotal);
   const nextEra = ERAS.find((item) => item.from > info.level);
-  const emblemEra = EMBLEM_ERAS[eraOf(info.level)];
-  const nextEmblemEra = EMBLEM_ERAS[eraOf(info.level) + 1];
+  const ei = eraIndex(info.level);
+  const emblemEra = { ...ERA_THEME[ei], n: ERAS[ei]?.name ?? info.era };
+  const nextEmblemEra = ERAS[ei + 1];
 
   return (
     <div>
-      <div className="card" style={{ "--c": emblemEra.c, "--c2": emblemEra.c2 } as CSSProperties}>
-        <LevelEmblem level={info.level} percent={info.percent} size={120} />
+      <div className="card" style={{ "--c": emblemEra.c1, "--c2": emblemEra.c2 } as CSSProperties}>
+        <LevelBadge level={info.level} size={124} state="current" rich />
         <div className="b">
           {/* h2, а не h1: заголовком страницы остаётся ник, а эмблема
               уровня — содержимое внутри карточки. Два h1 на странице
@@ -423,9 +425,9 @@ export function LevelCard() {
           </div>
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="era">
-              Эра: {emblemEra.n} · форма: {emblemEra.sh} · ещё {info.left.toLocaleString("ru-RU")} XP до уровня{" "}
+              Эра: {emblemEra.n} · ещё {info.left.toLocaleString("ru-RU")} XP до уровня{" "}
               {info.level + 1}
-              {nextEmblemEra ? ` · следующая эра «${nextEmblemEra.n}» с ${nextEmblemEra.from} уровня` : ""}
+              {nextEmblemEra ? ` · следующая эра «${nextEmblemEra.name}» с ${nextEmblemEra.from} уровня` : ""}
             </div>
             <button
               type="button"
@@ -438,10 +440,11 @@ export function LevelCard() {
         </div>
       </div>
 
-      <p className="mt-3 max-w-[52ch] text-[11px] leading-relaxed text-muted">
-        XP начисляется за достижения, дневные квесты и активность в профиля.
-        {!nextEra ? " Высшая эра достигнута — дальше только рекорды." : ""}
-      </p>
+      {!nextEra && (
+        <p className="mt-3 max-w-[52ch] text-[11px] leading-relaxed text-muted">
+          Высшая эра достигнута — дальше только рекорды.
+        </p>
+      )}
     </div>
   );
 }
@@ -1581,7 +1584,7 @@ function AchievementDialog({ item, onClose }: { item: AchievementItem; onClose: 
  * (`progressEmit`) и профилю (`updateProfile`).
  */
 
-type ShopCat = "tags" | "titles" | "backgrounds" | "frames" | "effects" | "services" | "custom";
+type ShopCat = "tags" | "titles" | "backgrounds" | "frames" | "decor" | "effects" | "services" | "custom";
 /** Вкладка «Все» — весь каталог витрины разом */
 type ShopTab = ShopCat | "all";
 /** Порядок выдачи в сетке */
@@ -1592,6 +1595,7 @@ const SHOP_CATS: { id: ShopCat; label: string }[] = [
   { id: "titles", label: "Титулы" },
   { id: "backgrounds", label: "Фоны" },
   { id: "frames", label: "Рамки" },
+  { id: "decor", label: "Оформление" },
   { id: "effects", label: "Эффекты" },
   { id: "services", label: "Сервисы" },
   { id: "custom", label: "Кастомизация" },
@@ -1697,6 +1701,7 @@ export function ShopSection(_props: { title?: string } = {}) {
   const info = useLevelInfo();
   const premium = isPremiumActive(account);
   const [message, setMessage] = useState<string | null>(null);
+  const [pageState, setPageState] = useState<{ key: string; page: number }>({ key: "", page: 0 });
   const [cat, setCat] = useState<ShopTab>("frames");
   const [rarity, setRarity] = useState<string>("any");
   const [query, setQuery] = useState("");
@@ -1848,8 +1853,26 @@ export function ShopSection(_props: { title?: string } = {}) {
     };
   });
 
+  /** Рамка из боевого пропуска: уровень и дорожка */
+  const bpDecorSource = (id: string): { level: number; premium: boolean } | null => {
+    for (const lv of BATTLEPASS.levels) {
+      if (lv.free?.some((r) => r.kind === "decor" && r.itemId === id)) return { level: lv.level, premium: false };
+      if (lv.premium?.some((r) => r.kind === "decor" && r.itemId === id)) return { level: lv.level, premium: true };
+    }
+    return null;
+  };
+
+  const bpFrameSource = (id: string): { level: number; premium: boolean } | null => {
+    for (const lv of BATTLEPASS.levels) {
+      if (lv.free?.some((r) => r.kind === "frame" && r.itemId === id)) return { level: lv.level, premium: false };
+      if (lv.premium?.some((r) => r.kind === "frame" && r.itemId === id)) return { level: lv.level, premium: true };
+    }
+    return null;
+  };
+
   const frameEntries: ShopEntry[] = FRAMES.map((item) => {
     const cfg = shopItem(item.id);
+    const bp = cfg ? null : bpFrameSource(item.id);
     const owned = isOwned(item.id, ctx) || boughtIds.has(item.id);
     return {
       id: item.id,
@@ -1865,7 +1888,28 @@ export function ShopSection(_props: { title?: string } = {}) {
       description: "Рамка аватара",
       obtain: cfg
         ? `Купить за ${priceOf(item.id, cfg.price)} AC · ~${payback(priceOf(item.id, cfg.price) ?? cfg.price)} дн. активности`
-        : unlockHint(item.unlock),
+        : bp
+          ? `Можно получить в боевом пропуске · ${bp.level} ур. (${bp.premium ? "Premium" : "бесплатно"})`
+          : unlockHint(item.unlock),
+    };
+  }).map((e) => (bpFrameSource(e.id) && !shopItem(e.id) ? { ...e, price: undefined } : e));
+
+  const decorEntries: ShopEntry[] = PROFILE_DECORS.map((item) => {
+    const bp = bpFrameSource(item.id) ?? bpDecorSource(item.id);
+    const src = bpDecorSource(item.id);
+    const claimed = src ? progress.battlepass.claimed.includes(`${BATTLEPASS.seasonId}:${src.premium ? "premium" : "free"}:${src.level}`) : false;
+    const owned = boughtIds.has(item.id) || claimed;
+    return {
+      id: item.id,
+      name: item.name,
+      rarity: LEGACY_TO_CFG_RARITY[item.rarity],
+      owned,
+      active: profile.decorFx === item.id,
+      complete: false,
+      description: "Оформление профиля",
+      obtain: bp
+        ? `Можно получить в боевом пропуске · ${bp.level} ур. (${bp.premium ? "Premium" : "бесплатно"})`
+        : "Награда боевого пропуска",
     };
   });
 
@@ -1900,6 +1944,7 @@ export function ShopSection(_props: { title?: string } = {}) {
     titles: titleEntries,
     backgrounds: backgroundEntries,
     frames: frameEntries,
+    decor: decorEntries,
     effects: configEntries("effect"),
     services: configEntries("service"),
     custom: configEntries("custom"),
@@ -1926,7 +1971,13 @@ export function ShopSection(_props: { title?: string } = {}) {
   const rarities = [...new Set(entries.map((entry) => entry.rarity))].sort(
     (a, b) => rarityWeight(a) - rarityWeight(b),
   );
-  const selected = filtered.find((entry) => entry.id === selectedId) ?? filtered[0];
+  const PAGE_SIZE = 12;
+  const pageKey = `${cat}|${rarity}|${q}|${sort}`;
+  const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const page = Math.min(pageCount - 1, pageState.key === pageKey ? pageState.page : 0);
+  const pageItems = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
+  const goPage = (next: number) => setPageState({ key: pageKey, page: Math.max(0, Math.min(pageCount - 1, next)) });
+  const selected = filtered.find((entry) => entry.id === selectedId) ?? pageItems[0] ?? filtered[0];
 
   const switchCat = (next: ShopTab) => {
     setCat(next);
@@ -1980,12 +2031,21 @@ export function ShopSection(_props: { title?: string } = {}) {
       if (item?.unlock.level) return `Уровень ${item.unlock.level}`;
       return "Достижение";
     }
+    const bp = bpFrameSource(entry.id) ?? bpDecorSource(entry.id);
+    if (bp) return `Боевой пропуск · ${bp.level} ур.`;
     return "Закрыто";
   };
 
   /** Превью любого предмета: рамки и аватары — готовым компонентом */
   const stagePreview = (entry: ShopEntry, size: AvSize) => {
     const item = FRAMES.find((f) => f.id === entry.id);
+    if (PROFILE_DECORS.some((d) => d.id === entry.id)) {
+      return (
+        <span className="block w-full max-w-[300px]" style={size === "sm" ? { zoom: 0.55 } : undefined}>
+          <ProfileMini nickname={account?.nickname ?? "Гость"} />
+        </span>
+      );
+    }
     if (entry.tagDef) {
       return (
         <span className="tagstage">
@@ -2057,11 +2117,31 @@ export function ShopSection(_props: { title?: string } = {}) {
     if (entry.active) return "Применено к профилю";
     if (entry.extra) return "Выбрано дополнительно";
     if (entry.owned) return "Уже в коллекции";
+    if (entry.price === undefined && (bpFrameSource(entry.id) ?? bpDecorSource(entry.id))) return entry.description;
     return shortObtain(entry);
   };
 
   /** нижняя строка карточки: цена / владение / источник */
   const bottomChip = (entry: ShopEntry) => {
+    if (entry.owned && PROFILE_DECORS.some((d) => d.id === entry.id)) {
+      return (
+        <button
+          type="button"
+          className={`btn ${entry.active ? "ok" : "pri"}`}
+          style={{ padding: "4px 12px", fontSize: 12 }}
+          onClick={(e) => {
+            e.stopPropagation();
+            updateProfile({
+              decorFx: entry.active ? "" : entry.id,
+              ...(profile.purchased.includes(entry.id) ? {} : { purchased: [...profile.purchased, entry.id] }),
+            });
+            setMessage(entry.active ? `«${entry.name}» выключено` : `«${entry.name}» включено в профиле`);
+          }}
+        >
+          {entry.active ? "Выключить" : "Включить"}
+        </button>
+      );
+    }
     if (entry.owned) {
       const label = entry.active ? "Применено" : cat === "tags" || cat === "titles" ? "Выбрано ✓" : "Куплено";
       return <span className="price own">{label}</span>;
@@ -2112,6 +2192,23 @@ export function ShopSection(_props: { title?: string } = {}) {
             }}
           >
             {entry.active ? "Сейчас применено" : "Применить"}
+          </button>
+        );
+      }
+      if (PROFILE_DECORS.some((d) => d.id === entry.id)) {
+        return (
+          <button
+            type="button"
+            className={`btn ${entry.active ? "ok" : "pri"}`}
+            onClick={() => {
+              updateProfile({
+              decorFx: entry.active ? "" : entry.id,
+              ...(profile.purchased.includes(entry.id) ? {} : { purchased: [...profile.purchased, entry.id] }),
+            });
+              setMessage(entry.active ? `«${entry.name}» выключено` : `«${entry.name}» включено в профиле`);
+            }}
+          >
+            {entry.active ? "Выключить" : "Включить в профиле"}
           </button>
         );
       }
@@ -2358,7 +2455,7 @@ export function ShopSection(_props: { title?: string } = {}) {
           {filtered.length === 0 ? (
             <div className="empty">Ничего не найдено</div>
           ) : (
-            filtered.map((entry, n) => {
+            pageItems.map((entry, n) => {
               const rc = rgbOf(RARITY_DOT[entry.rarity] ?? "#9ca3af");
               return (
                 <article
@@ -2390,6 +2487,23 @@ export function ShopSection(_props: { title?: string } = {}) {
                 </article>
               );
             })
+          )}
+          {pageCount > 1 && (
+            <nav className="ag-pager" aria-label="Страницы каталога">
+              <button type="button" onClick={() => goPage(page - 1)} disabled={page === 0} aria-label="Назад">‹</button>
+              {Array.from({ length: pageCount }, (_, i) => i)
+                .filter((i) => i === 0 || i === pageCount - 1 || Math.abs(i - page) <= 1)
+                .map((i, idx, arr) => (
+                  <span key={i} className="ag-pager-it">
+                    {idx > 0 && i - arr[idx - 1] > 1 && <em>…</em>}
+                    <button type="button" className={i === page ? "on" : ""} onClick={() => goPage(i)} aria-current={i === page ? "page" : undefined}>
+                      {i + 1}
+                    </button>
+                  </span>
+                ))}
+              <button type="button" onClick={() => goPage(page + 1)} disabled={page >= pageCount - 1} aria-label="Дальше">›</button>
+              <small>{filtered.length} шт.</small>
+            </nav>
           )}
         </div>
 
@@ -3042,7 +3156,7 @@ export function ReferralsSection({ account }: StandaloneSectionProps) {
           <div className="ag-ref-step">
             <div className="ag-ref-no">3</div>
             <b>Звезда загорается</b>
-            <span>Приходит {PROGRESSION_CONFIG.economy.referralPremiumDays} дней Premium и {PROGRESSION_CONFIG.economy.referralXp} XP, рубежи открываются автоматически.</span>
+            <span>Приходит {PROGRESSION_CONFIG.economy.referralPremiumDays} дней Premium, {PROGRESSION_CONFIG.economy.referralXp} XP и {PROGRESSION_CONFIG.economy.referralAc} AC, рубежи открываются автоматически.</span>
           </div>
         </div>
       </section>

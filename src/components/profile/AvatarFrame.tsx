@@ -72,6 +72,7 @@ export function AvatarFrame({
   return (
     <span
       className={`ag-frame ag-frame--${size}${hasImage ? "" : " ag-frame--none"} ${className}`}
+      data-fx={frame?.fx}
       /* --scale приходит из данных рамки, в CSS не зашит */
       style={{ ["--scale" as string]: String(frame?.scale ?? 1.3) }}
     >

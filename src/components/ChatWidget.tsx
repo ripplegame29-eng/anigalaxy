@@ -11,7 +11,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { clanLevel, useClans } from "@/lib/clans";
+import { levelFromXp } from "@/lib/clan2/data";
+import { useClan2 } from "@/lib/clan2/store";
 import { useAccount } from "@/lib/use-account";
 import { useProgress } from "@/lib/progression/events";
 import { PROGRESSION_CONFIG } from "@/lib/progression/progression.config";
@@ -35,15 +36,14 @@ const timeLabel = (at: number): string =>
  * Подсказка раскрывается влево, чтобы не упираться в правый край экрана.
  */
 function ClanFab() {
-  const state = useClans();
-  const clan = state.own;
+  const clan = useClan2().clan;
 
   return (
     <Link
       href="/clans"
-      aria-label={clan ? `Кланы — ${clan.name}, уровень ${clanLevel(clan.points)}` : "Кланы"}
-      title={clan ? `${clan.name} [${clan.tag}] · ур. ${clanLevel(clan.points)}` : "Кланы"}
-      className="group fixed bottom-4 right-[72px] z-[94] grid h-12 w-12 place-items-center rounded-2xl border border-line bg-surface/90 text-2xl shadow-[0_18px_40px_-16px_rgba(0,0,0,0.9)] backdrop-blur transition hover:scale-105 hover:ring-2 hover:ring-accent/50"
+      aria-label={clan ? `Кланы — ${clan.name}, уровень ${levelFromXp(clan.xp)}` : "Кланы"}
+      title={clan ? `${clan.name} [${clan.tag}] · ур. ${levelFromXp(clan.xp)}` : "Кланы"}
+      className="group fixed bottom-4 max-[900px]:bottom-[calc(92px+env(safe-area-inset-bottom))] right-[72px] z-[94] grid h-12 w-12 place-items-center rounded-2xl border border-line bg-surface/90 text-2xl shadow-[0_18px_40px_-16px_rgba(0,0,0,0.9)] backdrop-blur transition hover:scale-105 hover:ring-2 hover:ring-accent/50"
       style={
         clan
           ? {
@@ -59,7 +59,7 @@ function ClanFab() {
 
       {/* Подсказка с названием и уровнем — по наведению */}
       <span className="pointer-events-none absolute right-full top-1/2 mr-2 hidden -translate-y-1/2 whitespace-nowrap rounded-xl border border-line bg-surface/95 px-3 py-1.5 text-xs font-semibold text-white opacity-0 shadow-lg transition group-hover:opacity-100 md:block">
-        {clan ? `${clan.name} · ур. ${clanLevel(clan.points)}` : "Кланы"}
+        {clan ? `${clan.name} · ур. ${levelFromXp(clan.xp)}` : "Кланы"}
       </span>
     </Link>
   );
@@ -124,7 +124,7 @@ export function ChatWidget() {
           type="button"
           onClick={() => setOpen(true)}
           aria-label={`Открыть общий чат${unread > 0 ? `, непрочитанных: ${unread}` : ""}`}
-          className="fixed bottom-4 right-4 z-[94] grid h-12 w-12 place-items-center rounded-2xl border border-line bg-surface/90 text-accent-2 shadow-[0_18px_40px_-16px_rgba(0,0,0,0.9)] backdrop-blur transition hover:scale-105 hover:ring-2 hover:ring-accent/50"
+          className="fixed bottom-4 max-[900px]:bottom-[calc(92px+env(safe-area-inset-bottom))] right-4 z-[94] grid h-12 w-12 place-items-center rounded-2xl border border-line bg-surface/90 text-accent-2 shadow-[0_18px_40px_-16px_rgba(0,0,0,0.9)] backdrop-blur transition hover:scale-105 hover:ring-2 hover:ring-accent/50"
         >
           <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
             <path

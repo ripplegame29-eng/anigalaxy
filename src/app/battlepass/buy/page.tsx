@@ -54,38 +54,40 @@ export default function PassBuyPage() {
   });
 
   return (
-    <div className="relative overflow-hidden">
-      {/* Фоновое свечение — то же, что на странице Premium */}
-      <div
-        className="pointer-events-none absolute inset-x-0 top-0 h-[520px] bg-gradient-to-b from-accent/18 via-accent-2/8 to-transparent"
-        aria-hidden
-      />
-      <div
-        className="pointer-events-none absolute -right-40 top-40 h-[520px] w-[520px] rounded-full bg-accent/12 blur-3xl"
-        aria-hidden
-      />
-      <div
-        className="pointer-events-none absolute -left-40 top-[45%] h-[420px] w-[420px] rounded-full bg-accent-2/8 blur-3xl"
-        aria-hidden
-      />
-
+    <div className="bpb-root relative overflow-hidden">
       {/* ------------------------------- Герой ------------------------------- */}
-      <section className="relative px-4 pb-4 pt-8 sm:pt-10">
-        <div className="mx-auto max-w-3xl">
+      <section className="bpb-hero relative px-4 pb-6 pt-8 sm:pt-10">
+        <div className="bpb-bg" aria-hidden />
+        <div className="bpb-fog" aria-hidden />
+        <div className="bpb-rays" aria-hidden />
+        <span className="bpb-ash" aria-hidden>
+          {Array.from({ length: 22 }, (_, i) => (
+            <b
+              key={i}
+              style={
+                {
+                  "--x": (i * 31 + 5) % 100,
+                  "--s": `${2 + (i % 3)}px`,
+                  "--d": `${9 + (i % 7) * 2}s`,
+                  "--w": `${-(i * 1.9)}s`,
+                } as React.CSSProperties
+              }
+            />
+          ))}
+        </span>
+        <div className="relative mx-auto max-w-3xl">
           <Breadcrumbs
             items={[{ label: "Боевой пропуск", href: "/battlepass" }, { label: "Оформление" }]}
           />
         </div>
-        <div className="mx-auto max-w-3xl text-center">
-          <span className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-accent-2 to-accent px-4 py-1.5 text-[11px] font-black uppercase tracking-[0.18em] text-white shadow-[0_12px_28px_-14px_rgba(31,123,255,1)] sm:text-xs">
-            {BATTLEPASS.name}
-          </span>
+        <div className="relative mx-auto max-w-3xl text-center">
+          <span className="bpb-pill">{BATTLEPASS.name}</span>
 
-          <h1 className="mt-5 bg-gradient-to-r from-white via-accent to-accent-2 bg-clip-text text-3xl font-black leading-tight text-transparent sm:text-5xl md:text-6xl">
-            Вторая линия наград
+          <h1 className="bpb-h1">
+            Вторая линия <span>наград</span>
           </h1>
 
-          <p className="mx-auto mt-4 max-w-2xl text-sm leading-relaxed text-muted sm:text-lg">
+          <p className="mx-auto mt-5 max-w-2xl text-sm leading-relaxed text-white/70 sm:text-lg">
             Разовый платёж за сезон: косметика этого сезона, аникойны и опыт пропуска
             на каждом наградном уровне. Сезон до {seasonEnd}.
           </p>
@@ -109,7 +111,7 @@ export default function PassBuyPage() {
           {FAQ.map((item) => (
             <details
               key={item.question}
-              className="group rounded-2xl border border-line bg-card/70 px-5 py-4 transition hover:border-accent/40 open:border-accent/40"
+              className="bpb-faq group rounded-2xl px-5 py-4"
             >
               <summary className="cursor-pointer list-none text-sm font-extrabold text-white sm:text-base">
                 <span className="flex items-center justify-between gap-4">

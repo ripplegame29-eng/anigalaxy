@@ -17,6 +17,7 @@ const NAV = [
   { href: "/catalog", label: "Каталог аниме" },
   { href: "/catalog?status=ongoing", label: "Онгоинги" },
   { href: "/manga", label: "Каталог манги" },
+  { href: "/map", label: "Карта аниме" },
   { href: "/clans", label: "Кланы" },
   { href: "/events", label: "Ивенты" },
   { href: "/catalog?sort=rating", label: "Топ рейтинга" },

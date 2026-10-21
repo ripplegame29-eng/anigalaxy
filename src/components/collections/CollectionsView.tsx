@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 
 /**
  * «Подборки сообщества» — отдельный раздел.
@@ -112,12 +113,66 @@ const VIEW_ICONS = {
 type View = "grid" | "dense" | "list";
 type Tab = "pop" | "new" | "ed" | "lk" | "my";
 
-const TABS: { id: Tab; label: string }[] = [
-  { id: "pop", label: "🔥 Популярное" },
-  { id: "new", label: "🕒 Новое" },
-  { id: "ed", label: "♛ Выбор редакции" },
-  { id: "lk", label: "♥ Понравившиеся" },
-  { id: "my", label: "🔖 Мои" },
+
+/** Премиальные duotone-иконки раздела (вместо эмодзи) */
+type CIconName = "flame" | "clock" | "crown" | "heart" | "bookmark" | "dice" | "link" | "eye" | "stack";
+const CI: Record<CIconName, React.ReactNode> = {
+  flame: (
+    <>
+      <path d="M12 2.4c.7 3.1-1.2 4.5-2.8 6.3-1.5 1.7-2.7 3.5-2.7 5.9a5.5 5.5 0 0 0 11 0c0-2.3-1-3.6-2-4.9-.4 1.1-1 1.8-1.8 2.1.5-3.5-.4-6.6-1.7-9.4z" fill="currentColor" fillOpacity=".24" />
+      <path d="M12 12.2c-1.6 1.4-2.3 2.3-2.3 3.5a2.3 2.3 0 0 0 4.6 0c0-1.2-.7-2.1-2.3-3.5z" fill="currentColor" />
+    </>
+  ),
+  clock: (
+    <>
+      <circle cx="12" cy="12" r="8.6" fill="currentColor" fillOpacity=".2" />
+      <path d="M12 7.2V12l3.2 2" />
+    </>
+  ),
+  crown: (
+    <>
+      <path d="M3.4 8.2l4.4 4 4.2-7 4.2 7 4.4-4-1.9 10.2H5.3z" fill="currentColor" fillOpacity=".24" />
+      <path d="M6 20.4h12" />
+    </>
+  ),
+  heart: <path d="M12 20.2s-7.6-4.6-7.6-10.3A4.3 4.3 0 0 1 12 7.3a4.3 4.3 0 0 1 7.6 2.6c0 5.7-7.6 10.3-7.6 10.3z" fill="currentColor" fillOpacity=".24" />,
+  bookmark: <path d="M7.2 3.6h9.6a1 1 0 0 1 1 1V21L12 16.9 6.2 21V4.6a1 1 0 0 1 1-1z" fill="currentColor" fillOpacity=".24" />,
+  dice: (
+    <>
+      <rect x="3.6" y="3.6" width="16.8" height="16.8" rx="4.4" fill="currentColor" fillOpacity=".2" />
+      <circle cx="8.6" cy="8.6" r="1.1" fill="currentColor" stroke="none" />
+      <circle cx="15.4" cy="15.4" r="1.1" fill="currentColor" stroke="none" />
+      <circle cx="12" cy="12" r="1.1" fill="currentColor" stroke="none" />
+    </>
+  ),
+  link: <path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1" />,
+  eye: (
+    <>
+      <path d="M2.6 12S6 5.8 12 5.8 21.4 12 21.4 12 18 18.2 12 18.2 2.6 12 2.6 12z" fill="currentColor" fillOpacity=".2" />
+      <circle cx="12" cy="12" r="2.9" fill="currentColor" />
+    </>
+  ),
+  stack: (
+    <>
+      <path d="M4 7l8-3.6L20 7l-8 3.6z" fill="currentColor" fillOpacity=".26" />
+      <path d="M4 12l8 3.6 8-3.6M4 16.8l8 3.6 8-3.6" />
+    </>
+  ),
+};
+function CIcon({ n, className = "" }: { n: CIconName; className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={`col-ic col-ic-${n} ${className}`} fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      {CI[n]}
+    </svg>
+  );
+}
+
+const TABS: { id: Tab; label: string; icon: CIconName }[] = [
+  { id: "pop", label: "Популярное", icon: "flame" },
+  { id: "new", label: "Новое", icon: "clock" },
+  { id: "ed", label: "Выбор редакции", icon: "crown" },
+  { id: "lk", label: "Понравившиеся", icon: "heart" },
+  { id: "my", label: "Мои", icon: "bookmark" },
 ];
 
 const SORTS: { id: SortKey; label: string }[] = [
@@ -502,11 +557,48 @@ export function CollectionsView({ posters, initialId }: CollectionsViewProps) {
     event.currentTarget.style.transform = "";
   };
 
+  const router = useRouter();
+  const [opening, setOpening] = useState<number | null>(null);
+  /** Подборка хранит только названия — находим тайтл поиском и открываем его страницу */
+  const openTitlePage = async (name: string, index: number) => {
+    setOpening(index);
+    try {
+      const res = await fetch(`/api/kodik/search?q=${encodeURIComponent(name)}&limit=8`);
+      const data = res.ok ? ((await res.json()) as { results?: { id: string; title?: string }[] }) : {};
+      const norm = (t?: string) => (t ?? "").toLowerCase().replace(/[^\p{L}\p{N}]+/gu, " ").trim();
+      const list = data.results ?? [];
+      /* Точное совпадение названия важнее первой позиции поиска (у франшизы много сезонов) */
+      const id = (list.find((r) => norm(r.title) === norm(name)) ?? list[0])?.id;
+      router.push(id ? `/title/${id}` : `/catalog?q=${encodeURIComponent(name)}`);
+    } catch {
+      router.push(`/catalog?q=${encodeURIComponent(name)}`);
+    } finally {
+      setOpening(null);
+    }
+  };
   const open = openId === null ? null : catalog.find((c) => c.id === openId) ?? null;
   const openWatched = openId === null ? [] : (watched[openId] ?? []);
 
   return (
     <div className="col-page">
+      <div className="col-bg" aria-hidden>
+        <span className="col-bg-neb n1" />
+        <span className="col-bg-neb n2" />
+        <span className="col-bg-neb n3" />
+        <span className="col-bg-veil" />
+        <span className="col-bg-petals">
+          {Array.from({ length: 12 }, (_, i) => (
+            <i key={i} style={{ ["--i" as string]: i }} />
+          ))}
+        </span>
+        <span className="col-bg-grid" />
+        <span className="col-bg-dust">
+          {Array.from({ length: 22 }, (_, i) => (
+            <i key={i} style={{ ["--i" as string]: i }} />
+          ))}
+        </span>
+        <span className="col-bg-vig" />
+      </div>
       <div className="col-wrap">
         {/* ------------------------------ Hero ------------------------------ */}
         <section className="col-hero">
@@ -587,7 +679,7 @@ export function CollectionsView({ posters, initialId }: CollectionsViewProps) {
                 <div className="col-bgm">{mosaic(c)}</div>
                 <div className="col-mos">{mosaic(c)}</div>
                 <div className="col-info">
-                  <span className="col-badge">♛ ВЫБОР РЕДАКЦИИ · №{i + 1}</span>
+                  <span className="col-badge"><CIcon n="crown" /> ВЫБОР РЕДАКЦИИ · №{i + 1}</span>
                   <h2>{c.title}</h2>
                   <p>{c.desc}</p>
                   <div className="col-row">
@@ -599,10 +691,10 @@ export function CollectionsView({ posters, initialId }: CollectionsViewProps) {
                   </div>
                   <div className="col-fm">
                     <span>
-                      ▦ {c.items.length} {plural(c.items.length, ["тайтл", "тайтла", "тайтлов"])}
+                      <CIcon n="stack" /> {c.items.length} {plural(c.items.length, ["тайтл", "тайтла", "тайтлов"])}
                     </span>
-                    <span>♥ {c.likes}</span>
-                    <span>👁 {formatCount(c.views)}</span>
+                    <span><CIcon n="heart" /> {c.likes}</span>
+                    <span><CIcon n="eye" /> {formatCount(c.views)}</span>
                   </div>
                   <div className="col-row">
                     <button type="button" className="col-btn col-pri" onClick={() => openDetail(c.id)}>
@@ -690,6 +782,7 @@ export function CollectionsView({ posters, initialId }: CollectionsViewProps) {
                   setPage(1);
                 }}
               >
+                <CIcon n={t.icon} />
                 {t.label}
                 {t.id === "lk" && <em>{liked.size}</em>}
                 {t.id === "my" && <em>{myCount}</em>}
@@ -736,7 +829,7 @@ export function CollectionsView({ posters, initialId }: CollectionsViewProps) {
               if (pick) openDetail(pick.id);
             }}
           >
-            🎲 Мне повезёт
+            <CIcon n="dice" /> Мне повезёт
           </button>
           <button type="button" className="col-btn col-pri" style={{ marginLeft: "auto" }} onClick={() => setCreating(true)}>
             ＋ Создать подборку
@@ -810,7 +903,7 @@ export function CollectionsView({ posters, initialId }: CollectionsViewProps) {
                   <div className="col-mosaic">
                     {mosaic(c)}
                     <div className="col-meta">
-                      <span className="col-pill">▦ {c.items.length}</span>
+                      <span className="col-pill"><CIcon n="stack" /> {c.items.length}</span>
                       <button
                         type="button"
                         className={`col-pill col-lk${liked.has(c.id) ? " col-on" : ""}`}
@@ -819,9 +912,9 @@ export function CollectionsView({ posters, initialId }: CollectionsViewProps) {
                           toggleLike(c.id);
                         }}
                       >
-                        ♥ <span>{c.likes + (liked.has(c.id) ? 1 : 0)}</span>
+                        <CIcon n="heart" /> <span>{c.likes + (liked.has(c.id) ? 1 : 0)}</span>
                       </button>
-                      <span className="col-pill col-r">👁 {formatCount(c.views)}</span>
+                      <span className="col-pill col-r"><CIcon n="eye" /> {formatCount(c.views)}</span>
                     </div>
                   </div>
                   <div className="col-body">
@@ -875,7 +968,7 @@ export function CollectionsView({ posters, initialId }: CollectionsViewProps) {
               <button type="button" className="col-x" aria-label="Закрыть" onClick={closeAll}>
                 ✕
               </button>
-              <span className="col-badge">{open.ed ? "♛ ВЫБОР РЕДАКЦИИ" : "ПОДБОРКА"}</span>
+              <span className="col-badge">{open.ed ? <><CIcon n="crown" /> ВЫБОР РЕДАКЦИИ</> : "ПОДБОРКА"}</span>
               <h2 style={{ marginTop: 14, fontSize: 28, letterSpacing: "-0.02em" }}>{open.title}</h2>
               <div className="col-row" style={{ marginTop: 8, color: "var(--mut)", fontSize: 13, fontWeight: 600 }}>
                 {avatar(open.author)}
@@ -897,7 +990,7 @@ export function CollectionsView({ posters, initialId }: CollectionsViewProps) {
                   <small>тайтлов</small>
                 </div>
                 <div>
-                  <b>♥ {open.likes + (liked.has(open.id) ? 1 : 0)}</b>
+                  <b><CIcon n="heart" /> {open.likes + (liked.has(open.id) ? 1 : 0)}</b>
                   <small>лайков</small>
                 </div>
                 <div>
@@ -917,7 +1010,7 @@ export function CollectionsView({ posters, initialId }: CollectionsViewProps) {
               </div>
               <div className="col-row">
                 <button type="button" className="col-btn col-pri" onClick={(event) => toggleLike(open.id, event.currentTarget)}>
-                  {liked.has(open.id) ? "♥ В избранном" : "♡ В избранное"}
+                  <CIcon n="heart" /> {liked.has(open.id) ? "В избранном" : "В избранное"}
                 </button>
                 <button
                   type="button"
@@ -932,7 +1025,7 @@ export function CollectionsView({ posters, initialId }: CollectionsViewProps) {
                     }
                   }}
                 >
-                  🔗 Поделиться
+                  <CIcon n="link" /> Поделиться
                 </button>
                 <button
                   type="button"
@@ -943,7 +1036,7 @@ export function CollectionsView({ posters, initialId }: CollectionsViewProps) {
                     say(`🎲 Смотрите: ${itemTitle(open.items[pool[Math.random() * pool.length | 0]])}`);
                   }}
                 >
-                  🎲 Что смотреть?
+                  <CIcon n="dice" /> Что смотреть?
                 </button>
               </div>
               <p style={{ color: "var(--mut)", fontSize: 12, marginTop: 14 }}>
@@ -952,15 +1045,25 @@ export function CollectionsView({ posters, initialId }: CollectionsViewProps) {
               </p>
               <div className="col-items">
                 {open.items.map((item, i) => (
-                  <button
-                    type="button"
-                    key={`${itemTitle(item)}-${i}`}
-                    className={`col-it${openWatched.includes(i) ? " col-w" : ""}`}
-                    onClick={() => toggleWatched(open.id, i)}
-                  >
-                    <i>{openWatched.includes(i) ? "✓" : i + 1}</i>
-                    <span>{itemTitle(item)}</span>
-                  </button>
+                  <div key={`${itemTitle(item)}-${i}`} className={`col-it${openWatched.includes(i) ? " col-w" : ""}`}>
+                    <button type="button" className="col-it-main" onClick={() => toggleWatched(open.id, i)}>
+                      <i>{openWatched.includes(i) ? "✓" : i + 1}</i>
+                      <span>{itemTitle(item)}</span>
+                    </button>
+                    <button
+                      type="button"
+                      className="col-it-go"
+                      title="Открыть страницу тайтла"
+                      aria-label={`Открыть страницу: ${itemTitle(item)}`}
+                      disabled={opening === i}
+                      onClick={() => openTitlePage(itemTitle(item), i)}
+                    >
+                      {opening === i ? "…" : "Открыть"}
+                      <svg viewBox="0 0 24 24" aria-hidden>
+                        <path d="M5 12h14m-6-6 6 6-6 6" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    </button>
+                  </div>
                 ))}
               </div>
               {openWatched.length === open.items.length && open.items.length > 0 && (
@@ -1326,9 +1429,9 @@ function PreviewCard({
       <div className="col-mosaic">
         {mosaicItems(collection).map((i, k) => tile(collection.items[i], k, posters))}
         <div className="col-meta">
-          <span className="col-pill">▦ {collection.items.length}</span>
-          <span className={`col-pill col-lk${liked ? " col-on" : ""}`}>♥ {collection.likes + (liked ? 1 : 0)}</span>
-          <span className="col-pill col-r">👁 {formatCount(collection.views)}</span>
+          <span className="col-pill"><CIcon n="stack" /> {collection.items.length}</span>
+          <span className={`col-pill col-lk${liked ? " col-on" : ""}`}><CIcon n="heart" /> {collection.likes + (liked ? 1 : 0)}</span>
+          <span className="col-pill col-r"><CIcon n="eye" /> {formatCount(collection.views)}</span>
         </div>
       </div>
       <div className="col-body">

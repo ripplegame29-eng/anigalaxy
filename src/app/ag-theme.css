@@ -4541,33 +4541,45 @@ body {
   box-shadow: 0 0 8px var(--cyan);
 }
 
-/* Столбцы недели */
-.ag-root .ag-w-bars {
+/* Столбцы недели (отдельный класс: .ag-w-bars занят полосами студий) */
+.ag-root .ag-w-week {
   display: flex;
-  align-items: flex-end;
+  align-items: stretch;
   gap: 8px;
-  height: 110px;
+  height: 120px;
 }
 
-.ag-root .ag-w-bars > div {
+.ag-root .ag-w-week > div {
   flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 6px;
-  height: 100%;
-  justify-content: flex-end;
   font-size: 11px;
   color: var(--muted);
   font-weight: 700;
 }
 
-.ag-root .ag-w-bars i {
+.ag-root .ag-w-week em {
+  font-style: normal;
+  color: var(--text);
+}
+
+.ag-root .ag-w-week-bar {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  align-items: flex-end;
+}
+
+.ag-root .ag-w-week i {
+  display: block;
   width: 100%;
   border-radius: 8px 8px 3px 3px;
   background: linear-gradient(180deg, var(--cyan), var(--blue));
   box-shadow: 0 0 14px color-mix(in srgb, var(--blue) 50%, transparent);
-  min-height: 2px;
+  min-height: 3px;
 }
 
 /* Слоты любимого */
@@ -4964,7 +4976,19 @@ body {
   transition: background 0.2s, transform 0.2s, border-color 0.2s;
 }
 .ag-skipbtn:hover { background: rgba(255, 255, 255, 0.92); color: #0a0d14; transform: translateY(-2px); }
-.ag-skipbtn--next { border-color: rgba(var(--accent-rgb), 0.7); background: rgba(var(--accent-rgb), 0.35); }
+.ag-skipbtn { padding: 11px 20px; border-radius: 999px; border-color: transparent; background: rgba(12, 12, 16, 0.86); }
+.ag-skipbtn--white { background: #fff; color: #0a0d14; }
+.ag-skipbtn--white:hover { background: #e9ecf4; }
+.ag-nextcard {
+  display: inline-flex; align-items: center; gap: 10px; padding: 6px 12px 6px 6px; border-radius: 12px; color: #fff; cursor: pointer; text-align: left;
+  background: rgba(12, 12, 16, 0.86); backdrop-filter: blur(14px); border: 1px solid rgba(255, 255, 255, 0.12);
+  animation: ag-skip-in 0.35s cubic-bezier(0.2, 0.9, 0.3, 1.2) both; transition: background 0.2s, transform 0.2s;
+}
+.ag-nextcard:hover { background: rgba(255, 255, 255, 0.14); transform: translateY(-2px); }
+.ag-nextcard__tile { width: 54px; height: 34px; border-radius: 7px; display: grid; place-items: center; background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.9), rgba(var(--accent-rgb), 0.35)); }
+.ag-nextcard__txt { display: flex; flex-direction: column; gap: 2px; }
+.ag-nextcard__txt b { font-size: 12.5px; font-weight: 800; }
+.ag-nextcard__txt small { font-size: 11px; color: rgba(255, 255, 255, 0.6); }
 .ag-seekflash { animation: ag-flash 0.6s ease-out both; }
 @keyframes ag-skip-in { from { opacity: 0; transform: translateX(24px) scale(0.95); } }
 @keyframes ag-flash { 0% { opacity: 0; transform: translateY(-50%) scale(0.7); } 25% { opacity: 1; } 100% { opacity: 0; transform: translateY(-50%) scale(1.15); } }

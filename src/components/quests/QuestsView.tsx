@@ -19,7 +19,7 @@ import { useAccount } from "@/lib/use-account";
 import { progressEmit, useLevelInfo, useProgress } from "@/lib/progression/events";
 import { PROGRESSION_CONFIG } from "@/lib/progression/progression.config";
 import { BATTLEPASS, BP_MISSIONS } from "@/lib/battlepass/config";
-import { bpLevelFromXp } from "@/lib/battlepass/logic";
+import { bpMissionValue } from "@/lib/battlepass/logic";
 import { PREMIUM_QUEST_MULT } from "@/lib/premium-perks";
 
 type Tab = "daily" | "weekly" | "season";
@@ -125,17 +125,21 @@ export function QuestsView() {
     if (el) burst(el);
     progressEmit({ type: "QUEST_CLAIMED", questId: id });
   };
+  const claimMission = (id: string, el: HTMLElement | null) => {
+    if (el) burst(el);
+    progressEmit({ type: "BP_MISSION_CLAIMED", missionId: id });
+  };
   const claimAll = () => {
     if (claimRef.current) burst(claimRef.current);
     for (const { inst } of ready) progressEmit({ type: "QUEST_CLAIMED", questId: inst.questId });
+    for (const mission of missionsReady) progressEmit({ type: "BP_MISSION_CLAIMED", missionId: mission.id });
   };
 
   /* --------------------------- Сезон (пропуск) --------------------------- */
-  const bpXp = progress.battlepass.xp;
-  const bpLevel = bpLevelFromXp(bpXp);
-  const missionValue = (m: (typeof BP_MISSIONS)[number]) =>
-    m.kind === "bpXp" ? bpXp : m.kind === "level" ? bpLevel : progress.battlepass.claimed.length;
-  const missionsDone = BP_MISSIONS.filter((m) => missionValue(m) >= m.target).length;
+  const missionValue = (m: (typeof BP_MISSIONS)[number]) => bpMissionValue(m, progress.battlepass);
+  const missionsClaimedIds = progress.battlepass.missions ?? [];
+  const missionsClaimed = BP_MISSIONS.filter((m) => missionsClaimedIds.includes(m.id)).length;
+  const missionsReady = BP_MISSIONS.filter((m) => missionValue(m) >= m.target && !missionsClaimedIds.includes(m.id));
   const daysLeftSeason = now === null ? 0 : Math.max(0, Math.ceil((BATTLEPASS.to - now) / 86_400_000));
 
   const R = 44;
@@ -247,10 +251,10 @@ export function QuestsView() {
               ref={claimRef}
               type="button"
               className="qs-all"
-              disabled={ready.length === 0}
+              disabled={ready.length + missionsReady.length === 0}
               onClick={claimAll}
             >
-              {ready.length > 0 ? `Забрать всё · ${ready.length}` : "Нечего забирать"}
+              {ready.length + missionsReady.length > 0 ? `Забрать всё · ${ready.length + missionsReady.length}` : "Нечего забирать"}
             </button>
           </div>
 
@@ -294,7 +298,7 @@ export function QuestsView() {
             [
               ["daily", "Ежедневные", `${dailyClaimed}/${dailyRows.length}`],
               ["weekly", "Недельные", `${weeklyClaimed}/${weeklyRows.length}`],
-              ["season", "Сезон", `${missionsDone}/${BP_MISSIONS.length}`],
+              ["season", "Сезон", `${missionsClaimed}/${BP_MISSIONS.length}`],
             ] as const
           ).map(([key, label, count]) => (
             <button key={key} type="button" role="tab" aria-selected={tab === key} className={tab === key ? "on" : undefined} onClick={() => setTab(key)}>
@@ -318,22 +322,37 @@ export function QuestsView() {
           )}
           {tab === "season" && (
             <>
-              <p className="qs-note">{BATTLEPASS.name} · до конца сезона {daysLeftSeason} дн. Задания сезона засчитываются сами.</p>
+              <p className="qs-note">{BATTLEPASS.name} · до конца сезона {daysLeftSeason} дн. Прогресс засчитывается сам, награду нужно забрать вручную.</p>
               <ul className="qs-list">
                 {BP_MISSIONS.map((mission, index) => {
                   const value = Math.min(missionValue(mission), mission.target);
                   const pct = Math.round((value / mission.target) * 100);
                   const done = value >= mission.target;
+                  const claimed = missionsClaimedIds.includes(mission.id);
+                  const isReady = done && !claimed;
                   return (
-                    <li key={mission.id} className={`qs-card${done ? " is-claimed" : ""}`} style={{ ["--n" as string]: index, ["--p" as string]: `${pct}%` }}>
+                    <li key={mission.id} className={`qs-card${isReady ? " is-ready" : ""}${claimed ? " is-claimed" : ""}`} style={{ ["--n" as string]: index, ["--p" as string]: `${pct}%` }}>
                       <span className="qs-ic"><Icon metric="SEASON" /></span>
                       <div className="qs-body">
-                        <div className="qs-top"><h3>{mission.title}</h3><div className="qs-rew"><b>{pct}%</b></div></div>
+                        <div className="qs-top">
+                          <h3>{mission.title}</h3>
+                          <div className="qs-rew">
+                            <b>+{mission.xp * mult} XP</b>
+                            <b className="ac">+{mission.ac * mult} AC</b>
+                          </div>
+                        </div>
                         <p>{mission.description}</p>
-                        <div className="qs-track"><i /></div>
+                        <div className="qs-track" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={pct}><i /></div>
                         <div className="qs-foot">
                           <span>{value} / {mission.target}{mission.kind === "level" ? " уровень" : mission.kind === "claim" ? " наград" : " XP"}</span>
-                          {done && <button type="button" className="done" disabled>Выполнено ✓</button>}
+                          <button
+                            type="button"
+                            disabled={!isReady}
+                            onClick={(event) => claimMission(mission.id, event.currentTarget)}
+                            className={claimed ? "done" : isReady ? "go" : undefined}
+                          >
+                            {claimed ? "Забрано ✓" : isReady ? "Забрать" : `${pct}%`}
+                          </button>
                         </div>
                       </div>
                     </li>

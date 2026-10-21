@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { MangaReader } from "./MangaReader";
 import { ReaderBar } from "./ReaderBar";
-import { noteMangaChapter } from "@/lib/clans.runtime";
+import { noteChapter as noteMangaChapter } from "@/lib/clan2/store";
 
 /**
  * Оболочка страницы чтения: держит номер текущей страницы и рисует

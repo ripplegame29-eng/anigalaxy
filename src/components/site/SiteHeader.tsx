@@ -36,7 +36,6 @@ import {
   useState,
   useSyncExternalStore,
   type CSSProperties,
-  type MouseEvent as ReactMouseEvent,
   type PointerEvent as ReactPointerEvent,
 } from "react";
 /* Стили шапки подключаются один раз в корневом layout: глобальный CSS,
@@ -58,10 +57,10 @@ import {
 } from "./header-data";
 import { AnimeOfTheDay } from "./AnimeOfTheDay";
 import { useAccount } from "@/lib/use-account";
-import { activatePremium, isPremiumActive } from "@/lib/auth";
+import { activatePremium } from "@/lib/auth";
 import { useLinks } from "@/lib/accounts";
 import { unreadCount, useProfile } from "@/lib/profile";
-import { useLevelInfo, useProgress } from "@/lib/progression/events";
+import { useLevelInfo } from "@/lib/progression/events";
 
 /** id градиента из прототипа: был общим `#xg`, стал уникальным ради страниц */
 const GRADIENT_ID = "ag-hd-xg";
@@ -192,7 +191,6 @@ export function SiteHeader({ onOpenSearch }: SiteHeaderProps) {
   const navRef = useRef<HTMLElement | null>(null);
   const hlRef = useRef<HTMLElement | null>(null);
   const actRef = useRef<HTMLElement | null>(null);
-  const burRef = useRef<HTMLButtonElement | null>(null);
   const itemsRef = useRef<(HTMLElement | null)[]>([]);
 
   /* ------------------------------ Дропдауны ----------------------------- */
@@ -397,10 +395,6 @@ export function SiteHeader({ onOpenSearch }: SiteHeaderProps) {
       if (trigger) {
         const id = trigger.getAttribute("data-dd");
         if (id) setOpenId((prev) => (prev === id ? null : id));
-        return;
-      }
-      if (burRef.current?.contains(target)) {
-        setOpenId((prev) => (prev === "mn" ? null : "mn"));
         return;
       }
       if (!target.closest(".dd")) setOpenId(null);
@@ -883,32 +877,6 @@ export function SiteHeader({ onOpenSearch }: SiteHeaderProps) {
             <Icon name="crown" />
             <span>Premium</span>
           </Link>
-
-          <button
-            type="button"
-            className="ib bur"
-            id="bur"
-            aria-label="Меню"
-            aria-expanded={openId === "mn"}
-            ref={burRef}
-          >
-            <Icon name="menu" />
-          </button>
-
-          <div className={`dd mnav${openId === "mn" ? " o" : ""}`} id="mn">
-            {NAV_LINKS.map((item) => (
-              <Link key={item.label} className="mi" href={item.href ?? item.mobileHref ?? "/catalog"}>
-                <b>{item.label}</b>
-              </Link>
-            ))}
-            {/* Совместный просмотр на узких экранах снят с капсулы, иначе
-                полоса шапки не помещалась в 375px и кнопка «Войти»
-                сжималась так, что её текст налезал на бургер. Функция не
-                потеряна — ссылка живёт здесь. */}
-            <Link className="mi mi-watch" href="/watch-together">
-              <b>Совместный просмотр</b>
-            </Link>
-          </div>
         </div>
       </header>
 

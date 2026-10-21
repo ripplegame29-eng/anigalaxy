@@ -8,7 +8,7 @@ import { WideFilmRow } from "@/components/WideFilmRow";
 import { HeroSlider } from "@/components/HeroSlider";
 import { getTitleDetail, row } from "@/lib/kodik";
 import { mangaRow } from "@/lib/senku";
-import { DonateWidget } from "@/components/DonateWidget";
+import { HomePromo } from "@/components/HomePromo";
 
 /** Страница кэшируется на 5 минут — Kodik обновляет данные нечасто */
 export const revalidate = 300;
@@ -46,7 +46,7 @@ const HERO_SLIDES = [
   { id: "serial-27443", video: "/video/rezero.mp4" }, // Re:Zero. Жизнь с нуля…
   { id: "serial-29315", video: "/video/jujutsu-kaisen.mp4" }, // Магическая битва
   { id: "serial-68228", video: "/video/gachiakuta.mp4" }, // Гатиакута
-  { id: "serial-5310", video: "/video/bleach.mp4" }, // Блич
+  { id: "serial-46220", video: "/video/bleach.mp4" }, // Блич: Тысячелетняя кровавая война
 ];
 
 async function Hero() {
@@ -176,16 +176,9 @@ export default function HomePage() {
       </Suspense>
 
       <div className="mx-auto max-w-7xl space-y-14 px-4 pb-6 pt-12 sm:px-6 sm:pt-16">
-        {/* Два виджета под плеером (донат + «Боевой пропуск») — iframe с
-            копией HTML-файла; прозрачный фон + container-type, чтобы рамки
-            и скроллбаров не было, а вокруг виджета был фон сайта.
-            marginInline −12px компенсирует padding body виджета (12px):
-            баннеры становятся в ширину ровно как ряды онгоингов */}
-        <section
-          aria-label="Донат и боевой пропуск"
-          style={{ containerType: "inline-size", marginInline: "-12px" }}
-        >
-          <DonateWidget />
+        {/* Плашки: Premium и Боевой пропуск */}
+        <section aria-label="Premium и боевой пропуск">
+          <HomePromo />
         </section>
 
         {/* Продолжить просмотр — прямо над онгоингами, как в макете. Блок

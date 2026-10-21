@@ -1,0 +1,121 @@
+/* «Зал славы» — главная, топ рейтинга */
+.tt2{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1.5fr);gap:16px}
+.tt2-lead{position:relative;isolation:isolate;display:flex;align-items:flex-end;gap:22px;min-height:420px;padding:26px;border-radius:26px;overflow:hidden;box-shadow:inset 0 0 0 1px rgba(255,255,255,.1),0 36px 70px -44px rgba(255,190,90,.55);transition:transform .35s cubic-bezier(.2,.8,.2,1)}
+.tt2-lead:hover{transform:translateY(-4px)}
+.tt2-lead-bg{position:absolute;inset:-12%;z-index:-3;filter:blur(26px) saturate(1.35);opacity:.7}
+.tt2-lead-bg>*{position:absolute!important;inset:0}
+.tt2-lead-shade{position:absolute;inset:0;z-index:-2;background:linear-gradient(0deg,rgba(7,8,13,.95),rgba(7,8,13,.35) 60%,rgba(7,8,13,.7)),radial-gradient(80% 60% at 20% 0,rgba(255,200,100,.18),transparent 70%)}
+.tt2-lead::after{content:"";position:absolute;inset:0;z-index:-1;border-radius:inherit;padding:1.5px;background:linear-gradient(140deg,rgba(255,226,150,.9),rgba(255,255,255,.08) 40%,rgba(255,180,80,.55));-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none}
+.tt2-lead-poster{position:relative;flex:none;width:170px;aspect-ratio:2/3;border-radius:16px;overflow:hidden;box-shadow:0 0 0 1px rgba(255,255,255,.2),0 28px 44px -18px #000;transform:rotate(-2.5deg);transition:transform .5s cubic-bezier(.2,.8,.2,1)}
+.tt2-lead:hover .tt2-lead-poster{transform:rotate(0) scale(1.03)}
+.tt2-sheen{position:absolute;inset:0;background:linear-gradient(115deg,rgba(255,255,255,.22),transparent 38%);pointer-events:none}
+.tt2-lead-body{position:relative;display:flex;flex-direction:column;gap:10px;min-width:0;padding-bottom:6px}
+.tt2-crest{position:relative;display:grid;place-items:center;width:62px;height:62px}
+.tt2-laurel{position:absolute;inset:0;width:100%;height:100%;filter:drop-shadow(0 0 8px rgba(255,190,90,.6))}
+.tt2-crest b{position:relative;top:4px;font-size:26px;font-weight:900;background:linear-gradient(180deg,#fff7d6,#ffc861);-webkit-background-clip:text;background-clip:text;color:transparent}
+.tt2-lead-title{font-size:clamp(20px,2vw,28px);font-weight:900;line-height:1.1;letter-spacing:-.01em;color:#fff;text-shadow:0 3px 18px rgba(0,0,0,.6);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.tt2-lead-meta{font-size:13px;color:rgba(255,255,255,.68)}
+.tt2-score{display:flex;align-items:center;gap:12px;margin-top:2px}
+.tt2-score b{font-size:30px;font-weight:900;line-height:1;background:linear-gradient(180deg,#fff,#ffd38a);-webkit-background-clip:text;background-clip:text;color:transparent}
+.tt2-bar{display:block;flex:1;min-width:48px;max-width:120px;height:5px;border-radius:5px;background:rgba(255,255,255,.14);overflow:hidden}
+.tt2-bar i{display:block;height:100%;border-radius:5px;background:linear-gradient(90deg,var(--bar-a,#ffb347),var(--bar-b,#ffe29a));box-shadow:0 0 10px var(--bar-a,#ffb347)}
+
+.tt2-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;align-content:start;margin:0;padding:0;list-style:none}
+.tt2-item{--m:255 255 255;--bar-a:rgb(var(--accent-rgb,43 127 255));--bar-b:#fff;position:relative;display:flex;align-items:center;gap:12px;padding:10px 14px 10px 10px;border-radius:18px;background:linear-gradient(135deg,rgba(255,255,255,.055),rgba(255,255,255,.015));box-shadow:inset 0 0 0 1px rgba(255,255,255,.08);transition:transform .25s cubic-bezier(.2,.8,.2,1),box-shadow .25s,background .25s}
+.tt2-item:hover{transform:translateY(-3px);background:linear-gradient(135deg,rgba(var(--m)/.14),rgba(255,255,255,.02));box-shadow:inset 0 0 0 1px rgba(var(--m)/.5),0 18px 34px -22px rgba(var(--m)/.8)}
+.tt2-silver{--m:207 216 232;--bar-a:#cfd8e8;--bar-b:#fff}
+.tt2-bronze{--m:224 149 92;--bar-a:#e0955c;--bar-b:#ffd2ad}
+.tt2-rank{flex:none;display:grid;place-items:center;width:30px;height:30px;border-radius:10px;font-size:14px;font-weight:900;color:rgba(255,255,255,.7);background:rgba(255,255,255,.07);box-shadow:inset 0 0 0 1px rgba(255,255,255,.1);font-variant-numeric:tabular-nums}
+.tt2-silver .tt2-rank,.tt2-bronze .tt2-rank{color:#1a1208;background:linear-gradient(135deg,#fff,rgb(var(--m)));box-shadow:0 0 14px -2px rgba(var(--m)/.7)}
+.tt2-thumb{position:relative;flex:none;width:56px;aspect-ratio:2/3;border-radius:11px;overflow:hidden;box-shadow:0 8px 16px -8px #000,0 0 0 1px rgba(255,255,255,.12)}
+.tt2-info{display:flex;flex-direction:column;gap:3px;min-width:0;flex:1}
+.tt2-name{font-size:14px;font-weight:800;line-height:1.2;color:#fff;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.tt2-sub{font-size:12px;color:rgba(255,255,255,.5)}
+.tt2-rate{flex:none;display:flex;flex-direction:column;align-items:flex-end;gap:6px;min-width:46px}
+.tt2-rate b{font-size:17px;font-weight:900;color:#fff;line-height:1}
+.tt2-rate .tt2-bar{width:46px;height:4px}
+@media(max-width:1100px){.tt2{grid-template-columns:1fr}.tt2-lead{min-height:340px}}
+@media(max-width:640px){.tt2-list{grid-template-columns:1fr}.tt2-lead{flex-direction:column;align-items:flex-start;min-height:0}.tt2-lead-poster{width:130px}}
+@media(prefers-reduced-motion:reduce){.tt2-lead,.tt2-lead-poster,.tt2-item{transition:none}}
+
+/* лидер: декор и содержимое */
+.tt2-lead{padding-top:68px}
+.tt2-rays{position:absolute;inset:-40% -20% auto -20%;height:100%;z-index:-1;pointer-events:none;background:repeating-conic-gradient(from 0deg at 50% 0,rgba(255,214,130,.16) 0 4deg,transparent 4deg 14deg);-webkit-mask:radial-gradient(60% 70% at 50% 0,#000,transparent 75%);mask:radial-gradient(60% 70% at 50% 0,#000,transparent 75%);animation:tt2-rot 40s linear infinite alternate;transform-origin:50% 0}
+@keyframes tt2-rot{from{transform:rotate(-8deg)}to{transform:rotate(8deg)}}
+.tt2-sparks{position:absolute;inset:0;z-index:-1;pointer-events:none}
+.tt2-sparks i{position:absolute;left:calc(8% + var(--i)*10%);top:calc(14% + (var(--i)*37%) - (var(--i)*37%)/1 + (var(--i)*7%));width:4px;height:4px;border-radius:50%;background:#ffe29a;box-shadow:0 0 10px 2px rgba(255,200,100,.8);opacity:0;animation:tt2-tw 4.5s ease-in-out infinite;animation-delay:calc(var(--i)*-.6s)}
+.tt2-sparks i:nth-child(even){width:3px;height:3px;top:calc(22% + var(--i)*5%)}
+@keyframes tt2-tw{0%,100%{opacity:0;transform:translateY(8px) scale(.6)}50%{opacity:.95;transform:translateY(-10px) scale(1.2)}}
+.tt2-topbar{position:absolute;left:22px;right:22px;top:20px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.tt2-ribbon{display:inline-flex;align-items:center;gap:7px;padding:7px 14px 7px 10px;border-radius:999px;font-size:12.5px;font-weight:800;color:#2a1604;background:linear-gradient(135deg,#fff1bd,#ffc861 55%,#f09a2c);box-shadow:0 8px 22px -8px rgba(255,170,60,.8),inset 0 1px 0 rgba(255,255,255,.7)}
+.tt2-ribbon svg{width:15px;height:15px}
+.tt2-votes{padding:6px 12px;border-radius:999px;font-size:12px;font-weight:700;color:rgba(255,255,255,.8);background:rgba(10,10,16,.45);box-shadow:inset 0 0 0 1px rgba(255,255,255,.14);backdrop-filter:blur(8px)}
+.tt2-chips{display:flex;flex-wrap:wrap;gap:6px}
+.tt2-chips em{font-style:normal;padding:4px 10px;border-radius:999px;font-size:11.5px;font-weight:700;color:#ffe6ae;background:rgba(255,190,90,.12);box-shadow:inset 0 0 0 1px rgba(255,200,110,.3)}
+.tt2-desc{font-size:12.5px;line-height:1.5;color:rgba(255,255,255,.62);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.tt2-cta{align-self:flex-start;display:inline-flex;align-items:center;gap:8px;margin-top:4px;padding:10px 20px 10px 14px;border-radius:999px;font-size:13.5px;font-weight:800;color:#2a1604;background:linear-gradient(135deg,#fff1bd,#ffc861 55%,#f09a2c);box-shadow:0 12px 26px -10px rgba(255,170,60,.85),inset 0 1px 0 rgba(255,255,255,.7);transition:transform .25s,filter .25s}
+.tt2-cta svg{width:16px;height:16px}
+.tt2-lead:hover .tt2-cta{transform:translateX(3px);filter:brightness(1.08)}
+@media(max-width:640px){.tt2-lead{padding-top:64px}.tt2-votes{display:none}}
+@media(prefers-reduced-motion:reduce){.tt2-rays,.tt2-sparks i{animation:none}}
+
+/* красная тема лидера (как в боевом пропуске) */
+.tt2-lead{box-shadow:inset 0 0 0 1px rgba(255,255,255,.08),0 36px 70px -44px rgba(255,61,98,.6)}
+.tt2-lead-shade{background:linear-gradient(0deg,rgba(14,4,8,.95),rgba(14,4,8,.35) 60%,rgba(14,4,8,.7)),radial-gradient(80% 60% at 20% 0,rgba(255,61,98,.25),transparent 70%)}
+.tt2-lead::after{background:linear-gradient(140deg,rgba(255,159,180,.95),rgba(255,255,255,.06) 40%,rgba(255,61,98,.7))}
+.tt2-rays{background:repeating-conic-gradient(from 0deg at 50% 0,rgba(255,77,109,.2) 0 4deg,transparent 4deg 14deg)}
+.tt2-sparks i{background:#ffb3c2;box-shadow:0 0 10px 2px rgba(255,61,98,.85)}
+.tt2-ribbon,.tt2-cta{color:#fff;background:linear-gradient(135deg,#ff6b88,#ff3d62 50%,#c2123a);box-shadow:0 12px 26px -10px rgba(255,61,98,.9),inset 0 1px 0 rgba(255,255,255,.45),inset 0 -1px 0 rgba(0,0,0,.25)}
+.tt2-ribbon{box-shadow:0 8px 22px -8px rgba(255,61,98,.85),inset 0 1px 0 rgba(255,255,255,.45)}
+.tt2-chips em{color:#ffd0da;background:rgba(255,61,98,.14);box-shadow:inset 0 0 0 1px rgba(255,110,140,.38)}
+.tt2-score b{background:linear-gradient(180deg,#fff,#ffb3c2);-webkit-background-clip:text;background-clip:text}
+.tt2-lead .tt2-bar i{--bar-a:#ff3d62;--bar-b:#ffb3c2}
+.tt2-crest{width:70px;height:70px}
+.tt2-laurel{filter:drop-shadow(0 0 10px rgba(255,61,98,.75))}
+.tt2-halo{transform-origin:40px 40px;animation:tt2-spin 18s linear infinite}
+@keyframes tt2-spin{to{transform:rotate(360deg)}}
+.tt2-crest b{top:1px;font-size:28px;background:linear-gradient(180deg,#fff,#ffb3c2);-webkit-background-clip:text;background-clip:text;filter:drop-shadow(0 2px 6px rgba(255,61,98,.7))}
+.tt2-lead-poster{box-shadow:0 0 0 1px rgba(255,159,180,.35),0 28px 44px -18px #000,0 0 40px -12px rgba(255,61,98,.6)}
+@media(prefers-reduced-motion:reduce){.tt2-halo{animation:none}}
+
+/* №1 — вписан в текст карточки */
+.tt2-crest{display:flex;align-items:center;gap:12px;width:auto;height:auto;margin-bottom:2px}
+.tt2-crest b{position:static;top:auto;font-size:52px;line-height:.85;font-weight:900;font-style:italic;letter-spacing:-.04em;padding-right:4px;background:linear-gradient(180deg,#fff 10%,#ff8fa8 55%,#ff3d62);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 4px 14px rgba(255,61,98,.6))}
+.tt2-crest span{position:relative;padding-left:12px;font-size:11.5px;line-height:1.3;font-weight:700;color:rgba(255,255,255,.7)}
+.tt2-crest span::before{content:"";position:absolute;left:0;top:2px;bottom:2px;width:2px;border-radius:2px;background:linear-gradient(180deg,#ff6b88,#c2123a)}
+
+/* синяя тема лидера — фирменный акцент сайта */
+.tt2-lead{box-shadow:inset 0 0 0 1px rgba(255,255,255,.08),0 36px 70px -44px rgba(43,127,255,.6)}
+.tt2-lead-shade{background:linear-gradient(0deg,rgba(5,9,18,.95),rgba(5,9,18,.35) 60%,rgba(5,9,18,.7)),radial-gradient(80% 60% at 20% 0,rgba(43,127,255,.25),transparent 70%)}
+.tt2-lead::after{background:linear-gradient(140deg,rgba(150,200,255,.95),rgba(255,255,255,.06) 40%,rgba(43,127,255,.7))}
+.tt2-rays{background:repeating-conic-gradient(from 0deg at 50% 0,rgba(90,162,255,.2) 0 4deg,transparent 4deg 14deg)}
+.tt2-sparks i{background:#b9d6ff;box-shadow:0 0 10px 2px rgba(43,127,255,.85)}
+.tt2-ribbon,.tt2-cta{color:#fff;background:linear-gradient(135deg,#5aa2ff,#2b7fff 50%,#1448c8);box-shadow:0 12px 26px -10px rgba(43,127,255,.9),inset 0 1px 0 rgba(255,255,255,.45),inset 0 -1px 0 rgba(0,0,0,.25)}
+.tt2-ribbon{box-shadow:0 8px 22px -8px rgba(43,127,255,.85),inset 0 1px 0 rgba(255,255,255,.45)}
+.tt2-chips em{color:#cfe3ff;background:rgba(43,127,255,.16);box-shadow:inset 0 0 0 1px rgba(110,170,255,.38)}
+.tt2-score b{background:linear-gradient(180deg,#fff,#b9d6ff);-webkit-background-clip:text;background-clip:text}
+.tt2-lead .tt2-bar i{--bar-a:#2b7fff;--bar-b:#b9d6ff}
+.tt2-crest b{background:linear-gradient(180deg,#fff 10%,#b9d6ff 55%,#5aa2ff);-webkit-background-clip:text;background-clip:text;filter:drop-shadow(0 4px 14px rgba(43,127,255,.65))}
+.tt2-crest span::before{background:linear-gradient(180deg,#5aa2ff,#1448c8)}
+.tt2-lead-poster{box-shadow:0 0 0 1px rgba(150,200,255,.35),0 28px 44px -18px #000,0 0 40px -12px rgba(43,127,255,.6)}
+
+/* плашка «1 место» — премиальный бейдж без обрезки */
+.tt2-crest{position:relative;display:inline-flex;align-items:center;gap:12px;align-self:flex-start;width:auto;height:auto;margin-bottom:4px;padding:6px 18px 6px 6px;border-radius:18px;background:linear-gradient(135deg,rgba(43,127,255,.22),rgba(10,16,32,.6));box-shadow:inset 0 0 0 1px rgba(120,176,255,.4),0 14px 30px -14px rgba(43,127,255,.8);backdrop-filter:blur(6px)}
+.tt2-num{position:relative;display:grid;place-items:center;flex:none;width:52px;height:52px;border-radius:13px;background:linear-gradient(145deg,#6db0ff,#2b7fff 50%,#1448c8);box-shadow:inset 0 1px 0 rgba(255,255,255,.55),inset 0 -6px 12px rgba(8,30,100,.45),0 6px 16px -4px rgba(43,127,255,.9);overflow:hidden}
+.tt2-num::before{content:"";position:absolute;inset:0 0 55% 0;background:linear-gradient(180deg,rgba(255,255,255,.4),transparent)}
+.tt2-num::after{content:"";position:absolute;inset:3px;border-radius:10px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.3);pointer-events:none}
+.tt2-crest .tt2-num b{position:relative;display:block;top:0;padding:0;font-size:32px;line-height:1;font-weight:900;font-style:normal;letter-spacing:0;color:#fff;background:none;-webkit-background-clip:border-box;background-clip:border-box;filter:none;text-shadow:0 2px 6px rgba(6,24,90,.6)}
+.tt2-place{display:flex;flex-direction:column;gap:2px;padding:0;border:0}
+.tt2-place::before{display:none}
+.tt2-place strong{font-size:14px;font-weight:900;line-height:1.1;color:#fff;letter-spacing:.01em}
+.tt2-place small{font-size:11.5px;line-height:1.1;color:rgba(190,215,255,.75)}
+.tt2-crest>span.tt2-num{padding:0;font-size:inherit}
+.tt2-crest>span.tt2-num::before{left:0;right:0;top:0;bottom:55%;width:auto;border-radius:0;background:linear-gradient(180deg,rgba(255,255,255,.4),transparent)}
+.tt2-crest>span.tt2-place{padding:0;font-size:inherit;color:inherit}
+.tt2-crest>span.tt2-place::before{display:none}
+
+/* v3: большая «1» как графика + строгая подпись */
+.tt2-crest{all:unset;display:flex;align-items:center;gap:10px;font-size:13px;font-weight:800;letter-spacing:.02em;color:#cfe3ff}
+.tt2-crest i{display:block;width:30px;height:2px;border-radius:2px;background:linear-gradient(90deg,#2b7fff,#b9d6ff);box-shadow:0 0 10px rgba(43,127,255,.9)}
+.tt2-big{position:absolute;z-index:-1;right:26px;top:52px;padding:0 .12em;font-size:210px;line-height:1;font-weight:900;letter-spacing:-.02em;pointer-events:none;user-select:none;color:transparent;-webkit-text-stroke:1.5px rgba(150,200,255,.5);background:linear-gradient(180deg,rgba(120,176,255,.35),rgba(43,127,255,0) 75%);-webkit-background-clip:text;background-clip:text;filter:drop-shadow(0 0 26px rgba(43,127,255,.55))}
+@media(max-width:640px){.tt2-big{font-size:150px;top:60px}}

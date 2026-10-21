@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { PageBackdrop } from "@/components/PageBackdrop";
 import { QuestsView } from "@/components/quests/QuestsView";
 
 export const metadata: Metadata = {
@@ -9,5 +10,10 @@ export const metadata: Metadata = {
 };
 
 export default function QuestsPage() {
-  return <QuestsView />;
+  return (
+    <>
+      <PageBackdrop variant="quests" />
+      <QuestsView />
+    </>
+  );
 }

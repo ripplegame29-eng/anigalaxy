@@ -26,6 +26,8 @@ export type BpReward =
   | { kind: "tag"; itemId: string; dupeAc: number }
   /** Рамка/маска из гардероба; `as` — подпись в названии (рамка/маска) */
   | { kind: "frame"; itemId: string; dupeAc: number; as?: "frame" | "mask" }
+  /** Сезонное оформление профиля (виджет-декор из `PROFILE_DECORS`) */
+  | { kind: "decor"; itemId: string; dupeAc: number }
   /** «Лучшая подходящая» рамка из магазина: первая невыданная из списка */
   | { kind: "framePick"; candidates: string[]; dupeAc: number };
 
@@ -81,15 +83,18 @@ export interface BpMission {
   kind: BpMissionKind;
   /** Цель в единицах kind: XP пропуска, номер уровня, число забранных наград */
   target: number;
+  /** Награда за выполнение: аникойны и XP профиля (забирается вручную) */
+  ac: number;
+  xp: number;
 }
 
 const SEASON_MISSIONS: BpMission[] = [
-  { id: "ms-xp-500", title: "Первый полёт", description: "Накопить 500 XP боевого пропуска за сезон", kind: "bpXp", target: 500 },
-  { id: "ms-xp-2000", title: "Разгон", description: "Накопить 2000 XP боевого пропуска за сезон", kind: "bpXp", target: 2000 },
-  { id: "ms-xp-6000", title: "Полный разгон", description: "Накопить 6000 XP боевого пропуска за сезон", kind: "bpXp", target: 6000 },
-  { id: "ms-lvl-10", title: "Десятый рубеж", description: "Дойти до 10 уровня боевого пропуска", kind: "level", target: 10 },
-  { id: "ms-lvl-30", title: "Тридцатый рубеж", description: "Дойти до 30 уровня боевого пропуска", kind: "level", target: 30 },
-  { id: "ms-claim-20", title: "Кладоискатель", description: "Забрать 20 наград на уровнях пропуска", kind: "claim", target: 20 },
+  { id: "ms-xp-500", title: "Первый полёт", description: "Накопить 500 XP боевого пропуска за сезон", kind: "bpXp", target: 500, ac: 100, xp: 60 },
+  { id: "ms-xp-2000", title: "Разгон", description: "Накопить 2000 XP боевого пропуска за сезон", kind: "bpXp", target: 2000, ac: 200, xp: 120 },
+  { id: "ms-xp-6000", title: "Полный разгон", description: "Накопить 6000 XP боевого пропуска за сезон", kind: "bpXp", target: 6000, ac: 500, xp: 300 },
+  { id: "ms-lvl-10", title: "Десятый рубеж", description: "Дойти до 10 уровня боевого пропуска", kind: "level", target: 10, ac: 150, xp: 100 },
+  { id: "ms-lvl-30", title: "Тридцатый рубеж", description: "Дойти до 30 уровня боевого пропуска", kind: "level", target: 30, ac: 400, xp: 250 },
+  { id: "ms-claim-20", title: "Кладоискатель", description: "Забрать 20 наград на уровнях пропуска", kind: "claim", target: 20, ac: 300, xp: 150 },
 ];
 
 /** Задания сезона в порядке показа */
@@ -214,6 +219,7 @@ const MILESTONE_LEVELS: BpLevelDef[] = [
       level: 100,
       free: [{ kind: "ac", amount: 1000 }],
       premium: [
+        { kind: "decor", itemId: "decor-hueco-mundo", dupeAc: 7500 },
         { kind: "tag", itemId: "tag_shogun", dupeAc: 7500 },
         { kind: "ac", amount: 2500 },
         {
@@ -283,14 +289,38 @@ const buildFillerLevels = (): BpLevelDef[] => {
   return defs;
 };
 
+
+/**
+ * Рамки «Bleach» — только за боевой пропуск: три в бесплатной ветке, остальные
+ * в платной. Выдаются поверх обычных пакетов AC/XP на промежуточных уровнях
+ * (в начале списка награды уровня — рамка, дальше пакет). Дубликат не выдаётся,
+ * вместо него начисляется AC.
+ */
+const BLEACH_FREE: Record<number, string> = { 8: "sakura-blade", 33: "violet-crystal", 66: "black-moon" };
+const BLEACH_PREMIUM: Record<number, string> = { 7: "captain-smoke", 12: "red-thorns", 16: "blue-flame", 22: "wings-of-light", 27: "void-seal", 32: "las-noches", 37: "hollow-chains", 44: "crimson-blades", 48: "espada-four", 53: "espada-blade", 58: "twilight-reaper", 63: "black-flag", 68: "gold-haori", 73: "blood-moon", 78: "hollow-mask", 83: "bankai", 88: "gotei-13", 14: "@frame-art-lunar-star", 19: "@frame-art-dead-tree", 38: "@frame-art-bone-horns", 52: "@frame-art-void-rift", 76: "@frame-art-sun-crown", 94: "@frame-art-gothic-castle" };
+
+const bleachId = (k: string): string => (k.startsWith("@") ? k.slice(1) : `frame-bleach-${k}`);
+
+const withBleachFrames = (defs: BpLevelDef[]): BpLevelDef[] =>
+  defs.map((def) => {
+    const f = BLEACH_FREE[def.level];
+    const p = BLEACH_PREMIUM[def.level];
+    if (!f && !p) return def;
+    return {
+      ...def,
+      free: f ? [{ kind: "frame", itemId: bleachId(f), dupeAc: 800, as: "frame" }, ...(def.free ?? [])] : def.free,
+      premium: p ? [{ kind: "frame", itemId: bleachId(p), dupeAc: 1500, as: "frame" }, ...(def.premium ?? [])] : def.premium,
+    };
+  });
+
 /** Все уровни с наградами: milestone + filler, отсортированы по номеру */
-const LEVELS: BpLevelDef[] = [...MILESTONE_LEVELS, ...buildFillerLevels()].sort(
-  (a, b) => a.level - b.level,
+const LEVELS: BpLevelDef[] = withBleachFrames(
+  [...MILESTONE_LEVELS, ...buildFillerLevels()].sort((a, b) => a.level - b.level),
 );
 
 export const BATTLEPASS: BattlePassConfig = {
   seasonId: "season-1",
-  name: "Сезон 1 · Путь теней",
+  name: "Сезон 1 · Hueco Mundo",
   description:
     "Сто уровней, две дорожки наград и аникойны за активность: XP сайта идёт в пропуск один в один, а редкие предметы открываются только на определённых уровнях.",
   from: Date.parse("2026-09-28T00:00:00+03:00"),

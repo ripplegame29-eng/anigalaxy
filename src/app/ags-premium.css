@@ -197,3 +197,38 @@
   .ags .card { border-radius: 16px; }
   .ags .card:hover { transform: none; }
 }
+
+/* Сенсорные экраны: без постоянных анимаций и тяжёлых фильтров */
+@media (max-width: 767px), (hover: none) {
+  .ags .sum::after, .ags .bar i::after, .ags .hero::after, .ags .hero .hstage::before,
+  .ags .hero .hstage::after, .ags .hero h2 { animation: none; }
+  .ags .card::after { display: none; }
+  .ags .card.sel { animation: agsp-rise 0.55s both; }
+  .ags .filters, .ags .panel, .ags .timer div { backdrop-filter: none; }
+  .ags .filters { background: rgba(10, 12, 22, 0.94); }
+}
+
+/* Телефон: предпросмотр — компактная строка, карточки в две колонки */
+@media (max-width: 767px) {
+  .ags .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .ags .card { padding: 0 8px 12px; }
+  .ags .card h3 { font-size: 13px; }
+
+  .ags .panel {
+    display: grid;
+    grid-template-columns: 92px minmax(0, 1fr);
+    align-items: center;
+    padding: 12px 14px 12px 10px;
+    border-radius: 20px;
+  }
+  .ags .pban { display: none; }
+  .ags .pfr { grid-column: 1; margin: 0; zoom: 0.55; justify-self: center; }
+  .ags .pbody { grid-column: 2; padding: 0; text-align: left; }
+  .ags .pname, .ags .phandle, .ags .psub, .ags .how, .ags .pbtn .link { display: none; }
+  .ags .rar { font-size: 10px; padding: 2px 8px; }
+  .ags .ptitle { font-size: 16px; margin: 6px 0 10px; }
+  .ags .pbtn .btn { padding: 10px 14px; font-size: 13px; }
+}
+@media (max-width: 340px) {
+  .ags .grid { grid-template-columns: 1fr; }
+}

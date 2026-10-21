@@ -5,7 +5,7 @@
  * (выдача наград), UI (состояния клеток) и юнит-тесты.
  */
 
-import { FRAMES, type Rarity as CosmeticsRarity } from "../cosmetics";
+import { FRAMES, PROFILE_DECORS, type Rarity as CosmeticsRarity } from "../cosmetics";
 import { PROGRESSION_CONFIG } from "../progression/progression.config";
 import type { ProgressionConfig, TagDef } from "../progression/types";
 import {
@@ -137,6 +137,7 @@ export type RewardView =
       rarity: BpRarity;
       tag: TagDef;
     }
+  | { kind: "decor"; itemId: string; label: string; rarity: BpRarity }
   | {
       kind: "frame";
       itemId: string;
@@ -165,6 +166,11 @@ function tagRarity(rarity: string): BpRarity {
 
 function frameOf(itemId: string) {
   return FRAMES.find((frame) => frame.id === itemId);
+}
+
+/** Оформление профиля существует в каталоге (валидация выдачи) */
+export function bpDecorExists(itemId: string): boolean {
+  return PROFILE_DECORS.some((item) => item.id === itemId);
 }
 
 /** Рамка существует в каталоге проекта (валидация выдачи) */
@@ -227,6 +233,13 @@ export function describeReward(
         rarity: frame.rarity,
         img: frame.img ?? "",
       };
+    }
+    case "decor": {
+      const decor = PROFILE_DECORS.find((item) => item.id === reward.itemId);
+      if (!decor) {
+        return { kind: "ac", amount: reward.dupeAc, label: `${reward.dupeAc} AC` };
+      }
+      return { kind: "decor", itemId: decor.id, label: `Оформление «${decor.name}»`, rarity: decor.rarity };
     }
     case "framePick": {
       const frame = frameOf(reward.candidates[0] ?? "");
@@ -371,4 +384,15 @@ export function bpLineTotals(
     }
   }
   return totals;
+}
+
+
+/** Текущее значение задания сезона по состоянию пропуска */
+export function bpMissionValue(
+  mission: { kind: "bpXp" | "level" | "claim" },
+  bp: { xp: number; claimed: string[] },
+): number {
+  if (mission.kind === "bpXp") return bp.xp;
+  if (mission.kind === "level") return bpLevelFromXp(bp.xp);
+  return bp.claimed.length;
 }

@@ -6,6 +6,7 @@ import { activatePremium, formatPremiumUntil, isPremiumActive } from "@/lib/auth
 import { applyPromo, PREMIUM_PERKS } from "@/lib/premium-perks";
 import { openAuthDialog } from "@/lib/auth-dialog";
 import { useAccount } from "@/lib/use-account";
+import { openCheckout } from "@/lib/checkout";
 
 export interface PremiumPlan {
   id: "month" | "quarter" | "year";
@@ -28,29 +29,29 @@ export const PLANS: PremiumPlan[] = [
   {
     id: "month",
     title: "Месяц",
-    price: 149,
-    oldPrice: 199,
-    discount: "Скидка 25%",
-    perMonth: "149 ₽/мес",
+    price: 99,
+    oldPrice: 149,
+    discount: "Скидка 33%",
+    perMonth: "99 ₽/мес",
     days: 30,
   },
   {
     id: "quarter",
     title: "3 Месяца",
-    price: 349,
-    oldPrice: 599,
-    discount: "Выгода 42%",
-    perMonth: "116 ₽/мес",
+    price: 249,
+    oldPrice: 447,
+    discount: "Выгода 44%",
+    perMonth: "83 ₽/мес",
     days: 90,
     badge: "ХИТ ПРОДАЖ",
   },
   {
     id: "year",
     title: "Год",
-    price: 1290,
-    oldPrice: 2390,
-    discount: "Выгода 46%",
-    perMonth: "107 ₽/мес",
+    price: 790,
+    oldPrice: 1788,
+    discount: "Выгода 56%",
+    perMonth: "66 ₽/мес",
     days: 365,
     light: true,
   },
@@ -86,6 +87,12 @@ function CheckIcon({ className = "h-3.5 w-3.5" }: { className?: string }) {
  * Кнопка внизу карточки живёт в трёх состояниях: не вошли → модалка входа,
  * вошли без подписки → активация, подписка есть → дата окончания.
  */
+function spot(e: React.PointerEvent<HTMLElement>) {
+  const r = e.currentTarget.getBoundingClientRect();
+  e.currentTarget.style.setProperty("--mx", `${e.clientX - r.left}px`);
+  e.currentTarget.style.setProperty("--my", `${e.clientY - r.top}px`);
+}
+
 export function PremiumPlans() {
   const account = useAccount();
   const premium = isPremiumActive(account);
@@ -100,8 +107,17 @@ export function PremiumPlans() {
         return;
       }
       if (premium) return;
-      activatePremium(plan.days);
-      setJustActivated(plan.id);
+      openCheckout({
+        title: `Premium · ${plan.title}`,
+        caption: plan.perMonth,
+        price: plan.price,
+        oldPrice: plan.oldPrice,
+        perks: ["Без рекламы и приоритетная поддержка", "x2 опыт и ускоренные награды", "Эксклюзивные рамки и эффекты профиля"],
+        onPaid: () => {
+          activatePremium(plan.days);
+          setJustActivated(plan.id);
+        },
+      });
     },
     [account, premium],
   );
@@ -113,23 +129,19 @@ export function PremiumPlans() {
         const highlighted = plan.badge !== undefined;
         const active = premium;
 
-        const cardClass = highlighted
-          ? "relative mt-6 border border-accent/45 bg-gradient-to-b from-accent/25 to-ink-soft shadow-[0_28px_60px_-24px_rgba(31,123,255,0.65)] md:mt-0 md:scale-[1.04] md:hover:scale-[1.06]"
-          : plan.light
-            ? "relative overflow-hidden border border-white/60 bg-gradient-to-b from-[#f6f3ff] to-white shadow-[0_26px_52px_-20px_rgba(0,0,0,0.85)] hover:shadow-[0_30px_60px_-20px_rgba(31,123,255,0.45)]"
-            : "relative overflow-hidden border border-line bg-card/90 shadow-[0_20px_46px_-24px_rgba(0,0,0,0.9)] hover:border-accent/45";
-
-        const titleClass = plan.light ? "text-[#0f0f13]" : "text-white";
-        const priceClass = plan.light ? "text-[#0f0f13]" : "text-white";
-        const oldClass = plan.light ? "text-[#0f0f13]/45" : "text-muted";
-        const noteClass = plan.light ? "text-[#0f0f13]/55" : "text-muted";
-        const featureClass = plan.light ? "text-[#0f0f13]/80" : "text-white/75";
-        const checkClass = plan.light ? "text-accent" : highlighted ? "text-accent" : "text-accent/70";
+        const cardClass = highlighted ? "pp-plan pp-plan--hit relative mt-6 md:mt-0" : "pp-plan relative overflow-hidden";
+        const titleClass = "text-white";
+        const priceClass = "text-white";
+        const oldClass = "text-muted";
+        const noteClass = "text-muted";
+        const featureClass = "text-white/75";
+        const checkClass = highlighted ? "text-accent" : "text-accent/70";
 
         return (
           <article
             key={plan.id}
-            className={`group flex flex-col rounded-3xl p-6 transition duration-500 sm:p-7 ${cardClass}`}
+            className={`group flex flex-col rounded-3xl p-6 sm:p-7 ${cardClass}`}
+            onPointerMove={spot}
           >
             {plan.badge && (
               <span className="absolute -top-3.5 left-1/2 z-10 -translate-x-1/2 rounded-full bg-gradient-to-r from-accent-2 to-accent px-5 py-1.5 text-xs font-black uppercase tracking-wider text-white shadow-[0_10px_24px_-10px_rgba(31,123,255,0.9)]">
@@ -152,7 +164,7 @@ export function PremiumPlans() {
               <div className="mt-2 flex flex-wrap items-center gap-2.5">
                 <span
                   className={`rounded-md px-2 py-1 text-[11px] font-black uppercase tracking-wide ${
-                    plan.light ? "bg-emerald-500/15 text-emerald-700" : "bg-mint/15 text-mint"
+                    "bg-mint/15 text-mint"
                   }`}
                 >
                   {plan.discount}
@@ -166,7 +178,7 @@ export function PremiumPlans() {
                 <li key={feature.key} className={`flex items-start gap-2.5 text-sm ${featureClass}`}>
                   <span
                     className={`mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full ${
-                      plan.light ? "bg-accent/12" : "bg-accent/18"
+                      "bg-accent/18"
                     } ${checkClass}`}
                   >
                     <CheckIcon />
@@ -189,12 +201,8 @@ export function PremiumPlans() {
                 <button
                   type="button"
                   onClick={() => onSelect(plan)}
-                  className={`inline-flex h-12 w-full items-center justify-center rounded-xl px-4 text-sm font-extrabold transition duration-300 hover:-translate-y-0.5 ${
-                    highlighted
-                      ? "bg-gradient-to-r from-accent-2 to-accent text-white shadow-[0_14px_30px_-12px_rgba(31,123,255,1)] hover:brightness-110"
-                      : plan.light
-                        ? "bg-[#0f0f13] text-white hover:bg-accent"
-                        : "border border-white/15 bg-white/6 text-white hover:border-accent/60 hover:bg-accent/15"
+                  className={`pp-cta inline-flex h-12 w-full items-center justify-center rounded-xl px-4 text-sm font-extrabold text-white ${
+                    highlighted ? "pp-cta--hit" : "pp-cta--ghost"
                   }`}
                 >
                   {account ? "Оформить подписку" : plan.badge ? "Войти и оформить" : "Войти и выбрать"}
@@ -264,7 +272,7 @@ export function PromoCode() {
   );
 
   return (
-    <section className="rounded-3xl border border-line bg-card/70 p-6 sm:p-7">
+    <section className="pp-promo rounded-3xl p-6 sm:p-7">
       <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
         <div className="max-w-md">
           <h3 className="text-lg font-extrabold text-white sm:text-xl">Есть промокод?</h3>

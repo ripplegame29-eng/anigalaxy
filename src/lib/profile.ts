@@ -67,6 +67,8 @@ export interface PrivacySettings {
 export interface ProfileState {
   /** data-URL аватара; GIF хранится как есть (не пережимается) */
   avatar: string;
+  /** Загруженные ранее аватары (последние первыми) */
+  avatarHistory: string[];
   /** id пресетного фона */
   backgroundId: string;
   /** data-URL своего фона, если он выбран */
@@ -81,6 +83,8 @@ export interface ProfileState {
   frameId: string;
   /** id эффекта-частицы, "" — без частиц (одна на профиль) */
   particleFx: string;
+  /** id включённого оформления профиля (виджет-декор), "" — выключено */
+  decorFx: string;
   /** id включённых стилей оформления: сочетаются между собой */
   styleFx: string[];
   /** Уровень эффекта I…III — множитель количества частиц и амплитуды */
@@ -113,6 +117,7 @@ export interface ProfileState {
 
 const EMPTY: ProfileState = {
   avatar: "",
+  avatarHistory: [],
   backgroundId: "preset-dusk",
   backgroundCustom: "",
   titleId: "",
@@ -120,6 +125,7 @@ const EMPTY: ProfileState = {
   extraTagIds: [],
   frameId: "",
   particleFx: "",
+  decorFx: "",
   styleFx: [],
   fxLevel: 1,
   bio: "",
@@ -161,7 +167,9 @@ function parse(raw: string): ProfileState | null {
       showcase: list<string>(parsed.showcase).filter((id) => typeof id === "string").slice(0, 6),
       extraTitleIds: list<string>(parsed.extraTitleIds).filter((id) => typeof id === "string").slice(0, 11),
       extraTagIds: list<string>(parsed.extraTagIds).filter((id) => typeof id === "string").slice(0, 28),
+      avatarHistory: list<string>(parsed.avatarHistory).filter((v) => typeof v === "string").slice(0, 8),
       particleFx: typeof parsed.particleFx === "string" ? parsed.particleFx : "",
+      decorFx: typeof parsed.decorFx === "string" ? parsed.decorFx : "",
       /* Стили сочетаются, но список всё равно ограничен: иначе в разметку
          попадёт мусор из старого хранилища, а classes не ограничены. */
       styleFx: list<string>(parsed.styleFx).filter((id) => typeof id === "string").slice(0, 4),
@@ -423,6 +431,24 @@ export function markNoticesRead(): void {
       ? { ...state, notices: state.notices.map((notice) => ({ ...notice, read: true })) }
       : state,
   );
+}
+
+export function setNoticeRead(id: string, read: boolean): void {
+  profileStore.update((state) => ({
+    ...state,
+    notices: state.notices.map((notice) => (notice.id === id ? { ...notice, read } : notice)),
+  }));
+}
+
+export function removeNotice(id: string): void {
+  profileStore.update((state) => ({
+    ...state,
+    notices: state.notices.filter((notice) => notice.id !== id),
+  }));
+}
+
+export function clearNotices(): void {
+  profileStore.update((state) => (state.notices.length ? { ...state, notices: [] } : state));
 }
 
 export function unreadCount(state: ProfileState): number {

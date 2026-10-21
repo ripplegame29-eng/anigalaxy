@@ -65,3 +65,17 @@
 @media (prefers-reduced-motion: reduce) {
   .sp-blob, .sp-beam, .sp-sparks b, .sp-stars, .sp-hero::before, .sp-hero::after, .sp-h1, .sp-pack, .sp-ribbon { animation: none; }
 }
+
+/* ----------------- Телефон / сенсорные экраны: облегчённо ----------------- */
+/* Большие размытые пятна, вращающиеся рамки и блики на слабых телефонах жрут
+   видеокарту и батарею. Оставляем статичный фон и мягкое появление. */
+@media (max-width: 767px), (hover: none) {
+  .sp-blob { filter: blur(60px); opacity: 0.4; animation: none; will-change: auto; }
+  .sp-b3, .sp-beam, .sp-sparks { display: none; }
+  .sp-stars { animation: none; opacity: 0.7; }
+  .sp-hero::before, .sp-hero::after, .sp-h1 { animation: none; }
+  .sp-card::after, .sp-pack::before { display: none; }
+  .sp-pack:hover { transform: none; }
+  .sp-ribbon { animation: none; }
+  .sp-buy::after { display: none; }
+}

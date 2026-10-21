@@ -258,7 +258,7 @@ export function SettingsView() {
 
         <div className="st-stats">
           <div className="st-stat">
-            <small>Монеты</small>
+            <small>AC</small>
             <b>{progress.progress.acBalance} AC</b>
           </div>
           <div className="st-stat">

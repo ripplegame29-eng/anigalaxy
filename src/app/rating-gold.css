@@ -11,3 +11,8 @@
   color: var(--color-gold, #ffb020);
   text-decoration: none;
 }
+
+/* «Аниме дня»: header.css грузится позже и перекрашивал оценку в синий */
+.agh-feat .agh-feat-rate {
+  color: var(--color-gold, #ffb020);
+}

@@ -43,7 +43,12 @@ import { RANKS, RankBadge } from "@/components/progression/RankBadges";
 import { Poster } from "@/components/Poster";
 import { WidgetIcon } from "./WidgetIcon";
 import { TierListWidget } from "./TierListWidget";
+import { ArtWidget, FeaturedWidget, PickWidget } from "./Showcases";
 import type { WidgetId } from "@/lib/widgets";
+import { ArtworkWidget } from "./ArtworkWidget";
+import { TextWidget } from "./TextWidget";
+import { levelInfo } from "@/lib/levels";
+import { ProfilePlaque } from "@/components/battlepass/ProfilePreview";
 
 /** Достижения целиком: одни и те же данные для блока «Достижения» и полки */
 function useAchievements(): AchievementItem[] {
@@ -358,11 +363,13 @@ function WeekWidget() {
   const peak = Math.max(1, ...buckets);
 
   return (
-    <div className="ag-w-bars">
+    <div className="ag-w-week">
       {buckets.map((count, i) => (
         <div key={WEEKDAYS[i]}>
-          {count}
-          <i style={{ height: `${(count / peak) * 100}%` }} />
+          <em>{count}</em>
+          <span className="ag-w-week-bar">
+            <i style={{ height: `${(count / peak) * 100}%` }} />
+          </span>
           {WEEKDAYS[i]}
         </div>
       ))}
@@ -751,6 +758,30 @@ function StatsWidget() {
   return <StatsBlock cards={cards} className="ag-w-stats" />;
 }
 
+/** Плашка уровня «Хуэко Мундо»: живые уровень, серии и часы; открыта наградой пропуска */
+function LevelPlaqueWidget() {
+  const profile = useProfile();
+  const doc = useProgress();
+  const watch = watchStore.useStore();
+  const has =
+    profile.purchased.includes("decor-hueco-mundo") ||
+    doc.purchases.some((item) => item.itemId === "decor-hueco-mundo") ||
+    doc.battlepass.claimed.some((key) => key.endsWith(":100") && key.includes(":premium:"));
+  if (!has) {
+    return (
+      <p className="text-[11px] text-muted">
+        Плашка открывается наградой 100 уровня боевого пропуска — оформление «Хуэко Мундо».
+      </p>
+    );
+  }
+  const info = levelInfo(doc.progress.xpTotal);
+  return (
+    <div className="ag-w-plaque">
+      <ProfilePlaque level={info.level} series={watch.records.length} hours={Math.floor(watch.seconds / 3600)} percent={info.percent} />
+    </div>
+  );
+}
+
 const BODIES: Record<WidgetId, (props: { readOnly?: boolean }) => React.JSX.Element> = {
   ach: () => <AchievementsWidget />,
   act: ActivityWidget,
@@ -767,6 +798,12 @@ const BODIES: Record<WidgetId, (props: { readOnly?: boolean }) => React.JSX.Elem
   /* Тир-лист единственный редактируемый блок: гостю показываем его, но
      править чужой тир-лист нельзя */
   tier: ({ readOnly }) => <TierListWidget readOnly={readOnly} />,
+  feat: ({ readOnly }) => <FeaturedWidget readOnly={readOnly} />,
+  art: ({ readOnly }) => <ArtWidget readOnly={readOnly} />,
+  pick: ({ readOnly }) => <PickWidget readOnly={readOnly} />,
+  level: LevelPlaqueWidget,
+  artwork: ({ readOnly }) => <ArtworkWidget readOnly={readOnly} />,
+  text: ({ readOnly }) => <TextWidget readOnly={readOnly} />,
 };
 
 

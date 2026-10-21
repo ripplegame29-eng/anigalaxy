@@ -250,7 +250,7 @@
       if(focusTrigger) trigger.focus();
       if(o.onClose) o.onClose();
     }
-    function toggle(){isOpen ? close() : open()}
+    function toggle(){ if (isOpen) close(); else open(); }
 
     /* ---------- события ---------- */
     on(trigger, 'click', function(e){e.preventDefault(); toggle()});

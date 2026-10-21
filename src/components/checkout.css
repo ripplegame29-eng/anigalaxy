@@ -1,0 +1,184 @@
+.ck{position:fixed;inset:0;z-index:2000;display:grid;place-items:center;padding:16px;background:radial-gradient(60% 60% at 50% 40%,rgba(43,127,255,.14),transparent),rgba(2,3,8,.8);backdrop-filter:blur(12px);animation:ck-fade .25s both}
+@keyframes ck-fade{from{opacity:0}}
+.ck-panel{position:relative;display:grid;grid-template-columns:minmax(0,340px) minmax(0,1fr);width:min(860px,100%);max-height:calc(100dvh - 32px);border-radius:30px;color:#eef2fb;outline:0;overflow:hidden;
+  background:#080b16;border:1px solid rgba(120,170,255,.16);box-shadow:0 50px 140px rgba(0,0,0,.85);animation:ck-up .5s cubic-bezier(.2,.9,.3,1) both}
+@keyframes ck-up{from{opacity:0;transform:translateY(26px) scale(.97)}}
+.ck-x{position:absolute;z-index:5;top:14px;right:14px;width:36px;height:36px;border-radius:12px;display:grid;place-items:center;color:#aab2c4;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.05);transition:.2s}
+.ck-x:hover:not(:disabled){color:#fff;background:rgba(255,255,255,.12)}
+.ck-x svg{width:17px}
+
+/* ---------- билет ---------- */
+.ck-ticket{--mx:30%;--my:20%;position:relative;display:flex;flex-direction:column;gap:12px;padding:28px 26px 24px;overflow:hidden;isolation:isolate;
+  background:radial-gradient(120% 70% at var(--mx) var(--my),rgba(80,170,255,.42),transparent 60%),linear-gradient(160deg,#10245a,#1b1450 55%,#0a1a3c)}
+.ck-ticket::before{content:"";position:absolute;inset:0;z-index:-1;opacity:.5;mix-blend-mode:screen;
+  background:conic-gradient(from 200deg at var(--mx) var(--my),#22d3ee33,#a78bfa44,#ff7ac644,#ffd26633,#22d3ee33)}
+.ck-ticket::after{content:"";position:absolute;right:-9px;top:0;bottom:0;width:18px;z-index:2;
+  background:radial-gradient(circle at 100% 50%,#080b16 0 8px,transparent 8.5px) 0 0/18px 28px repeat-y}
+.ck-fox{position:absolute;right:-30px;bottom:70px;width:190px;height:auto;opacity:.14;filter:saturate(0) brightness(2);pointer-events:none;z-index:-1}
+.ck-t-top{display:flex;justify-content:space-between;align-items:center;font-size:12.5px;color:#b8cdf0}
+.ck-brand{font:800 15px var(--font-display);letter-spacing:.02em;color:#fff}
+.ck-serial{font-variant-numeric:tabular-nums;opacity:.8}
+.ck-t-title{margin:12px 0 0;font:800 26px/1.1 var(--font-display);letter-spacing:-.02em}
+.ck-t-cap{margin:0;font-size:13.5px;color:#b8cdf0}
+.ck-perks{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:9px}
+.ck-perks li{display:flex;gap:9px;font-size:13px;line-height:1.35;color:#dbe6ff}
+.ck-perks li span{width:18px;height:18px;border-radius:50%;display:grid;place-items:center;flex:none;margin-top:1px;background:rgba(52,224,161,.2);color:#5cf0b8}
+.ck-perks li svg{width:11px;stroke-width:3}
+.ck-cut{margin-top:auto;border-top:2px dashed rgba(255,255,255,.22);margin-inline:-26px}
+.ck-t-sum{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;padding-top:6px;font-size:13px;color:#b8cdf0}
+.ck-t-sum div{text-align:right;display:flex;flex-direction:column;align-items:flex-end}
+.ck-t-sum s{font-size:12.5px;opacity:.6}
+.ck-t-sum strong{font:800 34px/1 var(--font-display);color:#fff;text-shadow:0 0 30px rgba(120,200,255,.6)}
+.ck-stamp{position:absolute;left:50%;top:50%;z-index:3;padding:10px 26px;border:4px solid #5cf0b8;border-radius:14px;color:#5cf0b8;font:900 34px var(--font-display);letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;
+  transform:translate(-50%,-50%) rotate(-14deg) scale(2.2);opacity:0;pointer-events:none;background:rgba(8,20,30,.55);backdrop-filter:blur(2px)}
+.ck-stamp.on{animation:ck-stamp .55s cubic-bezier(.2,1.3,.4,1) .1s both}
+@keyframes ck-stamp{to{opacity:1;transform:translate(-50%,-50%) rotate(-14deg) scale(1)}}
+
+/* ---------- правая часть ---------- */
+.ck-side{display:flex;flex-direction:column;gap:14px;padding:28px 28px 22px;min-width:0;overflow-y:auto;background:radial-gradient(90% 40% at 70% 0,rgba(43,127,255,.12),transparent),#080b16}
+.ck-h{display:flex;align-items:center;gap:10px;margin:0;font:800 22px var(--font-display);letter-spacing:-.01em}
+.ck-h span{width:32px;height:32px;border-radius:11px;display:grid;place-items:center;color:#7cc8ff;background:rgba(43,127,255,.14);border:1px solid rgba(43,127,255,.3)}
+.ck-h svg{width:16px}
+.ck-tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.ck-tile{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:3px;padding:14px;border-radius:20px;text-align:left;color:#fff;border:1px solid rgba(255,255,255,.08);background:linear-gradient(160deg,rgba(255,255,255,.06),rgba(255,255,255,.02));transition:border-color .2s,transform .2s,box-shadow .2s}
+.ck-tile:not(.off):hover{transform:translateY(-2px);border-color:rgba(43,127,255,.5)}
+.ck-tile.on{border-color:#2b7fff;background:linear-gradient(160deg,rgba(43,127,255,.26),rgba(34,211,238,.06));box-shadow:0 0 0 3px rgba(43,127,255,.15),0 14px 36px rgba(43,127,255,.22)}
+.ck-tile.off{opacity:.45;cursor:not-allowed}
+.ck-ti{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;margin-bottom:8px;color:#7cc8ff;background:rgba(43,127,255,.14)}
+.ck-ti svg{width:20px}
+.ck-tile b{font:800 16px var(--font-body)}
+.ck-tile small{font-size:12px;color:#7d879d}
+.ck-tile.on::after{content:"";position:absolute;top:12px;right:12px;width:10px;height:10px;border-radius:50%;background:#22d3ee;box-shadow:0 0 12px #22d3ee}
+.ck-info{min-height:84px;padding:14px 16px;border-radius:18px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.07)}
+.ck-info p{margin:0;font-size:13.5px;line-height:1.5;color:#aab2c4}
+.ck-info b{color:#fff}
+.ck-coins{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:10px}
+.ck-coins button{display:flex;flex-direction:column;align-items:flex-start;padding:7px 12px;border-radius:12px;font:800 13px var(--font-body);color:#fff;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04)}
+.ck-coins button small{font-weight:600;font-size:10.5px;color:#7d879d}
+.ck-coins button.on{border-color:#2b7fff;background:rgba(43,127,255,.2)}
+.ck-conv{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.ck-conv b{font:800 20px var(--font-display)}
+.ck-conv span{font-size:12px;color:#6f7a92}
+
+/* кнопка «удерживай» */
+.ck-hold{position:relative;overflow:hidden;height:58px;border-radius:20px;color:#fff;font:800 16px var(--font-body);touch-action:none;user-select:none;-webkit-user-select:none;
+  background:linear-gradient(135deg,#17306a,#12234d);border:1.5px solid rgba(80,160,255,.5);box-shadow:0 12px 34px rgba(43,127,255,.25),inset 0 1px 0 rgba(255,255,255,.12);transition:transform .15s,box-shadow .2s}
+.ck-hold:hover{box-shadow:0 16px 44px rgba(43,127,255,.4),inset 0 1px 0 rgba(255,255,255,.14)}
+.ck-hold i{position:absolute;inset:0;background:linear-gradient(90deg,#1f6bff,#22d3ee);transform:scaleX(0);transform-origin:left}
+.ck-hold.go{transform:scale(.985)}
+.ck-hold.go i{animation:ck-fill linear forwards}
+@keyframes ck-fill{to{transform:scaleX(1)}}
+.ck-hold span{position:relative;display:flex;align-items:center;justify-content:center;gap:10px}
+.ck-hold svg{width:20px}
+.ck-hint{margin:-4px 0 0;text-align:center;font-size:12px;color:#6f7a92;transition:color .2s}
+.ck-hint.on{color:#ffb86b}
+.ck-legal{margin:auto 0 0;font-size:11.5px;line-height:1.5;color:#59627a;text-align:center}
+.ck-demo{margin:0;text-align:center;font-size:11.5px;color:#4a5268}
+
+/* состояния */
+.ck-state{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;padding:20px}
+.ck-state b{font:800 26px var(--font-display)}
+.ck-state small{color:#8d98b4;font-size:14px;margin-bottom:10px}
+.ck-orbit{position:relative;width:92px;height:92px;margin-bottom:10px}
+.ck-orbit i{position:absolute;inset:0;border-radius:50%;border:2px solid transparent;border-top-color:#22d3ee;animation:ck-spin 1.1s linear infinite}
+.ck-orbit i:nth-child(2){inset:14px;border-top-color:#2b7fff;animation-duration:.8s;animation-direction:reverse}
+.ck-orbit i:nth-child(3){inset:28px;border-top-color:#a78bfa;animation-duration:1.4s}
+@keyframes ck-spin{to{transform:rotate(360deg)}}
+.ck-seal{width:84px;height:84px;border-radius:50%;display:grid;place-items:center;color:#fff;margin-bottom:10px;background:linear-gradient(135deg,#19c37d,#5cf0b8);box-shadow:0 0 0 10px rgba(52,224,161,.12),0 0 60px rgba(52,224,161,.5);animation:ck-pop .6s cubic-bezier(.3,1.7,.5,1) both}
+.ck-seal svg{width:38px;stroke-width:3}
+@keyframes ck-pop{from{transform:scale(.3);opacity:0}}
+.ck-ok{height:54px;padding:0 44px;border-radius:18px;font:800 16px var(--font-body);color:#fff;background:linear-gradient(135deg,#1f6bff,#22b8f0);box-shadow:0 12px 32px rgba(43,127,255,.45)}
+
+@media (max-width:760px){
+  .ck{align-items:end;padding:0}
+  .ck-panel{grid-template-columns:1fr;width:100%;max-height:94dvh;overflow-y:auto;border-radius:28px 28px 0 0}
+  .ck-ticket{padding:22px 20px 18px;gap:8px}
+  .ck-ticket::after{display:none}
+  .ck-t-title{font-size:21px}
+  .ck-perks{display:none}
+  .ck-fox{width:130px;bottom:10px}
+  .ck-cut{margin-inline:-20px;margin-top:8px}
+  .ck-side{padding:20px 18px calc(18px + env(safe-area-inset-bottom));overflow:visible}
+}
+@media (prefers-reduced-motion:reduce){.ck,.ck-panel,.ck-seal,.ck-orbit i,.ck-stamp.on{animation-duration:.01ms!important}}
+
+/* ===================== Красочный слой ===================== */
+/* Цвет билета и акценты зависят от выбранного способа оплаты */
+.ck-panel{--c1:#2b7fff;--c2:#22d3ee;--c3:#a78bfa}
+.ck-panel[data-m="sbp"]{--c1:#19c37d;--c2:#22d3ee;--c3:#7cf0c4}
+.ck-panel[data-m="crypto"]{--c1:#ff9f1c;--c2:#ff5d8f;--c3:#ffd166}
+.ck-panel[data-m="stars"]{--c1:#8b5cf6;--c2:#38bdf8;--c3:#f0abfc}
+.ck-panel{background:#070a14}
+.ck-ticket{transition:background .6s;
+  background:radial-gradient(120% 70% at var(--mx) var(--my),color-mix(in srgb,var(--c2) 55%,transparent),transparent 60%),
+  linear-gradient(160deg,color-mix(in srgb,var(--c1) 38%,#0a1030),color-mix(in srgb,var(--c3) 22%,#150f45) 55%,color-mix(in srgb,var(--c2) 24%,#081634))}
+.ck-ticket::before{opacity:.65;background:conic-gradient(from 200deg at var(--mx) var(--my),var(--c2),var(--c3),#ff7ac6,var(--c1),var(--c2));filter:blur(40px) saturate(1.3)}
+/* дрейфующие туманности */
+.ck-au{position:absolute;z-index:-1;border-radius:50%;filter:blur(46px);opacity:.7;pointer-events:none;transition:background .6s}
+.ck-au.a{width:240px;height:240px;left:-70px;top:-60px;background:var(--c1);animation:ck-drift 9s ease-in-out infinite alternate}
+.ck-au.b{width:220px;height:220px;right:-80px;top:38%;background:var(--c3);animation:ck-drift 11s ease-in-out -3s infinite alternate-reverse}
+.ck-au.c{width:200px;height:200px;left:20%;bottom:-70px;background:var(--c2);animation:ck-drift 13s ease-in-out -6s infinite alternate}
+@keyframes ck-drift{to{transform:translate(44px,36px) scale(1.2)}}
+/* лисёнок — в цвете и покачивается */
+.ck-fox{opacity:.92!important;filter:drop-shadow(0 10px 28px rgba(0,0,0,.45)) drop-shadow(0 0 22px var(--c3))!important;width:200px!important;right:-18px!important;bottom:64px!important;animation:ck-bob 4.5s ease-in-out infinite}
+@keyframes ck-bob{50%{transform:translateY(-12px) rotate(3deg)}}
+/* цена — переливается */
+.ck-t-sum strong{background:linear-gradient(100deg,#fff 10%,var(--c3),#fff 50%,var(--c2) 90%);background-size:220% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:none;filter:drop-shadow(0 0 18px color-mix(in srgb,var(--c2) 60%,transparent));animation:ck-shine 4s linear infinite}
+@keyframes ck-shine{to{background-position:-220% 0}}
+.ck-brand{background:linear-gradient(100deg,#fff,var(--c3));-webkit-background-clip:text;background-clip:text;color:transparent}
+.ck-perks li span{background:color-mix(in srgb,var(--c3) 30%,transparent);color:#fff}
+/* правая часть: цветные плитки */
+.ck-side{background:radial-gradient(80% 45% at 80% 0,color-mix(in srgb,var(--c1) 22%,transparent),transparent),radial-gradient(60% 40% at 0 100%,color-mix(in srgb,var(--c2) 12%,transparent),transparent),#070a14;transition:background .6s}
+.ck-h span{color:#fff;background:linear-gradient(135deg,var(--c1),var(--c2));border:0;box-shadow:0 6px 20px color-mix(in srgb,var(--c1) 55%,transparent)}
+.ck-tile[data-t="sbp"]{--t1:#19c37d;--t2:#22d3ee}
+.ck-tile[data-t="crypto"]{--t1:#ff9f1c;--t2:#ff5d8f}
+.ck-tile[data-t="card"]{--t1:#6366f1;--t2:#a78bfa}
+.ck-tile[data-t="stars"]{--t1:#8b5cf6;--t2:#38bdf8}
+.ck-ti{color:#fff!important;background:linear-gradient(135deg,var(--t1),var(--t2))!important;box-shadow:0 8px 20px color-mix(in srgb,var(--t1) 45%,transparent)}
+.ck-tile.on{border-color:var(--t1)!important;background:linear-gradient(160deg,color-mix(in srgb,var(--t1) 28%,transparent),color-mix(in srgb,var(--t2) 8%,transparent))!important;box-shadow:0 0 0 3px color-mix(in srgb,var(--t1) 22%,transparent),0 16px 40px color-mix(in srgb,var(--t1) 30%,transparent)!important}
+.ck-tile.on::after{background:var(--t2)!important;box-shadow:0 0 14px var(--t2)!important}
+.ck-tile.off .ck-ti{filter:grayscale(.8);opacity:.7}
+.ck-coins button.on{border-color:var(--c1)!important;background:color-mix(in srgb,var(--c1) 25%,transparent)!important}
+.ck-conv b{background:linear-gradient(100deg,#fff,var(--c3));-webkit-background-clip:text;background-clip:text;color:transparent}
+/* кнопка: бегущая радужная кромка и свечение */
+.ck-hold{border:0!important;background:linear-gradient(#0e1836,#0e1836) padding-box,conic-gradient(from var(--ang,0deg),var(--c1),var(--c2),var(--c3),#ff7ac6,var(--c1)) border-box;border:2px solid transparent!important;animation:ck-ang 4s linear infinite;box-shadow:0 12px 40px color-mix(in srgb,var(--c1) 40%,transparent)}
+@property --ang{syntax:"<angle>";inherits:false;initial-value:0deg}
+@keyframes ck-ang{to{--ang:360deg}}
+.ck-hold i{background:linear-gradient(90deg,var(--c1),var(--c2),var(--c3))!important}
+.ck-hold:hover{box-shadow:0 18px 54px color-mix(in srgb,var(--c1) 60%,transparent)!important}
+.ck-seal{background:linear-gradient(135deg,var(--c1),var(--c2))}
+.ck-ok{background:linear-gradient(135deg,var(--c1),var(--c2))!important;box-shadow:0 12px 32px color-mix(in srgb,var(--c1) 50%,transparent)!important}
+/* конфетти при успехе */
+.ck-confetti{position:absolute;inset:0;z-index:4;pointer-events:none;overflow:hidden}
+.ck-confetti i{position:absolute;top:-12px;left:var(--x);width:8px;height:14px;border-radius:2px;background:hsl(var(--h) 90% 62%);transform:rotate(var(--r));animation:ck-fall 2.2s cubic-bezier(.3,.5,.4,1) var(--d) forwards}
+@keyframes ck-fall{to{transform:translateY(520px) rotate(calc(var(--r) + 540deg));opacity:0}}
+@media (prefers-reduced-motion:reduce){.ck-au,.ck-fox,.ck-t-sum strong,.ck-hold,.ck-confetti i{animation:none!important}}
+
+/* ===================== Бег лисёнка ===================== */
+/* на кнопке: лисёнок бежит по мере заполнения */
+.ck-run{position:absolute;z-index:2;left:0;top:50%;width:44px;height:44px;margin-top:-30px;pointer-events:none;opacity:0}
+.ck-run img{width:44px;height:44px;display:block;filter:drop-shadow(0 4px 8px rgba(0,0,0,.5))}
+.ck-hold.go .ck-run{opacity:1;animation:ck-runx linear forwards}
+.ck-hold.go .ck-run img{animation:ck-hop .22s ease-in-out infinite alternate}
+@keyframes ck-runx{from{left:0}to{left:calc(100% - 44px)}}
+@keyframes ck-hop{from{transform:translateY(0) rotate(-6deg)}to{transform:translateY(-9px) rotate(8deg)}}
+.ck-hold.go span:not(.ck-run){padding-left:0}
+/* на ожидании: бег на месте, земля уезжает назад, монетки летят навстречу */
+.ck-track{position:relative;width:min(300px,100%);height:130px;margin-bottom:6px;overflow:hidden;border-radius:22px;
+  background:linear-gradient(180deg,color-mix(in srgb,var(--c1) 18%,transparent),transparent 70%)}
+.ck-racer{position:absolute;left:34px;bottom:26px;width:96px;height:96px;filter:drop-shadow(0 10px 14px rgba(0,0,0,.5)) drop-shadow(0 0 18px var(--c3));animation:ck-gallop .32s ease-in-out infinite alternate}
+@keyframes ck-gallop{from{transform:translateY(0) rotate(-5deg) scaleY(.96)}to{transform:translateY(-16px) rotate(7deg) scaleY(1.03)}}
+.ck-ground{position:absolute;left:0;right:0;bottom:18px;height:4px;border-radius:4px;opacity:.7;
+  background:repeating-linear-gradient(90deg,var(--c2) 0 26px,transparent 26px 46px);animation:ck-ground .5s linear infinite}
+@keyframes ck-ground{to{background-position:-46px 0}}
+.ck-dust{position:absolute;left:10px;bottom:24px;width:34px;height:14px;border-radius:50%;background:radial-gradient(closest-side,rgba(255,255,255,.55),transparent);animation:ck-puff .32s ease-out infinite}
+@keyframes ck-puff{from{transform:scale(.4);opacity:.9}to{transform:translateX(-18px) scale(1.5);opacity:0}}
+.ck-coin{position:absolute;right:-20px;width:20px;height:20px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff6c2,#ffc933 60%,#e09100);box-shadow:0 0 12px #ffc933aa;animation:ck-coin 1.4s linear infinite}
+.ck-coin.c1{bottom:78px}.ck-coin.c2{bottom:104px;animation-delay:-.5s}.ck-coin.c3{bottom:62px;animation-delay:-.95s}
+@keyframes ck-coin{to{transform:translateX(-340px) rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.ck-racer,.ck-ground,.ck-dust,.ck-coin,.ck-run,.ck-run img{animation:none!important}}
+
+/* выравнивание подписи кнопки удержания */
+.ck-hold{display:flex;align-items:center;justify-content:center;line-height:1;padding:0}
+.ck-hold>span:not(.ck-run){display:flex;align-items:center;justify-content:center;gap:10px;line-height:1;height:100%;margin:0;padding:0;transform:none}
+.ck-hold>span:not(.ck-run) svg{flex:none;display:block;width:20px;height:20px;position:static}

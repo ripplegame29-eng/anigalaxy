@@ -1,0 +1,19 @@
+.lbg{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;background:radial-gradient(110% 70% at 50% -10%,#1d1530,#07070e 62%)}
+.lbg i,.lbg span,.lbg svg,.lbg canvas{position:absolute;display:block}
+.lbg-glow{width:58vmax;height:58vmax;border-radius:50%;filter:blur(100px);mix-blend-mode:screen;will-change:transform}
+.lbg-glow.g1{left:-18vmax;top:-24vmax;background:radial-gradient(circle,#ffb020,transparent 62%);opacity:.12;animation:lbg-d1 30s ease-in-out infinite alternate}
+.lbg-glow.g2{right:-20vmax;top:6vmax;background:radial-gradient(circle,#7c4dff,transparent 62%);opacity:.14;animation:lbg-d2 36s ease-in-out infinite alternate}
+.lbg-glow.g3{left:24vw;bottom:-36vmax;background:radial-gradient(circle,#ff6a3d,transparent 62%);opacity:.07;animation:lbg-d1 42s ease-in-out infinite alternate-reverse}
+/* пол арены, уходящий в перспективу */
+.lbg-floor{left:-30%;right:-30%;bottom:0;height:34vh;background:
+  linear-gradient(rgba(255,196,80,.07) 1px,transparent 1px) 0 0/100% 44px,
+  linear-gradient(90deg,rgba(255,196,80,.06) 1px,transparent 1px) 50% 0/64px 100%;
+  transform:perspective(520px) rotateX(62deg);transform-origin:50% 100%;
+  -webkit-mask-image:linear-gradient(to top,#000 10%,transparent 92%);mask-image:linear-gradient(to top,#000 10%,transparent 92%);
+  animation:lbg-floor 3.2s linear infinite}
+.lbg-canvas{inset:0}
+.lbg-vig{inset:0;background:radial-gradient(120% 90% at 50% 40%,transparent 55%,rgba(3,3,8,.75))}
+@keyframes lbg-d1{to{transform:translate(8vmax,6vmax) scale(1.12)}}
+@keyframes lbg-d2{to{transform:translate(-8vmax,10vmax) scale(.9)}}
+@keyframes lbg-floor{to{background-position:0 44px,50% 0}}
+@media (prefers-reduced-motion:reduce){.lbg *{animation:none!important}}

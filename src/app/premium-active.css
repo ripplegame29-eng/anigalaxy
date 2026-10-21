@@ -443,8 +443,9 @@
   font-size: 11px;
   padding: 3px 9px;
   border-radius: 99px;
-  background: linear-gradient(90deg, var(--pra-gold), #ff9a5c);
-  color: #00242a;
+  background: linear-gradient(90deg, rgb(var(--accent-rgb)), #6d5cff);
+  color: #fff;
+  box-shadow: 0 6px 14px -6px rgba(var(--accent-rgb), 0.9);
 }
 
 .pra-plan[aria-pressed="true"] {

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { PageBackdrop } from "@/components/PageBackdrop";
 import { catalog } from "@/lib/kodik";
 import { dedupeCards } from "@/lib/anime";
 import { AniSwipeView } from "@/components/aniswipe/AniSwipeView";
@@ -17,5 +18,10 @@ export default async function AniSwipePage() {
 
   const cards = dedupeCards([...rating.cards, ...fresh.cards]);
 
-  return <AniSwipeView cards={cards} />;
+  return (
+    <>
+      <PageBackdrop variant="swipe" />
+      <AniSwipeView cards={cards} />
+    </>
+  );
 }

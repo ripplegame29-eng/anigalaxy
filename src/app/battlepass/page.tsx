@@ -1,12 +1,11 @@
 import type { Metadata } from "next";
-import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { BattlePassView } from "@/components/BattlePassView";
 import { BATTLEPASS } from "@/lib/battlepass/config";
 
 export const metadata: Metadata = {
   title: "Боевой пропуск",
   description:
-    "Боевой пропуск AniGalaxy: сезон «Путь теней» на 100 уровней, бесплатная и Premium-линии наград, XP за активность на сайте, аникойны, теги, рамки и маски с обратным отсчётом до конца сезона.",
+    "Боевой пропуск AniGalaxy: сезон «Hueco Mundo» на 100 уровней, бесплатная и Premium-линии наград, XP за активность на сайте, аникойны, теги, рамки и маски с обратным отсчётом до конца сезона.",
   keywords: ["боевой пропуск", "сезон", "награды", "XP", "AC", "Premium", "AniGalaxy"],
 };
 
@@ -48,43 +47,7 @@ const FAQ = [
 
 export default function BattlePassPage() {
   return (
-    <div className="relative overflow-hidden">
-      {/* Фоновое свечение — как на /premium и /donate */}
-      <div
-        className="pointer-events-none absolute inset-x-0 top-0 h-[520px] bg-gradient-to-b from-accent/12 via-accent/8 to-transparent"
-        aria-hidden
-      />
-      <div
-        className="pointer-events-none absolute -right-40 top-40 h-[520px] w-[520px] rounded-full bg-accent/12 blur-3xl"
-        aria-hidden
-      />
-      <div
-        className="pointer-events-none absolute -left-40 top-[45%] h-[420px] w-[420px] rounded-full bg-accent-2/10 blur-3xl"
-        aria-hidden
-      />
-
-      {/* ------------------------------- Герой ------------------------------- */}
-      <section className="relative px-4 pb-2 pt-8 sm:pt-10">
-        <div className="mx-auto max-w-3xl">
-          <Breadcrumbs items={[{ label: "Боевой пропуск" }]} />
-        </div>
-
-        <div className="mx-auto max-w-3xl animate-bp-hero-in text-center">
-          <span className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-accent via-accent-2 to-accent-2 px-4 py-1.5 text-[11px] font-black uppercase tracking-[0.18em] text-white shadow-[0_12px_28px_-14px_rgba(0,200,255,0.75)] sm:text-xs">
-            Сезон 1 · Путь теней
-          </span>
-
-          <h1 className="mt-5 bg-gradient-to-r from-white via-accent to-accent-2 bg-clip-text text-3xl font-black leading-tight text-transparent sm:text-5xl md:text-6xl">
-            Боевой пропуск
-          </h1>
-
-          <p className="mx-auto mt-4 max-w-2xl text-sm leading-relaxed text-muted sm:text-lg">
-            Сто уровней, две линии наград — бесплатная и Premium — и весь XP сайта,
-            который идёт в пропуск один в один. Забирай аникойны, теги, рамки и маски.
-          </p>
-        </div>
-      </section>
-
+    <div className="relative overflow-hidden bp2-page">
       {/* Интерактивная часть: прогресс, дорожка на 100 уровней, выдача, Premium */}
       <BattlePassView />
 

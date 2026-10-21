@@ -644,3 +644,38 @@ html[data-eco="on"] .p-chip {
 html[data-eco="on"] .ag-tag .sp {
   display: none !important;
 }
+/* ===== premium tooltip: glass panel, tag-colour hairline border, soft aura ===== */
+.ag-tip {
+  max-width: min(300px, 64vw);
+  padding: 12px 16px 12px 18px;
+  border-radius: 14px;
+  border: 1px solid transparent;
+  font: 600 12.5px/1.5 var(--font-body);
+  color: #f3eeff;
+  background:
+    linear-gradient(160deg, rgba(26, 18, 48, 0.97), rgba(10, 8, 22, 0.98)) padding-box,
+    linear-gradient(135deg, color-mix(in srgb, var(--c, #8b7bff) 90%, #fff), rgba(255, 255, 255, 0.08) 45%, var(--c2, var(--c, #8b7bff))) border-box;
+  box-shadow:
+    0 22px 44px -18px #000,
+    0 0 36px -14px var(--c, #8b7bff),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  overflow: visible;
+}
+/* вертикальная цветная нить слева вместо плоской чёрточки снизу */
+.ag-tip::before {
+  top: 12px;
+  bottom: 12px;
+  left: 7px;
+  translate: none;
+  width: 2px;
+  height: auto;
+  border-radius: 2px;
+  background: linear-gradient(180deg, transparent, var(--c, #8b7bff), transparent);
+  box-shadow: 0 0 8px var(--c, #8b7bff);
+}
+.ag-tip::after {
+  background: rgba(10, 8, 22, 0.98);
+  box-shadow: 1px 1px 0 color-mix(in srgb, var(--c, #8b7bff) 55%, transparent);
+  translate: -50% -5px;
+}

@@ -3,6 +3,9 @@
 import { useState } from "react";
 import { CommandPalette } from "./CommandPalette";
 import { SiteHeader } from "./SiteHeader";
+import { MobileNav } from "./MobileNav";
+import { CheckoutDialog } from "@/components/CheckoutDialog";
+import "./mobile-nav.css";
 import { ProfileDialogHost } from "@/components/profile/ProfileDialogHostLazy";
 
 /**
@@ -25,6 +28,8 @@ export function HeaderShell() {
           Раньше он жил внутри прежней шапки Header.tsx; когда шапку заменили на
           SiteHeader, хост потерялся вместе с ней и кнопки профиля перестали
           открывать окна. Держим его здесь — рядом с шапкой, как было. */}
+      <MobileNav />
+      <CheckoutDialog />
       <ProfileDialogHost />
     </>
   );

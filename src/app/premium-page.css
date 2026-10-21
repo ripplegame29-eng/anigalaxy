@@ -1,0 +1,129 @@
+/* /premium — премиальный оверлей (префикс pp-) */
+.pp-root{isolation:isolate}
+.pp-aurora{position:absolute;inset:0;z-index:-1;pointer-events:none;overflow:hidden}
+.pp-aurora::before,.pp-aurora::after{content:"";position:absolute;width:60vw;height:60vw;max-width:760px;max-height:760px;border-radius:50%;filter:blur(90px);opacity:.35}
+.pp-aurora::before{left:-12%;top:-8%;background:radial-gradient(circle,rgba(var(--accent-rgb),.55),transparent 65%);animation:pp-drift 18s ease-in-out infinite alternate}
+.pp-aurora::after{right:-14%;top:22%;background:radial-gradient(circle,rgba(139,92,246,.4),transparent 65%);animation:pp-drift 22s ease-in-out infinite alternate-reverse}
+@keyframes pp-drift{to{transform:translate3d(6%,8%,0) scale(1.12)}}
+
+.pp-eyebrow{position:relative;overflow:hidden}
+.pp-eyebrow::after{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 35%,rgba(255,255,255,.45) 50%,transparent 65%);transform:translateX(-120%);animation:pp-sheen 4.5s ease-in-out infinite}
+@keyframes pp-sheen{60%,100%{transform:translateX(120%)}}
+.pp-h1{background-size:200% 100%;animation:pp-flow 8s ease-in-out infinite alternate;letter-spacing:-.02em}
+@keyframes pp-flow{to{background-position:100% 0}}
+
+.pp-plan{--mx:50%;--my:0%;position:relative;border:1px solid rgba(255,255,255,.08);background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.015)),rgba(14,16,26,.8);backdrop-filter:blur(8px);box-shadow:0 24px 50px -28px rgba(0,0,0,.9);transition:transform .45s cubic-bezier(.2,.8,.2,1),border-color .3s,box-shadow .3s}
+.pp-plan::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:0;transition:opacity .3s;background:radial-gradient(320px circle at var(--mx) var(--my),rgba(var(--accent-rgb),.16),transparent 60%)}
+.pp-plan:hover{transform:translateY(-6px);border-color:rgba(var(--accent-rgb),.5);box-shadow:0 30px 60px -26px rgba(var(--accent-rgb),.45)}
+.pp-plan:hover::before{opacity:1}
+.pp-plan--hit{border-color:transparent;background:linear-gradient(180deg,rgba(var(--accent-rgb),.1),rgba(12,14,24,.95) 70%) padding-box,conic-gradient(from var(--pp-a,0deg),rgba(var(--accent-rgb),.9),rgba(139,92,246,.7),rgba(34,211,238,.7),rgba(var(--accent-rgb),.9)) border-box;box-shadow:0 34px 70px -30px rgba(var(--accent-rgb),.7)}
+@media(min-width:768px){.pp-plan--hit{transform:scale(1.04)}.pp-plan--hit:hover{transform:scale(1.04) translateY(-6px)}}
+@property --pp-a{syntax:"<angle>";inherits:false;initial-value:0deg}
+.pp-plan--hit{animation:pp-spin 7s linear infinite}
+@keyframes pp-spin{to{--pp-a:360deg}}
+.pp-plan li{transition:transform .3s}
+.pp-plan:hover li{transform:translateX(3px)}
+
+.pp-cta{position:relative;overflow:hidden;transition:transform .3s,filter .3s,background .3s,border-color .3s}
+.pp-cta:hover{transform:translateY(-2px)}
+.pp-cta--hit{background:linear-gradient(90deg,rgb(var(--accent-rgb)),#6d5cff);box-shadow:0 14px 30px -12px rgba(var(--accent-rgb),1)}
+.pp-cta--hit::after{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 35%,rgba(255,255,255,.35) 50%,transparent 65%);transform:translateX(-120%);animation:pp-sheen 3.6s ease-in-out infinite}
+.pp-cta--ghost{border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.05)}
+.pp-cta--ghost:hover{border-color:rgba(var(--accent-rgb),.6);background:rgba(var(--accent-rgb),.16)}
+
+.pp-promo{border:1px solid rgba(255,255,255,.08);background:linear-gradient(135deg,rgba(var(--accent-rgb),.1),rgba(139,92,246,.06) 60%,rgba(14,16,26,.7))}
+.pp-faq{border:1px solid rgba(255,255,255,.07);background:rgba(14,16,26,.65);transition:border-color .3s,background .3s}
+.pp-faq:hover,.pp-faq[open]{border-color:rgba(var(--accent-rgb),.45)}
+.pp-faq[open]{background:linear-gradient(180deg,rgba(var(--accent-rgb),.08),rgba(14,16,26,.7))}
+
+@media(max-width:767px),(hover:none){
+  .pp-aurora::before,.pp-aurora::after{animation:none;filter:blur(60px)}
+  .pp-plan{backdrop-filter:none}
+  .pp-plan--hit{animation:none}
+  .pp-plan:hover{transform:none}
+  .pp-h1{animation:none}
+}
+@media(prefers-reduced-motion:reduce){.pp-root *,.pp-root::before{animation:none!important}}
+
+/* ===== /premium: кинематографичный фон и новые блоки ===== */
+.pp-aurora::before{width:70vw;height:70vw;max-width:900px;max-height:900px;opacity:.5}
+.pp-aurora::after{opacity:.5}
+.pp-floor{position:absolute;left:-20%;right:-20%;top:0;height:640px;z-index:-1;pointer-events:none;background:linear-gradient(rgba(143,216,255,.14) 1px,transparent 1px),linear-gradient(90deg,rgba(143,216,255,.14) 1px,transparent 1px);background-size:64px 64px;transform:perspective(500px) rotateX(62deg);transform-origin:50% 0;-webkit-mask-image:linear-gradient(transparent,#000 40%,transparent);mask-image:linear-gradient(transparent,#000 40%,transparent);animation:pp-floor 6s linear infinite;top:300px}
+@keyframes pp-floor{to{background-position:0 64px}}
+.pp-beams{position:absolute;left:50%;top:-12%;width:150%;height:90%;translate:-50% 0;z-index:-1;pointer-events:none;background:conic-gradient(from 180deg at 50% 0,transparent 36%,rgba(143,216,255,.16) 45%,transparent 49%,rgba(139,92,246,.16) 53%,transparent 58%,rgba(143,216,255,.1) 64%,transparent 70%);-webkit-mask-image:linear-gradient(#000,transparent 85%);mask-image:linear-gradient(#000,transparent 85%);animation:pp-sway 16s ease-in-out infinite alternate}
+@keyframes pp-sway{to{transform:rotate(6deg)}}
+.pp-sparks{position:absolute;inset:0;z-index:-1;overflow:hidden;pointer-events:none}
+.pp-sparks b{position:absolute;bottom:-10px;left:calc(var(--x)*1%);width:var(--s);height:var(--s);border-radius:50%;background:radial-gradient(#fff,rgba(143,216,255,.8) 45%,transparent 70%);opacity:0;animation:pp-up var(--d) linear infinite;animation-delay:var(--w)}
+@keyframes pp-up{0%{transform:translateY(0);opacity:0}10%{opacity:.9}100%{transform:translateY(-110vh) translateX(30px);opacity:0}}
+
+.pp-emblem{position:relative;width:120px;height:120px;margin:0 auto 14px;display:grid;place-items:center}
+.pp-emblem svg{position:relative;width:62px;height:62px;filter:drop-shadow(0 0 18px rgba(143,216,255,.8));animation:pp-bob 4s ease-in-out infinite}
+@keyframes pp-bob{50%{transform:translateY(-6px)}}
+.pp-emblem .r{position:absolute;border-radius:50%;border:1px solid rgba(143,216,255,.45)}
+.pp-emblem .r1{inset:0;border-style:dashed;animation:pp-rot 30s linear infinite}
+.pp-emblem .r2{inset:14px;border-color:rgba(139,92,246,.55);animation:pp-rot 18s linear infinite reverse}
+.pp-emblem .r3{inset:-14px;border-color:rgba(143,216,255,.2);animation:pp-ping 3.5s ease-out infinite}
+@keyframes pp-rot{to{transform:rotate(360deg)}}
+@keyframes pp-ping{0%{transform:scale(.8);opacity:.8}100%{transform:scale(1.3);opacity:0}}
+.pp-hero-chips{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin-top:22px}
+.pp-hero-chips span{padding:8px 16px;border-radius:99px;font-size:13px;font-weight:800;color:#fff;background:rgba(255,255,255,.06);border:1px solid rgba(143,216,255,.28);backdrop-filter:blur(8px);transition:transform .3s,border-color .3s}
+.pp-hero-chips span:hover{transform:translateY(-3px);border-color:rgba(143,216,255,.7)}
+
+.pp-h2{text-align:center;font-size:clamp(24px,3.4vw,34px);font-weight:900;letter-spacing:-.02em;margin-bottom:26px;background:linear-gradient(95deg,#fff 30%,#9cd4ff 65%,#fff);-webkit-background-clip:text;background-clip:text;color:transparent}
+.pp-perks{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.pp-perk{--mx:50%;position:relative;padding:24px 22px;border-radius:22px;background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.012)),rgba(12,14,24,.8);border:1px solid rgba(255,255,255,.08);transition:transform .4s cubic-bezier(.2,.8,.2,1),border-color .3s,box-shadow .3s;animation:pp-in .7s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--i)*70ms);overflow:hidden}
+.pp-perk::after{content:"";position:absolute;left:-60%;top:0;bottom:0;width:40%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.07),transparent);transform:skewX(-18deg);transition:left .8s}
+.pp-perk:hover{transform:translateY(-6px);border-color:rgba(143,216,255,.5);box-shadow:0 26px 50px -28px rgba(143,216,255,.6)}
+.pp-perk:hover::after{left:140%}
+@keyframes pp-in{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}
+.pp-perk-ic{display:grid;place-items:center;width:50px;height:50px;border-radius:16px;font-size:24px;background:linear-gradient(135deg,rgba(var(--accent-rgb),.3),rgba(139,92,246,.25));border:1px solid rgba(143,216,255,.35);box-shadow:0 0 28px -6px rgba(var(--accent-rgb),.7)}
+.pp-perk h3{margin:14px 0 6px;font-size:16px;font-weight:900;color:#fff}
+.pp-perk p{font-size:13px;line-height:1.5;color:rgba(255,255,255,.62)}
+.pp-perk small{display:inline-block;margin-top:12px;font-size:11px;font-weight:800;color:rgb(var(--accent-rgb))}
+
+.pp-cmp{border-radius:24px;overflow:hidden;border:1px solid rgba(255,255,255,.08);background:rgba(12,14,24,.8)}
+.pp-cmp-h,.pp-cmp-r{display:grid;grid-template-columns:1.6fr 1fr 1fr;gap:10px;align-items:center;padding:14px 22px}
+.pp-cmp-h{background:rgba(255,255,255,.04);font-size:12px;text-transform:uppercase;letter-spacing:.14em;color:rgba(255,255,255,.55)}
+.pp-cmp-h .pr{color:#9cd4ff}
+.pp-cmp-r{border-top:1px solid rgba(255,255,255,.06);transition:background .25s}
+.pp-cmp-r:hover{background:rgba(var(--accent-rgb),.08)}
+.pp-cmp-r span{font-weight:700;color:#fff;font-size:14px}
+.pp-cmp-r em{font-style:normal;color:rgba(255,255,255,.45);font-size:14px}
+.pp-cmp-r strong{font-size:14px;font-weight:900;color:#9cd4ff;text-shadow:0 0 18px rgba(143,216,255,.5)}
+
+@media(max-width:900px){.pp-perks{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:560px){.pp-perks{grid-template-columns:1fr}.pp-cmp-h,.pp-cmp-r{padding:12px 14px;gap:6px}.pp-cmp-r span,.pp-cmp-r em,.pp-cmp-r strong{font-size:12.5px}}
+@media(max-width:767px),(hover:none){
+  .pp-floor,.pp-beams,.pp-emblem svg,.pp-emblem .r{animation:none}
+  .pp-sparks b:nth-child(n+8){display:none}
+  .pp-perk{animation:none}
+}
+
+/* ===== SVG-иконки привилегий ===== */
+.pk-ic{width:62px;height:62px;border-radius:20px;position:relative;overflow:hidden;background:radial-gradient(circle at 30% 20%,rgba(143,216,255,.28),transparent 60%),linear-gradient(135deg,rgba(var(--accent-rgb),.28),rgba(122,92,255,.3))}
+.pk-ic::after{content:"";position:absolute;inset:-2px;border-radius:inherit;background:conic-gradient(from 0deg,transparent 70%,rgba(255,255,255,.55),transparent);animation:pp-rot 5s linear infinite;-webkit-mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0);mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0);padding:1.5px;pointer-events:none}
+.pk-ic svg{width:38px;height:38px;overflow:visible;filter:drop-shadow(0 0 8px rgba(143,216,255,.55));transition:transform .4s cubic-bezier(.2,.8,.2,1)}
+.pp-perk:hover .pk-ic svg{transform:scale(1.18) rotate(-4deg)}
+.pk-ic svg *{transform-box:fill-box;transform-origin:center}
+.pk-swing{animation:pk-swing 3.6s ease-in-out infinite;transform-origin:20% 20%}
+@keyframes pk-swing{50%{transform:rotate(9deg)}}
+.pk-draw{stroke-dasharray:14;animation:pk-draw 2.8s ease-in-out infinite}
+@keyframes pk-draw{0%{stroke-dashoffset:14}50%,100%{stroke-dashoffset:0}}
+.pk-flash{animation:pk-flash 2.4s ease-in-out infinite}
+@keyframes pk-flash{0%,100%{transform:scale(1);filter:drop-shadow(0 0 2px #ffb020)}50%{transform:scale(1.1) rotate(-4deg);filter:drop-shadow(0 0 10px #ffb020)}}
+.pk-pulse{animation:pk-pulse 2.6s ease-out infinite}
+@keyframes pk-pulse{0%{transform:scale(.7);opacity:.9}100%{transform:scale(1.25);opacity:0}}
+.pk-tilt{animation:pk-tilt 4s ease-in-out infinite}
+@keyframes pk-tilt{50%{transform:rotate(-6deg) translateY(-1px)}}
+.pk-sheen{animation:pk-sheen 3.2s ease-in-out infinite}
+@keyframes pk-sheen{0%{transform:translateX(0) skewX(-20deg)}60%,100%{transform:translateX(70px) skewX(-20deg)}}
+.pk-spin{animation:pp-rot 14s linear infinite}
+.pk-tw{animation:pk-tw 2.2s ease-in-out infinite}
+.pk-tw2{animation-delay:-1.1s}
+@keyframes pk-tw{0%,100%{opacity:.15;transform:scale(.5)}50%{opacity:1;transform:scale(1.1)}}
+.pk-lid{animation:pk-lid 3s ease-in-out infinite}
+@keyframes pk-lid{0%,60%,100%{transform:translateY(0)}75%{transform:translateY(-4px) rotate(-3deg)}}
+@media(max-width:767px),(hover:none),(prefers-reduced-motion:reduce){
+  .pk-ic::after,.pk-swing,.pk-draw,.pk-flash,.pk-pulse,.pk-tilt,.pk-sheen,.pk-spin,.pk-tw,.pk-lid{animation:none}
+  .pk-pulse{opacity:.4}
+}

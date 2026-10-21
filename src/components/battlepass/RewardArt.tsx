@@ -15,6 +15,7 @@
  * детерминированно из ключа — рендер сервера и клиента совпадает.
  */
 
+import { BoltIcon } from "./BoltIcon";
 import type { CSSProperties } from "react";
 import { useMemo } from "react";
 
@@ -23,6 +24,7 @@ import { AgTag } from "@/components/progression/AgTag";
 import { AvatarFrame } from "@/components/profile/AvatarFrame";
 import { FRAMES } from "@/lib/cosmetics";
 import type { BpRewardCard } from "@/components/battlepass/model";
+import { DecorArt } from "@/components/battlepass/DecorArt";
 
 type ArtSize = "sm" | "md" | "lg" | "xl";
 
@@ -133,10 +135,11 @@ export function RewardArt({
 
       <span className="inner">
         {card.kind === "ac" && <span className="bp-coin" />}
-        {card.kind === "bpXp" && <span className="bp-bolt">⚡</span>}
+        {card.kind === "bpXp" && <span className="bp-bolt"><BoltIcon id={`bp-bolt-${card.key}`} /></span>}
         {card.kind === "tag" && card.view.kind === "tag" && (
           <AgTag tag={card.view.tag} size={size === "sm" || size === "md" ? "sm" : "lg"} locked={locked} />
         )}
+        {card.kind === "decor" && <DecorArt size={size} />}
         {card.kind === "frame" && (
           <AvatarFrame nickname={nickname} frame={frame} size={size === "lg" ? "lg" : "sm"} />
         )}

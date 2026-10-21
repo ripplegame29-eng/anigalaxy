@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
+import { PageBackdrop } from "@/components/PageBackdrop";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { WatchTogetherHero, WatchTogetherView } from "@/components/WatchTogetherView";
 
@@ -74,6 +75,7 @@ function ViewSkeleton() {
 export default function WatchTogetherPage() {
   return (
     <div className="wtv-page">
+      <PageBackdrop variant="together" />
       <div className="wtv-bgfx" aria-hidden />
       <div className="wtv-stars" aria-hidden />
 

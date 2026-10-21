@@ -21,29 +21,29 @@
  * идемпотентности.
  */
 
+import { BpIcon } from "@/components/battlepass/BpIcons";
+import { BoltIcon } from "@/components/battlepass/BoltIcon";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { AgTag } from "@/components/progression/AgTag";
-import { AvatarFrame } from "@/components/profile/AvatarFrame";
 import { isPremiumActive } from "@/lib/auth";
-import { FRAMES } from "@/lib/cosmetics";
+import { BP_MISSIONS } from "@/lib/battlepass/config";
 import {
   BATTLEPASS,
   bpClaimables,
   bpLineTotals,
   bpProgress,
   bpRewardStatus,
-  bpRewards,
   describeReward,
   type BpRewardStatus,
   type BpStatusCtx,
 } from "@/lib/battlepass/logic";
 import { AE_RARITY } from "@/components/progression/AchievementEmblem";
 import { ClaimScene } from "@/components/battlepass/ClaimScene";
-import { LevelRing } from "@/components/battlepass/LevelRing";
-import { PassPurchase } from "@/components/battlepass/PassPurchase";
+import { BpHero, BpOffer, type BpTab } from "@/components/battlepass/BpParts";
+import { RewardArt } from "@/components/battlepass/RewardArt";
 import { RewardModal } from "@/components/battlepass/RewardModal";
+import { ProfilePreview, ProfileMini } from "@/components/battlepass/ProfilePreview";
 import { Track } from "@/components/battlepass/Track";
 import {
   EXCLUSIVE_CARDS,
@@ -83,6 +83,7 @@ export function BattlePassView() {
   );
   const claimables = useMemo(() => bpClaimables(statusCtx), [statusCtx]);
 
+  const [tab, setTab] = useState<BpTab>("rewards");
   const [scene, setScene] = useState<SceneState | null>(null);
   const [openKey, setOpenKey] = useState<string | null>(null);
   const busy = useRef(false);
@@ -158,7 +159,6 @@ export function BattlePassView() {
     }
   }, [claimables, cardByKey, progress.level]);
 
-  const freeTotals = useMemo(() => bpLineTotals("free"), []);
   const premiumTotals = useMemo(() => bpLineTotals("premium"), []);
 
   /* Липкий статус-бар: появляется, когда шапка ушла из вида */
@@ -218,11 +218,14 @@ export function BattlePassView() {
 
   const fraction = progress.level >= BATTLEPASS.maxLevel ? 1 : progress.percent / 100;
 
-  return (
-    <div className="bp-page relative">
-      <div className="bp-bg" aria-hidden />
-      <div className="bp-fog" aria-hidden />
+  const bpLevel = progress.level;
+  const missionValue = (m: (typeof BP_MISSIONS)[number]) =>
+    m.kind === "bpXp" ? bp.xp : m.kind === "level" ? bpLevel : bp.claimed.length;
+  const missionsDone = BP_MISSIONS.filter((m) => missionValue(m) >= m.target).length;
+  const xpLeftToFinal = Math.max(0, progress.totalMax - progress.totalDone);
 
+  return (
+    <div className="bp-page bp2 relative">
       {barVisible && (
         <StickyBar
           level={progress.level}
@@ -233,103 +236,89 @@ export function BattlePassView() {
         />
       )}
 
-      <div className="relative z-10 mx-auto flex max-w-6xl flex-col gap-5 px-4 pb-10">
-        {/* Шапка сезона и покупка пропуска — рядом, как на референсе */}
-        <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_330px] lg:items-start">
-          <header className="bp-panel bp-hd" ref={headRef}>
-            <div className="hero">
-            <LevelRing level={progress.level} fraction={fraction} maxLevel={BATTLEPASS.maxLevel} />
-          </div>
+      <BpHero
+        tab={tab}
+        onTab={setTab}
+        level={progress.level}
+        maxLevel={BATTLEPASS.maxLevel}
+        fraction={fraction}
+        into={progress.into}
+        need={progress.need}
+        xpLeftToFinal={xpLeftToFinal}
+        claimables={claimables.length}
+        totalCards={TRACK_CARDS.length}
+        missionsDone={missionsDone}
+        missionsTotal={BP_MISSIONS.length}
+        heroRef={headRef}
+      />
 
-          <div className="min-w-0">
-            <p className="eyebrow">
-              СЕЗОН 1 · {BATTLEPASS.seasonId.replace("season-", "")}
-            </p>
-            <h1>
-              {BATTLEPASS.name}
-              <span>БОЕВОЙ ПРОПУСК</span>
-            </h1>
-            <p className="sub">
-              100 уровней, две линии наград и AC за активность: XP сайта идёт в пропуск один в
-              один, а редкие предметы — рамки, маски и титулы — только за сезон.
-            </p>
+      <main className="bp2-w bp2-main">
+        {tab === "rewards" ? (
+          <>
+            <BpOffer premium={premium} level={progress.level} totals={premiumTotals} />
 
-            <div className="bp-xpt">
+            <div className="bp2-claimbar">
               <span>
-                {progress.level >= BATTLEPASS.maxLevel
-                  ? "МАКСИМУМ"
-                  : `${progress.into.toLocaleString("ru-RU")} / ${progress.need.toLocaleString("ru-RU")} XP`}
+                Баланс <b>{doc.progress.acBalance.toLocaleString("ru-RU")}</b> AC
               </span>
-              <span>{(bp.xp + bpXpFromRewards(claimables)).toLocaleString("ru-RU")} XP всего</span>
+              <button type="button" className="bp2-btn" onClick={claimAll} disabled={claimables.length === 0}>
+                Забрать все награды <em>{claimables.length}</em>
+              </button>
             </div>
-            <div className="bp-xpb">
-              <i style={{ width: `${Math.round(fraction * 100)}%` }} />
-            </div>
-          </div>
 
-          <div className="bp-act">
-            <div className="bp-ac">
-              БАЛАНС <b>{doc.progress.acBalance.toLocaleString("ru-RU")}</b> AC
-            </div>
-            <button
-              type="button"
-              className="bp-btn pri"
-              onClick={claimAll}
-              disabled={claimables.length === 0}
-              style={{ background: "linear-gradient(135deg,#1c63ff,#7a4dff)", borderColor: "transparent" }}
-            >
-              Забрать все награды <em>{claimables.length}</em>
-            </button>
-            {premium ? (
-              <span className="bp-btn vip on" aria-label="Premium активен">
-                ✦ Premium активен
-              </span>
-            ) : (
-              <Link href="/premium" className="bp-btn vip" style={{ display: "block", textAlign: "center" }}>
-                ✦ AniGalaxy Premium
+            <Track
+              statusCtx={statusCtx}
+              currentLevel={progress.level}
+              fraction={fraction}
+              nickname={nickname}
+              onOpen={(card) => setOpenKey(card.key)}
+            />
+
+            <ExclusiveShowcase statusCtx={statusCtx} nickname={nickname} onClaim={claim} onOpen={setOpenKey} />
+
+            <XpSources />
+          </>
+        ) : (
+          <section className="bp2-sec">
+            <div className="bp2-shd">
+              <div>
+                <h2>Задания сезона</h2>
+                <p>
+                  Засчитываются сами · выполнено {missionsDone} из {BP_MISSIONS.length}
+                </p>
+              </div>
+              <Link href="/quests" className="bp2-btn ghost">
+                Ежедневные квесты
               </Link>
-            )}
-          </div>
-        </header>
+            </div>
+            <div className="bp2-tk">
+              {BP_MISSIONS.map((mission) => {
+                const value = Math.min(missionValue(mission), mission.target);
+                const pct = Math.round((value / mission.target) * 100);
+                const done = value >= mission.target;
+                const unit = mission.kind === "level" ? "ур." : mission.kind === "claim" ? "наград" : "XP";
+                return (
+                  <div key={mission.id} className={`bp2-tq${done ? " done" : ""}`}>
+                    <div className="ck">{done ? "✓" : "✦"}</div>
+                    <div>
+                      <b>{mission.title}</b>
+                      <p>{mission.description}</p>
+                      <div className="bp2-bar sm">
+                        <i style={{ width: `${pct}%` }} />
+                      </div>
+                    </div>
+                    <span className="xp">
+                      {value} / {mission.target} {unit}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        )}
 
-          {/* ------------------------- Покупка пропуска -------------------- */}
-          <PassPurchase premium={premium} level={progress.level} totals={premiumTotals} />
-        </div>
-
-        {/* ---------------------------- Дорожка --------------------------- */}
-        <Track
-          statusCtx={statusCtx}
-          currentLevel={progress.level}
-          fraction={fraction}
-          nickname={nickname}
-          onOpen={(card) => setOpenKey(card.key)}
-        />
-
-        {/* ---------------------------- Эксклюзивы ------------------------- */}
-        <ExclusiveShowcase statusCtx={statusCtx} nickname={nickname} onClaim={claim} onOpen={setOpenKey} />
-
-        {/* ---------------------------- Итоги линий ------------------------ */}
-        <section className="grid gap-3 sm:grid-cols-2" data-reveal>
-          <LineCard
-            title="Free-линия"
-            totals={freeTotals}
-            note="Открывается всем: AC, XP сезона, рамки и титулы на части уровней."
-          />
-          <LineCard
-            title="Premium-линия"
-            totals={premiumTotals}
-            note={
-              premium
-                ? "Подписка активна — золотые уровни разблокированы."
-                : "Нужна подписка AniGalaxy Premium."
-            }
-            locked={!premium}
-          />
-        </section>
-
-        {/* ---------------------------- Источники XP ----------------------- */}
-        <XpSources />
-      </div>
+        <p className="bp2-foot">Награды и прогресс сезона сохраняются в этом браузере.</p>
+      </main>
 
       {/* Модалка и сцена живут вне потока — поверх всей страницы */}
       <RewardModal
@@ -355,21 +344,6 @@ export function BattlePassView() {
       )}
     </div>
   );
-}
-
-/** Сколько XP даст выдача всех доступных пакетов (для «XP всего») */
-function bpXpFromRewards(
-  claimables: Array<{ level: number; line: BattlepassLine }>,
-): number {
-  let total = 0;
-  for (const item of claimables) {
-    const rewards = bpRewards(item.level, item.line);
-    if (!rewards) continue;
-    for (const reward of rewards) {
-      if (reward.kind === "bpXp") total += reward.amount;
-    }
-  }
-  return total;
 }
 
 /* ============================ Статус-бар ================================ */
@@ -430,49 +404,6 @@ function StickyBar({
   );
 }
 
-/* ============================== Итоги ================================== */
-
-function LineCard({
-  title,
-  totals,
-  note,
-  locked,
-}: {
-  title: string;
-  totals: { ac: number; bpXp: number; items: number; levels: number };
-  note: string;
-  locked?: boolean;
-}) {
-  const isPremium = title.startsWith("Premium");
-  return (
-    <div
-      className={`rounded-2xl border p-4 ${
-        isPremium
-          ? "border-gold/25 bg-gradient-to-br from-gold/[0.08] to-transparent"
-          : "border-accent/20 bg-gradient-to-br from-accent/[0.07] to-transparent"
-      }`}
-    >
-      <p className={`text-[11px] font-black uppercase tracking-wide ${isPremium ? "text-gold" : "text-accent"}`}>
-        {title}
-        {locked && <span className="ml-2 font-bold text-muted">· нужен Premium</span>}
-      </p>
-      <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
-        <span className="inline-flex items-center gap-1.5 font-bold text-white">
-          {/* eslint-disable-next-line @next/next/no-img-element -- монетка 18px в плотной сводке, next/image даёт лишний запрос */}
-          <img src="/coin.png" alt="" aria-hidden width={18} height={18} className="h-4 w-4" />
-          {totals.ac.toLocaleString("ru-RU")}
-        </span>
-        <span className="inline-flex items-center gap-1.5 font-bold text-accent">
-          <span aria-hidden>⚡</span>
-          {totals.bpXp.toLocaleString("ru-RU")} XP
-        </span>
-        <span className="font-bold text-white">{totals.items} предм.</span>
-      </div>
-      <p className="mt-1.5 text-xs leading-relaxed text-muted">{note}</p>
-    </div>
-  );
-}
-
 /* =========================== Источники XP ============================== */
 
 function xpSources(): { icon: string; title: string; text: string }[] {
@@ -480,7 +411,7 @@ function xpSources(): { icon: string; title: string; text: string }[] {
     { icon: "🔑", title: "Ежедневный вход", text: "Первый вход в день: 25 XP, серия дней и заморозка." },
     { icon: "📺", title: "Просмотр серий", text: "10 XP за каждую досмотренную серию — главный источник." },
     { icon: "💬", title: "Комментарии", text: "15 XP за первый комментарий в день и 5 XP за следующий." },
-    { icon: "★", title: "Оценки и списки", text: "5 XP за оценку тайтла и 6 XP за добавление в список." },
+    { icon: "★", title: "Оценки и списки", text: "5 XP за оценку тайтла и 3–5 XP за добавление в список." },
     { icon: "✔", title: "Задания и достижения", text: "Ежедневные и еженедельные задания, ачивки — крупные порции XP." },
   ];
 }
@@ -488,7 +419,7 @@ function xpSources(): { icon: string; title: string; text: string }[] {
 function XpSources() {
   return (
     <section className="bp-panel p-4 sm:p-5" data-reveal>
-      <h2 className="font-display text-lg font-black tracking-wide text-white">⚡ Как набирать XP</h2>
+      <h2 className="font-display text-lg font-black tracking-wide text-white"><BoltIcon id="bp-bolt-h" /> Как набирать XP</h2>
       <p className="mt-1 text-sm text-muted">
         Любой опыт сайта идёт в пропуск один в один — XP из наград сезона капает поверх.
       </p>
@@ -509,10 +440,6 @@ function XpSources() {
 
 /* ============================ Эксклюзивы ============================== */
 
-/**
- * Витрина предметов сезона в стиле магазина: превью 3:2, редкость,
- * уровень и выдача. Только рамки, маски и титулы — AC/XP живут на дорожке.
- */
 function ExclusiveShowcase({
   statusCtx,
   nickname,
@@ -524,152 +451,122 @@ function ExclusiveShowcase({
   onClaim: (line: BattlepassLine, level: number) => void;
   onOpen: (key: string) => void;
 }) {
-  const [filter, setFilter] = useState<"all" | "frame" | "tag">("all");
+  const [kind, setKind] = useState<"all" | "frame" | "tag">("all");
+  const [rarity, setRarity] = useState<"all" | BpRewardCard["rarity"]>("all");
 
-  const cards = filter === "all" ? EXCLUSIVE_CARDS : EXCLUSIVE_CARDS.filter((card) => card.kind === filter);
+  const rarities = useMemo(() => {
+    const order: BpRewardCard["rarity"][] = ["mythic", "legendary", "epic", "rare", "common"];
+    return order.filter((r) => EXCLUSIVE_CARDS.some((card) => card.rarity === r));
+  }, []);
+
+  const cards = EXCLUSIVE_CARDS.filter(
+    (card) => (kind === "all" || card.kind === kind) && (rarity === "all" || card.rarity === rarity),
+  );
   const count = (id: "all" | "frame" | "tag") =>
     id === "all" ? EXCLUSIVE_CARDS.length : EXCLUSIVE_CARDS.filter((card) => card.kind === id).length;
 
+  const [profileOpen, setProfileOpen] = useState(false);
+
+  /* Супер-приз — самый высокий предмет сезона */
+  const top = useMemo(
+    () => [...EXCLUSIVE_CARDS].sort((a, b) => b.level - a.level || (a.line === "premium" ? -1 : 1))[0],
+    [],
+  );
+
   return (
-    <section className="bp-panel p-4 sm:p-5" data-reveal>
-      <div className="flex flex-wrap items-end justify-between gap-3">
+    <section className="bp2-card bp2-ex" data-reveal>
+      {profileOpen && <ProfilePreview nickname={nickname} onClose={() => setProfileOpen(false)} />}
+      <div className="bp2-shd">
         <div>
-          <h2 className="font-display text-lg font-black tracking-wide text-white">💠 Эксклюзивы сезона</h2>
-          <p className="mt-1 text-sm text-muted">
-            {EXCLUSIVE_CARDS.length} {plural(EXCLUSIVE_CARDS.length, "предмет", "предмета", "предметов")},
-            которых нет больше нигде: рамки, маски и титулы только за боевой пропуск.
+          <h2>Эксклюзивы сезона</h2>
+          <p>
+            {EXCLUSIVE_CARDS.length} {plural(EXCLUSIVE_CARDS.length, "предмет", "предмета", "предметов")} · только в этом сезоне
           </p>
         </div>
-        <div className="flex flex-wrap gap-1.5" role="group" aria-label="Фильтр эксклюзивов">
+      </div>
+
+      <div className="bp2-fb">
+        <div className="bp2-chips" role="group" aria-label="Тип предмета">
           {(
             [
-              { id: "all", label: "Все" },
-              { id: "frame", label: "Рамки и маски" },
+              { id: "all", label: "Всё" },
+              { id: "frame", label: "Рамки" },
               { id: "tag", label: "Титулы" },
             ] as const
           ).map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              onClick={() => setFilter(item.id)}
-              aria-pressed={filter === item.id}
-              className={`rounded-lg px-2.5 py-1.5 text-[11px] font-bold transition ${
-                filter === item.id ? "bg-white/15 text-white" : "text-muted hover:text-white"
-              }`}
-            >
+            <button key={item.id} type="button" onClick={() => setKind(item.id)} className={`bp2-pl${kind === item.id ? " on" : ""}`}>
               {item.label} · {count(item.id)}
+            </button>
+          ))}
+        </div>
+        <div className="bp2-chips" role="group" aria-label="Редкость">
+          <button type="button" onClick={() => setRarity("all")} className={`bp2-pl${rarity === "all" ? " on" : ""}`}>
+            Любая редкость
+          </button>
+          {rarities.map((r) => (
+            <button key={r} type="button" onClick={() => setRarity(r)} className={`bp2-pl${rarity === r ? " on" : ""}`}>
+              {AE_RARITY[r].n}
             </button>
           ))}
         </div>
       </div>
 
-      <div className="mt-4 grid grid-cols-1 gap-3 min-[480px]:grid-cols-2 min-[760px]:grid-cols-3 xl:grid-cols-4">
-        {cards.map((card) => {
-          const status = bpRewardStatus(card.level, card.line, statusCtx);
-          const canClaim = status === "claimable";
-          const isPremium = card.line === "premium";
-          const view = card.view;
-          const frame =
-            view.kind === "frame" ? FRAMES.find((item) => item.id === view.itemId) : undefined;
+      <div className="bp2-exg">
+        {top && (
+          <aside className="bp2-sup">
+            <span className="bp2-badge"><BpIcon name="crown" size={16} /> Супер-приз · {top.level} уровень</span>
+            <div className="bp2-pv">
+              <ProfileMini nickname={nickname} />
+            </div>
+            <small>
+              {top.kindLabel} · {top.rarityLabel}
+            </small>
+            <h3>{top.label}</h3>
+            <p>{top.desc}</p>
+            <button type="button" className="bp2-btn" onClick={() => setProfileOpen(true)}>
+              Как это выглядит в профиле
+            </button>
+          </aside>
+        )}
 
-          return (
-            <article
-              key={card.key}
-              className={`group relative overflow-hidden rounded-2xl bg-white/[0.03] ring-1 transition ${
-                canClaim ? "ring-accent-2" : "ring-white/10 hover:ring-white/30"
-              }`}
-            >
-              <button
-                type="button"
-                className="block w-full text-left"
-                onClick={() => onOpen(card.key)}
-                aria-label={`${card.label}, ${card.rarityLabel}, уровень ${card.level}`}
+        <div className="bp2-grid">
+          {cards.map((card) => {
+            const status = bpRewardStatus(card.level, card.line, statusCtx);
+            const canClaim = status === "claimable";
+            const isPremium = card.line === "premium";
+            return (
+              <article
+                key={card.key}
+                className={`bp2-ix${canClaim ? " can" : ""}`}
+                style={{ "--k": AE_RARITY[card.rarity].c } as React.CSSProperties}
               >
-                <div className="relative">
-                  {card.kind === "tag" && card.view.kind === "tag" ? (
-                    <span
-                      className="flex aspect-[3/2] w-full items-center justify-center"
-                      style={{
-                        background: `radial-gradient(130% 100% at 50% 0%, ${card.view.tag.visual.c}2e, transparent 62%), #0c0d16`,
-                      }}
-                      aria-hidden
-                    >
-                      <AgTag tag={card.view.tag} size="lg" locked={status === "locked"} />
-                    </span>
-                  ) : (
-                    <span className="flex aspect-[3/2] w-full items-center justify-center bg-[#0c0d16]">
-                      <AvatarFrame
-  nickname={nickname}
-  frame={frame}
-  size="sm"
-/>
-                    </span>
+                <button
+                  type="button"
+                  className="art"
+                  onClick={() => onOpen(card.key)}
+                  aria-label={`${card.label}, ${card.rarityLabel}, уровень ${card.level}`}
+                >
+                  <RewardArt card={card} size="md" live={canClaim} locked={status === "locked"} nickname={nickname} />
+                  <span className="lv2">{status === "claimed" ? "✓" : <BpIcon name="lock" size={13} />} {card.level} ур.</span>
+                  {isPremium && <span className="pm">Пропуск</span>}
+                </button>
+                <div className="im">
+                  <small>
+                    {card.kind === "frame" ? "Рамка" : card.kind === "decor" ? "Оформление" : "Титул"} · {card.rarityLabel}
+                  </small>
+                  <b>{card.label}</b>
+                  {canClaim && (
+                    <button type="button" className="bp2-claim" onClick={() => onClaim(card.line, card.level)}>
+                      Забрать
+                    </button>
                   )}
-
-                  <span
-                    className={`absolute left-2 top-2 rounded-md px-1.5 py-0.5 text-[10px] font-black tabular-nums ring-1 ${
-                      isPremium ? "bg-black/60 text-gold ring-gold/45" : "bg-black/60 text-white ring-white/25"
-                    }`}
-                  >
-                    L{card.level}
-                  </span>
-                  {isPremium && (
-                    <span className="absolute right-2 top-2 rounded-md bg-black/60 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wide text-gold ring-1 ring-gold/45">
-                      Premium
-                    </span>
-                  )}
+                  {status === "claimed" && <em className="got">Получено</em>}
+                  {!canClaim && status !== "claimed" && isPremium && !statusCtx.premium && <em>Нужен пропуск</em>}
                 </div>
-
-                <div className="px-3 py-2.5">
-                  <p className="truncate text-[13px] font-black uppercase tracking-wide text-white">
-                    {card.label}
-                  </p>
-                  <p className="mt-1 flex items-center gap-1.5 text-[11px] font-bold text-muted">
-                    <span
-                      className="inline-block h-1.5 w-1.5 rotate-45 rounded-[1px]"
-                      style={{ background: AE_RARITY[card.rarity].c }}
-                    />
-                    <span>
-                      {card.kind === "frame" ? "Рамка аватара" : "Титул"} · {card.rarityLabel}
-                    </span>
-                  </p>
-                </div>
-              </button>
-
-              <div className="px-3 pb-3">
-                {canClaim ? (
-                  <button
-                    type="button"
-                    onClick={() => onClaim(card.line, card.level)}
-                    className="bp-btn w-full !py-1.5 !text-[11px]"
-                    style={{
-                      background: isPremium
-                        ? "linear-gradient(135deg,#ffd04d,#ff8a1f)"
-                        : "linear-gradient(135deg,#34e08a,#6cf0ff)",
-                      color: isPremium ? "#2a1500" : "#04140b",
-                      borderColor: "transparent",
-                    }}
-                    aria-label={`Каталог: выдать эксклюзив L${card.level} ${card.line}`}
-                  >
-                    Забрать
-                  </button>
-                ) : status === "claimed" ? (
-                  <span className="inline-block rounded-lg bg-mint/15 px-2.5 py-1 text-[11px] font-bold text-mint ring-1 ring-mint/30">
-                    Получено
-                  </span>
-                ) : isPremium && !statusCtx.premium ? (
-                  <span className="inline-block rounded-lg bg-gold/12 px-2.5 py-1 text-[11px] font-bold text-gold ring-1 ring-gold/30">
-                    Нужен Premium
-                  </span>
-                ) : (
-                  <span className="inline-block rounded-lg bg-white/8 px-2.5 py-1 text-[11px] font-bold text-muted ring-1 ring-white/12">
-                    Уровень {card.level}
-                  </span>
-                )}
-              </div>
-            </article>
-          );
-        })}
+              </article>
+            );
+          })}
+        </div>
       </div>
     </section>
   );

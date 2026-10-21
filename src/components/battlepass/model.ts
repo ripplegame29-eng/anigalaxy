@@ -12,7 +12,7 @@ import { BATTLEPASS, bpRewards, describeReward, type RewardView } from "@/lib/ba
 import type { BattlepassLine } from "@/lib/progression/types";
 
 /** Тип награды для визуала: монета, молния XP, капсула титула, рамка */
-export type BpCardKind = "ac" | "bpXp" | "tag" | "frame";
+export type BpCardKind = "ac" | "bpXp" | "tag" | "frame" | "decor";
 
 export interface BpRewardCard {
   /** `line:level` — стабильный ключ клетки */
@@ -52,6 +52,7 @@ const KIND_LABEL: Record<BpCardKind, string> = {
   bpXp: "XP сезона",
   tag: "Титул",
   frame: "Рамка",
+  decor: "Оформление профиля",
 };
 
 const DESC: Record<BpCardKind, string> = {
@@ -59,6 +60,7 @@ const DESC: Record<BpCardKind, string> = {
   bpXp: "XP сезона — двигает уровень пропуска. Ценится выше обычного XP: даёт ещё XP поверх основного.",
   tag: "Титул встаёт рядом с ником в профиле, чате и списках просмотра. Эффекты капсулы зависят от редкости.",
   frame: "Анимированная рамка аватара в профиле, комментариях и списках просмотра.",
+  decor: "Сезонный виджет профиля: красная луна, лепестки, фонари и ленты вокруг шапки профиля. Выдаётся навсегда.",
 };
 
 const PICK_DESC = "Рамка на выбор: выдаётся первая ещё не полученная из списка лучших рамок сезона.";
@@ -66,8 +68,8 @@ const PICK_DESC = "Рамка на выбор: выдаётся первая е�
 /** Редкость предмета — из каталога косметики; для валюты — по уровню и линии */
 function cardRarity(kind: BpCardKind, view: RewardView, level: number, line: BattlepassLine): AERarity {
   const bonus = line === "premium" ? 1 : 0;
-  if (kind === "tag" || kind === "frame") {
-    const base = RARITY_INDEX[view.kind === "tag" || view.kind === "frame" ? view.rarity : "common"] ?? 0;
+  if (kind === "tag" || kind === "frame" || kind === "decor") {
+    const base = RARITY_INDEX[view.kind === "tag" || view.kind === "frame" || view.kind === "decor" ? view.rarity : "common"] ?? 0;
     return tierToRarity(base + bonus);
   }
   // Валюта: чем выше уровень и золотая линия — тем «пышнее» пакет
@@ -79,6 +81,7 @@ function cardKind(view: RewardView): BpCardKind {
   if (view.kind === "ac") return "ac";
   if (view.kind === "bpXp") return "bpXp";
   if (view.kind === "tag") return "tag";
+  if (view.kind === "decor") return "decor";
   return "frame";
 }
 
@@ -130,11 +133,13 @@ export function cardsAtLevel(level: number): { free?: BpRewardCard; premium?: Bp
 
 /** Уровни с предметами — на них ползунок рисует короткую засечку */
 export const ITEM_LEVELS = new Set(
-  TRACK_CARDS.filter((card) => card.kind === "tag" || card.kind === "frame").map((card) => card.level),
+  TRACK_CARDS.filter((card) => card.kind === "tag" || card.kind === "frame" || card.kind === "decor").map((card) => card.level),
 );
 
 /** Пакеты с предметами — для витрины эксклюзивов */
-export const EXCLUSIVE_CARDS = TRACK_CARDS.filter((card) => card.kind === "tag" || card.kind === "frame");
+export const EXCLUSIVE_CARDS = TRACK_CARDS.filter(
+  (card) => card.kind === "tag" || card.kind === "frame" || card.kind === "decor",
+);
 
 /** Правильные окончания: 1 пакет / 2 пакета / 5 пакетов */
 export function plural(n: number, one: string, few: string, many: string): string {

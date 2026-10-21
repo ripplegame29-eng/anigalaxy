@@ -13,13 +13,18 @@
  * входа, вошли без пропуска → оформление, пропуск есть → дата и сумма.
  */
 
-import { useCallback } from "react";
+import { BpIcon } from "./BpIcons";
+import { useCallback, useMemo } from "react";
 import Link from "next/link";
 import { AuthTrigger } from "@/components/AuthDialog";
+import { openCheckout } from "@/lib/checkout";
 import { openAuthDialog } from "@/lib/auth-dialog";
 import { activatePremium, formatPremiumUntil, isPremiumActive } from "@/lib/auth";
 import { useAccount } from "@/lib/use-account";
-import { BATTLEPASS } from "@/lib/battlepass/logic";
+import { BATTLEPASS, bpLineTotals } from "@/lib/battlepass/logic";
+import { RewardArt } from "@/components/battlepass/RewardArt";
+import { EXCLUSIVE_CARDS } from "@/components/battlepass/model";
+import { AE_RARITY } from "@/components/progression/AchievementEmblem";
 
 /** Годовой тариф — им открывается сезонный пропуск (см. PassPurchase) */
 const SEASON_PRICE = 1290;
@@ -81,82 +86,149 @@ export function PassPlans({ daysLeft }: { daysLeft: number }) {
       return;
     }
     if (premium || days <= 0) return;
-    // Даём подписку с запасом за сезон: остаток считается от «сейчас»,
-    // иначе пропуск мог бы кончиться раньше конца сезона
-    activatePremium(days + 30);
+    openCheckout({
+      title: "Боевой пропуск",
+      caption: "Разовый платёж за сезон",
+      price: SEASON_PRICE,
+      perks: ["Золотая линия наград сезона", "Эксклюзивная косметика и аникойны", "Награды за пройденные уровни выдаются сразу"],
+      // Подписка с запасом за сезон: остаток считается от «сейчас»,
+      // иначе пропуск мог бы кончиться раньше конца сезона
+      onPaid: () => activatePremium(days + 30),
+    });
   }, [account, premium, days]);
 
+  const totals = useMemo(() => bpLineTotals("premium"), []);
+  const fan = useMemo(
+    () =>
+      [...EXCLUSIVE_CARDS]
+        .filter((card) => card.line === "premium")
+        .sort((x, y) => y.level - x.level)
+        .slice(0, 3),
+    [],
+  );
+  const seasonName = BATTLEPASS.name.replace(/^Сезон \d+ · /, "");
+
+  const tilt = (event: React.PointerEvent<HTMLElement>) => {
+    const r = event.currentTarget.getBoundingClientRect();
+    const x = (event.clientX - r.left) / r.width - 0.5;
+    const y = (event.clientY - r.top) / r.height - 0.5;
+    event.currentTarget.style.setProperty("--rx", `${(-y * 10).toFixed(2)}deg`);
+    event.currentTarget.style.setProperty("--ry", `${(x * 14).toFixed(2)}deg`);
+    event.currentTarget.style.setProperty("--gx", `${((x + 0.5) * 100).toFixed(0)}%`);
+  };
+  const untilt = (event: React.PointerEvent<HTMLElement>) => {
+    event.currentTarget.style.setProperty("--rx", "0deg");
+    event.currentTarget.style.setProperty("--ry", "0deg");
+  };
+
   return (
-    <div className="mx-auto grid max-w-3xl grid-cols-1 gap-6">
-      <div className="relative overflow-hidden rounded-3xl border border-accent/45 bg-gradient-to-b from-accent/22 to-ink-soft shadow-[0_28px_60px_-24px_rgba(31,123,255,0.65)]">
-        <div className="flex items-start justify-between gap-4 p-6 sm:p-8">
-          <div className="min-w-0">
-            <p className="text-[10px] font-black uppercase tracking-[0.18em] text-accent-2">
-              Сезон {BATTLEPASS.seasonId.replace("season-", "")} · {BATTLEPASS.name.replace(/^Сезон \d+ · /, "")}
-            </p>
-            <p className="mt-1 font-display text-4xl font-black leading-none text-white tabular-nums sm:text-5xl">
-              {SEASON_PRICE.toLocaleString("ru-RU")}
-              <span className="text-2xl">₽</span>
-            </p>
-            <p className="mt-1 text-xs font-bold text-muted">
-              разовый платёж · с {seasonStartLabel()} по{" "}
-              {new Date(BATTLEPASS.to).toLocaleDateString("ru-RU", { day: "numeric", month: "long" })}
-            </p>
+    <div className="bpb-wrap">
+      <div className="bpb-grid">
+        {/* Карта пропуска — наклоняется за курсором */}
+        <div className="bpb-stage" onPointerMove={tilt} onPointerLeave={untilt}>
+          <div className="bpb-fan">
+            {fan.map((card, i) => (
+              <div
+                key={card.key}
+                className={`bpb-fc bpb-fc--${i}`}
+                style={{ "--k": AE_RARITY[card.rarity].c } as React.CSSProperties}
+              >
+                <i className="c tl" />
+                <i className="c br" />
+                <span className="bpb-fc-lv">Ур. {card.level}</span>
+                <div className="bpb-fc-art">
+                  <RewardArt card={card} size={i === 0 ? "lg" : "md"} live={i === 0} nickname={account?.nickname ?? "Гость"} />
+                </div>
+                <b>{card.label}</b>
+                <small>
+                  {card.kind === "frame" ? "Рамка" : card.kind === "decor" ? "Оформление" : "Титул"} · {card.rarityLabel}
+                </small>
+                <span className="bpb-fc-sheen" />
+              </div>
+            ))}
+            <span className="bpb-chip bpb-chip--ac">
+              {/* eslint-disable-next-line @next/next/no-img-element -- монетка 20px */}
+              <img src="/coin.png" alt="" width={20} height={20} /> +{totals.ac.toLocaleString("ru-RU")} AC
+            </span>
+            <span className="bpb-chip bpb-chip--xp">✦ +{totals.bpXp.toLocaleString("ru-RU")} XP</span>
+            <span className="bpb-chip bpb-chip--it"><BpIcon name="gift" size={15} /> {totals.items} эксклюзивов</span>
           </div>
-          <span className="shrink-0 rounded-full bg-gold/15 px-2.5 py-1 text-[10px] font-black text-gold ring-1 ring-gold/40">
-            ~20% выгоднее
-          </span>
+          <p className="bpb-cap">Вот что внутри нижней ленты — лучшие награды сезона</p>
         </div>
 
-        <ul className="space-y-2 border-t border-white/10 px-6 py-5 text-sm sm:px-8">
-          {[
-            `Золотая линия на ${rewardLevels} наградных уровнях`,
-            "Пройденные уровни можно забрать одной кнопкой",
-            "Рамки, маски и титулы только за этот сезон",
-            "Награды не сгорают после конца сезона",
-          ].map((line) => (
-            <li key={line} className="flex items-start gap-2.5 text-muted">
-              <CheckIcon className="mt-0.5 h-4 w-4 shrink-0 text-mint" />
-              <span>{line}</span>
-            </li>
-          ))}
-        </ul>
+        {/* Панель покупки */}
+        <div className="bpb-panel">
+          <i className="c tl" />
+          <i className="c tr" />
+          <i className="c bl" />
+          <i className="c br" />
+          <p className="bpb-eyebrow">
+            Сезон {BATTLEPASS.seasonId.replace("season-", "")} · {seasonName}
+          </p>
+          <p className="bpb-price">
+            {SEASON_PRICE.toLocaleString("ru-RU")}
+            <small>₽</small>
+          </p>
+          <p className="bpb-dates">
+            разовый платёж · с {seasonStartLabel()} по{" "}
+            {new Date(BATTLEPASS.to).toLocaleDateString("ru-RU", { day: "numeric", month: "long" })}
+          </p>
 
-        <div className="px-6 pb-6 sm:px-8 sm:pb-8">
+          <ul className="bpb-list">
+            {[
+              `Нижняя лента наград на ${rewardLevels} уровнях`,
+              "Пройденные уровни забираются одной кнопкой",
+              "Рамки и титулы только за этот сезон",
+              "Награды не сгорают после конца сезона",
+            ].map((line) => (
+              <li key={line}>
+                <CheckIcon className="h-4 w-4" />
+                <span>{line}</span>
+              </li>
+            ))}
+          </ul>
+
           {premium ? (
             <>
-              <p className="mb-3 rounded-xl border border-mint/30 bg-mint/10 px-4 py-3 text-sm font-bold text-mint">
-                Пропуск активен ✓ до {formatPremiumUntil(account)}
-              </p>
-              <Link
-                href="/battlepass"
-                className="inline-flex w-full items-center justify-center rounded-xl border border-white/12 bg-white/[0.05] px-4 py-3 text-sm font-black text-white transition hover:bg-white/10 motion-reduce:transition-none"
-              >
+              <p className="bpb-ok">Пропуск активен ✓ до {formatPremiumUntil(account)}</p>
+              <Link href="/battlepass" className="bpb-cta bpb-cta--ghost">
                 Перейти к дорожке
               </Link>
             </>
           ) : (
-            <button
-              type="button"
-              onClick={onBuy}
-              disabled={days <= 0}
-              className="inline-flex w-full items-center justify-center rounded-xl bg-gradient-to-b from-accent to-accent-2 px-4 py-3.5 text-sm font-black text-white shadow-[0_10px_30px_-10px_rgba(31,123,255,0.9)] transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-45 motion-reduce:transition-none"
-            >
-              {days <= 0
-                ? "Сезон завершён"
-                : `Купить пропуск за ${SEASON_PRICE.toLocaleString("ru-RU")} ₽`}
+            <button type="button" onClick={onBuy} disabled={days <= 0} className="bpb-cta">
+              {days <= 0 ? "Сезон завершён" : `Купить пропуск за ${SEASON_PRICE.toLocaleString("ru-RU")} ₽`}
             </button>
           )}
-          <p className="mt-2.5 text-center text-[11px] leading-snug text-muted">
+          <p className="bpb-note">
             {premium
               ? "Подписка уже активна — продлевать пропуск не нужно."
               : days <= 0
                 ? "Продажи пропуска закрыты вместе с сезоном."
                 : `Подписка откроется на ${days} дн. — столько осталось в сезоне, плюс 30 дней запаса.`}
           </p>
-          <p className="mt-1 text-center text-[10px] leading-snug text-gold/80">
+          <p className="bpb-demo">
             Демо: платёжный шлюз не подключён, деньги не списываются — активация нужна для проверки механики.
           </p>
+        </div>
+      </div>
+
+      <div className="bpb-stats">
+        <div>
+          <b>{totals.items}</b>
+          <span>эксклюзивных предметов</span>
+        </div>
+        <div>
+          <b>{totals.ac.toLocaleString("ru-RU")}</b>
+          <span>аникойнов AC</span>
+        </div>
+        <div>
+          <b>{totals.bpXp.toLocaleString("ru-RU")}</b>
+          <span>XP сезона</span>
+        </div>
+        <div>
+          <b>{totals.levels}</b>
+          <span>наградных уровней</span>
         </div>
       </div>
     </div>

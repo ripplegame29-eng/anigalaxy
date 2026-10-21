@@ -46,7 +46,19 @@ export type WidgetId =
   /** Статистика: просмотрено, аниме, серии, достижения */
   | "stats"
   /** Тир-лист аниме: ряды S…F с постерами */
-  | "tier";
+  | "tier"
+  /** Витрина «Избранное аниме» (как в Steam) */
+  | "feat"
+  /** Арт-витрина: свои картинки */
+  | "art"
+  /** Витрина достижений на выбор */
+  | "pick"
+  /** Плашка уровня «Хуэко Мундо» с живыми данными (награда пропуска) */
+  | "level"
+  /** Арт-витрина в стиле Steam: гифки и арты в раскладках */
+  | "artwork"
+  /** Свободный текст: цитата, девиз */
+  | "text";
 
 /** `s` — 1×1, `l` — на всю ширину */
 export type WidgetSize = "s" | "l";
@@ -76,6 +88,19 @@ export const WIDGETS: WidgetDef[] = [
   { id: "compat", title: "Совместимость", icon: "link", size: "s", service: "svc_widgets_compat" },
   { id: "stats", title: "Статистика", icon: "chart", size: "l" },
   { id: "tier", title: "Тир-лист", icon: "tier", size: "l" },
+  { id: "feat", title: "Избранное аниме", icon: "crown", size: "l" },
+  { id: "art", title: "Арт-витрина", icon: "grid", size: "l" },
+  { id: "pick", title: "Витрина достижений", icon: "star", size: "l" },
+  { id: "level", title: "Плашка уровня", icon: "crown", size: "l" },
+  { id: "artwork", title: "Арт-витрина (гифки)", icon: "grid", size: "l" },
+  { id: "text", title: "Текст / цитата", icon: "chat", size: "l" },
+];
+
+/** Категории каталога: блоки в редакторе разложены по смыслу */
+export const WIDGET_CATS: { id: string; label: string; ids: WidgetId[] }[] = [
+  { id: "show", label: "Витрины и арты", ids: ["artwork", "art", "feat", "fav", "tier", "coll", "pick"] },
+  { id: "stat", label: "Статистика и прогресс", ids: ["level", "stats", "act", "week", "ach", "shelf", "chrono", "stud"] },
+  { id: "me", label: "О себе и общение", ids: ["text", "about", "gifts", "compat"] },
 ];
 
 export const WIDGET_BY_ID: Record<WidgetId, WidgetDef> = Object.fromEntries(
@@ -139,7 +164,7 @@ export const DEFAULT_LAYOUT: WidgetSlot[] = [
 export const DEFAULT_OPTIONS: WidgetOptions = { rings: true, sep: false };
 
 /** Максимум блоков на витрине — чтобы профиль не превращался в длинный список */
-export const MAX_WIDGETS = 12;
+export const MAX_WIDGETS = 16;
 
 /**
  * Разбор сохранённой раскладки.

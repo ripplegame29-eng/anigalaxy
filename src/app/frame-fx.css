@@ -1,0 +1,65 @@
+/* ============================================================
+   Живые эффекты рамок (data-fx): аура, частицы и «дыхание».
+   Размеры рамок здесь не трогаем — только слои поверх/под ними.
+   ============================================================ */
+.ag-frame[data-fx] {
+  --fx: #ff3d62;
+  --fx2: #ffb3a0;
+  --fm: agfx-up;
+  isolation: isolate;
+}
+.ag-frame[data-fx="crimson"] { --fx: #ff2d55; --fx2: #ffb09a; --fm: agfx-up; }
+.ag-frame[data-fx="teal"]    { --fx: #19e0c8; --fx2: #b9fff4; --fm: agfx-up; }
+.ag-frame[data-fx="gold"]    { --fx: #ffc857; --fx2: #fff3c9; --fm: agfx-twinkle; }
+.ag-frame[data-fx="ice"]     { --fx: #4aa8ff; --fx2: #dff1ff; --fm: agfx-down; }
+.ag-frame[data-fx="violet"]  { --fx: #a45cff; --fx2: #e4ccff; --fm: agfx-twinkle; }
+.ag-frame[data-fx="sakura"]  { --fx: #ff9ccb; --fx2: #fff0f7; --fm: agfx-down; }
+.ag-frame[data-fx="smoke"]   { --fx: #cfd6ff; --fx2: #ffffff; --fm: agfx-up; }
+
+/* аура: мягкое пульсирующее свечение за кольцом */
+.ag-frame[data-fx]::before {
+  content: "";
+  position: absolute;
+  inset: 12%;
+  z-index: 0;
+  border-radius: 50%;
+  pointer-events: none;
+  background: radial-gradient(circle, transparent 46%, color-mix(in srgb, var(--fx) 55%, transparent) 60%, transparent 74%);
+  animation: agfx-pulse 3.6s ease-in-out infinite;
+}
+/* частицы: три слоя точек разного размера, плывут по кругу кадра */
+.ag-frame[data-fx]::after {
+  content: "";
+  position: absolute;
+  inset: 4%;
+  z-index: 3;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 30% 50%, var(--fx2) 0 1.5px, transparent 2.6px) 0 0 / 47px 61px,
+    radial-gradient(circle at 60% 40%, var(--fx) 0 2px, transparent 3.4px) 0 0 / 83px 71px,
+    radial-gradient(circle at 45% 70%, var(--fx2) 0 1px, transparent 2px) 0 0 / 37px 53px;
+  -webkit-mask: radial-gradient(circle, transparent 34%, #000 38%, #000 80%, transparent 100%);
+  mask: radial-gradient(circle, transparent 34%, #000 38%, #000 80%, transparent 100%);
+  animation: var(--fm) 7s linear infinite;
+}
+.ag-frame[data-fx] .ag-frame__img {
+  z-index: 2;
+  filter: drop-shadow(0 0 5px color-mix(in srgb, var(--fx) 60%, transparent));
+  animation: agfx-breathe 4.2s ease-in-out infinite;
+}
+.ag-frame--xs[data-fx]::before,
+.ag-frame--xs[data-fx]::after { display: none; }
+
+@keyframes agfx-pulse { 50% { transform: scale(1.07); opacity: .6; } }
+@keyframes agfx-breathe { 50% { transform: scale(1.022); } }
+@keyframes agfx-up { to { background-position: 0 -61px, 0 -142px, 0 -53px; } }
+@keyframes agfx-down { to { background-position: 0 61px, 0 142px, 0 53px; } }
+@keyframes agfx-twinkle {
+  0%, 100% { opacity: .35; }
+  50% { opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ag-frame[data-fx]::before,
+  .ag-frame[data-fx]::after,
+  .ag-frame[data-fx] .ag-frame__img { animation: none; }
+}

@@ -70,7 +70,7 @@ const PATHS: Record<MarkKind, React.ReactNode> = {
 
 export function SectionMark({ kind }: { kind: MarkKind }) {
   return (
-    <span className="sm" aria-hidden>
+    <span className="sm-mark" aria-hidden>
       <svg viewBox="0 0 24 24" fill="none" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
         {PATHS[kind]}
       </svg>

@@ -679,7 +679,7 @@ export function EventsView() {
                         ? "Двигай ползунок"
                         : "Недостаточно фонариков"}
                   </span>
-                  <span>Атомов обменяно за ивент: <em>{fmt(state.ac)}</em></span>
+                  <span>AC обменяно за ивент: <em>{fmt(state.ac)}</em></span>
                 </div>
               </div>
               <button

@@ -13,11 +13,13 @@ import {
 import {
   useProfile,
   updateProfile,
+  profileStore,
   groupSignature,
 } from "@/lib/profile";
 import {
   BACKGROUNDS,
   FRAMES,
+  PROFILE_DECORS,
   TITLES,
   RARITY_LABEL,
   RARITY_CLASS,
@@ -27,6 +29,12 @@ import {
   type TitleItem,
   type UnlockContext,
 } from "@/lib/cosmetics";
+import { MediaPicker, MediaView } from "./MediaBits";
+import { deleteMedia } from "@/lib/media-store";
+import { useArtwork } from "@/lib/artwork";
+import { THEME_PRESETS, BG_PRESETS, activePresetId, applyBgPreset, applyThemePreset } from "@/lib/theme-presets";
+import { patchTheme, resetTheme, useProfileTheme, type ProfileTheme } from "@/lib/ptheme";
+import { BATTLEPASS } from "@/lib/battlepass/config";
 import { IMAGE_LIMITS, readImageFile } from "@/lib/images";
 import { useMyReferrals } from "@/lib/referrals";
 import {
@@ -223,6 +231,419 @@ function Note({ children, tone = "muted" }: { children: React.ReactNode; tone?: 
   const toneClass =
     tone === "error" ? "text-rose-300" : tone === "ok" ? "text-mint" : "text-muted";
   return <p className={`mt-3 text-xs leading-relaxed ${toneClass}`}>{children}</p>;
+}
+
+/** Новый аватар — в начало истории без дублей, не больше шести */
+function pushAvatarHistory(list: string[], data: string): string[] {
+  return [data, ...list.filter((item) => item !== data)].slice(0, 6);
+}
+
+/* ------------------------------- Эффекты -------------------------------- */
+
+/** Цвет редкости для карточек эффектов */
+const FXM_RARITY: Record<string, string> = { COMMON: "#9aa4b2", RARE: "#38bdf8", EPIC: "#a78bfa", LEGENDARY: "#fbbf24" };
+
+type FxTab = "decor" | "particle" | "style";
+
+/** Окно «Эффекты»: сцена с предпросмотром слева, вкладки с карточками справа */
+function EffectsDialog() {
+  const profile = useProfile();
+  const doc = useProgress();
+  const account = useAccount();
+  const panelRef = useModalBehaviour(true, closeProfileDialog);
+  const [tab, setTab] = useState<FxTab>("decor");
+  const owned = new Set([...doc.purchases.map((item) => item.itemId), ...profile.purchased]);
+  const claimed = new Set(doc.battlepass.claimed);
+  const frame = FRAMES.find((item) => item.id === profile.frameId);
+  const nickname = account?.nickname ?? "Гость";
+
+  const decors = PROFILE_DECORS.map((item) => {
+    const bp = BATTLEPASS.levels.find(
+      (lv) => lv.free?.some((r) => r.kind === "decor" && r.itemId === item.id) || lv.premium?.some((r) => r.kind === "decor" && r.itemId === item.id),
+    );
+    const premium = Boolean(bp?.premium?.some((r) => r.kind === "decor" && r.itemId === item.id));
+    const has = owned.has(item.id) || (bp ? claimed.has(`${BATTLEPASS.seasonId}:${premium ? "premium" : "free"}:${bp.level}`) : false);
+    return { item, bp, has, on: profile.decorFx === item.id };
+  });
+
+  const toggleDecor = (id: string, on: boolean) =>
+    updateProfile({
+      decorFx: on ? "" : id,
+      ...(profile.purchased.includes(id) ? {} : { purchased: [...profile.purchased, id] }),
+    });
+  const toggleStyle = (id: string) => {
+    const on = profile.styleFx.includes(id);
+    updateProfile({ styleFx: on ? profile.styleFx.filter((x) => x !== id) : [...profile.styleFx, id].slice(0, 4) });
+  };
+
+  const activeParticle = PARTICLE_EFFECTS.find((item) => item.id === profile.particleFx);
+  const activeStyles = STYLE_EFFECTS.filter((item) => profile.styleFx.includes(item.id));
+  const activeDecor = decors.find((d) => d.on);
+  const accent = FXM_RARITY[activeParticle?.rarity ?? "RARE"];
+
+  const tabs: { id: FxTab; label: string; count: string }[] = [
+    { id: "decor", label: "Оформление", count: activeDecor ? "1" : "0" },
+    { id: "particle", label: "Частицы", count: activeParticle ? "1" : "0" },
+    { id: "style", label: "Стили", count: `${activeStyles.length}/4` },
+  ];
+
+  const Card = ({ id, name, desc, rarity, has, on, meta, onClick }: { id: string; name: string; desc: string; rarity: string; has: boolean; on: boolean; meta: string; onClick: () => void }) => (
+    <button
+      key={id}
+      type="button"
+      disabled={!has}
+      onClick={onClick}
+      aria-pressed={on}
+      className={`fxm-card ${on ? "is-on" : ""} ${has ? "" : "is-lock"}`}
+      style={{ ["--c" as string]: FXM_RARITY[rarity] ?? "#9aa4b2" }}
+    >
+      <span className="fxm-card-top">
+        <i className="fxm-dot" />
+        <span className="fxm-state">
+          {on ? "Надето" : has ? "Доступно" : "🔒"}
+        </span>
+      </span>
+      <b>{name}</b>
+      <small>{desc}</small>
+      <em>{on ? "Нажмите, чтобы снять" : meta}</em>
+    </button>
+  );
+
+  return (
+    <div
+      className="fixed inset-0 z-[95] flex items-start justify-center overflow-y-auto p-4 py-8 sm:items-center"
+      onMouseDown={(event) => event.target === event.currentTarget && closeProfileDialog()}
+    >
+      <div className="fixed inset-0 bg-black/80 backdrop-blur-md" aria-hidden />
+      <div ref={panelRef} role="dialog" aria-modal="true" aria-label="Эффекты" tabIndex={-1} className="fxm" style={{ ["--ac" as string]: accent }}>
+        <i className="fxm-glow" aria-hidden />
+        <header className="fxm-head">
+          <div>
+            <h2>Эффекты</h2>
+            <p>Соберите атмосферу своего профиля</p>
+          </div>
+          <button type="button" onClick={closeProfileDialog} aria-label="Закрыть" className="fxm-x">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.4"><path strokeLinecap="round" d="M6 6l12 12M18 6 6 18" /></svg>
+          </button>
+        </header>
+
+        <div className="fxm-body">
+          <aside className="fxm-stage">
+            <div className="fxm-scene" data-p={activeParticle?.mode ?? "none"}>
+              <span className="fxm-pts" aria-hidden>
+                {Array.from({ length: 14 }, (_, k) => (
+                  <i key={k} style={{ ["--i" as string]: k }} />
+                ))}
+              </span>
+              <AvatarFrame nickname={nickname} avatar={profile.avatar || undefined} frame={frame} size="md" />
+              <p className="fxm-nick">{nickname}</p>
+            </div>
+            <ul className="fxm-sum">
+              <li><span>Оформление</span><b>{activeDecor?.item.name ?? "—"}</b></li>
+              <li><span>Частица</span><b>{activeParticle?.name ?? "—"}</b></li>
+              <li><span>Стили</span><b>{activeStyles.length ? activeStyles.map((x) => x.name).join(", ") : "—"}</b></li>
+            </ul>
+            <div className="fxm-lvl">
+              <p>Сила эффектов</p>
+              <div role="group" aria-label="Уровень эффекта">
+                {EFFECT_LEVELS.map((value) => (
+                  <button key={value} type="button" aria-pressed={profile.fxLevel === value} className={profile.fxLevel >= value ? "on" : ""} onClick={() => updateProfile({ fxLevel: value })}>
+                    {EFFECT_LEVEL_LABEL[value]}
+                  </button>
+                ))}
+              </div>
+              <small>Уровень умножает частицы и амплитуду стилей</small>
+            </div>
+          </aside>
+
+          <section className="fxm-main">
+            <nav className="fxm-tabs" role="tablist">
+              {tabs.map((t) => (
+                <button key={t.id} type="button" role="tab" aria-selected={tab === t.id} className={tab === t.id ? "on" : ""} onClick={() => setTab(t.id)}>
+                  {t.label}
+                  <em>{t.count}</em>
+                </button>
+              ))}
+            </nav>
+
+            <div className="fxm-grid">
+              {tab === "decor" &&
+                decors.map(({ item, bp, has, on }) =>
+                  Card({
+                    id: item.id,
+                    name: item.name,
+                    desc: "Луна, лепестки, фонари и красная плашка уровня вокруг шапки профиля",
+                    rarity: "LEGENDARY",
+                    has,
+                    on,
+                    meta: has ? "Нажмите, чтобы надеть" : `Боевой пропуск${bp ? ` · ${bp.level} ур.` : ""}`,
+                    onClick: () => toggleDecor(item.id, on),
+                  }),
+                )}
+
+              {tab === "particle" && (
+                <>
+                  {Card({ id: "none", name: "Без частиц", desc: "Чистый фон", rarity: "COMMON", has: true, on: profile.particleFx === "", meta: "Нажмите, чтобы выбрать", onClick: () => updateProfile({ particleFx: "" }) })}
+                  {PARTICLE_EFFECTS.map((item) => {
+                    const has = owned.has(item.id);
+                    return Card({
+                      id: item.id,
+                      name: item.name,
+                      desc: item.description,
+                      rarity: item.rarity,
+                      has,
+                      on: profile.particleFx === item.id,
+                      meta: has ? "Нажмите, чтобы надеть" : `${item.price} AC · в магазине`,
+                      onClick: () => updateProfile({ particleFx: item.id }),
+                    });
+                  })}
+                </>
+              )}
+
+              {tab === "style" &&
+                STYLE_EFFECTS.map((item) => {
+                  const has = owned.has(item.id);
+                  return Card({
+                    id: item.id,
+                    name: item.name,
+                    desc: item.description,
+                    rarity: item.rarity,
+                    has,
+                    on: profile.styleFx.includes(item.id),
+                    meta: has ? "Можно сочетать до 4" : `${item.price} AC · в магазине`,
+                    onClick: () => toggleStyle(item.id),
+                  });
+                })}
+            </div>
+
+            <footer className="fxm-foot">
+              <span>Закрытое открывается в магазине косметики</span>
+              <Link href="/cosmetics" onClick={closeProfileDialog}>Открыть магазин</Link>
+            </footer>
+          </section>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* --------------------------- Тема профиля ------------------------------- */
+
+function ThemeSlider({ label, value, min, max, unit = "", onChange }: { label: string; value: number; min: number; max: number; unit?: string; onChange: (v: number) => void }) {
+  return (
+    <label className="pc-row">
+      <span>{label}</span>
+      <input type="range" className="pc-range" min={min} max={max} value={value} onChange={(e) => onChange(Number(e.target.value))} />
+      <b>{value}{unit}</b>
+    </label>
+  );
+}
+
+/** Окно «Тема профиля»: фон страницы, боковые арты, стекло карточек, акцент */
+function ThemeDialog() {
+  const t = useProfileTheme();
+  const art = useArtwork();
+  const panelRef = useModalBehaviour(true, closeProfileDialog);
+  const [tab, setTab] = useState<"presets" | "bgs" | "custom">("presets");
+  const activeId = activePresetId(art.slots[0]?.media);
+
+  const set = (fn: (x: ProfileTheme) => ProfileTheme) => patchTheme((x) => ({ ...fn(x), on: true }));
+
+  return (
+    <div className="fixed inset-0 z-[95] flex items-start justify-center overflow-y-auto p-4 py-8 sm:items-center" onMouseDown={(e) => e.target === e.currentTarget && closeProfileDialog()}>
+      <div className="fixed inset-0 bg-black/80 backdrop-blur-md" aria-hidden />
+      <div ref={panelRef} role="dialog" aria-modal="true" aria-label="Тема профиля" tabIndex={-1} className="pc-theme">
+        <header>
+          <div>
+            <h2>Тема профиля</h2>
+            <p>Фон страницы, боковые арты и стиль карточек — всё видно сразу</p>
+          </div>
+          <label className="pc-sw">
+            <input type="checkbox" checked={t.on} onChange={(e) => patchTheme((x) => ({ ...x, on: e.target.checked }))} />
+            <i />
+            <span>{t.on ? "Включена" : "Выключена"}</span>
+          </label>
+          <button type="button" className="pc-x" onClick={closeProfileDialog} aria-label="Закрыть">×</button>
+        </header>
+
+        <div className="pc-tabs" role="tablist">
+          <button type="button" role="tab" aria-selected={tab === "presets"} className={tab === "presets" ? "on" : ""} onClick={() => setTab("presets")}>Готовые сборки</button>
+          <button type="button" role="tab" aria-selected={tab === "bgs"} className={tab === "bgs" ? "on" : ""} onClick={() => setTab("bgs")}>Живые фоны</button>
+          <button type="button" role="tab" aria-selected={tab === "custom"} className={tab === "custom" ? "on" : ""} onClick={() => setTab("custom")}>Свои настройки</button>
+        </div>
+
+        {tab === "presets" && (
+          <div className="pc-presets">
+            {THEME_PRESETS.map((p) => {
+              const on = t.on && activeId === p.id;
+              return (
+                <button key={p.id} type="button" className={`pc-preset ${on ? "is-on" : ""}`} style={{ ["--c" as string]: p.accent }} onClick={() => applyThemePreset(p)}>
+                  <span className="pc-preset-go">{on ? "Применена" : "Применить"}</span>
+                  <span className="pc-preset-pv"><img src={p.poster} alt="" loading="lazy" /></span>
+                  <span className="pc-preset-in">
+                    <b>{p.name}</b>
+                    <small>{p.tag}</small>
+                    <em><i />Акцент и фон подобраны</em>
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        )}
+
+        {tab === "bgs" && (
+          <>
+            <div className="pc-presets is-bgs">
+              {BG_PRESETS.map((b) => {
+                const on = t.on && t.bg.media === b.file;
+                return (
+                  <button key={b.id} type="button" className={`pc-preset ${on ? "is-on" : ""}`} style={{ ["--c" as string]: b.accent }} onClick={() => applyBgPreset(b)}>
+                    <span className="pc-preset-go">{on ? "Фон включён" : "Поставить"}</span>
+                    <span className="pc-preset-pv is-wide"><img src={b.poster} alt="" loading="lazy" /></span>
+                    <span className="pc-preset-in"><b>{b.name}</b></span>
+                  </button>
+                );
+              })}
+            </div>
+            <p className="pc-note">Фон двигается на всей странице профиля. Затемнение и размытие — на вкладке «Свои настройки».</p>
+          </>
+        )}
+
+        {tab === "custom" && <div className="pc-theme-body">
+          <section>
+            <h4>Фон страницы</h4>
+            <div className="pc-pv">{t.bg.media ? <MediaView id={t.bg.media} fit={t.bg.fit} /> : <span>Картинка, гиф или видео</span>}</div>
+            <MediaPicker current={t.bg.media} label="Загрузить фон" onChange={(id) => set((x) => ({ ...x, bg: { ...x.bg, media: id } }))} />
+            <ThemeSlider label="Затемнение" value={t.bg.dim} min={0} max={90} unit="%" onChange={(v) => set((x) => ({ ...x, bg: { ...x.bg, dim: v } }))} />
+            <ThemeSlider label="Размытие" value={t.bg.blur} min={0} max={24} unit="px" onChange={(v) => set((x) => ({ ...x, bg: { ...x.bg, blur: v } }))} />
+            <div className="pc-seg">
+              <button type="button" className={t.bg.fit === "cover" ? "on" : ""} onClick={() => set((x) => ({ ...x, bg: { ...x.bg, fit: "cover" } }))}>Заполнить</button>
+              <button type="button" className={t.bg.fit === "contain" ? "on" : ""} onClick={() => set((x) => ({ ...x, bg: { ...x.bg, fit: "contain" } }))}>Вписать</button>
+            </div>
+          </section>
+
+          {(["left", "right"] as const).map((side) => (
+            <section key={side}>
+              <h4>{side === "left" ? "Левый арт" : "Правый арт"}</h4>
+              <div className="pc-pv is-tall">{t[side].media ? <MediaView id={t[side].media} fit="contain" /> : <span>Боковая гифка</span>}</div>
+              <MediaPicker current={t[side].media} label="Загрузить арт" onChange={(id) => set((x) => ({ ...x, [side]: { ...x[side], media: id } }))} />
+              <ThemeSlider label="Ширина" value={t[side].width} min={6} max={30} unit="%" onChange={(v) => set((x) => ({ ...x, [side]: { ...x[side], width: v } }))} />
+              <ThemeSlider label="Яркость" value={t[side].opacity} min={10} max={100} unit="%" onChange={(v) => set((x) => ({ ...x, [side]: { ...x[side], opacity: v } }))} />
+            </section>
+          ))}
+
+          <section>
+            <h4>Карточки</h4>
+            <ThemeSlider label="Прозрачность" value={t.glass.opacity} min={20} max={100} unit="%" onChange={(v) => set((x) => ({ ...x, glass: { ...x.glass, opacity: v } }))} />
+            <ThemeSlider label="Стекло (blur)" value={t.glass.blur} min={0} max={30} unit="px" onChange={(v) => set((x) => ({ ...x, glass: { ...x.glass, blur: v } }))} />
+            <ThemeSlider label="Скругление" value={t.radius} min={4} max={32} unit="px" onChange={(v) => set((x) => ({ ...x, radius: v }))} />
+            <label className="pc-row">
+              <span>Акцентный цвет</span>
+              <input type="color" className="pc-color" value={t.accent || "#ff3d62"} onChange={(e) => set((x) => ({ ...x, accent: e.target.value }))} />
+              {t.accent ? <button type="button" className="pc-btn is-ghost" onClick={() => patchTheme((x) => ({ ...x, accent: "" }))}>Сбросить</button> : <b>по умолчанию</b>}
+            </label>
+            <label className="pc-row">
+              <span>Плавное движение артов</span>
+              <input type="checkbox" checked={t.float} onChange={(e) => patchTheme((x) => ({ ...x, float: e.target.checked }))} />
+            </label>
+          </section>
+        </div>}
+
+        <footer>
+          <button type="button" className="pc-btn is-ghost" onClick={() => { for (const m of [t.bg.media, t.left.media, t.right.media]) if (m) void deleteMedia(m); resetTheme(); }}>Сбросить всё</button>
+          <button type="button" className="pc-btn" onClick={closeProfileDialog}>Готово</button>
+        </footer>
+      </div>
+    </div>
+  );
+}
+
+/* ------------------------------- Аватары -------------------------------- */
+
+/** Окно аватаров: загрузить новый или вернуть один из прежних */
+function AvatarDialog() {
+  const profile = useProfile();
+  const account = useAccount();
+  const [message, setMessage] = useState<{ text: string; tone: "error" | "ok" } | null>(null);
+  const frame = FRAMES.find((item) => item.id === profile.frameId);
+  const nickname = account?.nickname ?? "Гость";
+  const history = profile.avatar && !profile.avatarHistory.includes(profile.avatar)
+    ? [profile.avatar, ...profile.avatarHistory]
+    : profile.avatarHistory;
+
+  const onFile = useCallback(async (file: File) => {
+    const result = await readImageFile(file, { maxDim: 512, maxMb: IMAGE_LIMITS.avatar });
+    if (!result.ok) {
+      setMessage({ text: result.error, tone: "error" });
+      return;
+    }
+    updateProfile({ avatar: result.data, avatarHistory: pushAvatarHistory(profileStore.get().avatarHistory, result.data) });
+    progressEmit({ type: "PROFILE_FIELD", field: "avatar" });
+    setMessage({ text: result.animated ? "GIF-аватар сохранён как есть" : "Аватар обновлён", tone: "ok" });
+  }, []);
+
+  return (
+    <DialogShell title="Аватар" subtitle="Загрузите новый или вернитесь к прежнему" onClose={closeProfileDialog} className="ag-avdlg">
+      <div className="ag-avdlg-hero">
+        <span className="ag-avdlg-glow" aria-hidden />
+        <AvatarFrame nickname={nickname} avatar={profile.avatar || undefined} frame={frame} size="md" />
+        <div className="min-w-0">
+          <p className="truncate text-base font-black text-white">{nickname}</p>
+          <p className="text-[11px] text-muted">Так вас видят другие</p>
+        </div>
+      </div>
+
+      <FilePicker label="Загрузить новый аватар" onFile={(file) => void onFile(file)} className="ag-avdlg-up" />
+      {message && <Note tone={message.tone}>{message.text}</Note>}
+
+      <p className="mb-2 mt-5 text-[10px] font-bold uppercase tracking-[0.16em] text-muted">Мои загрузки · {history.length}</p>
+      {history.length === 0 ? (
+        <p className="rounded-xl border border-dashed border-line px-3 py-6 text-center text-xs text-muted">
+          Здесь появятся аватары, которые вы загрузите
+        </p>
+      ) : (
+        <div className="grid grid-cols-3 gap-2.5">
+          {history.map((src) => {
+            const active = profile.avatar === src;
+            return (
+              <div key={src.slice(-40) + src.length} className={`ag-avdlg-cell ${active ? "is-on" : ""}`}>
+                <button
+                  type="button"
+                  aria-label="Применить аватар"
+                  onClick={() => updateProfile({ avatar: src })}
+                  className="block aspect-square w-full overflow-hidden rounded-2xl"
+                >
+                  
+                  <img src={src} alt="" className="h-full w-full object-cover" />
+                </button>
+                {active && <span className="ag-avdlg-tick">Сейчас</span>}
+                {!active && (
+                  <button
+                    type="button"
+                    aria-label="Удалить из загрузок"
+                    className="ag-avdlg-del"
+                    onClick={() => updateProfile({ avatarHistory: profile.avatarHistory.filter((item) => item !== src) })}
+                  >
+                    ×
+                  </button>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {profile.avatar && (
+        <button
+          type="button"
+          onClick={() => updateProfile({ avatar: "" })}
+          className="mt-4 w-full rounded-xl border border-dashed border-line px-3 py-2.5 text-xs font-semibold text-muted transition hover:border-white/25 hover:text-white"
+        >
+          Вернуть стандартный аватар
+        </button>
+      )}
+    </DialogShell>
+  );
 }
 
 /* ----------------------------- Смена фона ------------------------------- */
@@ -739,7 +1160,7 @@ function AppearanceDialog() {
       setMessage(result.error);
       return;
     }
-    updateProfile({ avatar: result.data });
+    updateProfile({ avatar: result.data, avatarHistory: pushAvatarHistory(profileStore.get().avatarHistory, result.data) });
     // Аватар — внешний критерий заполненности профиля, XP считает движок
     progressEmit({ type: "PROFILE_FIELD", field: "avatar" });
     setMessage(result.animated ? "GIF-аватар сохранён как есть" : "Аватар обновлён");
@@ -3147,6 +3568,15 @@ export function ProfileDialogHost() {
       break;
     case "appearance":
       dialog = <AppearanceDialog />;
+      break;
+    case "effects":
+      dialog = <EffectsDialog />;
+      break;
+    case "avatar":
+      dialog = <AvatarDialog />;
+      break;
+    case "theme":
+      dialog = <ThemeDialog />;
       break;
     case "settings":
       dialog = <SettingsDialog />;

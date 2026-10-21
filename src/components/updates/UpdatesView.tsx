@@ -447,15 +447,31 @@ export function UpdatesView() {
 
   return (
     <div className="rm-root" data-theme={theme} style={{ "--blue": accent.blue, "--violet": accent.violet, "--cyan": accent.cyan } as React.CSSProperties}>
+      <div className="rm-bgfx" aria-hidden>
+        <i className="rm-aur a1" />
+        <i className="rm-aur a2" />
+        <i className="rm-aur a3" />
+        <i className="rm-stars s1" />
+        <i className="rm-stars s2" />
+        <i className="rm-gridfx" />
+        <div className="rm-orbits">
+          <i className="o o1"><b /></i>
+          <i className="o o2"><b /></i>
+          <i className="o o3"><b /></i>
+          <i className="o o4"><b /></i>
+          <i className="rm-core" />
+        </div>
+        <i className="rm-horizon" />
+        <i className="rm-vig" />
+      </div>
       <div className="rm-wrap">
         {/* ------------------------------ Герой ----------------------------- */}
         <section className="rm-hero" ref={heroRef}>
-          <div className="rm-aur">
-            <i />
-            <i />
-            <i />
-          </div>
           <div className="rm-beam" />
+          <span className="rm-corner c1" />
+          <span className="rm-corner c2" />
+          <span className="rm-corner c3" />
+          <span className="rm-corner c4" />
           <canvas className="rm-stars" ref={starsRef} aria-hidden />
           <div className="rm-grain" />
 

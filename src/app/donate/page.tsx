@@ -4,8 +4,8 @@ import { DonateView } from "@/components/donate/DonateView";
 export const metadata: Metadata = {
   title: "Поддержать проект",
   description:
-    "Поддержи AniGalaxy и получи бонусы: AniCoin, Premium и тег «Донатер» навсегда. Три набора — от 199 ₽, акция лимитирована.",
-  keywords: ["поддержать", "донат", "AniCoin", "тег донатер", "глитч-эффект"],
+    "Поддержи AniGalaxy и получи бонусы: AC, Premium и тег «Донатер» навсегда. Три набора — от 199 ₽, акция лимитирована.",
+  keywords: ["поддержать", "донат", "AC", "аникойны", "тег донатер", "глитч-эффект"],
 };
 
 /**
