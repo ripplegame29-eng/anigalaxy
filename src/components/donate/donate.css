@@ -911,6 +911,15 @@
   }
 }
 
+/* На телефонах снизу уже висит плавающая навигация сайта (.mnv-bar,
+   ≤900px, отступ снизу 12px + safe-area, высота 68px) — поднимаем липкую
+   кнопку доната над ней, иначе они накладываются друг на друга */
+@media (max-width: 900px) {
+  .don-page .don-cta {
+    bottom: calc(92px + env(safe-area-inset-bottom));
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .don-page *,
   .don-page *::before,
