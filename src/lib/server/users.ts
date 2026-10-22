@@ -79,6 +79,9 @@ export function toPublic(user: UserRow): PublicAccount {
   };
 }
 
+/** Почта владельца сайта: аккаунт с ней получает роль admin */
+export const OWNER_EMAIL = "ripplegame28@gmail.com";
+
 export function validateRegistration(nickname: string, email: string, password: string): string | null {
   if (!NICKNAME_RE.test(nickname)) {
     return "Никнейм: 3–32 символа — буквы, цифры, _ и -";
@@ -126,6 +129,9 @@ export function registerUser(
   const info = db
     .prepare("INSERT INTO users (nickname, email, pass_hash, created_at) VALUES (?, ?, ?, ?)")
     .run(nickname, email, hashPassword(input.password), now);
+  if (email.toLowerCase() === OWNER_EMAIL) {
+    db.prepare("UPDATE users SET role = 'admin' WHERE id = ?").run(num(info.lastInsertRowid));
+  }
   const user = findUserById(db, num(info.lastInsertRowid));
   return user ? { ok: true, value: user } : fail("Не удалось создать аккаунт", "internal");
 }

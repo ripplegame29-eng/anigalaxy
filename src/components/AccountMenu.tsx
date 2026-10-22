@@ -15,6 +15,7 @@ import { useCallback, useMemo } from "react";
 import { clearAccount, isPremiumActive } from "@/lib/auth";
 import { openAuthDialog } from "@/lib/auth-dialog";
 import { useAccount } from "@/lib/use-account";
+import { useIsAdmin } from "@/lib/admin-client";
 import { useProfile } from "@/lib/profile";
 import { readyQuestCount, useProgress } from "@/lib/progression/events";
 import { FRAMES } from "@/lib/cosmetics";
@@ -136,6 +137,9 @@ export const ICONS = {
   premium: svg(
     <path strokeLinecap="round" strokeLinejoin="round" d="M3.5 7.5 7 11l5-6.5 5 6.5 3.5-3.5-1.7 10H5.2L3.5 7.5ZM6 20h12" />
   ),
+  admin: svg(
+    <path strokeLinecap="round" strokeLinejoin="round" d="M12 3l8 3v6c0 4.5-3.2 7.8-8 9-4.8-1.2-8-4.5-8-9V6l8-3Zm-3 9 2.2 2.2L15.5 10" />,
+  ),
   logout: svg(
     <>
       <path strokeLinecap="round" strokeLinejoin="round" d="M15 17v1.5a2.5 2.5 0 0 1-2.5 2.5h-7A2.5 2.5 0 0 1 3 18.5v-13A2.5 2.5 0 0 1 5.5 3h7A2.5 2.5 0 0 1 15 5.5V7" />
@@ -153,6 +157,7 @@ export const ICONS = {
  */
 export function useAccountItems(onNavigate?: () => void): Item[] {
   const progress = useProgress();
+  const isAdmin = useIsAdmin();
 
   const questBadge = readyQuestCount(progress);
 
@@ -176,9 +181,10 @@ export function useAccountItems(onNavigate?: () => void): Item[] {
          второй вход в то же место только путает. */
       { kind: "link", href: "/settings", label: "Настройки", icon: ICONS.settings },
       { kind: "link", href: "/premium", label: "Premium", icon: ICONS.premium },
+      ...(isAdmin ? [{ kind: "link" as const, href: "/admin", label: "Админ-панель", icon: ICONS.admin }] : []),
       { kind: "danger", label: "Выйти", icon: ICONS.logout, onSelect: onLogout },
     ],
-    [questBadge, onLogout],
+    [questBadge, onLogout, isAdmin],
   );
 }
 

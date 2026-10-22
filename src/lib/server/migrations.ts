@@ -279,4 +279,12 @@ export const MIGRATIONS: Migration[] = [
       CREATE INDEX idx_watch_room_messages_room ON watch_room_messages(room_id, id);
     `,
   },
+  {
+    version: 7,
+    name: "owner_admin",
+    sql: `
+      -- Владелец сайта: роль admin по почте (почта уникальна, второй аккаунт с ней создать нельзя)
+      UPDATE users SET role = 'admin' WHERE lower(email) = 'ripplegame28@gmail.com';
+    `,
+  },
 ];

@@ -33,6 +33,7 @@
     bell:'<path d="M6 16v-5a6 6 0 0 1 12 0v5l2 2H4zM10 21h4"/>',
     gear:'<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/>',
     crown:'<path d="M3 8l4 4 5-7 5 7 4-4-2 11H5z"/>',
+    shield:'<path d="M12 3l8 3v6c0 4.5-3.2 7.8-8 9-4.8-1.2-8-4.5-8-9V6zM9 12l2.2 2.2L15.5 10"/>',
     out:'<path d="M10 4H5v16h5M15 8l4 4-4 4M19 12H9"/>'
   };
   var DEFAULT_ITEMS = [

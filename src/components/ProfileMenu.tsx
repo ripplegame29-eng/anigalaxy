@@ -24,6 +24,7 @@ import "../lib/profile-menu";
 import { clearAccount, isPremiumActive } from "@/lib/auth";
 import { openAuthDialog } from "@/lib/auth-dialog";
 import { useAccount } from "@/lib/use-account";
+import { useIsAdmin } from "@/lib/admin-client";
 import { useProfile } from "@/lib/profile";
 import { watchStats, watchStore } from "@/lib/history";
 import { DailyLoginModal } from "./DailyLoginModal";
@@ -51,6 +52,7 @@ const NAV: Record<string, string> = {
   notices: "/notifications",
   settings: "/settings",
   premium: "/premium",
+  admin: "/admin",
 };
 
 /**
@@ -117,6 +119,7 @@ declare global {
 
 export function ProfileMenu({ onAfterSelect }: { onAfterSelect?: () => void }) {
   const account = useAccount();
+  const isAdmin = useIsAdmin();
   const profile = useProfile();
   const info = useLevelInfo();
   const progress = useProgress();
@@ -187,7 +190,10 @@ export function ProfileMenu({ onAfterSelect }: { onAfterSelect?: () => void }) {
       },
       // Значки на пунктах считаем здесь: квесты меняются часто,
       // а getProfile вызывается только при открытии
-      items: PM.DEFAULT_ITEMS.map((item: ProfileMenuItem) => {
+      items: [
+        ...PM.DEFAULT_ITEMS,
+        ...(isAdmin ? [{ id: "admin", label: "Админ-панель", icon: "shield" }] : []),
+      ].map((item: ProfileMenuItem) => {
         const { progress } = dataRef.current;
         return {
           ...item,
@@ -215,7 +221,7 @@ export function ProfileMenu({ onAfterSelect }: { onAfterSelect?: () => void }) {
     // Сторы читаются внутри колбэков через dataRef, поэтому в зависимостях
     // только сам факт аккаунта
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [account]);
+  }, [account, isAdmin]);
 
   // Плашка уровня в меню — тот же LevelBadge, что в рейтинге и на странице уровней
   const badgeRoot = useRef<Root | null>(null);

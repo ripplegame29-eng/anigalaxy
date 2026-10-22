@@ -9,7 +9,7 @@ export default function robots(): MetadataRoute.Robots {
         userAgent: "*",
         allow: "/",
         // Личные и служебные страницы, API и тестовые разделы в поиск не нужны
-        disallow: ["/api/", "/profile", "/settings", "/list", "/u/", "/dev", "/__palette-preview", "/battlepass/buy"],
+        disallow: ["/api/", "/profile", "/settings", "/list", "/u/", "/view/", "/admin", "/dev", "/__palette-preview", "/battlepass/buy"],
       },
     ],
     sitemap: `${SITE}/sitemap.xml`,
