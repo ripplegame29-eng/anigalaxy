@@ -17,6 +17,10 @@ export interface ChatMessageRow {
   tagId: string;
   body: string;
   createdAt: number;
+  /** Адрес аватара автора или пустая строка */
+  avatar?: string;
+  /** Рамка аватара из каталога косметики */
+  frameId?: string;
 }
 
 const MAX_BODY = 300;
@@ -67,4 +71,34 @@ export function listChatMessages(db: Database, limit = 60, afterId = 0): ChatMes
     body: str(row.body),
     createdAt: num(row.created_at),
   }));
+}
+
+const PROFILE_KEY = "animehub:profile:v1";
+
+/** Добавляет к сообщениям аватар и рамку автора из его профиля */
+export function withAuthors(db: Database, rows: ChatMessageRow[]): ChatMessageRow[] {
+  const ids = [...new Set(rows.map((row) => row.userId))];
+  if (!ids.length) return rows;
+  const found = new Map<number, { avatar: string; frameId: string }>();
+  const docs = db
+    .prepare(
+      `SELECT user_id, value, updated_at FROM user_docs WHERE doc_key = ? AND user_id IN (${ids.map(() => "?").join(",")})`,
+    )
+    .all(PROFILE_KEY, ...ids);
+  for (const doc of docs) {
+    try {
+      const profile = JSON.parse(str(doc.value)) as { avatar?: unknown; frameId?: unknown };
+      const raw = typeof profile.avatar === "string" ? profile.avatar : "";
+      const userId = num(doc.user_id);
+      const avatar = raw.startsWith("data:image/")
+        ? `/api/avatar?u=${userId}&v=${num(doc.updated_at)}`
+        : /^https?:\/\//.test(raw) || raw.startsWith("/")
+          ? raw
+          : "";
+      found.set(userId, { avatar, frameId: typeof profile.frameId === "string" ? profile.frameId : "" });
+    } catch {
+      /* битый профиль — остаются инициалы */
+    }
+  }
+  return rows.map((row) => ({ ...row, ...(found.get(row.userId) ?? { avatar: "", frameId: "" }) }));
 }

@@ -300,6 +300,17 @@ export function GuestSidebar({ nickname, onShare }: GuestSidebarProps) {
         />
 
         <div className="gst-row2">
+          <button
+            type="button"
+            className="gst-btn is-ghost"
+            disabled
+            title="Скоро: подарки предметов ещё не подключены"
+          >
+            <svg className="gst-i" viewBox="0 0 24 24" aria-hidden="true">
+              {ICON.gift}
+            </svg>
+            Подарок
+          </button>
           <button type="button" className="gst-btn is-ghost" onClick={onShare}>
             <svg className="gst-i" viewBox="0 0 24 24" aria-hidden="true">
               {ICON.share}

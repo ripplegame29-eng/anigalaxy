@@ -17,6 +17,8 @@ import { useAccount } from "@/lib/use-account";
 import { useProgress } from "@/lib/progression/events";
 import { PROGRESSION_CONFIG } from "@/lib/progression/progression.config";
 import { AgTag } from "@/components/progression/AgTag";
+import { AvatarFrame } from "@/components/profile/AvatarFrame";
+import { FRAMES } from "@/lib/cosmetics";
 import {
   CHAT_TEXT_LIMIT,
   markChatRead,
@@ -190,18 +192,23 @@ export function ChatWidget() {
             const tag = tagOf(message.tagId);
             return (
               <div key={message.id} className={`flex items-start gap-2.5 ${self ? "flex-row-reverse" : ""}`}>
-                <span
-                  className={`mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-full text-[10px] font-black text-white ${
-                    self ? "bg-gradient-to-br from-accent to-accent-2" : "bg-white/12"
-                  }`}
+                <Link
+                  href={self ? "/profile" : `/u/${encodeURIComponent(message.author)}`}
+                  className="mt-0.5 shrink-0"
+                  aria-label={`Профиль ${message.author}`}
                 >
-                  {message.author.slice(0, 2).toUpperCase()}
-                </span>
+                  <AvatarFrame
+                    nickname={message.author}
+                    avatar={message.avatar}
+                    frame={message.frameId ? FRAMES.find((item) => item.id === message.frameId) : undefined}
+                    size="xs"
+                  />
+                </Link>
                 <div className={`min-w-0 max-w-[80%] ${self ? "text-right" : ""}`}>
                   <div className={`flex flex-wrap items-center gap-1.5 ${self ? "flex-row-reverse" : ""}`}>
                     <Link
-                      href={self ? "/u/me" : `/u/${encodeURIComponent(message.author)}`}
-                      className={`text-[11px] font-black ${self ? "text-accent-2" : "text-white"} hover:underline`}
+                      href={self ? "/profile" : `/u/${encodeURIComponent(message.author)}`}
+                      className={`text-[11px] font-black ${self ? "text-accent-2" : "text-white"}`}
                     >
                       {message.author}
                     </Link>

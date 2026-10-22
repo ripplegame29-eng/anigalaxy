@@ -1,4 +1,4 @@
-import { addChatMessage, listChatMessages } from "@/lib/server/chat";
+import { addChatMessage, listChatMessages, withAuthors } from "@/lib/server/chat";
 import { json, route, readJson } from "@/lib/server/http";
 
 export const runtime = "nodejs";
@@ -6,7 +6,7 @@ export const runtime = "nodejs";
 /** `?after=123` — только сообщения новее этого id (для поллинга) */
 export const GET = route(({ db, request }) => {
   const after = Number(request.nextUrl.searchParams.get("after") ?? 0) || 0;
-  return json({ messages: listChatMessages(db, 60, after) });
+  return json({ messages: withAuthors(db, listChatMessages(db, 60, after)) });
 });
 
 export const POST = route(

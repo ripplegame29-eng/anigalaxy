@@ -22,6 +22,8 @@ export interface ChatMessage {
   text: string;
   at: number;
   tagId?: string;
+  avatar?: string;
+  frameId?: string;
   /** сообщение самого пользователя (вычисляется на клиенте по нику) */
   self?: boolean;
 }
@@ -35,6 +37,8 @@ interface ServerChatMessage {
   tagId: string;
   body: string;
   createdAt: number;
+  avatar?: string;
+  frameId?: string;
 }
 
 async function call<T>(path: string, body?: unknown): Promise<T | null> {
@@ -102,6 +106,8 @@ export function useChatMessages(): ChatMessage[] {
     text: item.body,
     at: item.createdAt,
     tagId: item.tagId || undefined,
+    avatar: item.avatar || undefined,
+    frameId: item.frameId || undefined,
   }));
 }
 
