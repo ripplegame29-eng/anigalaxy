@@ -16,8 +16,6 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { createRoot, type Root } from "react-dom/client";
-import { LevelBadge } from "./levels/LevelBadge";
 import "../app/profile-menu.css";
 // Сайд-эффект: IIFE внутри файла вешает ProfileMenu на window
 import "../lib/profile-menu";
@@ -46,6 +44,7 @@ const NAV: Record<string, string> = {
   shop: "/store",
   quests: "/quests",
   achievements: "/profile?tab=achievements",
+  levels: "/levels",
   cosmetics: "/cosmetics",
   invite: "/referrals",
   events: "/events",
@@ -75,8 +74,6 @@ interface ProfileMenuApi {
     onLogout: () => void;
     onEffectChange: () => void;
     note: string;
-    /** Плашку уровня в меню рисует React (LevelBadge), скрипт её не трогает */
-    customLevelTile?: boolean;
     items: ProfileMenuItem[];
     /** Ежедневный вход: цикл наград и действия (lib/daily-login) */
     daily?: { view: () => unknown; streak: number };
@@ -166,7 +163,6 @@ export function ProfileMenu({ onAfterSelect }: { onAfterSelect?: () => void }) {
     menuRef.current = PM.init({
       trigger,
       note: "Аккаунт и прогресс сохраняются на сервере AniGalaxy.",
-      customLevelTile: true,
       // Ежедневный вход: окно рисует React-компонент, меню только состояние
       daily: { view: dailyView, streak: profile.streak },
       onDaily: () => setDailyOpen(true),
@@ -222,42 +218,6 @@ export function ProfileMenu({ onAfterSelect }: { onAfterSelect?: () => void }) {
     // только сам факт аккаунта
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [account, isAdmin]);
-
-  // Плашка уровня в меню — тот же LevelBadge, что в рейтинге и на странице уровней
-  const badgeRoot = useRef<{ root: Root; tile: HTMLElement } | null>(null);
-  // Скрипт меню может перерисовать свой HTML — тогда плашка пропадает вместе с узлом.
-  // Поэтому на каждом рендере проверяем, что корень привязан к живому узлу, и пересоздаём.
-  useEffect(() => {
-    const cur = badgeRoot.current;
-    const tile = account ? document.querySelector<HTMLElement>('[data-pm="lvtile"]') : null;
-    if (!tile) {
-      if (cur) {
-        badgeRoot.current = null;
-        window.setTimeout(() => cur.root.unmount(), 0);
-      }
-      return;
-    }
-    let entry = cur;
-    if (!entry || entry.tile !== tile || !tile.isConnected) {
-      if (entry) {
-        const old = entry;
-        window.setTimeout(() => old.root.unmount(), 0);
-      }
-      tile.classList.add("pm-lt-badge");
-      tile.textContent = "";
-      entry = { root: createRoot(tile), tile };
-      badgeRoot.current = entry;
-    }
-    entry.root.render(<LevelBadge level={info.level} size={58} state="current" rich={false} minor />);
-  });
-  useEffect(
-    () => () => {
-      const cur = badgeRoot.current;
-      badgeRoot.current = null;
-      if (cur) window.setTimeout(() => cur.root.unmount(), 0);
-    },
-    [],
-  );
 
   if (!account) {
     return (

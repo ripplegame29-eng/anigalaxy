@@ -285,7 +285,6 @@
   .pm-ico{width:38px;height:38px}
 }
 
-.pm-lt.pm-lt-badge{width:60px;height:60px;border:0;background:none;box-shadow:none;border-radius:0;overflow:visible}
 
 /* ═══ Телефон: аккуратная шторка профиля ═══ */
 @media (max-width:520px){
@@ -295,7 +294,6 @@
   .pm-aur{height:150px;opacity:.7}
   .pm-mh>[data-pm="avatar"]{--s:60px;width:60px;height:60px}
   .pm-who b{font-size:18px}
-  .pm-lt.pm-lt-badge{width:48px;height:48px}
   .pm-daily{margin:4px 0 10px;padding:12px;border-radius:18px}
   /* пункты — единый список с мягкими разделителями */
   .pm-link{padding:7px 8px;gap:12px;font-size:15px;border-radius:14px;min-height:50px}

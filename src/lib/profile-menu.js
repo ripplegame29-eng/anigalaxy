@@ -32,6 +32,7 @@
     uplus:'<circle cx="10" cy="8" r="4"/><path d="M2 21c0-4 3.5-6 8-6M19 8v6M16 11h6"/>',
     bell:'<path d="M6 16v-5a6 6 0 0 1 12 0v5l2 2H4zM10 21h4"/>',
     gear:'<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/>',
+    levels:'<path d="M12 3l2.6 5.3 5.9.9-4.2 4.1 1 5.8L12 16.4 6.7 19.1l1-5.8L3.5 9.2l5.9-.9z"/>',
     crown:'<path d="M3 8l4 4 5-7 5 7 4-4-2 11H5z"/>',
     shield:'<path d="M12 3l8 3v6c0 4.5-3.2 7.8-8 9-4.8-1.2-8-4.5-8-9V6zM9 12l2.2 2.2L15.5 10"/>',
     out:'<path d="M10 4H5v16h5M15 8l4 4-4 4M19 12H9"/>'
@@ -42,6 +43,7 @@
     {id:'shop',label:'Магазин',icon:'store'},
     {id:'quests',label:'Квесты',icon:'bulb'},
     {id:'achievements',label:'Достижения',icon:'trophy'},
+    {id:'levels',label:'Уровни',icon:'levels'},
     {id:'cosmetics',label:'Косметика',icon:'palette'},
     {id:'invite',label:'Пригласи друзей',icon:'uplus'},
     /* Пункт «Подарки Premium» заменён на «Ивенты»: подарки ушли из меню */
@@ -141,7 +143,7 @@
       q('name').textContent = prof.name || '';
       q('email').textContent = prof.email || '';
       q('premium').hidden = !prof.premium;
-      if (!o.customLevelTile) q('lvtile').textContent = prof.level != null ? prof.level : '';
+      q('lvtile').textContent = prof.level != null ? prof.level : '';
       q('lvline').textContent = 'Уровень ' + (prof.level != null ? prof.level : '—') + (prof.xp != null ? ' · ' + fmt(prof.xp) + ' XP' : '');
       q('era').textContent = prof.era ? 'Эра: ' + prof.era : '';
       q('remain').textContent = prof.xpToNext != null ? 'ещё ' + fmt(prof.xpToNext) + ' XP' : '';
