@@ -1,5 +1,6 @@
 "use client";
 
+import { FS_EVENT, isFullscreen, toggleFullscreen as toggleFs } from "@/lib/fullscreen";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import type Hls from "hls.js";
@@ -321,7 +322,10 @@ export function AltPlayer({
   hasNext: hasNextProp,
   malId,
   nav,
+  alias,
 }: {
+  /** Алиас тайтла в AniLiberty: если задан, поиск по названию пропускается (комнаты совместного просмотра) */
+  alias?: string;
   /** Название тайтла — запрос поиска AniLiberty и заголовок в оверлее */
   query: string;
   /** Оригинальное название — запасной запрос, если первый пустой */
@@ -565,8 +569,8 @@ export function AltPlayer({
     const names = [query, altQuery].filter((name): name is string => Boolean(name));
     (async () => {
       try {
-        let picked: AniSearchCard | null = null;
-        for (const name of names) {
+        let picked: AniSearchCard | null = alias ? ({ alias } as AniSearchCard) : null;
+        for (const name of alias ? [] : names) {
           const res = await fetch(`/api/anilibria/search?q=${encodeURIComponent(name)}&limit=8`);
           if (!res.ok) continue;
           const data = (await res.json()) as { results?: AniSearchCard[] };
@@ -597,7 +601,7 @@ export function AltPlayer({
     return () => {
       alive = false;
     };
-  }, [backend, kodikId, season, episode, query, altQuery, year]);
+  }, [backend, kodikId, season, episode, query, altQuery, year, alias]);
 
   const router = useRouter();
   const { active: premiumActive } = usePremium();
@@ -787,9 +791,10 @@ export function AltPlayer({
   /* --------------------- Панель: служебные эффекты ------------------ */
   // Вне/внутри фулскрина — иконка кнопки
   useEffect(() => {
-    const onChange = () => setIsFs(Boolean(document.fullscreenElement));
-    document.addEventListener("fullscreenchange", onChange);
-    return () => document.removeEventListener("fullscreenchange", onChange);
+    const onChange = () => setIsFs(isFullscreen(videoRef.current?.closest("#player-shell")));
+    const events = ["fullscreenchange", "webkitfullscreenchange", FS_EVENT];
+    events.forEach((name) => document.addEventListener(name, onChange));
+    return () => events.forEach((name) => document.removeEventListener(name, onChange));
   }, []);
 
   // Панели озвучек/серий: закрытие по Escape
@@ -933,13 +938,7 @@ export function AltPlayer({
   };
 
   const toggleFullscreen = () => {
-    const shell = videoRef.current?.closest("#player-shell");
-    if (!shell) return;
-    if (document.fullscreenElement) {
-      void document.exitFullscreen().catch(() => undefined);
-    } else {
-      void shell.requestFullscreen().catch(() => undefined);
-    }
+    void toggleFs(videoRef.current?.closest<HTMLElement>("#player-shell") ?? null);
   };
 
   const togglePip = () => {
@@ -1064,7 +1063,7 @@ export function AltPlayer({
     if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable)) return;
     if (e.ctrlKey || e.metaKey || e.altKey || hqModal) return;
     const shell = videoRef.current?.closest("#player-shell");
-    if (!shell || !started || !(shell.matches(":hover") || document.fullscreenElement)) return;
+    if (!shell || !started || !(shell.matches(":hover") || isFullscreen(shell))) return;
     const k = e.key.toLowerCase();
     const act: Record<string, () => void> = {
       " ": toggle,

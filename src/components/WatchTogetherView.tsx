@@ -21,7 +21,7 @@ import {
   type WtSnapshot,
 } from "@/lib/watch-together-client";
 import { Poster } from "./Poster";
-import { RoomPlayer } from "./RoomPlayer";
+import { RoomAltPlayer } from "./RoomAltPlayer";
 
 /* ================================================================== */
 /*  Константы                                                          */
@@ -1327,13 +1327,10 @@ function RoomPanel({
       <div className="grid gap-4 p-4 sm:p-5 lg:grid-cols-[minmax(0,1fr)_320px]">
         {/* ---------------------------- Плеер --------------------------- */}
         <div>
-          <RoomPlayer
+          <RoomAltPlayer
             title={room.anime}
-            poster={room.poster}
             alias={room.alias}
             startEpisode={initial.room.episode}
-            viewers={room.viewers}
-            limit={room.limit}
             clientId={clientId}
             sync={room}
             onPublish={onPublish}

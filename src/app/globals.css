@@ -776,3 +776,22 @@ h1 {
 .hero2-thumb.is-on .hero2-thumb-img{box-shadow:0 0 0 2px rgb(var(--accent-rgb,43 127 255)),0 0 28px -4px rgba(var(--accent-rgb,43 127 255),.8),0 18px 30px -12px #000}
 .hero2-thumb-bar{display:block;height:3px;margin-top:7px;border-radius:3px;background:rgba(255,255,255,.18);overflow:hidden}
 .hero2-thumb-bar i{display:block;height:100%;border-radius:3px;background:linear-gradient(90deg,rgb(var(--accent-rgb,43 127 255)),#fff)}
+
+/* Полный экран плеера, когда браузер не умеет разворачивать блок (iPhone) */
+.ag-pseudo-fs {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 2147483000 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  height: 100dvh !important;
+  max-width: none !important;
+  margin: 0 !important;
+  aspect-ratio: auto !important;
+  border-radius: 0 !important;
+  background: #000;
+}
+html.ag-fs-lock,
+html.ag-fs-lock body {
+  overflow: hidden !important;
+}

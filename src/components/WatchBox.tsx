@@ -1,5 +1,6 @@
 "use client";
 
+import { toggleFullscreen as toggleFs } from "@/lib/fullscreen";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { kindLabel, statusLabel, truncate } from "@/lib/anime";
 import { recordWatch, tickWatch } from "@/lib/history";
@@ -354,9 +355,7 @@ export function WatchBox({
       }
       if (prefs.keys.fullscreen && (key === "f" || key === "а")) {
         event.preventDefault();
-        const shell = document.getElementById("player-shell");
-        if (shell && document.fullscreenElement) void document.exitFullscreen();
-        else void shell?.requestFullscreen?.();
+        void toggleFs(document.getElementById("player-shell"));
       }
     };
     window.addEventListener("keydown", onKey);
