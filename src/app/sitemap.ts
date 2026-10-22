@@ -15,6 +15,9 @@ const ROUTES: Array<[string, number, MetadataRoute.Sitemap[number]["changeFreque
   ["/battlepass", 0.5, "weekly"],
   ["/events", 0.5, "weekly"],
   ["/updates", 0.4, "weekly"],
+  ["/privacy", 0.2, "yearly"],
+  ["/terms", 0.2, "yearly"],
+  ["/offer", 0.2, "yearly"],
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {

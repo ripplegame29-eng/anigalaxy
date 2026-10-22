@@ -551,7 +551,9 @@ export function AuthDialog() {
 
             <p className="mt-5 text-center text-xs leading-relaxed text-muted/70">
               Аккаунт и прогресс сохраняются на сервере AniGalaxy и доступны на любом устройстве
-              после входа.
+              после входа. Входя или регистрируясь, вы принимаете{" "}
+              <a href="/terms" target="_blank" rel="noopener" className="underline hover:text-white">соглашение</a> и{" "}
+              <a href="/privacy" target="_blank" rel="noopener" className="underline hover:text-white">политику конфиденциальности</a>.
             </p>
           </div>
         </div>

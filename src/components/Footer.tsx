@@ -88,7 +88,11 @@ export function Footer() {
 
         <div className="mt-12 flex flex-col gap-3 border-t border-line pt-6 text-xs text-muted/85 sm:flex-row sm:items-center sm:justify-between">
           <p>© {new Date().getFullYear()} AniGalaxy. Все права на контент принадлежат правообладателям.</p>
-          <p>Видео предоставляется сторонними сервисами хранения.</p>
+          <p className="flex flex-wrap items-center gap-x-4 gap-y-1">
+            <Link href="/privacy" className="hover:text-white">Конфиденциальность</Link>
+            <Link href="/terms" className="hover:text-white">Соглашение</Link>
+            <Link href="/offer" className="hover:text-white">Оферта</Link>
+          </p>
         </div>
       </div>
     </footer>
