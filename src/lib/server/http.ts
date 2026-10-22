@@ -6,6 +6,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 
 import { dbAvailable, getDb, type Database } from "./db";
+import { logError } from "./errors";
 import { SESSION_COOKIE, SESSION_TTL_MS, sessionUser, type UserRow } from "./users";
 
 export function json(data: unknown, status = 200): NextResponse {
@@ -85,6 +86,17 @@ export function route(
       return await handler({ db, request, user, params });
     } catch (error) {
       console.error("[api]", request.nextUrl.pathname, error);
+      try {
+        logError(db, {
+          source: "server",
+          message: error instanceof Error ? error.message : String(error),
+          stack: error instanceof Error ? error.stack : "",
+          path: `${request.method} ${request.nextUrl.pathname}`,
+          userId: user?.id,
+        });
+      } catch {
+        /* журнал не должен ронять ответ */
+      }
       return json({ error: "Внутренняя ошибка сервера" }, 500);
     }
   };

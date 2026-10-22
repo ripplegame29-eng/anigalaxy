@@ -150,3 +150,24 @@ export function putDoc(
     return { ok: true, version };
   });
 }
+
+/**
+ * Запись документа администратором: без проверки версии и правдоподобности
+ * опыта. Версия растёт, поэтому клиент игрока при следующей синхронизации
+ * получит конфликт и примет серверное значение.
+ */
+export function adminWriteDoc(db: Database, userId: number, key: string, value: string, now = Date.now()): number {
+  return transaction(db, () => {
+    const existing = getDoc(db, userId, key);
+    if (key === PROGRESS_DOC_KEY) {
+      const summary = summarizeProgress(value);
+      if (summary) updatePlayerStats(db, userId, summary, now);
+    }
+    const version = (existing?.version ?? 0) + 1;
+    db.prepare(
+      `INSERT INTO user_docs (user_id, doc_key, value, version, updated_at) VALUES (?, ?, ?, ?, ?)
+       ON CONFLICT(user_id, doc_key) DO UPDATE SET value = excluded.value, version = excluded.version, updated_at = excluded.updated_at`,
+    ).run(userId, key, value, version, now);
+    return version;
+  });
+}

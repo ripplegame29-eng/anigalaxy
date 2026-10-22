@@ -287,4 +287,38 @@ export const MIGRATIONS: Migration[] = [
       UPDATE users SET role = 'admin' WHERE lower(email) = 'ripplegame28@gmail.com';
     `,
   },
+  {
+    version: 8,
+    name: "admin_log_and_errors",
+    sql: `
+      -- Журнал действий администраторов: кто, что и над кем сделал.
+      CREATE TABLE admin_log (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        admin_id INTEGER NOT NULL,
+        admin_name TEXT NOT NULL DEFAULT '',
+        action TEXT NOT NULL,
+        target_id INTEGER NOT NULL DEFAULT 0,
+        target_name TEXT NOT NULL DEFAULT '',
+        detail TEXT NOT NULL DEFAULT '',
+        created_at INTEGER NOT NULL
+      );
+      CREATE INDEX idx_admin_log_id ON admin_log(id DESC);
+
+      -- Ошибки сервера и браузера, склеенные по отпечатку (счётчик повторов).
+      CREATE TABLE error_log (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        fingerprint TEXT NOT NULL UNIQUE,
+        source TEXT NOT NULL,
+        message TEXT NOT NULL,
+        stack TEXT NOT NULL DEFAULT '',
+        path TEXT NOT NULL DEFAULT '',
+        user_id INTEGER NOT NULL DEFAULT 0,
+        count INTEGER NOT NULL DEFAULT 1,
+        first_at INTEGER NOT NULL,
+        last_at INTEGER NOT NULL,
+        resolved INTEGER NOT NULL DEFAULT 0
+      );
+      CREATE INDEX idx_error_log_last ON error_log(resolved, last_at DESC);
+    `,
+  },
 ];

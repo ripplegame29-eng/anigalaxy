@@ -43,6 +43,7 @@ import "./profile-custom.css";
 import "./profile-premium.css";
 import { AuthDialogHost } from "@/components/AuthDialogHost";
 import { ChatWidget } from "@/components/ChatWidget";
+import { ErrorReporter } from "@/components/ErrorReporter";
 import { DailyBonusHost } from "@/components/DailyBonusHost";
 import { Footer } from "@/components/Footer";
 import CloudSync from "@/components/CloudSync";
@@ -264,6 +265,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
 
         {/* Общий чат: плавающая кнопка + боковая панель (локальная симуляция) */}
         <ChatWidget />
+        <ErrorReporter />
 
         {/*
           Обработки картинки плеера здесь нет и не было: у Kodik кадр
