@@ -2225,7 +2225,7 @@ export function ShopSection(_props: { title?: string } = {}) {
             buy(entry.id, entry.name);
           }}
         >
-          Купить за {nf(entry.price)} AC
+          {balance < entry.price ? `Не хватает ${nf(entry.price - balance)} AC` : `Купить за ${nf(entry.price)} AC`}
         </button>
       );
     }

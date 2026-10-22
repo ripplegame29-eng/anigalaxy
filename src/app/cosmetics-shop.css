@@ -272,6 +272,18 @@
   filter: brightness(1.15);
   transform: translateY(-1px);
 }
+.ags .btn:disabled,
+.ags .btn.pri:disabled,
+.ags .btn.gold:disabled {
+  opacity: 1;
+  color: rgba(255, 255, 255, 0.62);
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow: none;
+  filter: none;
+  transform: none;
+  cursor: not-allowed;
+}
 .ags .btn.gold {
   border: 0;
   color: #2a1a00;
