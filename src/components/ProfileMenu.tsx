@@ -224,24 +224,40 @@ export function ProfileMenu({ onAfterSelect }: { onAfterSelect?: () => void }) {
   }, [account, isAdmin]);
 
   // Плашка уровня в меню — тот же LevelBadge, что в рейтинге и на странице уровней
-  const badgeRoot = useRef<Root | null>(null);
+  const badgeRoot = useRef<{ root: Root; tile: HTMLElement } | null>(null);
+  // Скрипт меню может перерисовать свой HTML — тогда плашка пропадает вместе с узлом.
+  // Поэтому на каждом рендере проверяем, что корень привязан к живому узлу, и пересоздаём.
   useEffect(() => {
-    if (!account) return;
-    const tile = document.querySelector<HTMLElement>('[data-pm="lvtile"]');
-    if (!tile) return;
-    tile.classList.add("pm-lt-badge");
-    tile.textContent = "";
-    badgeRoot.current = createRoot(tile);
-    return () => {
-      const root = badgeRoot.current;
+    const cur = badgeRoot.current;
+    const tile = account ? document.querySelector<HTMLElement>('[data-pm="lvtile"]') : null;
+    if (!tile) {
+      if (cur) {
+        badgeRoot.current = null;
+        window.setTimeout(() => cur.root.unmount(), 0);
+      }
+      return;
+    }
+    let entry = cur;
+    if (!entry || entry.tile !== tile || !tile.isConnected) {
+      if (entry) {
+        const old = entry;
+        window.setTimeout(() => old.root.unmount(), 0);
+      }
+      tile.classList.add("pm-lt-badge");
+      tile.textContent = "";
+      entry = { root: createRoot(tile), tile };
+      badgeRoot.current = entry;
+    }
+    entry.root.render(<LevelBadge level={info.level} size={58} state="current" rich={false} minor />);
+  });
+  useEffect(
+    () => () => {
+      const cur = badgeRoot.current;
       badgeRoot.current = null;
-      // размонтирование откладываем: React не любит снимать корень посреди рендера
-      window.setTimeout(() => root?.unmount(), 0);
-    };
-  }, [account]);
-  useEffect(() => {
-    badgeRoot.current?.render(<LevelBadge level={info.level} size={58} state="current" rich={false} minor />);
-  }, [info.level, account]);
+      if (cur) window.setTimeout(() => cur.root.unmount(), 0);
+    },
+    [],
+  );
 
   if (!account) {
     return (
