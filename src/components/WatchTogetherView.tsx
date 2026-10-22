@@ -1,169 +1,46 @@
 "use client";
 
-import Link from "next/link";
-
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { kindLabel } from "@/lib/anime";
 import type { AniSearchCard } from "@/lib/anilibria";
-import { createLocalStore } from "@/lib/store";
+import { useAccount } from "@/lib/use-account";
+import {
+  createRoom as createRoomRequest,
+  getRoom,
+  joinRoom as joinRoomRequest,
+  leaveRoom,
+  listRooms,
+  patchRoomState,
+  rememberNickname,
+  sendRoomMessage,
+  useIdentity,
+  type RoomState,
+  type WtMessageInfo,
+  type WtRoomInfo,
+  type WtSnapshot,
+} from "@/lib/watch-together-client";
 import { Poster } from "./Poster";
 import { RoomPlayer } from "./RoomPlayer";
 
 /* ================================================================== */
-/*  Модели и константы                                                 */
+/*  Константы                                                          */
 /* ================================================================== */
-
-/** Комната совместного просмотра. Бэкенда нет — всё живёт в браузере. */
-interface WatchRoom {
-  /** 6-символьный код комнаты — он же значение `?room=` */
-  code: string;
-  /** Название комнаты (что смотрим и с кем) */
-  title: string;
-  /** Название тайтла */
-  anime: string;
-  /** Постер тайтла из каталога AniLiberty (необязательно) */
-  poster?: string;
-  /** Алиас тайтла в AniLiberty — по нему плеер комнаты грузит серии */
-  alias?: string;
-  /** Озвучка */
-  dub: string;
-  /** Доступ: открытая (видна в списке) или только по ссылке */
-  access: "open" | "link";
-  /** Сколько зрителей занято */
-  viewers: number;
-  /** Вместимость комнаты */
-  limit: number;
-  /** Какая серия сейчас идёт */
-  episode: number;
-  /** Когда создана (мс) */
-  createdAt: number;
-  /** Комната создана этим браузером */
-  owner?: boolean;
-}
-
-/** Свои комнаты в localStorage */
-const ROOMS_KEY = "ag:wt:rooms";
-/** Сколько своих комнат держим в хранилище */
-const ROOMS_LIMIT = 12;
-/** Вместимость по типу доступа */
-const LIMITS: Record<WatchRoom["access"], number> = { open: 12, link: 8 };
 
 /** Типовые озвучки на выбор */
 const DUBS = ["AniLibria", "AniDUB", "Studio Band", "Шедевры"] as const;
 
 /** Варианты доступа к комнате */
-const ACCESS: { value: WatchRoom["access"]; label: string; hint: string }[] = [
+const ACCESS: { value: WtRoomInfo["access"]; label: string; hint: string }[] = [
   { value: "open", label: "Открытая", hint: "видна в общем списке" },
   { value: "link", label: "По ссылке", hint: "только по приглашению" },
 ];
 
-/**
- * Публичные демо-комнаты — статичный массив: сервера нет, «онлайн»
- * симулируется на клиенте, постеры рисуются заглушкой Poster.
- */
-const DEMO_ROOMS: WatchRoom[] = [
-  {
-    code: "K7QP2X",
-    title: "Боевички на вечер",
-    anime: "Магическая битва",
-    alias: "jujutsu-kaisen",
-    dub: "AniLibria",
-    access: "open",
-    viewers: 6,
-    limit: 12,
-    episode: 14,
-    createdAt: 0,
-  },
-  {
-    code: "M3RT9A",
-    title: "Рерайт по пятницам",
-    anime: "Рерайт",
-    alias: "rewrite",
-    dub: "AniDUB",
-    access: "link",
-    viewers: 4,
-    limit: 8,
-    episode: 9,
-    createdAt: 0,
-  },
-  {
-    code: "VZ8N4E",
-    title: "Ночная смена",
-    anime: "Поднятие уровня в одиночку",
-    alias: "ore-dake-level-up-na-ken",
-    dub: "Studio Band",
-    access: "open",
-    viewers: 9,
-    limit: 12,
-    episode: 12,
-    createdAt: 0,
-  },
-  {
-    code: "LQ5W7B",
-    title: "Онгоинги-марафон",
-    anime: "Дандадан",
-    alias: "dandadan",
-    dub: "Шедевры",
-    access: "open",
-    viewers: 11,
-    limit: 12,
-    episode: 7,
-    createdAt: 0,
-  },
-];
-
-/** Алфавит кода комнаты — без похожих символов (0/O, 1/I) */
-const CODE_ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
-
-/* ------------------------------ Утилиты ----------------------------- */
-
-/** Генерация 6-символьного кода комнаты (в обработчике клика, не в рендере) */
-function makeCode(): string {
-  let code = "";
-  for (let i = 0; i < 6; i += 1) {
-    code += CODE_ALPHABET[Math.floor(Math.random() * CODE_ALPHABET.length)];
-  }
-  return code;
-}
-
 /** Строка вида `12-я серия` */
 const episodeLabel = (n: number) => `${n}-я серия`;
 
-/* --------------------------- Локальный стор ------------------------- */
-
-/** Проверка одной записи из localStorage перед тем, как дать ей тип */
-function isRoom(value: unknown): value is WatchRoom {
-  if (!value || typeof value !== "object") return false;
-  const r = value as Record<string, unknown>;
-  return (
-    typeof r.code === "string" &&
-    typeof r.title === "string" &&
-    typeof r.anime === "string" &&
-    typeof r.dub === "string" &&
-    (r.access === "open" || r.access === "link") &&
-    typeof r.viewers === "number" &&
-    typeof r.limit === "number" &&
-    typeof r.episode === "number" &&
-    typeof r.createdAt === "number"
-  );
-}
-
-function parseRooms(raw: string): WatchRoom[] | null {
-  try {
-    const data: unknown = JSON.parse(raw);
-    if (!Array.isArray(data)) return null;
-    return data.filter(isRoom).slice(0, ROOMS_LIMIT);
-  } catch {
-    return null;
-  }
-}
-
-/**
- * Стор комнат: сервер всегда отдаёт `[]`, поэтому гидратация совпадает
- * с первым клиентским рендером (см. `lib/store.ts`).
- */
-const roomsStore = createLocalStore<WatchRoom[]>(ROOMS_KEY, [], parseRooms);
+/** Запасной кадр для демо-сцены, когда живых комнат ещё нет */
+const DEMO_FALLBACK = { anime: "Магическая битва", episode: 14, viewers: 6 };
 
 /* ------------------------------ Иконки ------------------------------ */
 
@@ -221,8 +98,6 @@ const CHIP = "wtv-chip";
 /*  Герой: живая статистика + кнопки                                   */
 /* ================================================================== */
 
-/* --------------------------- Демо-сцена героя --------------------------- */
-
 interface CinemaMessage {
   id: string;
   author: string;
@@ -261,18 +136,34 @@ const SEATS = [
 /**
  * Герой совместного просмотра.
  *
- * Счётчики берутся из реального списка демо-комнат и своих комнат, без
- * «живого» дрейфа выдуманных чисел. Сцена справа — интерактивная
- * иллюстрация комнаты: чат, реакции и прогресс-бар; она не выдаёт себя
- * за настоящий эфир и подписана «демо».
+ * Счётчики — реальные открытые комнаты с сервера (обновляются раз в 15 с).
+ * Сцена справа остаётся интерактивной иллюстрацией: чат и реакции живут
+ * только в демо-кадре и подписаны «демо», а числа комнат/зрителей — нет.
  */
 export function WatchTogetherHero() {
-  const myRooms = roomsStore.useStore();
+  const [rooms, setRooms] = useState<WtRoomInfo[]>([]);
   const [messages, setMessages] = useState<CinemaMessage[]>(CINEMA_INITIAL);
   const [counts, setCounts] = useState<number[]>(CINEMA_REACTIONS.map((item) => item.base));
   const [bursts, setBursts] = useState<{ id: number; emoji: string; x: number; rot: number }[]>([]);
   const messageIndex = useRef(0);
   const burstId = useRef(0);
+
+  useEffect(() => {
+    let alive = true;
+    const load = () => {
+      listRooms()
+        .then((next) => {
+          if (alive) setRooms(next);
+        })
+        .catch(() => undefined);
+    };
+    load();
+    const timer = window.setInterval(load, 15_000);
+    return () => {
+      alive = false;
+      window.clearInterval(timer);
+    };
+  }, []);
 
   useEffect(() => {
     if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
@@ -287,10 +178,7 @@ export function WatchTogetherHero() {
     return () => window.clearInterval(timer);
   }, []);
 
-  const rooms = DEMO_ROOMS.length + myRooms.length;
-  const viewers =
-    DEMO_ROOMS.reduce((sum, room) => sum + room.viewers, 0) +
-    myRooms.reduce((sum, room) => sum + room.viewers, 0);
+  const viewers = rooms.reduce((sum, room) => sum + room.viewers, 0);
 
   const openForm = () => {
     document.getElementById("create-room")?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -316,7 +204,7 @@ export function WatchTogetherHero() {
     ]);
   };
 
-  const demo = DEMO_ROOMS[0];
+  const demo = rooms[0] ?? DEMO_FALLBACK;
 
   return (
     <header className="wtv-hero">
@@ -326,7 +214,7 @@ export function WatchTogetherHero() {
         </h1>
         <p>
           Одна комната, общая пауза и чат поверх плеера. Все видят один и тот же кадр
-          в одну и ту же секунду.
+          в одну и ту же секунду — с любого устройства.
         </p>
 
         <div className="wtv-cta">
@@ -340,10 +228,10 @@ export function WatchTogetherHero() {
 
         <div className="wtv-stats">
           <div className="wtv-stat">
-            <b>{rooms}</b>
+            <b>{rooms.length}</b>
             <small>
               <span className="wtv-dot" aria-hidden />
-              комнат в списке
+              открытых комнат
             </small>
           </div>
           <div className="wtv-stat">
@@ -450,16 +338,21 @@ export function WatchTogetherView() {
   const searchParams = useSearchParams();
   /** Код из приглашения `?room=XXXXXX` */
   const inviteCode = (searchParams.get("room") ?? "").trim().toUpperCase();
+  const account = useAccount();
 
-  /** Свои комнаты из localStorage (на сервере — всегда пусто) */
-  const myRooms = roomsStore.useStore();
+  /** Постоянный id клиента и ник — общие для всех комнат этого браузера */
+  const { clientId, nickname: savedNickname } = useIdentity();
+  /** Правка ника: null — показываем запомненный */
+  const [nicknameEdit, setNicknameEdit] = useState<string | null>(null);
+  const nickname = nicknameEdit ?? savedNickname;
 
   /* --------------------------- Форма ------------------------------- */
   const [name, setName] = useState("");
   const [dub, setDub] = useState<string>(DUBS[0]);
-  const [access, setAccess] = useState<WatchRoom["access"]>("link");
+  const [access, setAccess] = useState<WtRoomInfo["access"]>("link");
   const [anime, setAnime] = useState<AniSearchCard | null>(null);
   const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
 
   /* --------------------------- Поиск ------------------------------- */
   const [query, setQuery] = useState("");
@@ -469,9 +362,23 @@ export function WatchTogetherView() {
   const [cursor, setCursor] = useState(-1);
 
   /* ------------------------ Результаты ----------------------------- */
-  const [created, setCreated] = useState<{ room: WatchRoom; path: string } | null>(null);
-  const [joined, setJoined] = useState<WatchRoom | null>(null);
+  const [created, setCreated] = useState<{ room: WtRoomInfo; path: string } | null>(null);
+  const [joined, setJoined] = useState<WtSnapshot | null>(null);
+  const [joiningCode, setJoiningCode] = useState("");
+  const [joinError, setJoinError] = useState("");
   const [copiedAt, setCopiedAt] = useState(0);
+
+  /* -------------------- Открытые комнаты с сервера ------------------ */
+  const [rooms, setRooms] = useState<WtRoomInfo[]>([]);
+  const [roomsLoading, setRoomsLoading] = useState(true);
+
+  /* -------------------- Комната из приглашения --------------------- */
+  /** Состояние приглашения вместе с кодом, к которому оно относится */
+  const [inviteState, setInviteState] = useState<{
+    code: string;
+    room: WtRoomInfo | null;
+    error: string;
+  } | null>(null);
 
   const boxRef = useRef<HTMLDivElement>(null);
 
@@ -522,6 +429,60 @@ export function WatchTogetherView() {
     return () => window.clearTimeout(timer);
   }, [copiedAt]);
 
+  /* ----------------------- Список комнат --------------------------- */
+  const refreshRooms = useCallback(async () => {
+    try {
+      const next = await listRooms();
+      setRooms(next);
+    } catch {
+      /* сервер недоступен — оставляем прошлый список */
+    } finally {
+      setRoomsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    let alive = true;
+    const load = async () => {
+      try {
+        const next = await listRooms();
+        if (alive) setRooms(next);
+      } catch {
+        /* тихо: список просто не обновится */
+      } finally {
+        if (alive) setRoomsLoading(false);
+      }
+    };
+    load();
+    const timer = window.setInterval(load, 10_000);
+    return () => {
+      alive = false;
+      window.clearInterval(timer);
+    };
+  }, []);
+
+  /* ------------------- Приглашение по ссылке ----------------------- */
+  useEffect(() => {
+    if (!inviteCode) return;
+    let alive = true;
+    getRoom(inviteCode)
+      .then((snapshot) => {
+        if (!alive) return;
+        setInviteState({ code: inviteCode, room: snapshot.room, error: "" });
+      })
+      .catch((err: unknown) => {
+        if (!alive) return;
+        setInviteState({
+          code: inviteCode,
+          room: null,
+          error: err instanceof Error ? err.message : "Комната не найдена",
+        });
+      });
+    return () => {
+      alive = false;
+    };
+  }, [inviteCode]);
+
   /* --------------------------- Обработчики -------------------------- */
 
   const onQueryChange = (value: string) => {
@@ -565,8 +526,8 @@ export function WatchTogetherView() {
     }
   };
 
-  /** Создание комнаты: код, ссылка, запись в localStorage */
-  function createRoom(e: React.FormEvent<HTMLFormElement>) {
+  /** Создание комнаты на сервере: код выдаёт он же */
+  async function onCreate(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
     if (!anime) {
@@ -574,31 +535,38 @@ export function WatchTogetherView() {
       document.getElementById("wt-anime")?.focus();
       return;
     }
+    if (!clientId) {
+      setError("Браузер ещё не готов — попробуйте через секунду.");
+      return;
+    }
 
-    const code = makeCode();
-    const room: WatchRoom = {
-      code,
-      title: name.trim() || `Смотрим «${anime.title}»`,
-      anime: anime.title,
-      poster: anime.poster,
-      alias: anime.alias,
-      dub,
-      access,
-      viewers: 1,
-      limit: LIMITS[access],
-      episode: 1,
-      createdAt: Date.now(),
-      owner: true,
-    };
-
+    setBusy(true);
     setError("");
-    setCreated({ room, path: `/watch-together?room=${code}` });
-    roomsStore.update((list) => [room, ...list.filter((r) => r.code !== code)].slice(0, ROOMS_LIMIT));
+    try {
+      const snapshot = await createRoomRequest({
+        clientId,
+        nickname: roomNickname,
+        title: name.trim() || `Смотрим «${anime.title}»`,
+        anime: anime.title,
+        alias: anime.alias,
+        poster: anime.poster,
+        dub,
+        access,
+      });
+      rememberNickname(nickname);
+      setCreated({ room: snapshot.room, path: `/watch-together?room=${snapshot.room.code}` });
+      setJoined(null);
+      void refreshRooms();
 
-    window.setTimeout(
-      () => document.getElementById("wt-created")?.scrollIntoView({ behavior: "smooth", block: "center" }),
-      90,
-    );
+      window.setTimeout(
+        () => document.getElementById("wt-created")?.scrollIntoView({ behavior: "smooth", block: "center" }),
+        90,
+      );
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Не удалось создать комнату");
+    } finally {
+      setBusy(false);
+    }
   }
 
   /** Сброс формы перед новой комнатой */
@@ -640,34 +608,47 @@ export function WatchTogetherView() {
     }
   }
 
-  /** Вход в комнату (симуляция без бэкенда) + прокрутка к панели */
-  function joinRoom(room: WatchRoom) {
-    setJoined({ ...room, viewers: Math.min(room.limit, room.viewers + (room.owner ? 0 : 1)) });
-    window.setTimeout(
-      () => document.getElementById("wt-room-panel")?.scrollIntoView({ behavior: "smooth", block: "start" }),
-      90,
-    );
-  }
+  /** Вход в комнату: сервер проверяет места и запоминает ник */
+  const onJoin = async (code: string) => {
+    if (!clientId) {
+      setJoinError("Браузер ещё не готов — попробуйте через секунду.");
+      return;
+    }
+
+    setJoiningCode(code);
+    setJoinError("");
+    try {
+      const snapshot = await joinRoomRequest(code, clientId, roomNickname);
+      rememberNickname(nickname);
+      setJoined(snapshot);
+      setCreated(null);
+      window.setTimeout(
+        () => document.getElementById("wt-room-panel")?.scrollIntoView({ behavior: "smooth", block: "start" }),
+        90,
+      );
+      void refreshRooms();
+    } catch (err) {
+      setJoinError(err instanceof Error ? err.message : "Не удалось войти в комнату");
+    } finally {
+      setJoiningCode("");
+    }
+  };
 
   /* --------------------------- Производные -------------------------- */
 
   const q = query.trim();
   const showDropdown = dropdown && q.length >= 2;
-  const invited =
-    myRooms.find((r) => r.code === inviteCode) ?? DEMO_ROOMS.find((r) => r.code === inviteCode);
-  /** Комната по коду: своя → демо-комната → «заглушка» для чужого кода */
-  const inviteRoom: WatchRoom = invited ?? {
-    code: inviteCode,
-    title: `Комната ${inviteCode}`,
-    anime: "Тайтл не определён",
-    dub: "—",
-    access: "link",
-    viewers: 1,
-    limit: LIMITS.link,
-    episode: 1,
-    createdAt: 0,
-  };
-  const allRooms = [...myRooms, ...DEMO_ROOMS];
+  const showNicknameInput = !nickname.trim();
+
+  /** Ник для комнаты: введённый, иначе имя аккаунта, иначе «Гость» */
+  const roomNickname =
+    nickname.trim() || account?.displayName || account?.nickname || "Гость";
+
+  /** Приглашение показываем, только если оно относится к текущему коду */
+  const invite = inviteState && inviteState.code === inviteCode ? inviteState : null;
+  const inviteRoom = invite?.room ?? null;
+  const inviteError = invite?.error ?? "";
+  const inviteLoading = Boolean(inviteCode) && !invite;
 
   /* ------------------------------ Разметка -------------------------- */
 
@@ -689,25 +670,42 @@ export function WatchTogetherView() {
                 Вы приглашены в комнату{" "}
                 <span className="font-mono tracking-[0.2em] text-accent-2">{inviteCode}</span>
               </h2>
-              <p className="mt-1.5 text-sm leading-relaxed text-muted">
-                {invited
-                  ? `«${invited.title}» · ${invited.anime} · ${invited.viewers} из ${invited.limit} мест занято`
-                  : "Комнату не нашли в этом браузере — возможно, ссылка пришла с другого устройства."}
-              </p>
-              <p className="mt-2 text-xs leading-relaxed text-muted/85">
-                Вход симулируется без бэкенда: комната откроется только в этом браузере,
-                история хранится в localStorage.
-              </p>
+              {inviteRoom ? (
+                <p className="mt-1.5 text-sm leading-relaxed text-muted">
+                  «{inviteRoom.title}» · {inviteRoom.anime} · {inviteRoom.viewers} из{" "}
+                  {inviteRoom.limit} мест занято
+                </p>
+              ) : (
+                <p className="mt-1.5 text-sm leading-relaxed text-muted">
+                  {inviteLoading ? "Ищем комнату на сервере…" : inviteError || "Комната не найдена."}
+                </p>
+              )}
+              {inviteRoom && (
+                <p className="mt-2 text-xs leading-relaxed text-muted/85">
+                  Комната живёт на сервере: пауза, перемотка и чат общие для всех устройств.
+                </p>
+              )}
             </div>
 
             <div className="flex shrink-0 flex-col gap-2">
+              {showNicknameInput && (
+                <input
+                  value={nickname}
+                  onChange={(e) => setNicknameEdit(e.target.value)}
+                  maxLength={24}
+                  placeholder="Ваш ник"
+                  aria-label="Ваш ник для комнаты"
+                  className={`${FIELD} sm:w-56`}
+                />
+              )}
               <button
                 type="button"
-                onClick={() => joinRoom(inviteRoom)}
-                className="btn-primary rounded-xl px-5 py-3 text-sm font-black text-white"
+                onClick={() => inviteRoom && onJoin(inviteRoom.code)}
+                disabled={!inviteRoom || busy}
+                className="btn-primary rounded-xl px-5 py-3 text-sm font-black text-white disabled:pointer-events-none disabled:opacity-50"
                 aria-label={`Войти в комнату ${inviteCode}`}
               >
-                Войти в комнату
+                {joiningCode === inviteCode ? "Входим…" : "Войти в комнату"}
               </button>
               <a
                 href="#create-room"
@@ -725,11 +723,11 @@ export function WatchTogetherView() {
         <div className="relative">
           <h2 className="wtv-h2">Создайте комнату</h2>
           <p className="wtv-sub">
-            Название, тайтл, озвучка и доступ — код на шесть символов сгенерируется сразу после
-            создания.
+            Название, тайтл, озвучка и доступ — код на шесть символов сервер выдаст сразу.
+            Ссылка и код заработают на любом устройстве.
           </p>
 
-          <form onSubmit={createRoom} className="wtv-grid2">
+          <form onSubmit={onCreate} className="wtv-grid2">
             {/* Название комнаты */}
             <div>
               <label htmlFor="wt-room-name" className={LABEL}>
@@ -741,6 +739,25 @@ export function WatchTogetherView() {
                 onChange={(e) => setName(e.target.value)}
                 maxLength={60}
                 placeholder="Вечерний марафон"
+                className={FIELD}
+              />
+            </div>
+
+            {/* Ник */}
+            <div>
+              <label htmlFor="wt-nick" className={LABEL}>
+                Ваш ник
+              </label>
+              <input
+                id="wt-nick"
+                value={nickname}
+                onChange={(e) => {
+                  setNicknameEdit(e.target.value);
+                  if (error) setError("");
+                }}
+                maxLength={24}
+                autoComplete="nickname"
+                placeholder="Как вас увидят (необязательно)"
                 className={FIELD}
               />
             </div>
@@ -922,27 +939,18 @@ export function WatchTogetherView() {
 
             {/* Ошибка валидации */}
             {error && (
-              <p
-                role="alert"
-                className="wtv-error sm:col-span-2"
-              >
+              <p role="alert" className="wtv-error sm:col-span-2">
                 {error}
               </p>
             )}
 
             {/* Отправка */}
             <div className="flex flex-wrap items-center gap-3 sm:col-span-2">
-              <button
-                type="submit"
-                className="wtv-btn"
-              >
-                Создать комнату
+              <button type="submit" disabled={busy} className="wtv-btn disabled:opacity-60">
+                {busy ? "Создаём…" : "Создать комнату"}
               </button>
               <span className="text-xs leading-relaxed text-muted">
-                Комната сохраняется только в этом браузере — ключ{" "}
-                <code className="wtv-code">
-                  {ROOMS_KEY}
-                </code>
+                Комната создаётся на сервере и видна всем, кто откроет код или ссылку.
               </span>
             </div>
           </form>
@@ -992,19 +1000,16 @@ export function WatchTogetherView() {
           </div>
 
           <div className="mt-4 flex flex-wrap gap-3">
-            <button
-              type="button"
-              onClick={() => copyLink(created.path)}
-              className="wtv-btn"
-            >
+            <button type="button" onClick={() => copyLink(created.path)} className="wtv-btn">
               {copiedAt ? "Скопировано ✓" : "Скопировать ссылку"}
             </button>
             <button
               type="button"
-              onClick={() => joinRoom(created.room)}
-              className="btn-ghost rounded-xl border border-line bg-white/6 px-5 py-2.5 text-sm font-bold text-white hover:border-accent/40"
+              onClick={() => onJoin(created.room.code)}
+              disabled={busy || joiningCode === created.room.code}
+              className="btn-ghost rounded-xl border border-line bg-white/6 px-5 py-2.5 text-sm font-bold text-white hover:border-accent/40 disabled:opacity-60"
             >
-              Присоединиться
+              {joiningCode === created.room.code ? "Входим…" : "Присоединиться"}
             </button>
             <button
               type="button"
@@ -1016,15 +1021,25 @@ export function WatchTogetherView() {
           </div>
 
           <p className="mt-3 text-xs leading-relaxed text-muted">
-            Комната записана в localStorage (<code className="font-mono">{ROOMS_KEY}</code>) и уже
-            видна в списке ниже.
+            Код и ссылка уже работают на других устройствах. Вы — первый участник комнаты.
           </p>
         </section>
       )}
 
       {/* ------------------------- Панель комнаты ---------------------- */}
       {/* key по коду: при входе в другую комнату состояние плеера/чата сбрасывается */}
-      {joined && <RoomPanel key={joined.code} room={joined} onLeave={() => setJoined(null)} />}
+      {joined && (
+        <RoomPanel
+          key={joined.room.code}
+          initial={joined}
+          clientId={clientId}
+          nickname={roomNickname}
+          onLeave={() => {
+            setJoined(null);
+            void refreshRooms();
+          }}
+        />
+      )}
 
       {/* ------------------------ Список комнат ------------------------ */}
       <section id="rooms" aria-label="Активные комнаты" className="wtv-rooms-section scroll-mt-24">
@@ -1033,18 +1048,42 @@ export function WatchTogetherView() {
             <h2>Активные комнаты</h2>
             <p>Заходите к тем, кто уже смотрит.</p>
           </div>
-          <span className="wtv-pill">{allRooms.length} комнат</span>
+          <span className="wtv-pill">{rooms.length} комнат</span>
         </div>
 
-        <div className="wtv-rooms">
-          {allRooms.map((room) => (
-            <RoomCard key={room.code} room={room} onJoin={() => joinRoom(room)} />
-          ))}
-        </div>
+        {joinError && (
+          <p role="alert" className="wtv-error mb-4">
+            {joinError}
+          </p>
+        )}
+
+        {rooms.length ? (
+          <div className="wtv-rooms">
+            {rooms.map((room) => (
+              <RoomCard
+                key={room.code}
+                room={room}
+                joining={joiningCode === room.code}
+                onJoin={() => onJoin(room.code)}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="rounded-2xl border border-dashed border-line bg-white/[0.03] px-5 py-8 text-center">
+            <p className="text-sm font-bold text-white">
+              {roomsLoading ? "Загружаем комнаты…" : "Пока никто не смотрит"}
+            </p>
+            <p className="mx-auto mt-1.5 max-w-md text-xs leading-relaxed text-muted">
+              {roomsLoading
+                ? "Секунду — забираем список с сервера."
+                : "Создайте комнату выше: она сразу появится здесь и будет доступна по ссылке на любом устройстве."}
+            </p>
+          </div>
+        )}
 
         <p className="mt-4 text-xs leading-relaxed text-muted">
-          Публичные комнаты — демо-список, но плеер в них настоящий (каталог AniLiberty); свои
-          создаются здесь и хранятся только в этом браузере.
+          В списке — открытые комнаты с активными зрителями. Комнаты «по ссылке» в него не
+          попадают, но открываются по коду из приглашения. Пустые комнаты удаляются автоматически.
         </p>
       </section>
     </div>
@@ -1055,7 +1094,15 @@ export function WatchTogetherView() {
 /*  Карточка комнаты                                                   */
 /* ================================================================== */
 
-function RoomCard({ room, onJoin }: { room: WatchRoom; onJoin: () => void }) {
+function RoomCard({
+  room,
+  joining,
+  onJoin,
+}: {
+  room: WtRoomInfo;
+  joining: boolean;
+  onJoin: () => void;
+}) {
   return (
     <article className="wtv-room">
       <div className="wtv-room-poster">
@@ -1072,7 +1119,7 @@ function RoomCard({ room, onJoin }: { room: WatchRoom; onJoin: () => void }) {
         <span className="wtv-tag wtv-tag-ep">идёт {episodeLabel(room.episode)}</span>
         <span className="wtv-tag wtv-tag-live">
           <span className="wtv-dot" aria-hidden />
-          {room.owner ? "ваша" : "демо"}
+          онлайн
         </span>
         <span className="wtv-room-dub">{room.dub}</span>
       </div>
@@ -1106,10 +1153,11 @@ function RoomCard({ room, onJoin }: { room: WatchRoom; onJoin: () => void }) {
         <button
           type="button"
           onClick={onJoin}
+          disabled={joining}
           aria-label={`Присоединиться к комнате «${room.title}»`}
-          className="wtv-room-join"
+          className="wtv-room-join disabled:opacity-60"
         >
-          Присоединиться
+          {joining ? "Входим…" : "Присоединиться"}
         </button>
       </div>
     </article>
@@ -1117,43 +1165,82 @@ function RoomCard({ room, onJoin }: { room: WatchRoom; onJoin: () => void }) {
 }
 
 /* ================================================================== */
-/*  Панель комнаты: симуляция синхронного плеера и чата                */
+/*  Панель комнаты: серверный синк плеера и чата                       */
 /* ================================================================== */
 
-interface ChatMsg {
-  id: string;
-  author: string;
-  text: string;
-  self?: boolean;
-}
-
-/** Стартовые сообщения комнатного чата */
-const SEED_MESSAGES: ChatMsg[] = [
-  { id: "seed-1", author: "Ведущий", text: "Комната открыта, плеер синхронизирован для всех." },
-  { id: "seed-2", author: "Юки", text: "Я тут, включаю сабы 👀" },
-];
-
-/** Ответы «зрителей» после ваших сообщений */
-const REPLIES: ChatMsg[] = [
-  { id: "reply-1", author: "Юки", text: "Согласна, этот кадр — топ 🔥" },
-  { id: "reply-2", author: "Кен", text: "Не спойлерь, я ещё не смотрел!" },
-  { id: "reply-3", author: "Ами", text: "Общая пауза работает — спасибо, что подождали 🙌" },
-];
-
-function RoomPanel({ room, onLeave }: { room: WatchRoom; onLeave: () => void }) {
-  const [messages, setMessages] = useState<ChatMsg[]>(SEED_MESSAGES);
+/** Слишком частое сообщение сервер отклонит — показываем его текст как есть */
+function RoomPanel({
+  initial,
+  clientId,
+  nickname,
+  onLeave,
+}: {
+  initial: WtSnapshot;
+  clientId: string;
+  /** Ник нужен, чтобы вернуться в комнату после долгого простоя вкладки */
+  nickname: string;
+  onLeave: () => void;
+}) {
+  const [snap, setSnap] = useState<WtSnapshot>(initial);
+  const [messages, setMessages] = useState<WtMessageInfo[]>(initial.messages);
   const [draft, setDraft] = useState("");
-  const [replyNonce, setReplyNonce] = useState(0);
+  const [error, setError] = useState("");
+  const [sending, setSending] = useState(false);
+  const [lost, setLost] = useState(false);
   const listRef = useRef<HTMLUListElement>(null);
+  const lastIdRef = useRef(initial.messages.at(-1)?.id ?? 0);
+  /** Когда последний раз успешно отмечались в комнате (ставится при запуске поллинга) */
+  const lastSeenRef = useRef(0);
 
-  // Ответ зрителя приходит через 1.5 с после вашего сообщения
+  /* ------------------------- Поллинг комнаты ----------------------- */
   useEffect(() => {
-    if (!replyNonce) return;
-    const timer = window.setTimeout(() => {
-      setMessages((prev) => [...prev, REPLIES[(replyNonce - 1) % REPLIES.length]]);
-    }, 1500);
-    return () => window.clearTimeout(timer);
-  }, [replyNonce]);
+    let alive = true;
+    let busy = false;
+    lastSeenRef.current = Date.now();
+
+    const tick = async () => {
+      if (!alive || busy || document.hidden) return;
+      busy = true;
+      try {
+        // Вкладка была свёрнута дольше TTL участника — сервер уже забыл нас,
+        // поэтому сначала входим заново (если места ещё есть)
+        const needRejoin = Date.now() - lastSeenRef.current > 25_000;
+        const next = needRejoin
+          ? await joinRoomRequest(initial.room.code, clientId, nickname)
+          : await getRoom(initial.room.code, {
+              clientId,
+              after: lastIdRef.current,
+            });
+        lastSeenRef.current = Date.now();
+        if (!alive) return;
+        setSnap(next);
+        setLost(false);
+        if (next.messages.length) {
+          setMessages((prev) => {
+            const seen = new Set(prev.map((message) => message.id));
+            const fresh = next.messages.filter((message) => !seen.has(message.id));
+            return fresh.length ? [...prev, ...fresh] : prev;
+          });
+          lastIdRef.current = Math.max(
+            lastIdRef.current,
+            next.messages[next.messages.length - 1].id,
+          );
+        }
+      } catch {
+        // Сеть моргнула или комнату закрыли — пробуем снова на следующем тике
+        if (alive) setLost(true);
+      } finally {
+        busy = false;
+      }
+    };
+
+    void tick();
+    const timer = window.setInterval(tick, 2000);
+    return () => {
+      alive = false;
+      window.clearInterval(timer);
+    };
+  }, [initial.room.code, clientId, nickname]);
 
   // Чат прибивается к нижнему краю при новом сообщении
   useEffect(() => {
@@ -1161,14 +1248,42 @@ function RoomPanel({ room, onLeave }: { room: WatchRoom; onLeave: () => void }) 
     if (el) el.scrollTop = el.scrollHeight;
   }, [messages.length]);
 
-  const sendMessage = (e: React.FormEvent<HTMLFormElement>) => {
+  /* --------------------------- Действия ---------------------------- */
+
+  const onPublish = useCallback(
+    (state: RoomState) => {
+      // Ответ на поллинг не ждём: следующий тик принесёт состояние
+      patchRoomState(initial.room.code, clientId, state).catch(() => undefined);
+    },
+    [initial.room.code, clientId],
+  );
+
+  const sendMessage = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const text = draft.trim();
-    if (!text) return;
-    setMessages((prev) => [...prev, { id: `self-${prev.length}`, author: "Вы", text, self: true }]);
-    setDraft("");
-    setReplyNonce((n) => n + 1);
+    if (!text || sending) return;
+    setSending(true);
+    setError("");
+    try {
+      const message = await sendRoomMessage(initial.room.code, clientId, text);
+      setDraft("");
+      setMessages((prev) =>
+        prev.some((item) => item.id === message.id) ? prev : [...prev, message],
+      );
+      lastIdRef.current = Math.max(lastIdRef.current, message.id);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Сообщение не отправилось");
+    } finally {
+      setSending(false);
+    }
   };
+
+  const leave = () => {
+    void leaveRoom(initial.room.code, clientId);
+    onLeave();
+  };
+
+  const room = snap.room;
 
   return (
     <section
@@ -1189,69 +1304,120 @@ function RoomPanel({ room, onLeave }: { room: WatchRoom; onLeave: () => void }) 
           </p>
         </div>
 
-        <button
-          type="button"
-          onClick={onLeave}
-          className="btn-ghost shrink-0 rounded-xl border border-line bg-white/6 px-4 py-2 text-xs font-bold text-muted hover:text-white"
-        >
-          Выйти
-        </button>
+        <div className="flex items-center gap-3">
+          <span className={`${CHIP} bg-mint/12 text-mint ring-mint/35`}>
+            {room.viewers}/{room.limit} онлайн
+          </span>
+          <button
+            type="button"
+            onClick={leave}
+            className="btn-ghost shrink-0 rounded-xl border border-line bg-white/6 px-4 py-2 text-xs font-bold text-muted hover:text-white"
+          >
+            Выйти
+          </button>
+        </div>
       </div>
+
+      {lost && (
+        <p role="status" className="border-b border-line bg-amber-400/10 px-4 py-2 text-xs text-amber-200 sm:px-5">
+          Связь с комнатой потеряна — пробуем переподключиться…
+        </p>
+      )}
 
       <div className="grid gap-4 p-4 sm:p-5 lg:grid-cols-[minmax(0,1fr)_320px]">
         {/* ---------------------------- Плеер --------------------------- */}
         <div>
           <RoomPlayer
-            roomCode={room.code}
             title={room.anime}
             poster={room.poster}
             alias={room.alias}
-            startEpisode={room.episode}
+            startEpisode={initial.room.episode}
             viewers={room.viewers}
             limit={room.limit}
+            clientId={clientId}
+            sync={room}
+            onPublish={onPublish}
           />
         </div>
 
         {/* ----------------------------- Чат ---------------------------- */}
         <div className="flex min-h-[280px] flex-col rounded-2xl border border-line bg-ink/40 p-3">
-          <p className="text-[10px] font-black uppercase tracking-[0.16em] text-muted">
-            Чат комнаты
-          </p>
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-[10px] font-black uppercase tracking-[0.16em] text-muted">
+              Чат комнаты
+            </p>
+            <p className="text-[10px] font-bold text-muted">{room.viewers} онлайн</p>
+          </div>
+
+          {/* Кто в комнате */}
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            {snap.members.map((member) => (
+              <span
+                key={member.clientId}
+                title={member.nickname}
+                className={`inline-flex max-w-[9rem] items-center gap-1.5 rounded-lg px-2 py-1 text-[11px] font-bold ring-1 ${
+                  member.clientId === clientId
+                    ? "bg-accent/15 text-accent-2 ring-accent/35"
+                    : "bg-white/6 text-white/85 ring-white/12"
+                }`}
+              >
+                <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-accent to-accent-2 text-[9px] font-black text-white">
+                  {member.nickname.slice(0, 1).toUpperCase()}
+                </span>
+                <span className="truncate">{member.nickname}</span>
+              </span>
+            ))}
+          </div>
 
           <ul
             ref={listRef}
             className="mt-2 max-h-64 min-h-[140px] flex-1 space-y-2 overflow-y-auto pr-1"
           >
-            {messages.map((m, i) => (
-              <li
-                key={`${i}-${m.author}`}
-                className={`rounded-xl px-3 py-2 text-sm ${
-                  m.self ? "ml-6 bg-accent/15 text-white" : "mr-6 bg-white/6 text-white/90"
-                }`}
-              >
-                <span
-                  className={`block text-[11px] font-black ${m.self ? "text-accent-2" : "text-accent-2"}`}
-                >
-                  {m.author}
-                </span>
-                <span className="mt-0.5 block leading-snug break-words">{m.text}</span>
+            {messages.length ? (
+              messages.map((message) => {
+                const self = message.clientId === clientId;
+                return (
+                  <li
+                    key={message.id}
+                    className={`rounded-xl px-3 py-2 text-sm ${
+                      self ? "ml-6 bg-accent/15 text-white" : "mr-6 bg-white/6 text-white/90"
+                    }`}
+                  >
+                    <span className="block text-[11px] font-black text-accent-2">
+                      {message.nickname}
+                      {self ? " (вы)" : ""}
+                    </span>
+                    <span className="mt-0.5 block leading-snug break-words">{message.body}</span>
+                  </li>
+                );
+              })
+            ) : (
+              <li className="rounded-xl bg-white/4 px-3 py-2 text-xs leading-relaxed text-muted">
+                Чат пуст. Напишите первым — сообщение увидят все в комнате.
               </li>
-            ))}
+            )}
           </ul>
+
+          {error && (
+            <p role="alert" className="mt-2 text-[11px] font-bold text-rose-300">
+              {error}
+            </p>
+          )}
 
           <form onSubmit={sendMessage} className="mt-3 flex gap-2">
             <input
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
-              maxLength={200}
+              maxLength={300}
               placeholder="Сообщение…"
               aria-label="Сообщение в чат комнаты"
               className={FIELD}
             />
             <button
               type="submit"
+              disabled={sending}
               aria-label="Отправить сообщение"
-              className="wtv-btn wtv-chat-send"
+              className="wtv-btn wtv-chat-send disabled:opacity-60"
             >
               <Icon d={PATHS.arrow} className="h-4 w-4" sw={2.2} />
             </button>
@@ -1260,9 +1426,9 @@ function RoomPanel({ room, onLeave }: { room: WatchRoom; onLeave: () => void }) 
       </div>
 
       <p className="border-t border-line px-4 py-3 text-[11px] leading-relaxed text-muted sm:px-5">
-        Плеер настоящий — серии идут из каталога AniLiberty (HLS), а пауза, перемотка и переходы по
-        сериям синхронизируются между вкладками этого браузера. Бэкенда нет: с чужого устройства
-        комната не откроется.
+        Плеер настоящий — серии идут из каталога AniLiberty (HLS). Пауза, перемотка и переходы
+        по сериям сохраняются на сервере и применяются у всех участников: новый зритель сразу
+        попадает на текущую секунду. Комната живёт 12 часов, пустая — удаляется через полчаса.
       </p>
     </section>
   );

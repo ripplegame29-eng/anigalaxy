@@ -232,4 +232,51 @@ export const MIGRATIONS: Migration[] = [
       CREATE INDEX idx_chat_messages_id ON chat_messages(id DESC);
     `,
   },
+  {
+    version: 6,
+    name: "watch_together_rooms",
+    sql: `
+      -- Комнаты совместного просмотра. В отличие от прежней версии,
+      -- живут на сервере: один код = одна комната для всех устройств.
+      CREATE TABLE watch_rooms (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        code TEXT NOT NULL UNIQUE,
+        title TEXT NOT NULL,
+        anime TEXT NOT NULL,
+        alias TEXT NOT NULL DEFAULT '',
+        poster TEXT NOT NULL DEFAULT '',
+        dub TEXT NOT NULL DEFAULT '',
+        access TEXT NOT NULL DEFAULT 'link' CHECK (access IN ('open', 'link')),
+        episode INTEGER NOT NULL DEFAULT 1,
+        position REAL NOT NULL DEFAULT 0,
+        playing INTEGER NOT NULL DEFAULT 0,
+        state_by TEXT NOT NULL DEFAULT '',
+        state_at INTEGER NOT NULL DEFAULT 0,
+        created_at INTEGER NOT NULL
+      );
+      CREATE INDEX idx_watch_rooms_access ON watch_rooms(access, created_at DESC);
+
+      -- Кто сейчас в комнате. Пропавшие клиенты вычищаются по seen_at.
+      CREATE TABLE watch_room_members (
+        room_id INTEGER NOT NULL REFERENCES watch_rooms(id) ON DELETE CASCADE,
+        client_id TEXT NOT NULL,
+        nickname TEXT NOT NULL,
+        joined_at INTEGER NOT NULL,
+        seen_at INTEGER NOT NULL,
+        PRIMARY KEY (room_id, client_id)
+      );
+      CREATE INDEX idx_watch_room_members_seen ON watch_room_members(room_id, seen_at DESC);
+
+      -- Чат комнаты: настоящая лента, а не заготовленные ответы.
+      CREATE TABLE watch_room_messages (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        room_id INTEGER NOT NULL REFERENCES watch_rooms(id) ON DELETE CASCADE,
+        client_id TEXT NOT NULL,
+        nickname TEXT NOT NULL,
+        body TEXT NOT NULL,
+        created_at INTEGER NOT NULL
+      );
+      CREATE INDEX idx_watch_room_messages_room ON watch_room_messages(room_id, id);
+    `,
+  },
 ];

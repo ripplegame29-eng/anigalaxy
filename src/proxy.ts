@@ -8,7 +8,8 @@ import { NextRequest, NextResponse } from "next/server";
  *    ботом и положить внешние API, на которые мы ходим;
  *  • отдельный, более жёсткий лимит для «дорогих» маршрутов (поиск по
  *    кадру, потоки, вход через Telegram);
- *  • запрет не-GET/POST методов и слишком больших тел;
+ *  • запрет не-GET/POST методов и слишком больших тел (PATCH/DELETE —
+ *    только для комнат совместного просмотра);
  *  • одинаковые защитные заголовки на ответах API.
  *
  * Счётчики живут в памяти процесса: на нескольких инстансах лимит
@@ -24,9 +25,26 @@ let lastSweep = 0;
 
 const GENERAL = { windowMs: 60_000, max: 120 };
 const HEAVY = { windowMs: 60_000, max: 20 };
+/**
+ * Комнаты опрашиваются каждые 2 секунды (30 запросов в минуту с вкладки).
+ * Несколько вкладок с одного IP не должны упираться в общий лимит.
+ */
+const ROOMS = { windowMs: 60_000, max: 240 };
 const HEAVY_PREFIXES = ["/api/frame", "/api/kodik/stream", "/api/auth/", "/api/account/"];
 /** Тело запроса больше этого не принимаем (поиск по кадру — до 4×10 МБ, берём запас) */
 const MAX_BODY = 45 * 1024 * 1024;
+
+/**
+ * Комнаты совместного просмотра меняют состояние через PATCH и выходят
+ * через DELETE. Остальному API эти методы не нужны, поэтому разрешаем их
+ * точечно — защита от чужих сайтов всё равно проверяется в самом роуте.
+ */
+const EXTRA_METHODS_PREFIX = "/api/watch-together/";
+
+function methodAllowed(pathname: string, method: string): boolean {
+  if (method === "GET" || method === "POST" || method === "HEAD" || method === "OPTIONS") return true;
+  return pathname.startsWith(EXTRA_METHODS_PREFIX) && (method === "PATCH" || method === "DELETE");
+}
 
 function clientKey(request: NextRequest): string {
   const fwd = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
@@ -58,8 +76,11 @@ export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const method = request.method;
 
-  if (method !== "GET" && method !== "POST" && method !== "HEAD" && method !== "OPTIONS") {
-    return NextResponse.json({ error: "Method not allowed" }, { status: 405, headers: { Allow: "GET, POST, HEAD" } });
+  if (!methodAllowed(pathname, method)) {
+    return NextResponse.json(
+      { error: "Method not allowed" },
+      { status: 405, headers: { Allow: "GET, POST, HEAD, OPTIONS, PATCH, DELETE" } },
+    );
   }
 
   const length = Number(request.headers.get("content-length") ?? 0);
@@ -70,9 +91,11 @@ export function proxy(request: NextRequest) {
   const now = Date.now();
   sweep(now);
   const ip = clientKey(request);
+  const rooms = pathname.startsWith(EXTRA_METHODS_PREFIX);
   const heavy = HEAVY_PREFIXES.some((p) => pathname.startsWith(p));
-  const rule = heavy ? HEAVY : GENERAL;
-  const result = hit(`${heavy ? "h" : "g"}:${ip}`, rule, now);
+  const rule = rooms ? ROOMS : heavy ? HEAVY : GENERAL;
+  const bucket = rooms ? "w" : heavy ? "h" : "g";
+  const result = hit(`${bucket}:${ip}`, rule, now);
 
   if (!result.ok) {
     return NextResponse.json(
