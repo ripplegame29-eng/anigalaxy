@@ -71,7 +71,7 @@ const CHIP =
 
 /** Кнопка-чип в нижней панели управления (крупная, как в референсе) */
 const CBAR_CHIP =
-  "rounded-full bg-white/10 px-3 py-1.5 text-xs font-black sm:px-4 sm:py-2 text-white ring-1 ring-white/15 transition hover:bg-white/18";
+  "whitespace-nowrap rounded-full bg-white/10 px-2.5 py-1.5 text-[11px] font-black sm:px-4 sm:py-2 sm:text-xs text-white ring-1 ring-white/15 transition hover:bg-white/18";
 
 /** Иконочная кнопка в нижней панели управления (крупная, как в референсе) */
 const CBAR_BTN =
@@ -1347,7 +1347,7 @@ export function AltPlayer({
         const showEd = inEnding && watchOp !== `${epKey}:ed`;
         if (!showOp && !showEd) return null;
         return (
-          <div className={`absolute right-5 z-[21] flex items-center gap-3 transition-all duration-300 ${uiVisible || !playing ? "bottom-40" : "bottom-8"}`}>
+          <div className={`absolute right-3 z-[21] flex max-w-[calc(100%-1.5rem)] flex-wrap items-center justify-end gap-2 transition-all duration-300 sm:right-5 sm:gap-3 ${uiVisible || !playing ? "bottom-32 sm:bottom-40" : "bottom-8"}`}>
             {showOp && (
               <>
                 <button type="button" onClick={skipOpening} title="Пропустить опенинг (O)" className="ag-skipbtn ag-skipbtn--white">
@@ -1388,13 +1388,13 @@ export function AltPlayer({
       {/* ------------------ Нижняя панель управления ------------------- */}
       {started && mediaReady && (
         <div
-          className={`absolute inset-x-0 bottom-0 z-20 bg-gradient-to-t from-black/85 via-black/45 to-transparent px-5 pb-4 pt-16 transition-opacity duration-300 ${
+          className={`absolute inset-x-0 bottom-0 z-20 bg-gradient-to-t from-black/85 via-black/45 to-transparent px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-14 sm:px-5 sm:pb-4 sm:pt-16 transition-opacity duration-300 ${
             uiVisible || !playing ? "opacity-100" : "pointer-events-none opacity-0"
           }`}
         >
           {/* Ряд над прогрессом: звук слева, время по центру, инструменты справа */}
           <div className="mb-3 flex items-center gap-2">
-            <div className="group/vol flex flex-1 items-center gap-1">
+            <div className="group/vol flex flex-none items-center gap-1 sm:flex-1">
               <button type="button" aria-label={muted ? "Включить звук" : "Выключить звук"} onClick={toggleMute} className="grid h-10 w-10 place-items-center rounded-full text-white transition hover:bg-white/12">
                 <Icon d={muted || volume === 0 ? PATHS.volumeOff : PATHS.volume} className="h-5 w-5" />
               </button>
@@ -1408,11 +1408,11 @@ export function AltPlayer({
               />
             </div>
 
-            <span className="rounded-full bg-black/45 px-4 py-1.5 text-xs font-bold tabular-nums text-white ring-1 ring-white/10 backdrop-blur">
+            <span className="min-w-0 shrink truncate rounded-full bg-black/45 px-3 py-1.5 text-[11px] font-bold tabular-nums text-white ring-1 ring-white/10 backdrop-blur max-sm:mr-auto sm:px-4 sm:text-xs">
               {fmt(curTime)} / {fmt(dur)}
             </span>
 
-            <div className="flex flex-1 items-center justify-end gap-1">
+            <div className="flex flex-none items-center justify-end gap-0.5 sm:flex-1 sm:gap-1">
               <button type="button" aria-label="Качество" aria-expanded={qualityOpen} onClick={() => setQualityOpen(true)} className={`${CBAR_CHIP} ${qualityOpen ? "bg-white/18" : ""}`}>
                 {quality === "2160" ? <span className="rounded bg-red-600 px-1.5 py-0.5 font-black text-white">4K</span> : qualityLabel}
               </button>
@@ -1420,7 +1420,7 @@ export function AltPlayer({
               <button type="button" aria-label="Закладка на этот момент" aria-pressed={bookmarks.some((b) => Math.abs(b - curTime) <= 3)} title="Закладка (B)" onClick={toggleBookmark} className={`${CBAR_BTN} max-sm:hidden`}>
                 <Icon d={PATHS.bookmark} className="h-5 w-5" />
               </button>
-              <button type="button" aria-label={fillScreen ? "Вернуть исходный формат" : "Растянуть на весь экран"} aria-pressed={fillScreen} title={fillScreen ? "Исходный формат" : "Расширить на весь экран"} onClick={() => setFillScreen((v) => !v)} className={`${CBAR_BTN} ${fillScreen ? "bg-white/18" : ""}`}>
+              <button type="button" aria-label={fillScreen ? "Вернуть исходный формат" : "Растянуть на весь экран"} aria-pressed={fillScreen} title={fillScreen ? "Исходный формат" : "Расширить на весь экран"} onClick={() => setFillScreen((v) => !v)} className={`${CBAR_BTN} max-sm:hidden ${fillScreen ? "bg-white/18" : ""}`}>
                 <Icon d={PATHS.fill} className="h-5 w-5" />
               </button>
               <button type="button" aria-label="Картинка в картинке" onClick={togglePip} className={`${CBAR_BTN} max-sm:hidden`}>
@@ -1478,11 +1478,11 @@ export function AltPlayer({
             )}
             <div className="flex-1" />
             {hasNextEp && (
-              <button type="button" aria-label="Следующая серия" title="Следующая серия (N)" onClick={goNext} className="flex items-center gap-3 rounded-xl bg-white/8 px-3 py-1.5 text-left ring-1 ring-white/10 transition hover:bg-white/14">
+              <button type="button" aria-label="Следующая серия" title="Следующая серия (N)" onClick={goNext} className="flex items-center gap-2 rounded-xl bg-white/8 px-2.5 py-1.5 text-left ring-1 max-sm:py-1 sm:gap-3 sm:px-3 ring-white/10 transition hover:bg-white/14">
                 <Icon d={PATHS.next} className="h-5 w-5" />
                 <span className="grid">
                   <b className="text-xs font-bold text-white">Следующая серия</b>
-                  <small className="text-[10px] text-white/60">{nav ? `${nav.season} сезон, ` : ""}{episode + 1} эпизод</small>
+                  <small className="text-[10px] text-white/60 max-sm:hidden">{nav ? `${nav.season} сезон, ` : ""}{episode + 1} эпизод</small>
                 </span>
               </button>
             )}

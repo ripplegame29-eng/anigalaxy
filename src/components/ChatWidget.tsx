@@ -94,6 +94,14 @@ export function ChatWidget() {
     if (open && el) el.scrollTop = el.scrollHeight;
   }, [open, messages.length]);
 
+  // На телефоне открытый чат — на весь экран: страница под ним не прокручивается
+  useEffect(() => {
+    if (!open) return;
+    const root = document.documentElement;
+    root.classList.add("ag-chat-open");
+    return () => root.classList.remove("ag-chat-open");
+  }, [open]);
+
   // Esc закрывает панель
   useEffect(() => {
     if (!open) return;
@@ -154,11 +162,11 @@ export function ChatWidget() {
         aria-label="Общий чат"
         aria-hidden={!open}
         inert={!open}
-        className={`fixed inset-y-0 right-0 z-[93] flex w-full flex-col border-line bg-surface/98 shadow-[-24px_0_60px_-30px_rgba(0,0,0,0.9)] backdrop-blur-xl transition-transform duration-300 sm:inset-y-3 sm:right-3 sm:w-[380px] sm:rounded-2xl sm:border ${
+        className={`ag-chat-panel fixed inset-y-0 right-0 z-[93] flex w-full flex-col overscroll-contain border-line bg-surface/98 shadow-[-24px_0_60px_-30px_rgba(0,0,0,0.9)] backdrop-blur-xl transition-transform duration-300 sm:inset-y-3 sm:right-3 sm:w-[380px] sm:rounded-2xl sm:border ${
           open ? "translate-x-0" : "pointer-events-none translate-x-full"
         }`}
       >
-        <div className="flex items-center justify-between gap-3 border-b border-line px-4 py-3">
+        <div className="flex items-center justify-between gap-3 border-b border-line px-4 pb-3 pt-[max(0.75rem,env(safe-area-inset-top))]">
           <div className="flex items-center gap-2.5">
             <span className="grid h-8 w-8 place-items-center rounded-xl bg-accent/15 text-accent-2 ring-1 ring-accent/30">
               <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
@@ -181,7 +189,7 @@ export function ChatWidget() {
           </button>
         </div>
 
-        <div ref={listRef} className="flex-1 space-y-3.5 overflow-y-auto px-4 py-3">
+        <div ref={listRef} className="min-h-0 flex-1 space-y-3.5 overflow-y-auto overscroll-contain px-4 py-3">
           {messages.length === 0 && (
             <p className="rounded-xl border border-dashed border-line bg-white/[0.02] px-4 py-6 text-center text-xs text-muted">
               Тихо… напишите первым
@@ -228,7 +236,7 @@ export function ChatWidget() {
           })}
         </div>
 
-        <div className="border-t border-line p-3">
+        <div className="border-t border-line p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
           {account ? (
             <div className="flex items-center gap-2">
               <input
@@ -239,7 +247,7 @@ export function ChatWidget() {
                 }}
                 maxLength={CHAT_TEXT_LIMIT}
                 placeholder="Написать сообщение…"
-                className="min-w-0 flex-1 rounded-xl bg-white/6 px-3.5 py-2.5 text-sm text-white ring-1 ring-white/10 transition placeholder:text-muted/70 focus:outline-none focus:ring-accent/60"
+                className="min-w-0 flex-1 rounded-xl bg-white/6 px-3.5 py-2.5 text-base text-white ring-1 ring-white/10 transition sm:text-sm placeholder:text-muted/70 focus:outline-none focus:ring-accent/60"
               />
               <button
                 type="button"

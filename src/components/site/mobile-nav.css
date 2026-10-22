@@ -79,3 +79,32 @@
   body{padding-bottom:calc(92px + env(safe-area-inset-bottom))}
 }
 @media (prefers-reduced-motion:reduce){.mnv-sheet,.mnv-panel,.mnv-tile,.mnv-i svg{animation:none!important;transition-duration:.01ms!important}.mnv-tile{opacity:1;transform:none}}
+
+/* ═══ Премиальная доводка (поверх базовых правил) ═══ */
+@media (max-width:900px){
+  .mnv-bar{height:64px;border-radius:28px;padding:0 6px;
+    background:linear-gradient(180deg,rgba(22,30,56,.72),rgba(8,11,24,.9));
+    border:1px solid rgba(255,255,255,.09);
+    box-shadow:0 20px 48px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.08),0 0 0 .5px rgba(0,0,0,.6)}
+  .mnv-i{gap:3px;font-size:10px;font-weight:600;letter-spacing:.01em;color:#7f8aa6}
+  .mnv-i svg{width:22px;height:22px}
+  /* активный пункт — мягкая «таблетка» вместо линии сверху */
+  .mnv-i.cur::before{inset:9px 6px;left:6px;right:6px;top:9px;height:auto;border-radius:18px;
+    background:linear-gradient(180deg,rgba(43,127,255,.22),rgba(43,127,255,.06));box-shadow:inset 0 0 0 1px rgba(90,160,255,.28);z-index:-1}
+  .mnv-i.cur svg{filter:drop-shadow(0 0 6px rgba(43,127,255,.7));transform:none}
+  .mnv-c.cur::before{display:none}
+  .mnv-orb{width:50px;height:50px;margin-top:-22px;border-width:3px;
+    background:linear-gradient(145deg,#2a7bff,#1aa7e8);box-shadow:0 10px 26px rgba(43,127,255,.5),inset 0 1px 0 rgba(255,255,255,.4)}
+
+  .mnv-panel{padding:8px 14px calc(104px + env(safe-area-inset-bottom));border-radius:32px 32px 0 0;border-color:rgba(255,255,255,.08)}
+  .mnv-grab{width:38px;height:4px;margin:4px auto 14px;background:rgba(255,255,255,.22)}
+  .mnv-top b{font-size:22px}
+  .mnv-x{border-radius:50%;width:36px;height:36px}
+  .mnv-prem{padding:12px 14px;border-radius:22px}
+  .mnv-grid{gap:8px}
+  .mnv-tile{flex-direction:row;align-items:center;gap:12px;padding:12px;border-radius:18px}
+  .mnv-ti{margin:0;flex:none;width:38px;height:38px;border-radius:12px}
+  .mnv-tile b{font-size:14.5px}
+  .mnv-tile small{display:none}
+  .mnv-tile>span:last-child{display:flex;flex-direction:column;min-width:0}
+}

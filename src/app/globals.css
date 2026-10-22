@@ -795,3 +795,15 @@ html.ag-fs-lock,
 html.ag-fs-lock body {
   overflow: hidden !important;
 }
+
+/* ═══ Мобильная доводка ═══ */
+html.ag-chat-open{overflow:hidden}
+@media (max-width:640px){
+  html.ag-chat-open body{overflow:hidden;touch-action:none}
+  .ag-chat-panel{height:100dvh;max-height:100dvh;overflow:hidden;touch-action:pan-y}
+}
+/* iOS не приближает страницу при фокусе, если шрифт поля ≥16px */
+@media (max-width:900px){
+  input:not([type=checkbox]):not([type=radio]):not([type=range]),select,textarea{font-size:max(16px,1em)}
+}
+html,body{max-width:100%;overflow-x:clip}
