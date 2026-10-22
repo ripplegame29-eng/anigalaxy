@@ -2519,11 +2519,17 @@ export function ShopSection(_props: { title?: string } = {}) {
           />
           <div className="pfr">{selected && stagePreview(selected, "md")}</div>
           <div className="pbody">
-            <div className="pname">
-              <NickName name={displayNameOf(account)} style={profile.nickStyle} />
-              {premium && <PremiumChip />}
-            </div>
-            <div className="phandle">@{account?.nickname?.toLowerCase() ?? "гость"}</div>
+            {cat === "frames" ? (
+              <>
+                <div className="pname">
+                  <NickName name={displayNameOf(account)} style={profile.nickStyle} />
+                  {premium && <PremiumChip />}
+                </div>
+                <div className="phandle">@{account?.nickname?.toLowerCase() ?? "гость"}</div>
+              </>
+            ) : (
+              <div style={{ height: 14 }} />
+            )}
 
             {selected && (
               <>
