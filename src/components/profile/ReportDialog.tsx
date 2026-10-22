@@ -2,43 +2,16 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import { postToParent } from "@/lib/view-mode";
+
 /**
  * Окно «Пожаловаться» — по макету «AniGalaxy — профиль и подписки».
- *
- * В макете отправка идёт на бэкенд. Здесь сервера нет, поэтому жалоба
- * сохраняется в этом браузере, и надпись об этом прямо говорит: «модераторы
- * проверят» здесь было бы обещанием, которого не выполнит никто.
- *
- * Причина и текст копятся в `animehub:reports:v1` — это настоящая запись,
- * а не пустое нажатие на кнопку.
+ * Жалоба уходит на сервер (`/api/reports`) и попадает в очередь модерации;
+ * без входа отправить её нельзя.
  */
 
-const KEY = "animehub:reports:v1";
 const MAX = 500;
 const MIN = 10;
-
-export interface Report {
-  reason: string;
-  text: string;
-  at: number;
-}
-
-function read(): Report[] {
-  try {
-    const raw = localStorage.getItem(KEY);
-    const parsed: unknown = raw ? JSON.parse(raw) : [];
-    if (!Array.isArray(parsed)) return [];
-    return parsed.filter(
-      (item): item is Report =>
-        Boolean(item) &&
-        typeof item === "object" &&
-        typeof (item as Report).text === "string" &&
-        typeof (item as Report).at === "number",
-    );
-  } catch {
-    return [];
-  }
-}
 
 export interface ReportDialogProps {
   className?: string;
@@ -53,6 +26,8 @@ export function ReportDialog({ className, nickname, label }: ReportDialogProps) 
   const [reason, setReason] = useState("");
   const [text, setText] = useState("");
   const [done, setDone] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const reasons = ["Спам", "Оскорбления", "Неприемлемый контент", "Другое"];
 
@@ -60,6 +35,7 @@ export function ReportDialog({ className, nickname, label }: ReportDialogProps) 
     setReason("");
     setText("");
     setDone(false);
+    setError(null);
     dialogRef.current?.showModal();
     textRef.current?.focus();
   }, []);
@@ -79,16 +55,26 @@ export function ReportDialog({ className, nickname, label }: ReportDialogProps) 
   const trimmed = text.trim();
   const canSend = trimmed.length >= MIN;
 
-  const submit = useCallback(() => {
-    if (!canSend) return;
-    const next = [...read(), { reason: reason || "Другое", text: trimmed, at: Date.now() }];
+  const submit = useCallback(async () => {
+    if (!canSend || sending) return;
+    setSending(true);
+    setError(null);
     try {
-      localStorage.setItem(KEY, JSON.stringify(next.slice(-50)));
+      const response = await fetch("/api/reports", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({ nickname, reason: reason || "Другое", text: trimmed }),
+      });
+      const body = (await response.json().catch(() => ({}))) as { ok?: boolean; error?: string };
+      if (response.ok && body.ok) setDone(true);
+      else if (response.status === 401) setError("Войдите в аккаунт, чтобы отправить жалобу");
+      else setError(body.error ?? "Не удалось отправить жалобу");
     } catch {
-      /* приватный режим: жалоба просто не сохранится, но и ошибку не покажем */
+      setError("Нет связи с сервером. Попробуйте ещё раз");
     }
-    setDone(true);
-  }, [canSend, reason, trimmed]);
+    setSending(false);
+  }, [canSend, sending, nickname, reason, trimmed]);
 
   return (
     <>
@@ -102,11 +88,11 @@ export function ReportDialog({ className, nickname, label }: ReportDialogProps) 
             <form
               onSubmit={(e) => {
                 e.preventDefault();
-                submit();
+                void submit();
               }}
             >
               <h3 id="rd-t">Пожаловаться на {nickname}</h3>
-              <p>Расскажите, что не так. В этом демо жалоба сохранится в этом браузере.</p>
+              <p>Расскажите, что не так. Жалобу получат модераторы AniGalaxy.</p>
 
               <div className="rchips" role="group" aria-label="Причина">
                 {reasons.map((item) => (
@@ -137,12 +123,23 @@ export function ReportDialog({ className, nickname, label }: ReportDialogProps) 
                 </span>
               </div>
 
+              {error ? (
+                <p role="alert" style={{ color: "#fca5a5", fontSize: 13, margin: "8px 0 0" }}>
+                  {error}{" "}
+                  {error.startsWith("Войдите") ? (
+                    <button type="button" className="underline" onClick={() => { close(); postToParent({ type: "ag-auth" }); }}>
+                      Войти
+                    </button>
+                  ) : null}
+                </p>
+              ) : null}
+
               <div className="ract">
                 <button type="button" className="rbtn rghost" onClick={close}>
                   Отмена
                 </button>
-                <button type="submit" className="rbtn rsend" disabled={!canSend}>
-                  Отправить жалобу
+                <button type="submit" className="rbtn rsend" disabled={!canSend || sending}>
+                  {sending ? "Отправляем…" : "Отправить жалобу"}
                 </button>
               </div>
             </form>
@@ -152,11 +149,8 @@ export function ReportDialog({ className, nickname, label }: ReportDialogProps) 
                 <circle cx="12" cy="12" r="9" />
                 <path d="m8 12.5 3 3 5-6" />
               </svg>
-              <h3>Жалоба сохранена</h3>
-              <p>
-                Она лежит в этом браузере. Когда у проекта появится сервер, отправка
-                подключится здесь же — данные уже собраны.
-              </p>
+              <h3>Жалоба отправлена</h3>
+              <p>Спасибо. Модераторы проверят её и примут меры, если нарушение подтвердится.</p>
               <button type="button" className="rbtn rsend rfull" onClick={close}>
                 Закрыть
               </button>

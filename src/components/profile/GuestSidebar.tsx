@@ -4,7 +4,9 @@ import { useEffect, useMemo, useState } from "react";
 
 import { watchStore } from "@/lib/history";
 import { STATUS_LABEL, STATUS_ORDER, loadStatuses, type WatchStatus } from "@/lib/statuses";
-import { FollowsDialog } from "./FollowsDialog";
+import { followPlayer, unfollowPlayer, useProfileSocial, type Relation } from "@/lib/profile-social";
+import { postToParent } from "@/lib/view-mode";
+import { PlayerSocialDialog } from "./PlayerSocialDialog";
 import { ReportDialog } from "./ReportDialog";
 import { GiftPremiumDialog } from "./GiftPremiumDialog";
 
@@ -82,8 +84,40 @@ export interface GuestSidebarProps {
   onShare: () => void;
 }
 
+const FOLLOW_LABEL: Record<Relation, string> = {
+  self: "Это вы",
+  none: "Подписаться",
+  outgoing: "Заявка отправлена",
+  incoming: "Принять заявку",
+  friends: "Вы друзья",
+};
+
 export function GuestSidebar({ nickname, onShare }: GuestSidebarProps) {
   const watch = watchStore.useStore();
+  const social = useProfileSocial(nickname);
+  const [busy, setBusy] = useState(false);
+  const [followError, setFollowError] = useState<string | null>(null);
+  const relation = social.data?.relation ?? null;
+
+  const onFollow = async () => {
+    if (busy || !social.data) return;
+    if (relation === null) {
+      // Зритель не вошёл: окно входа открывает основная страница
+      postToParent({ type: "ag-auth" });
+      return;
+    }
+    setBusy(true);
+    setFollowError(null);
+    const error =
+      relation === "none" || relation === "incoming"
+        ? await followPlayer(nickname)
+        : relation === "outgoing" || relation === "friends"
+          ? await unfollowPlayer(nickname, social.data.userId)
+          : null;
+    setBusy(false);
+    if (error === "auth") postToParent({ type: "ag-auth" });
+    else setFollowError(error);
+  };
 
   const counts = useMemo(() => {
     const map = loadStatuses();
@@ -226,16 +260,31 @@ export function GuestSidebar({ nickname, onShare }: GuestSidebarProps) {
         <button
           type="button"
           className="gst-btn is-main"
-          disabled
-          title="Скоро: подписок в проекте нет, других аккаунтов тоже"
+          disabled={busy || !social.loaded || !social.data || relation === "self"}
+          onClick={() => void onFollow()}
+          title={
+            relation === "outgoing"
+              ? "Нажмите, чтобы отменить заявку"
+              : relation === "friends"
+                ? "Нажмите, чтобы удалить из друзей"
+                : relation === null
+                  ? "Войдите, чтобы подписаться"
+                  : undefined
+          }
         >
           <svg className="gst-i" viewBox="0 0 24 24" aria-hidden="true">
             {ICON.personPlus}
           </svg>
-          Подписаться
+          {relation === null ? "Подписаться" : FOLLOW_LABEL[relation]}
         </button>
+        {followError ? (
+          <p className="gst-note" role="alert">
+            {followError}
+          </p>
+        ) : null}
 
         <GiftPremiumDialog
+          recipient={nickname}
           className="gst-btn is-prem"
           label={
             <>
@@ -251,17 +300,6 @@ export function GuestSidebar({ nickname, onShare }: GuestSidebarProps) {
         />
 
         <div className="gst-row2">
-          <button
-            type="button"
-            className="gst-btn is-ghost"
-            disabled
-            title="Скоро: подарки в проекте не выдаются"
-          >
-            <svg className="gst-i" viewBox="0 0 24 24" aria-hidden="true">
-              {ICON.gift}
-            </svg>
-            Подарок
-          </button>
           <button type="button" className="gst-btn is-ghost" onClick={onShare}>
             <svg className="gst-i" viewBox="0 0 24 24" aria-hidden="true">
               {ICON.share}
@@ -286,20 +324,25 @@ export function GuestSidebar({ nickname, onShare }: GuestSidebarProps) {
 
       {/* --------------------------- Подписчики -------------------------- */}
       <section className="gst-panel gst-fol" style={{ "--i": 3 } as React.CSSProperties}>
-        <FollowsDialog tab={0} className="gst-fb" label={
+        <PlayerSocialDialog
+          nickname={nickname}
+          tab={0}
+          className="gst-fb"
+          label={
             <>
               <span>Подписчики</span>
-              <b>—</b>
+              <b>{social.data?.followers.length || "—"}</b>
             </>
           }
         />
-        <FollowsDialog
+        <PlayerSocialDialog
+          nickname={nickname}
           tab={1}
           className="gst-fb"
           label={
             <>
               <span>Подписки</span>
-              <b>—</b>
+              <b>{social.data?.following.length || "—"}</b>
             </>
           }
         />
@@ -312,17 +355,30 @@ export function GuestSidebar({ nickname, onShare }: GuestSidebarProps) {
             <svg className="gst-i" viewBox="0 0 24 24" style={{ color: "var(--gst-vio)" }} aria-hidden="true">
               {ICON.friends}
             </svg>
-            Друзья <small>—</small>
+            Друзья <small>{social.data?.friends.length || "—"}</small>
           </h3>
-          <FollowsDialog tab={2} className="gst-fh-all" label="Все" compact />
+          <PlayerSocialDialog nickname={nickname} tab={2} className="gst-fh-all" label="Все" />
         </div>
 
-        <div className="gst-grid" aria-hidden>
-          {Array.from({ length: 8 }, (_, i) => (
-            <span key={i} className="gst-av is-empty" />
-          ))}
+        <div className="gst-grid">
+          {Array.from({ length: 8 }, (_, i) => {
+            const friend = social.data?.friends[i];
+            return friend ? (
+              <a
+                key={friend.nickname}
+                className="gst-av"
+                href={`/u/${encodeURIComponent(friend.nickname)}`}
+                title={friend.nickname}
+                aria-label={`Профиль ${friend.nickname}`}
+              >
+                {friend.nickname[0]?.toUpperCase()}
+              </a>
+            ) : (
+              <span key={i} className="gst-av is-empty" aria-hidden />
+            );
+          })}
         </div>
-        <p className="gst-note">Раздел в разработке</p>
+        {social.loaded && !social.data?.friends.length ? <p className="gst-note">Друзей пока нет</p> : null}
       </section>
     </aside>
   );

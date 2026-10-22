@@ -16,3 +16,11 @@ export function viewedNickname(): string | null {
 }
 
 export const isViewMode = (): boolean => viewedNickname() !== null;
+
+/** Сообщение основной странице: чужой профиль живёт во вложенном окне */
+export type ViewMessage = { type: "ag-nav"; href: string } | { type: "ag-auth" };
+
+export function postToParent(message: ViewMessage): void {
+  if (typeof window === "undefined" || window.parent === window) return;
+  window.parent.postMessage(message, window.location.origin);
+}

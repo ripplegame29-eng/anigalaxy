@@ -1,28 +1,18 @@
-import { Suspense } from "react";
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { ProfileView } from "@/components/ProfileView";
-import { ViewShell } from "@/components/profile/ViewShell";
+import { ViewFrame } from "@/components/profile/ViewFrame";
 import { dbAvailable, getDb } from "@/lib/server/db";
 import { buildProfileView } from "@/lib/server/profile-view";
 import { SESSION_COOKIE, sessionUser } from "@/lib/server/users";
-import { VIEW_FLAG } from "@/lib/view-mode";
 
 export const dynamic = "force-dynamic";
-export const metadata: Metadata = { title: "Профиль игрока · AniGalaxy", robots: { index: false, follow: false } };
 
-/** JSON в <script>: экранируем всё, что могло бы закрыть тег или сломать строку */
-const LINE_SEP = String.fromCharCode(0x2028);
-const PARA_SEP = String.fromCharCode(0x2029);
-const safeJson = (value: unknown): string =>
-  JSON.stringify(value)
-    .replace(/</g, "\\u003c")
-    .split(LINE_SEP)
-    .join("\\u2028")
-    .split(PARA_SEP)
-    .join("\\u2029");
+export async function generateMetadata({ params }: { params: Promise<{ nickname: string }> }): Promise<Metadata> {
+  const { nickname } = await params;
+  return { title: `${decodeURIComponent(nickname)} · профиль · AniGalaxy`, robots: { index: false, follow: false } };
+}
 
 function Message({ title, text }: { title: string; text: string }) {
   return (
@@ -37,16 +27,21 @@ function Message({ title, text }: { title: string; text: string }) {
 }
 
 /**
- * Чужой профиль — `/u/<ник>`: тот же ProfileView в гостевом режиме, но с
- * настоящими данными игрока. Сервер кладёт их в HTML отдельным скриптом,
- * который подменяет localStorage страницы до запуска приложения; личное
- * (баланс, подарки, чёрный список) вырезано на сервере, а закрытые
- * профили не отдаются совсем.
+ * Чужой профиль — `/u/<ник>`. Обычная страница сайта: шапка, меню и чат
+ * принадлежат зрителю. Сам профиль показывает вложенное окно `/view/<ник>`,
+ * где данные игрока подставлены вместо данных зрителя и не смешиваются
+ * с его аккаунтом.
  */
-export default async function PublicProfilePage({ params }: { params: Promise<{ nickname: string }> }) {
+export default async function PublicProfilePage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ nickname: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
   const { nickname } = await params;
   const decoded = decodeURIComponent(nickname);
-  if (decoded.toLowerCase() === "me") redirect("/u/me");
+  if (decoded.toLowerCase() === "me") redirect("/profile");
 
   if (!dbAvailable()) return <Message title={decoded} text="Сервер временно недоступен. Попробуйте позже." />;
   const db = getDb();
@@ -63,25 +58,10 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
     );
   }
 
-  const shim = `(function(){try{var d=${safeJson(view.data)},m=Object.create(null),k;for(k in d)m[k]=d[k];
-var P=Storage.prototype,g=P.getItem,s=P.setItem,r=P.removeItem,c=P.clear,y=P.key,L=Object.getOwnPropertyDescriptor(P,'length');
-var own=function(o){return o===window.localStorage};
-P.getItem=function(x){return own(this)?(x in m?m[x]:null):g.call(this,x)};
-P.setItem=function(x,v){if(own(this)){m[x]=String(v)}else{s.call(this,x,v)}};
-P.removeItem=function(x){if(own(this)){delete m[x]}else{r.call(this,x)}};
-P.clear=function(){if(own(this)){for(var z in m)delete m[z]}else{c.call(this)}};
-P.key=function(i){return own(this)?(Object.keys(m)[i]||null):y.call(this,i)};
-if(L&&L.get){Object.defineProperty(P,'length',{configurable:true,get:function(){return own(this)?Object.keys(m).length:L.get.call(this)}})}
-window.${VIEW_FLAG}=${safeJson(view.nickname)};document.documentElement.setAttribute('data-ag-view','1')}catch(e){}})();`;
-
-  return (
-    <>
-      <script dangerouslySetInnerHTML={{ __html: shim }} />
-      <ViewShell nickname={view.nickname}>
-        <Suspense fallback={null}>
-          <ProfileView mode="guest" basePath={`/u/${encodeURIComponent(view.nickname)}`} />
-        </Suspense>
-      </ViewShell>
-    </>
-  );
+  const query = new URLSearchParams();
+  for (const [key, value] of Object.entries(await searchParams)) {
+    if (typeof value === "string") query.set(key, value);
+  }
+  const qs = query.toString();
+  return <ViewFrame src={`/view/${encodeURIComponent(view.nickname)}${qs ? `?${qs}` : ""}`} title={`Профиль игрока ${view.nickname}`} />;
 }

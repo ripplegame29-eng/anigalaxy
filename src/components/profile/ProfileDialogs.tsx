@@ -3293,7 +3293,8 @@ function SettingsDialog() {
 function ShareDialog() {
   const account = useAccount();
   const [copied, setCopied] = useState<boolean | null>(null);
-  const link = `${typeof window === "undefined" ? "" : window.location.origin}/profile`;
+  const origin = typeof window === "undefined" ? "" : window.location.origin;
+  const link = account ? `${origin}/u/${encodeURIComponent(account.nickname)}` : `${origin}/profile`;
 
   const copy = useCallback(async () => {
     try {
@@ -3326,7 +3327,9 @@ function ShareDialog() {
       )}
 
       <Note>
-        Профиль живёт в этом браузере, поэтому по ссылке его увидите только вы на этом устройстве.
+        {account
+          ? "Ссылка открывает публичный профиль на AniGalaxy. Что на нём видно, зависит от настроек приватности."
+          : "Войдите в аккаунт — тогда появится публичная ссылка на ваш профиль."}
       </Note>
     </DialogShell>
   );
@@ -3444,12 +3447,12 @@ function PreviewDialog() {
         Предметы открыты: {ctx.purchased.length} куплено за AC.{" "}
         {/* Быстрый просмотр остаётся здесь, а отдельная страница нужна для
             длинного содержимого: в диалоге страница обрезана по высоте. */}
-        <a
+        <Link
           href="/u/me"
           className="font-bold text-accent-2 underline underline-offset-2 hover:text-white"
         >
           Открыть гостевую страницу целиком
-        </a>
+        </Link>
       </Note>
     </DialogShell>
   );

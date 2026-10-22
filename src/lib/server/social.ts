@@ -174,6 +174,59 @@ export function listFriends(db: Database, userId: number): FriendView[] {
   });
 }
 
+/* ----------------------- Подписки на чужом профиле ---------------------- */
+
+export type Relation = "self" | "none" | "outgoing" | "incoming" | "friends";
+
+export interface ProfileSocial {
+  userId: number;
+  nickname: string;
+  /** Как зритель связан с игроком; null — зритель не вошёл */
+  relation: Relation | null;
+  followers: { nickname: string; since: number }[];
+  following: { nickname: string; since: number }[];
+  friends: { nickname: string; since: number }[];
+}
+
+/**
+ * Социальный срез игрока для страницы `/u/<ник>`: подписчики — кто отправил
+ * ему заявку, подписки — кому отправил он, друзья — принятые заявки.
+ */
+export function profileSocial(db: Database, viewerId: number | null, nickname: string): ProfileSocial | null {
+  const target = db.prepare("SELECT id, nickname FROM users WHERE nickname = ?").get(nickname.trim());
+  if (!target) return null;
+  const id = num(target.id);
+  const rows = db
+    .prepare(
+      `SELECT f.user_id AS a, f.friend_id AS b, f.status AS status, f.created_at AS at,
+              ua.nickname AS na, ub.nickname AS nb
+       FROM friendships f JOIN users ua ON ua.id = f.user_id JOIN users ub ON ub.id = f.friend_id
+       WHERE f.user_id = ? OR f.friend_id = ? ORDER BY f.created_at DESC LIMIT 400`,
+    )
+    .all(id, id);
+  const out: ProfileSocial = {
+    userId: id,
+    nickname: str(target.nickname),
+    relation: viewerId === null ? null : viewerId === id ? "self" : "none",
+    followers: [],
+    following: [],
+    friends: [],
+  };
+  for (const row of rows) {
+    const mine = num(row.a) === id;
+    const other = mine ? { id: num(row.b), nick: str(row.nb) } : { id: num(row.a), nick: str(row.na) };
+    const entry = { nickname: other.nick, since: num(row.at) };
+    const accepted = str(row.status) === "accepted";
+    if (accepted) out.friends.push(entry);
+    else if (mine) out.following.push(entry);
+    else out.followers.push(entry);
+    if (viewerId !== null && viewerId !== id && other.id === viewerId) {
+      out.relation = accepted ? "friends" : mine ? "incoming" : "outgoing";
+    }
+  }
+  return out;
+}
+
 /* ------------------------------- Оценки -------------------------------- */
 
 export function setRating(db: Database, userId: number, titleId: string, score: number, now = Date.now()): SocialResult<{ avg: number; votes: number }> {

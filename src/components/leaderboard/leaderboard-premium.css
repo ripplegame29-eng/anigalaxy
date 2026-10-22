@@ -269,6 +269,6 @@
 /* Ник ведёт в профиль игрока; ссылка растянута на всю карточку */
 .lb2-link { color: inherit; text-decoration: none; }
 .lb2-link::after { content: ""; position: absolute; inset: 0; z-index: 1; border-radius: inherit; }
-.lb2-pod:hover .lb2-link, .lb2-card:hover .lb2-link { text-decoration: underline; text-underline-offset: 3px; }
+.lb2-pod:hover .lb2-link, .lb2-card:hover .lb2-link { text-shadow: 0 0 14px rgba(var(--c), 0.65); }
 .lb2-link:focus-visible { outline: none; }
 .lb2-link:focus-visible::after { outline: 2px solid rgba(var(--c), 0.9); outline-offset: 2px; }

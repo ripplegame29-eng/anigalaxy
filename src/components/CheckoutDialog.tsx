@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import Image from "next/image";
 import { closeCheckout, getCheckoutState, getServerCheckoutState, subscribeCheckout } from "@/lib/checkout";
 import { useModalBehaviour } from "@/lib/use-local-storage";
@@ -112,6 +113,15 @@ export function CheckoutDialog() {
     el.style.setProperty("--my", `${((e.clientY - r.top) / r.height) * 100}%`);
   };
 
+  // Модальный <dialog> делает всё вне себя неактивным, поэтому окно оплаты,
+  // открытое из него (подарок Premium), живёт внутри этого диалога — иначе
+  // оно оказалось бы под ним и не принимало бы клики.
+  const host = useMemo(() => {
+    if (!state.open || typeof document === "undefined") return null;
+    return document.querySelector<HTMLElement>("dialog:modal");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [serial, state.open]);
+
   if (!state.open || !order) return null;
   const coinInfo = COINS.find((c) => c.id === coin) ?? COINS[0];
   const starsPrice = Math.ceil(order.price / 1.8);
@@ -123,7 +133,7 @@ export function CheckoutDialog() {
     { id: "stars", name: "Stars", hint: "Telegram", icon: I.star, off: tg ? undefined : "Привяжи Telegram" },
   ];
 
-  return (
+  const node = (
     <div className="ck" role="presentation" onMouseDown={(e) => e.target === e.currentTarget && step !== "process" && close()}>
       <div className={`ck-panel ck-${step}`} data-m={method} role="dialog" aria-modal="true" aria-label="Оплата" tabIndex={-1} ref={panelRef}>
         <button type="button" className="ck-x" aria-label="Закрыть" onClick={close} disabled={step === "process"}>{I.x}</button>
@@ -280,4 +290,5 @@ export function CheckoutDialog() {
       </div>
     </div>
   );
+  return host ? createPortal(node, host) : node;
 }

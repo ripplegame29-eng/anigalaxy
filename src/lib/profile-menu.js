@@ -140,7 +140,7 @@
       q('name').textContent = prof.name || '';
       q('email').textContent = prof.email || '';
       q('premium').hidden = !prof.premium;
-      q('lvtile').textContent = prof.level != null ? prof.level : '';
+      if (!o.customLevelTile) q('lvtile').textContent = prof.level != null ? prof.level : '';
       q('lvline').textContent = 'Уровень ' + (prof.level != null ? prof.level : '—') + (prof.xp != null ? ' · ' + fmt(prof.xp) + ' XP' : '');
       q('era').textContent = prof.era ? 'Эра: ' + prof.era : '';
       q('remain').textContent = prof.xpToNext != null ? 'ещё ' + fmt(prof.xpToNext) + ' XP' : '';

@@ -16,6 +16,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { createRoot, type Root } from "react-dom/client";
+import { LevelBadge } from "./levels/LevelBadge";
 import "../app/profile-menu.css";
 // Сайд-эффект: IIFE внутри файла вешает ProfileMenu на window
 import "../lib/profile-menu";
@@ -71,6 +73,8 @@ interface ProfileMenuApi {
     onLogout: () => void;
     onEffectChange: () => void;
     note: string;
+    /** Плашку уровня в меню рисует React (LevelBadge), скрипт её не трогает */
+    customLevelTile?: boolean;
     items: ProfileMenuItem[];
     /** Ежедневный вход: цикл наград и действия (lib/daily-login) */
     daily?: { view: () => unknown; streak: number };
@@ -158,7 +162,8 @@ export function ProfileMenu({ onAfterSelect }: { onAfterSelect?: () => void }) {
     // так эффект зависит только от факта аккаунта и не пересоздаёт меню
     menuRef.current = PM.init({
       trigger,
-      note: "Аккаунт хранится в этом браузере: сервера у проекта нет.",
+      note: "Аккаунт и прогресс сохраняются на сервере AniGalaxy.",
+      customLevelTile: true,
       // Ежедневный вход: окно рисует React-компонент, меню только состояние
       daily: { view: dailyView, streak: profile.streak },
       onDaily: () => setDailyOpen(true),
@@ -211,6 +216,26 @@ export function ProfileMenu({ onAfterSelect }: { onAfterSelect?: () => void }) {
     // только сам факт аккаунта
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [account]);
+
+  // Плашка уровня в меню — тот же LevelBadge, что в рейтинге и на странице уровней
+  const badgeRoot = useRef<Root | null>(null);
+  useEffect(() => {
+    if (!account) return;
+    const tile = document.querySelector<HTMLElement>('[data-pm="lvtile"]');
+    if (!tile) return;
+    tile.classList.add("pm-lt-badge");
+    tile.textContent = "";
+    badgeRoot.current = createRoot(tile);
+    return () => {
+      const root = badgeRoot.current;
+      badgeRoot.current = null;
+      // размонтирование откладываем: React не любит снимать корень посреди рендера
+      window.setTimeout(() => root?.unmount(), 0);
+    };
+  }, [account]);
+  useEffect(() => {
+    badgeRoot.current?.render(<LevelBadge level={info.level} size={58} state="current" rich={false} minor />);
+  }, [info.level, account]);
 
   if (!account) {
     return (

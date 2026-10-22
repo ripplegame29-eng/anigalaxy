@@ -17,7 +17,7 @@ function buildCsp(httpsOnly: boolean): string {
   "img-src 'self' data: blob: https:",
   "media-src 'self' blob: https:",
   "connect-src 'self' blob: https:",
-  "frame-src https:",
+  "frame-src 'self' https:",
   "worker-src 'self' blob:",
   "object-src 'none'",
   "base-uri 'self'",

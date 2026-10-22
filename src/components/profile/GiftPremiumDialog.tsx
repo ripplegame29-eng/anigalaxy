@@ -162,17 +162,19 @@ const INITIAL: State = {
 /* --------------------------------- Компонент ------------------------------ */
 
 export interface GiftPremiumDialogProps {
+  /** Ник игрока, которому дарим (профиль игрока): поле закреплено за ним */
+  recipient?: string;
   className?: string;
   label: React.ReactNode;
 }
 
-export function GiftPremiumDialog({ className, label }: GiftPremiumDialogProps) {
+export function GiftPremiumDialog({ className, label, recipient }: GiftPremiumDialogProps) {
   const dlgRef = useRef<HTMLDialogElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
   const rafRef = useRef<number | null>(null);
   const shownRef = useRef<number | null>(null);
 
-  const [S, setS] = useState<State>(INITIAL);
+  const [S, setS] = useState<State>(recipient ? { ...INITIAL, to: recipient } : INITIAL);
   const [tot, setTot] = useState<number | null>(null);
   const [fin, setFin] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -289,8 +291,10 @@ export function GiftPremiumDialog({ className, label }: GiftPremiumDialogProps) 
 
   /* Получатель */
   const q = S.to.trim().toLowerCase();
-  const hit = FR.some((x) => x[0].toLowerCase() === q);
-  const rsText = hit
+  const hit = Boolean(recipient) || FR.some((x) => x[0].toLowerCase() === q);
+  const rsText = recipient
+    ? `Получатель — ${recipient} · в демо подарок не отправляется`
+    : hit
     ? "Профиль найден · в демо подарок не отправляется"
     : q.length < 3
       ? "Введи минимум 3 символа"
@@ -405,11 +409,12 @@ export function GiftPremiumDialog({ className, label }: GiftPremiumDialogProps) 
                       value={S.to}
                       autoComplete="off"
                       aria-label="Получатель"
+                      readOnly={Boolean(recipient)}
                       onChange={(e) => set({ to: e.target.value })}
                     />
                   </div>
                   <div className="gd-frs">
-                    {FR.map(([name, color]) => (
+                    {(recipient ? [] : FR).map(([name, color]) => (
                       <button
                         key={name}
                         type="button"
