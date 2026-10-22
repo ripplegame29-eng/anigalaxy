@@ -1269,7 +1269,7 @@ export function AltPlayer({
 
       {/* ---------------- Верхняя плашка: название по центру ------------ */}
       {showTopBar && (
-        <div className="pointer-events-none absolute inset-x-0 top-0 z-20 bg-gradient-to-b from-black/75 via-black/35 to-transparent px-4 pb-12 pt-4 text-center">
+        <div className="pointer-events-none absolute inset-x-0 top-0 z-20 bg-gradient-to-b from-black/75 via-black/35 to-transparent px-4 pb-12 pt-[max(1rem,env(safe-area-inset-top))] text-center">
           {isFs && (
             <button type="button" aria-label="Выйти из полноэкранного режима" onClick={toggleFullscreen} className="pointer-events-auto absolute left-4 top-4 grid h-10 w-10 place-items-center rounded-full text-white/90 transition hover:bg-white/12 hover:text-white">
               <Icon d={PATHS.close} className="h-6 w-6" />

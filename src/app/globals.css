@@ -795,6 +795,17 @@ html.ag-fs-lock,
 html.ag-fs-lock body {
   overflow: hidden !important;
 }
+/* Пока плеер раскрыт на весь экран, плашки сайта (меню, чат, кланы, шапка) прячутся:
+   на телефоне они иначе лежат поверх кнопок плеера */
+html.ag-fs-lock .mnv-bar,
+html.ag-fs-lock .mnv-sheet,
+html.ag-fs-lock header.hd,
+html.ag-fs-lock [aria-label^="Открыть общий чат"],
+html.ag-fs-lock [aria-label="Общий чат"],
+html.ag-fs-lock [aria-label^="Кланы"] {
+  display: none !important;
+}
+html.ag-fs-lock .ag-pseudo-fs { padding-bottom: env(safe-area-inset-bottom); }
 
 /* ═══ Мобильная доводка ═══ */
 html.ag-chat-open{overflow:hidden}
