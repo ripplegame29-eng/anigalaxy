@@ -50,13 +50,13 @@ export function LegalDoc({ title, lead, sections }: { title: string; lead: strin
   );
 }
 
-/** Куда писать: Telegram и, если указана, почта */
+/** Куда писать: служба поддержки в Telegram и, если указана, почта */
 export function Contacts() {
   return (
     <p>
-      Telegram:{" "}
+      Служба поддержки в Telegram:{" "}
       <a className="text-accent hover:underline" href={LEGAL.telegram} target="_blank" rel="noopener noreferrer">
-        {LEGAL.telegram.replace("https://", "")}
+        @{LEGAL.telegramHandle}
       </a>
       {LEGAL.email ? (
         <>
@@ -66,7 +66,7 @@ export function Contacts() {
           </a>
         </>
       ) : null}
-      .
+      . Отвечаем в течение {LEGAL.replyDays} дней.
     </p>
   );
 }
