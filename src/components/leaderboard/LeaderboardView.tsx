@@ -26,12 +26,26 @@ import { useAccount } from "@/lib/use-account";
 import { useProfile } from "@/lib/profile";
 import { watchStats, watchStore } from "@/lib/history";
 import { PRIZES } from "@/lib/leaderboard-prizes";
-import { useLeaderboardBoard, type BoardRow } from "@/lib/leaderboard-cloud";
+import { useLeaderboardBoard, type BoardMetric, type BoardRow } from "@/lib/leaderboard-cloud";
+import { AvatarFrame } from "@/components/profile/AvatarFrame";
 import "./leaderboard.css";
 import "./leaderboard-premium.css";
 import { PremiumChip } from "@/components/profile/PremiumChip";
 
 type Period = "week" | "all";
+
+const METRICS: { id: BoardMetric; label: string }[] = [
+  { id: "xp", label: "Опыт" },
+  { id: "hours", label: "Часы просмотра" },
+  { id: "series", label: "Серии" },
+];
+
+/** Число и подпись под ним для выбранной метрики (часы приходят минутами) */
+function metricValue(metric: BoardMetric, points: number): { value: number; unit: string } {
+  if (metric === "hours") return { value: Math.floor(points / 60), unit: "часов" };
+  if (metric === "series") return { value: points, unit: "серий" };
+  return { value: points, unit: "опыта" };
+}
 
 const REAL_TAGS = PROGRESSION_CONFIG.tags as TagDef[];
 
@@ -64,17 +78,10 @@ function spotlight(event: React.PointerEvent<HTMLElement>) {
   el.style.setProperty("--my", `${event.clientY - rect.top}px`);
 }
 
-/** Буквенный аватар для чужой строки — мы не знаем ни рамки, ни аватара других игроков */
-function InitialAvatar({ nickname, size }: { nickname: string; size: "md" | "xs" }) {
-  const cls = size === "md" ? "h-16 w-16 text-xl" : "h-9 w-9 text-xs";
-  return (
-    <span
-      className={`grid shrink-0 place-items-center rounded-full bg-gradient-to-br from-accent to-accent-2 font-black text-white ${cls}`}
-      aria-hidden
-    >
-      {nickname.slice(0, 2).toUpperCase()}
-    </span>
-  );
+/** Аватар и рамка игрока из его профиля; без них — буквы ника */
+function PlayerAvatar({ row, size }: { row: BoardRow; size: "md" | "xs" }) {
+  const frame = row.frameId ? FRAMES.find((item) => item.id === row.frameId) : undefined;
+  return <AvatarFrame nickname={row.nickname} avatar={row.avatar || undefined} frame={frame} size={size} />;
 }
 
 const CROWN = (
@@ -83,15 +90,16 @@ const CROWN = (
   </svg>
 );
 
-function PodiumCard({ row, place }: { row: BoardRow; place: 1 | 2 | 3 }) {
-  const points = useCountUp(row.points);
+function PodiumCard({ row, place, metric }: { row: BoardRow; place: 1 | 2 | 3; metric: BoardMetric }) {
+  const shown = metricValue(metric, row.points);
+  const points = useCountUp(shown.value);
   return (
     <article className={`lb2-pod p${place}`} onPointerMove={spotlight}>
       <span className="lb2-aura" aria-hidden />
       {place === 1 && CROWN}
       <span className="lb2-medal" aria-hidden>{place}</span>
       <div className="lb2-av">
-        <InitialAvatar nickname={row.nickname} size="md" />
+        <PlayerAvatar row={row} size="md" />
       </div>
       <h3 className="lb2-name">
         <Link href={`/u/${encodeURIComponent(row.nickname)}`} className="lb2-link">
@@ -104,13 +112,13 @@ function PodiumCard({ row, place }: { row: BoardRow; place: 1 | 2 | 3 }) {
       </div>
       <div className="lb2-big">
         <b>{fmt(points)}</b>
-        <small>опыта</small>
+        <small>{shown.unit}</small>
       </div>
     </article>
   );
 }
 
-function Podium({ rows }: { rows: BoardRow[] }) {
+function Podium({ rows, metric }: { rows: BoardRow[]; metric: BoardMetric }) {
   // Порядок отрисовки: 2, 1, 3 — иначе первое место окажется не по центру
   const order = [1, 0, 2] as const;
   return (
@@ -118,13 +126,14 @@ function Podium({ rows }: { rows: BoardRow[] }) {
       {order.map((i) => {
         const row = rows[i];
         if (!row) return null;
-        return <PodiumCard key={row.nickname} row={row} place={(i + 1) as 1 | 2 | 3} />;
+        return <PodiumCard key={row.nickname} row={row} place={(i + 1) as 1 | 2 | 3} metric={metric} />;
       })}
     </section>
   );
 }
 
-function RankRow({ row, max, index }: { row: BoardRow; max: number; index: number }) {
+function RankRow({ row, max, index, metric }: { row: BoardRow; max: number; index: number; metric: BoardMetric }) {
+  const shownValue = metricValue(metric, row.points);
   const top = row.rank <= 10;
   return (
     <li
@@ -134,7 +143,7 @@ function RankRow({ row, max, index }: { row: BoardRow; max: number; index: numbe
     >
       <span className="lb2-rank">{`#${row.rank}`}</span>
       <div className="lb2-av lb2-s">
-        <InitialAvatar nickname={row.nickname} size="xs" />
+        <PlayerAvatar row={row} size="xs" />
       </div>
       <h4 className="lb2-name lb2-s">
         <Link href={`/u/${encodeURIComponent(row.nickname)}`} className="lb2-link">
@@ -146,8 +155,8 @@ function RankRow({ row, max, index }: { row: BoardRow; max: number; index: numbe
         {row.premium && <PremiumChip />}
       </div>
       <div className="lb2-big lb2-s">
-        <b>{fmt(row.points)}</b>
-        <small>опыта</small>
+        <b>{fmt(shownValue.value)}</b>
+        <small>{shownValue.unit}</small>
       </div>
       <div className="lb2-meter"><i /></div>
     </li>
@@ -156,14 +165,17 @@ function RankRow({ row, max, index }: { row: BoardRow; max: number; index: numbe
 
 function Zone({ kind }: { kind: 2 | 3 }) {
   const cls = kind === 2 ? "z2" : "z3";
-  const text = kind === 2 ? "Места 11–25 · опыт и AC" : "Места 26–100 · опыт и AC";
+  const text = kind === 2 ? "Места 11–25" : "Места 26–100";
   return <li className={`lb-zone ${cls}`}>{text}</li>;
 }
 
 /* ------------------------------- Страница ------------------------------ */
 
 export function LeaderboardView() {
-  const [period, setPeriod] = useState<Period>("week");
+  const [periodPick, setPeriod] = useState<Period>("week");
+  const [metric, setMetric] = useState<BoardMetric>("xp");
+  // Часы и серии копятся за всё время, недельной таблицы у них нет
+  const period: Period = metric === "xp" ? periodPick : "all";
   const [expanded, setExpanded] = useState(false);
   const [filter, setFilter] = useState<0 | 1 | 2>(0);
 
@@ -176,7 +188,7 @@ export function LeaderboardView() {
   const watch = watchStore.useStore();
   const stats = watchStats(watch);
 
-  const board = useLeaderboardBoard(period);
+  const board = useLeaderboardBoard(period, metric);
 
   const filteredRows = useMemo(
     () =>
@@ -196,7 +208,14 @@ export function LeaderboardView() {
    * серии); очки и место за неделю приходят с сервера, если есть аккаунт. */
   const me = useMemo(
     () => ({
-      points: period === "week" ? (board.me?.points ?? 0) : progress.progress.xpTotal,
+      points:
+        metric === "hours"
+          ? stats.minutes
+          : metric === "series"
+            ? stats.episodes
+            : period === "week"
+              ? (board.me?.points ?? 0)
+              : progress.progress.xpTotal,
       level: levelInfo.level,
       premium: isPremiumActive(account),
       series: stats.episodes,
@@ -212,11 +231,11 @@ export function LeaderboardView() {
         ...titleSel.extras.map((id) => TITLES.find((t) => t.id === id)).filter((t): t is TitleItem => Boolean(t)),
       ].slice(0, 1),
     }),
-    [account, profile, progress, levelInfo, stats, period, board.me, tagSel.primary, tagSel.extras, titleSel.primary, titleSel.extras],
+    [account, profile, progress, levelInfo, stats, period, metric, board.me, tagSel.primary, tagSel.extras, titleSel.primary, titleSel.extras],
   );
 
   const myName = account?.nickname ?? "Гость";
-  const myRank = period === "week" ? board.me?.rank ?? null : null;
+  const myRank = metric === "xp" && period === "week" ? board.me?.rank ?? null : null;
 
   /* ---------------------------- Обратный отсчёт -------------------------- */
   const [now, setNow] = useState(() => Date.now());
@@ -268,7 +287,25 @@ export function LeaderboardView() {
 
       {/* --------------------------- Фильтры ----------------------------- */}
       <div className="lb-bar">
-        <div className="lb-seg" role="tablist">
+        <div className="lb-seg" role="tablist" aria-label="Что считаем">
+          {METRICS.map((m) => (
+            <button
+              key={m.id}
+              type="button"
+              role="tab"
+              aria-selected={metric === m.id}
+              className={metric === m.id ? "on" : ""}
+              onClick={() => {
+                setMetric(m.id);
+                setExpanded(false);
+              }}
+            >
+              {m.label}
+            </button>
+          ))}
+        </div>
+        {metric === "xp" && (
+        <div className="lb-seg" role="tablist" aria-label="Период">
           {(["week", "all"] as const).map((p) => (
             <button
               key={p}
@@ -285,6 +322,7 @@ export function LeaderboardView() {
             </button>
           ))}
         </div>
+        )}
         <div className="lb-chips">
           {(["Все", "Premium", "Free"] as const).map((label, i) => (
             <button key={label} type="button" className={filter === i ? "on" : ""} onClick={() => setFilter(i as 0 | 1 | 2)}>
@@ -295,7 +333,7 @@ export function LeaderboardView() {
       </div>
 
       {/* ---------------------------- Подиум ------------------------------ */}
-      {podium.length > 0 && <Podium rows={podium} />}
+      {podium.length > 0 && <Podium rows={podium} metric={metric} />}
 
       {/* ---------------------------- Награды ----------------------------- */}
       {period === "week" && (
@@ -319,12 +357,12 @@ export function LeaderboardView() {
       {/* ----------------------------- Список ----------------------------- */}
       {board.ready && filteredRows.length === 0 ? (
         <p className="lb-empty">
-          Пока никто не набрал очков {period === "week" ? "за эту неделю" : "за всё время"} — будьте первым.
+          {metric === "xp" ? <>Пока никто не набрал очков {period === "week" ? "за эту неделю" : "за всё время"} — будьте первым.</> : "Пока никто не посмотрел ни одной серии с аккаунтом — будьте первым."}
         </p>
       ) : (
         <ol className="lb2-grid">
           {shown.map((row, i) => (
-            <Zone3Wrap key={`${row.nickname}-${row.rank}`} row={row} index={i} top={top} />
+            <Zone3Wrap key={`${row.nickname}-${row.rank}`} row={row} index={i} top={top} metric={metric} />
           ))}
         </ol>
       )}
@@ -338,7 +376,7 @@ export function LeaderboardView() {
       {/* -------------------------- Твоё место --------------------------- */}
       {account && (
         <div className="lb-dock">
-          <div className="lb-dk">{fmt(me.points)}</div>
+          <div className="lb-dk">{fmt(metricValue(metric, me.points).value)}</div>
           <div className="lb-dx">
             <small>Твоё место{myRank ? ` · #${myRank}` : ""}</small>
             <b>{myName}</b>
@@ -347,7 +385,7 @@ export function LeaderboardView() {
             </div>
             <em>
               {!inTop && gapTo100 > 0 ? (
-                <>До топа ещё <strong>{fmt(gapTo100)}</strong> очков</>
+                <>До топа ещё <strong>{fmt(metricValue(metric, gapTo100).value)}</strong> {metricValue(metric, gapTo100).unit === "опыта" ? "очков" : metricValue(metric, gapTo100).unit}</>
               ) : (
                 <>Уровень {me.level}, {me.series} серий</>
               )}
@@ -366,12 +404,12 @@ export function LeaderboardView() {
 }
 
 /** Зона-разделитель перед строкой + сама строка (вставляется в <ol>) */
-function Zone3Wrap({ row, index, top }: { row: BoardRow; index: number; top: number }) {
+function Zone3Wrap({ row, index, top, metric }: { row: BoardRow; index: number; top: number; metric: BoardMetric }) {
   return (
     <>
       {row.rank === 11 && <Zone kind={2} />}
       {row.rank === 26 && <Zone kind={3} />}
-      <RankRow row={row} max={top} index={index} />
+      <RankRow row={row} max={top} index={index} metric={metric} />
     </>
   );
 }

@@ -32,7 +32,11 @@ export interface BoardRow {
   level: number;
   points: number;
   premium: boolean;
+  avatar?: string;
+  frameId?: string;
 }
+
+export type BoardMetric = "xp" | "hours" | "series";
 
 export interface BoardReply {
   period: "week" | "all";
@@ -58,47 +62,54 @@ async function call<T>(path: string, body?: unknown): Promise<T | null> {
 /* ------------------------------ Таблица лидеров -------------------------- */
 
 const EMPTY: BoardReply = { period: "week", rows: [], me: null, ready: false };
-/** Стабильные заглушки на каждый период — важно отдавать один и тот же
+/** Стабильные заглушки на каждый ключ — важно отдавать один и тот же
     объект, пока не пришёл ответ, иначе useSyncExternalStore решит, что
     снапшот меняется на каждом рендере, и уйдёт в бесконечный цикл
     (Maximum update depth exceeded). */
-const FALLBACK: Record<"week" | "all", BoardReply> = {
-  week: { ...EMPTY, period: "week" },
-  all: { ...EMPTY, period: "all" },
-};
+const fallbacks = new Map<string, BoardReply>();
+function fallbackFor(key: string, period: "week" | "all"): BoardReply {
+  let value = fallbacks.get(key);
+  if (!value) {
+    value = { ...EMPTY, period };
+    fallbacks.set(key, value);
+  }
+  return value;
+}
 const cache = new Map<string, BoardReply>();
 const listeners = new Map<string, Set<() => void>>();
 const requested = new Set<string>();
 
-function notify(period: string): void {
-  listeners.get(period)?.forEach((fn) => fn());
+function notify(key: string): void {
+  listeners.get(key)?.forEach((fn) => fn());
 }
 
-async function fetchBoard(period: "week" | "all"): Promise<void> {
-  const reply = await call<Omit<BoardReply, "ready">>(`/api/leaderboard?period=${period}`);
+async function fetchBoard(period: "week" | "all", metric: BoardMetric): Promise<void> {
+  const key = `${period}:${metric}`;
+  const reply = await call<Omit<BoardReply, "ready">>(`/api/leaderboard?period=${period}&metric=${metric}`);
   if (reply) {
-    cache.set(period, { ...reply, ready: true });
-    notify(period);
+    cache.set(key, { ...reply, ready: true });
+    notify(key);
   }
 }
 
-/** Таблица реальных игроков за неделю или за всё время */
-export function useLeaderboardBoard(period: "week" | "all"): BoardReply {
+/** Таблица реальных игроков: опыт за неделю/всё время, часы или серии */
+export function useLeaderboardBoard(period: "week" | "all", metric: BoardMetric = "xp"): BoardReply {
+  const key = `${period}:${metric}`;
   const subscribe = useCallback(
     (onChange: () => void) => {
-      if (!listeners.has(period)) listeners.set(period, new Set());
-      const set = listeners.get(period)!;
+      if (!listeners.has(key)) listeners.set(key, new Set());
+      const set = listeners.get(key)!;
       set.add(onChange);
-      if (!requested.has(period)) {
-        requested.add(period);
-        void fetchBoard(period).finally(() => requested.delete(period));
+      if (!requested.has(key)) {
+        requested.add(key);
+        void fetchBoard(period, metric).finally(() => requested.delete(key));
       }
       return () => set.delete(onChange);
     },
-    [period],
+    [key, period, metric],
   );
-  const getSnapshot = useCallback(() => cache.get(period) ?? FALLBACK[period], [period]);
-  const getServerSnapshot = useCallback(() => FALLBACK[period], [period]);
+  const getSnapshot = useCallback(() => cache.get(key) ?? fallbackFor(key, period), [key, period]);
+  const getServerSnapshot = useCallback(() => fallbackFor(key, period), [key, period]);
   return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 }
 

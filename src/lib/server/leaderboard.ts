@@ -59,6 +59,48 @@ export function allTimeBoard(db: Database, limit = 100, now = Date.now()): Board
   }));
 }
 
+export type Metric = "xp" | "hours" | "series";
+
+/**
+ * Рейтинг по просмотру: «часы» (очки — минуты) и «серии» (число открытых
+ * серий). Считается по документу истории игрока, который он синхронизирует.
+ */
+export function historyBoard(db: Database, metric: "hours" | "series", limit = 100, now = Date.now()): BoardRow[] {
+  const rows = db
+    .prepare(
+      `SELECT d.user_id AS user_id, d.value AS value, u.nickname AS nickname, u.premium_until AS premium_until,
+              COALESCE(ps.level, 1) AS level
+       FROM user_docs d JOIN users u ON u.id = d.user_id LEFT JOIN player_stats ps ON ps.user_id = d.user_id
+       WHERE d.doc_key = 'animehub:history:v1'`,
+    )
+    .all();
+  const scored: Omit<BoardRow, "rank">[] = [];
+  for (const row of rows) {
+    let points = 0;
+    try {
+      const history = JSON.parse(str(row.value)) as { seconds?: unknown; records?: unknown };
+      points =
+        metric === "hours"
+          ? Math.floor((typeof history.seconds === "number" ? history.seconds : 0) / 60)
+          : Array.isArray(history.records)
+            ? history.records.length
+            : 0;
+    } catch {
+      points = 0;
+    }
+    if (points <= 0) continue;
+    scored.push({
+      userId: num(row.user_id),
+      nickname: str(row.nickname),
+      level: num(row.level, 1),
+      points,
+      premium: num(row.premium_until) > now,
+    });
+  }
+  scored.sort((a, b) => b.points - a.points || a.userId - b.userId);
+  return scored.slice(0, Math.min(Math.max(limit, 1), 200)).map((row, i) => ({ rank: i + 1, ...row }));
+}
+
 /** Очки и место игрока на текущей неделе (место null, если очков нет) */
 export function myWeekly(db: Database, userId: number, now = Date.now()): { points: number; rank: number | null } {
   const row = db
