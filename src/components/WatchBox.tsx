@@ -21,6 +21,15 @@ import { AltPlayer } from "./AltPlayer";
 type PlayerSource = "kodik" | "anigalaxy" | "anilibria";
 
 /**
+ * Псевдо-id озвучки AniLiberty в списке студий.
+ *
+ * Отдельной кнопки источника у AniLiberty больше нет: их дорожка — это
+ * ещё одна озвучка рядом с кодиковскими, и выбирается она там же. Id
+ * отрицательный, чтобы никогда не столкнуться с настоящими id Kodik.
+ */
+const ANILIBERTY_TR = -1;
+
+/**
  * Блок просмотра: плеер Kodik + боковая панель со студиями озвучки
  * и выбором серий (как на высокобюджетных стримингах).
  *
@@ -54,6 +63,13 @@ export function WatchBox({
   const [menuOpen, setMenuOpen] = useState(false);
   // Источник видео: Kodik (по умолчанию), AniGalaxy (HLS Kodik) или AniLiberty
   const [source, setSource] = useState<PlayerSource>("kodik");
+  /**
+   * Релиз AniLiberty, подтверждённый по id Shikimori. Помечен id тайтла:
+   * при смене озвучки материал меняется, и старый релиз не подставится.
+   */
+  const [aniMatch, setAniMatch] = useState<{ titleId: string; alias: string; episodesTotal: number | null } | null>(null);
+  /** Куда вернуться, когда зритель уйдёт с озвучки AniLiberty */
+  const sourceBeforeAni = useRef<PlayerSource>("kodik");
 
   // Кадр Kodik показывается как отдаёт источник: кнопки «Апскейл» под
   // плеером больше нет, а вместе с ней и конвейера захвата вкладки
@@ -112,6 +128,36 @@ export function WatchBox({
       if (timer) window.clearTimeout(timer);
     };
   }, [initialDetail.card.id, translations.length]);
+
+  /* ------------------- Озвучка AniLiberty: подбор --------------------- */
+  /**
+   * Раньше AniLiberty был отдельной кнопкой источника и искал тайтл по
+   * названию — на «Чёрный клевер» открывалось чужое аниме. Теперь релиз
+   * подтверждается по id Shikimori, и озвучка появляется в списке
+   * студий только тогда, когда это точно тот же тайтл.
+   */
+  useEffect(() => {
+    const anime = detail.card;
+    const id = anime.shikimoriId;
+    if (!id) return;
+    const names = [anime.title, anime.titleOrig, anime.otherTitles?.[0]]
+      .filter((name): name is string => Boolean(name));
+    if (!names.length) return;
+
+    let cancelled = false;
+    const params = new URLSearchParams({ id: String(id) });
+    names.slice(0, 3).forEach((name, i) => params.set(i === 0 ? "q" : `q${i + 1}`, name));
+    void fetch(`/api/anilibria/match?${params}`)
+      .then((res) => (res.ok ? (res.json() as Promise<{ match?: { alias: string; episodesTotal: number | null } | null }>) : null))
+      .then((data) => {
+        if (cancelled || !data?.match?.alias) return;
+        setAniMatch({ titleId: anime.id, alias: data.match.alias, episodesTotal: data.match.episodesTotal });
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [detail.card]);
 
   /* ------------------------- Глубокие ссылки ------------------------- */
   useEffect(() => {
@@ -272,6 +318,26 @@ export function WatchBox({
     return () => window.clearInterval(timer);
   }, []);
 
+  /** Подтверждённый релиз — только для тайтла, который открыт сейчас */
+  const ani = aniMatch && aniMatch.titleId === detail.card.id ? aniMatch : null;
+
+  /** Студии Kodik плюс дорожка AniLiberty, если релиз подтверждён */
+  const voiceList: TranslationOption[] = ani
+    ? [
+        ...studioList,
+        {
+          id: ANILIBERTY_TR,
+          title: "AniLiberty · FHD",
+          type: "voice",
+          mediaId: "",
+          episodeCount: ani.episodesTotal ?? undefined,
+        },
+      ]
+    : studioList;
+
+  /** Релиз ещё не подтверждён — играем из Kodik, а не ищем по названию */
+  const playSource: PlayerSource = source === "anilibria" && !ani ? "kodik" : source;
+
   /* --------------------------- Смена озвучки -------------------------- */
   async function switchTranslation(
     option: TranslationOption,
@@ -279,6 +345,19 @@ export function WatchBox({
   ) {
     setMenuOpen(false);
     if (option.id === transId && !opts.silent) return;
+
+    // Дорожка AniLiberty: материал Kodik не меняем, только переключаем плеер
+    if (option.id === ANILIBERTY_TR) {
+      if (source !== "anilibria") sourceBeforeAni.current = source;
+      setTransId(ANILIBERTY_TR);
+      setSource("anilibria");
+      return;
+    }
+    if (source === "anilibria") {
+      const back = sourceBeforeAni.current === "anilibria" ? "kodik" : sourceBeforeAni.current;
+      if (back === "kodik") setPlayerLoading(true);
+      setSource(back);
+    }
 
     setTransId(option.id);
 
@@ -322,7 +401,7 @@ export function WatchBox({
   }
 
   /* ----------------------------- Визуал ------------------------------- */
-  const activeOption = studioList.find((t) => t.id === transId);
+  const activeOption = voiceList.find((t) => t.id === transId);
   const activeSeason = detail.seasons.find((s) => s.number === season) ?? detail.seasons[0];
   const episodeCount = activeSeason?.episodes.length ?? 0;
 
@@ -402,26 +481,10 @@ export function WatchBox({
                 >
                   AniGalaxy
                 </button>
-                <button
-                  type="button"
-                  onClick={() => switchSource("anilibria")}
-                  aria-pressed={source === "anilibria"}
-                  className={`rounded-lg px-3 py-1.5 text-xs font-bold transition-colors ${
-                    source === "anilibria"
-                      ? "bg-mint text-ink shadow-[0_8px_18px_-10px_rgba(61,220,151,.8)]"
-                      : "text-muted hover:text-white"
-                  }`}
-                >
-                  AniLiberty<span className="max-sm:hidden"> · 1080p</span>
-                </button>
               </div>
             </div>
             <span className="text-[11px] text-muted">
-              {source === "kodik"
-                ? "основной плеер"
-                : source === "anigalaxy"
-                  ? "прямые HLS-потоки"
-                  : "альтернатива · HLS до 1080p"}
+              {playSource === "anilibria" ? "озвучка AniLiberty · HLS" : playSource === "kodik" ? "основной плеер" : "прямые HLS-потоки"}
             </span>
           </div>
 
@@ -435,18 +498,19 @@ export function WatchBox({
               ambient ? "ag-ambient" : ""
             }`}
           >
-            {source !== "kodik" ? (
+            {playSource !== "kodik" ? (
               // Наш плеер: та же панель, качество, скорости и позиции.
               // AniGalaxy играет прямые HLS-манифесты Kodik (серия известна),
-              // AniLiberty — потоки найденного по названию тайтла.
+              // AniLiberty — потоки релиза, подтверждённого по id Shikimori.
               <AltPlayer
-                key={`${detail.card.id}:${source}`}
+                key={`${detail.card.id}:${playSource}`}
                 query={detail.card.title}
                 altQuery={detail.card.titleOrig ?? detail.card.otherTitles?.[0]}
                 year={detail.card.year}
                 episode={episode}
                 titleId={detail.card.id}
-                backend={source === "anigalaxy" ? "kodik" : "anilibria"}
+                backend={playSource === "anigalaxy" ? "kodik" : "anilibria"}
+                alias={playSource === "anilibria" ? ani?.alias : undefined}
                 kodikId={detail.card.id}
                 season={activeSeason?.number ?? season}
                 onBack={() => switchSource("kodik")}
@@ -454,10 +518,10 @@ export function WatchBox({
                 nav={isSerial ? {
                   seasons: detail.seasons,
                   season: activeSeason?.number ?? season,
-                  voices: studioList,
+                  voices: voiceList,
                   voiceId: transId,
                   onPickEpisode: (sn, ep) => { setSeason(sn); setEpisode(ep); },
-                  onPickVoice: (id) => { const o = studioList.find((x) => x.id === id); if (o) void switchTranslation(o, { keepEpisode: episode, season: activeSeason?.number }); },
+                  onPickVoice: (id) => { const o = voiceList.find((x) => x.id === id); if (o) void switchTranslation(o, { keepEpisode: episode, season: activeSeason?.number }); },
                 } : undefined}
                 hasNext={(activeSeason?.episodes.findIndex((e) => e.number === episode) ?? -1) + 1 > 0 && (activeSeason?.episodes.findIndex((e) => e.number === episode) ?? -1) + 1 < (activeSeason?.episodes.length ?? 0)}
                 onNextEpisode={() => {
@@ -489,14 +553,14 @@ export function WatchBox({
             )}
 
             {/* Оверлей загрузки (только iframe: у альтернативы свой скелет) */}
-            {playerLoading && source === "kodik" && (
+            {playerLoading && playSource === "kodik" && (
               <div className="pointer-events-none absolute inset-0 grid place-items-center bg-ink/70 backdrop-blur-sm animate-fade-in">
                 <span className="h-9 w-9 animate-spin-slow rounded-full border-[3px] border-white/20 border-t-accent" />
               </div>
             )}
 
             {/* Скелетон при смене озвучки */}
-            {switching && source === "kodik" && (
+            {switching && playSource === "kodik" && (
               <div className="absolute inset-0 grid place-items-center bg-ink/60 animate-fade-in">
                 <span className="text-xs font-semibold uppercase tracking-widest text-muted">
                   Меняем озвучку…
@@ -517,8 +581,8 @@ export function WatchBox({
                   ? `Сезон ${activeSeason?.number ?? 1} · Серия ${episode} из ${episodeCount}`
                   : "Полная версия"}
                 {activeOption && <> · {activeOption.title}</>}
-                {source === "anilibria" && <> · AniLiberty</>}
-                {source === "anigalaxy" && <> · AniGalaxy</>}
+                {playSource === "anilibria" && <> · AniLiberty</>}
+                {playSource === "anigalaxy" && <> · AniGalaxy</>}
               </p>
             </div>
 
@@ -544,7 +608,7 @@ export function WatchBox({
                 Студия озвучки
               </span>
               <span className="rounded-md bg-white/6 px-1.5 py-0.5 text-[10px] font-semibold text-muted ring-1 ring-white/10">
-                {studioList.length || 1}
+                {voiceList.length || 1}
               </span>
             </div>
 
@@ -576,7 +640,7 @@ export function WatchBox({
                   role="listbox"
                   className="absolute left-0 right-0 top-[calc(100%+6px)] z-30 max-h-64 overflow-y-auto rounded-xl border border-line bg-[#0d0d15]/98 p-1.5 shadow-[0_28px_60px_-24px_rgba(0,0,0,1)] backdrop-blur-xl animate-fade-in"
                 >
-                  {studioList.map((t) => (
+                  {voiceList.map((t) => (
                     <li key={t.id}>
                       <button
                         type="button"

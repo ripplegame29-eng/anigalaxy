@@ -34,7 +34,8 @@ interface RawRelease {
   year?: number | null;
   type?: { value?: string | null } | null;
   poster?: RawPoster | null;
-  shikimori?: { rating?: number | null } | null;
+  shikimori?: { id?: number | null; rating?: number | null } | null;
+  mal?: { id?: number | null } | null;
   rating?: { average?: number | null } | null;
   episodes_total?: number | null;
   description?: string | null;
@@ -127,6 +128,7 @@ export function toAniCard(raw: RawRelease): AniSearchCard {
     rating,
     ratingSource: raw.shikimori?.rating ? "shikimori" : undefined,
     kind: type ? (KIND_BY_TYPE[type] ?? type.toLowerCase()) : undefined,
+    shikimoriId: raw.shikimori?.id ?? raw.mal?.id ?? undefined,
     genres: [],
     episodesTotal: total,
     lastEpisode: total,
@@ -186,6 +188,32 @@ export async function getRelease(idOrAlias: string): Promise<AniTitleDetail | nu
       return null;
     }
     return buildDetail(raw);
+  });
+}
+
+/**
+ * Точное сопоставление нашего тайтла с релизом AniLiberty.
+ *
+ * По названию искать нельзя: на «Чёрный клевер» каталог отдаёт спэшл, а
+ * на многие тайтлы — просто соседний сериал с похожим словом в имени,
+ * и зритель попадал на чужое аниме. Имя тут нужно лишь чтобы сузить
+ * выдачу, а выбирает релиз совпадение id Shikimori/MAL. Не совпал ни
+ * один — значит, у AniLiberty этого тайтла нет, и озвучку не предлагаем.
+ */
+export async function matchRelease(animeId: number, names: string[]): Promise<AniSearchCard | null> {
+  if (!animeId) return null;
+  const queries = names
+    .map((name) => name.trim())
+    .filter((name) => name.length >= 2)
+    .slice(0, 3);
+  if (!queries.length) return null;
+  return withCache(`anilib:match:${animeId}`, 30 * 60_000, async () => {
+    for (const query of queries) {
+      const cards = await searchReleases(query, 15);
+      const hit = cards.find((card) => card.shikimoriId === animeId);
+      if (hit) return hit;
+    }
+    return null;
   });
 }
 
