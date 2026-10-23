@@ -72,9 +72,18 @@
   .agh .ib{width:40px;height:40px;border-radius:50%}
   .agh .me{height:40px;padding:0 4px;border-radius:50%}
   .agh .me .nm,.agh .me .ch{display:none}
-  /* уведомления не вылезают за экран: панель привязана к краям шапки */
+  /* Выпадающие окна шапки (уведомления, бонусы) на всю ширину экрана.
+     top задан в пикселях, а не в процентах: у position:fixed проценты
+     считаются от опорного блока, а им шапка становится только пока
+     Safari применяет к ней backdrop-filter. Без вебкитового префикса
+     (добавлен в header-tips.css) опорой оказывался экран, и окно
+     уезжало на 100vh вниз — кнопки уведомлений и бонусов выглядели
+     сломанными. Теперь отступ задан числом: даже если опорой окажется
+     экран, окно всё равно видно целиком. */
   .agh .rel{position:static}
-  .agh .dd.pn{position:fixed;left:10px;right:10px;top:calc(100% + 8px);width:auto;max-width:none;max-height:min(70dvh,560px);overflow-y:auto}
+  .agh .dd.pn{position:fixed;left:10px;right:10px;
+    top:64px;
+    width:auto;max-width:none;max-height:min(70dvh,560px);overflow-y:auto;z-index:95}
   /* контент не прячется под нижней панелью */
   body{padding-bottom:calc(92px + env(safe-area-inset-bottom))}
 }

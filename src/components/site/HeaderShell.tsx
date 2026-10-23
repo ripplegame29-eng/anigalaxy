@@ -5,6 +5,7 @@ import { CommandPalette } from "./CommandPalette";
 import { SiteHeader } from "./SiteHeader";
 import { MobileNav } from "./MobileNav";
 import { CheckoutDialog } from "@/components/CheckoutDialog";
+import "./header-tips.css";
 import "./mobile-nav.css";
 import { ProfileDialogHost } from "@/components/profile/ProfileDialogHostLazy";
 

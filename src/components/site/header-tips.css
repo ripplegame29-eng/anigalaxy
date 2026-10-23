@@ -1,0 +1,88 @@
+/* Подсказки и выпадающие панели шапки — доводка поверх header.css.
+ *
+ * header.css собирается генератором из макета (tools/build-header-css.mjs),
+ * руками его не правим: всё, что меняем сами, живёт здесь. Селектор .ib
+ * удвоен намеренно: у правил одинаковый вес, а порядок файлов в сборке
+ * не гарантирован, и без лишнего класса побеждал генератор.
+ */
+
+/* ------------------------------------------------------------------ *
+ * Подсказка под иконкой (data-tip)
+ *
+ * Было: прямоугольник с синей рамкой и тяжёлым жирным текстом — чужой
+ * элемент рядом со стеклянной шапкой. Стало: то же стекло, что у панелей,
+ * тонкий хвостик к иконке и спокойная типографика.
+ * ------------------------------------------------------------------ */
+.agh .cap .ib.ib[data-tip]::after {
+  top: calc(100% + 10px);
+  padding: 7px 12px;
+  border-radius: 12px;
+  font: 600 12px/1 var(--font-body);
+  letter-spacing: 0.01em;
+  color: #dbe4f7;
+  background: linear-gradient(180deg, rgba(20, 29, 54, 0.96), rgba(9, 13, 26, 0.97));
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(18px) saturate(1.4);
+  -webkit-backdrop-filter: blur(18px) saturate(1.4);
+  box-shadow:
+    0 14px 34px rgba(0, 0, 0, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.07);
+  transform: translate(-50%, -6px) scale(0.96);
+  transition: opacity 0.18s ease, transform 0.26s cubic-bezier(0.2, 0.9, 0.3, 1.1);
+}
+
+/* Хвостик: тот же стеклянный тон, повёрнут углом вверх */
+.agh .cap .ib[data-tip]::before {
+  content: "";
+  position: absolute;
+  top: calc(100% + 5px);
+  left: 50%;
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+  background: rgba(20, 29, 54, 0.96);
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  transform: translate(-50%, -4px) rotate(45deg);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.18s ease, transform 0.26s cubic-bezier(0.2, 0.9, 0.3, 1.1);
+  z-index: 6;
+}
+
+.agh .cap .ib.ib[data-tip]:hover::after {
+  transform: translate(-50%, 0) scale(1);
+}
+
+.agh .cap .ib[data-tip]:hover::before {
+  opacity: 1;
+  transform: translate(-50%, 0) rotate(45deg);
+  transition-delay: 0.25s;
+}
+
+/* На тачскрине подсказка после тапа зависала поверх интерфейса: показываем
+   её только там, где есть настоящее наведение курсором. */
+@media (hover: none) {
+  .agh .cap .ib[data-tip]::after,
+  .agh .cap .ib[data-tip]::before {
+    content: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .agh .cap .ib[data-tip]::after,
+  .agh .cap .ib[data-tip]::before {
+    transition-duration: 0.01ms;
+  }
+}
+
+/* ------------------------------------------------------------------ *
+ * iOS: шапке нужен вебкитовский префикс размытия.
+ *
+ * Без него Safari не применяет backdrop-filter к .hi, и панель шапки
+ * перестаёт быть опорой для position:fixed внутри — выпадающие окна
+ * уезжали на высоту экрана вниз (см. mobile-nav.css).
+ * ------------------------------------------------------------------ */
+.agh .hi {
+  -webkit-backdrop-filter: blur(22px) saturate(1.5);
+}
