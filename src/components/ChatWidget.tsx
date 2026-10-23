@@ -45,7 +45,7 @@ function ClanFab() {
       href="/clans"
       aria-label={clan ? `Кланы — ${clan.name}, уровень ${levelFromXp(clan.xp)}` : "Кланы"}
       title={clan ? `${clan.name} [${clan.tag}] · ур. ${levelFromXp(clan.xp)}` : "Кланы"}
-      className="group fixed bottom-4 max-[900px]:bottom-[calc(92px+env(safe-area-inset-bottom))] right-[72px] z-[94] grid h-12 w-12 place-items-center rounded-2xl border border-line bg-surface/90 text-2xl shadow-[0_18px_40px_-16px_rgba(0,0,0,0.9)] backdrop-blur transition hover:scale-105 hover:ring-2 hover:ring-accent/50"
+      className="ag-fab ag-fab--clan group fixed bottom-4 right-[72px] z-[94] grid h-12 w-12 place-items-center rounded-2xl border border-line bg-surface/90 text-2xl shadow-[0_18px_40px_-16px_rgba(0,0,0,0.9)] backdrop-blur transition hover:scale-105 hover:ring-2 hover:ring-accent/50"
       style={
         clan
           ? {
@@ -102,6 +102,35 @@ export function ChatWidget() {
     return () => root.classList.remove("ag-chat-open");
   }, [open]);
 
+  /**
+   * Кнопки чата и кланов уезжают вниз, пока страница листается вниз, и
+   * возвращаются при движении вверх. Иначе на телефоне они висят над
+   * контентом правого нижнего угла (оценка тайтла, сетка серий) и
+   * перехватывают нажатия.
+   */
+  useEffect(() => {
+    let last = window.scrollY;
+    let frame = 0;
+    const apply = () => {
+      frame = 0;
+      const y = Math.max(0, window.scrollY);
+      const d = y - last;
+      if (Math.abs(d) > 6) {
+        document.documentElement.classList.toggle("ag-fab-hide", d > 0 && y > 120);
+        last = y;
+      }
+    };
+    const onScroll = () => {
+      if (!frame) frame = requestAnimationFrame(apply);
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      if (frame) cancelAnimationFrame(frame);
+      document.documentElement.classList.remove("ag-fab-hide");
+    };
+  }, []);
+
   // Esc закрывает панель
   useEffect(() => {
     if (!open) return;
@@ -131,7 +160,7 @@ export function ChatWidget() {
           type="button"
           onClick={() => setOpen(true)}
           aria-label={`Открыть общий чат${unread > 0 ? `, непрочитанных: ${unread}` : ""}`}
-          className="fixed bottom-4 max-[900px]:bottom-[calc(92px+env(safe-area-inset-bottom))] right-4 z-[94] grid h-12 w-12 place-items-center rounded-2xl border border-line bg-surface/90 text-accent-2 shadow-[0_18px_40px_-16px_rgba(0,0,0,0.9)] backdrop-blur transition hover:scale-105 hover:ring-2 hover:ring-accent/50"
+          className="ag-fab ag-fab--chat fixed bottom-4 right-4 z-[94] grid h-12 w-12 place-items-center rounded-2xl border border-line bg-surface/90 text-accent-2 shadow-[0_18px_40px_-16px_rgba(0,0,0,0.9)] backdrop-blur transition hover:scale-105 hover:ring-2 hover:ring-accent/50"
         >
           <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
             <path

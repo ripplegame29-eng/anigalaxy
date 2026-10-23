@@ -14,3 +14,36 @@
   .wb-ep:hover{transform:none}
 }
 @media(prefers-reduced-motion:reduce){.wb-shell.wb-shell{animation:none}}
+
+/* ------------------------------------------------------------------ *
+ * Плеер на телефоне.
+ *
+ * Было: плеер жил в колонке с полями по 16 px, кадр занимал чуть больше
+ * половины экрана, а панель управления сжималась до нечитаемого.
+ * Стало: сцена выходит за поля страницы во всю ширину — кадр крупнее на
+ * пятую часть, и под панель управления появилось место.
+ * ------------------------------------------------------------------ */
+@media (max-width: 639px) {
+  .wb-stage { margin-inline: -1rem; }   /* поля .px-4 страницы тайтла */
+
+  /* Выбор источника: три чипа не влезали в строку, «AniLiberty · 1080p»
+     переносился на две строки и ломал высоту. Стало — ровный переключатель
+     во всю ширину, подпись-пояснение на телефоне не нужна. */
+  .wb-src { flex-direction: column; align-items: stretch; gap: 8px; }
+  .wb-src > div:first-child { display: flex; align-items: center; gap: 10px; }
+  .wb-seg { flex: 1; display: grid; grid-template-columns: repeat(3, 1fr); }
+  .wb-seg button { padding: 10px 4px; text-align: center; white-space: nowrap; }
+  .wb-src > span:last-child { display: none; }
+  .wb-stage .wb-shell.wb-shell {
+    border-radius: 0;
+    animation: none;
+    box-shadow:
+      0 1px 0 rgba(var(--accent-rgb), .45),
+      0 18px 44px -18px #000;
+  }
+}
+
+/* Полный экран: панель управления отступает от «чёлки» и жестовой полосы.
+   Во врезанном плеере этот отступ не нужен — там кадр не у края экрана. */
+.ag-pseudo-fs .ag-cbar,
+:fullscreen .ag-cbar { padding-bottom: max(0.75rem, env(safe-area-inset-bottom)); }

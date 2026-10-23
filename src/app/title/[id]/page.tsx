@@ -254,8 +254,11 @@ export default async function TitlePage({ params }: PageParams) {
         <div className="mx-auto max-w-7xl px-4 pb-8 pt-8 sm:px-6 sm:pb-10 sm:pt-10">
           <div className="grid gap-7 md:grid-cols-[260px_minmax(0,1fr)] md:gap-9 lg:grid-cols-[320px_minmax(0,1fr)] lg:gap-12">
             {/* ===== Левая колонка: постер, действия, сведения ===== */}
-            <aside className="mx-auto w-[210px] space-y-3 sm:w-[240px] md:mx-0 md:w-full">
-              <div className="group relative aspect-[2/3] overflow-hidden rounded-3xl bg-card ring-1 ring-white/12 shadow-[0_40px_90px_-40px_rgba(0,0,0,1)] transition duration-300 hover:ring-accent/45 hover:shadow-[0_50px_110px_-45px_rgba(43,127,255,0.55)]">
+            {/* На телефоне ширину колонки задаёт не постер: кнопки и карточки
+                растягиваются во всю страницу (иначе «Избранное» и «Подборки»
+                обрезались многоточием), а сам постер остаётся по центру. */}
+            <aside className="mx-auto w-full max-w-[460px] space-y-3 md:mx-0 md:max-w-none">
+              <div className="group relative mx-auto aspect-[2/3] w-[210px] overflow-hidden rounded-3xl sm:w-[240px] md:w-full bg-card ring-1 ring-white/12 shadow-[0_40px_90px_-40px_rgba(0,0,0,1)] transition duration-300 hover:ring-accent/45 hover:shadow-[0_50px_110px_-45px_rgba(43,127,255,0.55)]">
                 <Poster
                   src={card.poster}
                   alt={card.title}

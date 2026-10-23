@@ -34,19 +34,44 @@ interface Tile {
   icon: IconName;
 }
 
-const TILES: Tile[] = [
-  { label: "AniSwipe", hint: "Свайп-подбор", href: "/aniswipe", icon: "spark" },
-  { label: "Расписание", hint: "Выходы серий", href: "/schedule", icon: "cal" },
-  { label: "Манга", hint: "Читалка", href: "/manga", icon: "book" },
-  { label: "Вместе", hint: "Совместный просмотр", href: "/watch-together", icon: "together" },
-  { label: "Подборки", hint: "Коллекции", href: "/collections", icon: "layers" },
-  { label: "Рейтинг", hint: "Лидеры сайта", href: "/leaderboard", icon: "trophy" },
-  { label: "Боевой пропуск", hint: "Награды сезона", href: "/battlepass", icon: "pass" },
-  { label: "Карта", hint: "Маршруты и награды", href: "/map", icon: "compass" },
-  { label: "Квесты", hint: "Задания дня", href: "/quests", icon: "target" },
-  { label: "События", hint: "Ивенты", href: "/events", icon: "flame" },
-  { label: "Кланы", hint: "Играйте вместе", href: "/clans", icon: "users" },
-  { label: "Магазин", hint: "Рамки и эффекты", href: "/store", icon: "store" },
+/**
+ * Разделы меню сгруппированы по смыслу: двенадцать одинаковых плиток
+ * подряд читались как список без начала и конца. Заголовок группы задаёт
+ * и порядок чтения, и оттенок иконок (`data-g` в разметке).
+ */
+interface Group {
+  title: string;
+  tiles: Tile[];
+}
+
+const GROUPS: Group[] = [
+  {
+    title: "Смотреть",
+    tiles: [
+      { label: "AniSwipe", hint: "Свайп-подбор", href: "/aniswipe", icon: "spark" },
+      { label: "Расписание", hint: "Выходы серий", href: "/schedule", icon: "cal" },
+      { label: "Манга", hint: "Читалка", href: "/manga", icon: "book" },
+      { label: "Вместе", hint: "Совместный просмотр", href: "/watch-together", icon: "together" },
+    ],
+  },
+  {
+    title: "Прогресс",
+    tiles: [
+      { label: "Боевой пропуск", hint: "Награды сезона", href: "/battlepass", icon: "pass" },
+      { label: "Квесты", hint: "Задания дня", href: "/quests", icon: "target" },
+      { label: "События", hint: "Ивенты", href: "/events", icon: "flame" },
+      { label: "Магазин", hint: "Рамки и эффекты", href: "/store", icon: "store" },
+    ],
+  },
+  {
+    title: "Сообщество",
+    tiles: [
+      { label: "Кланы", hint: "Играйте вместе", href: "/clans", icon: "users" },
+      { label: "Рейтинг", hint: "Лидеры сайта", href: "/leaderboard", icon: "trophy" },
+      { label: "Подборки", hint: "Коллекции", href: "/collections", icon: "layers" },
+      { label: "Карта", hint: "Маршруты и награды", href: "/map", icon: "compass" },
+    ],
+  },
 ];
 
 export function MobileNav() {
@@ -112,21 +137,28 @@ export function MobileNav() {
             </span>
             <span className="mnv-go"><Icon name="arrow" /></span>
           </Link>
-          <div className="mnv-grid">
-            {TILES.map((t, i) => (
-              <Link
-                key={t.href}
-                href={t.href}
-                tabIndex={open ? 0 : -1}
-                className={`mnv-tile${on(t.href) ? " cur" : ""}`}
-                style={{ "--i": i } as React.CSSProperties}
-              >
-                <span className="mnv-ti"><Icon name={t.icon} /></span>
-                <b>{t.label}</b>
-                <small>{t.hint}</small>
-              </Link>
-            ))}
-          </div>
+          {GROUPS.map((g, gi) => (
+            <section key={g.title} className="mnv-sec" data-g={gi + 1}>
+              <h3 className="mnv-sh">{g.title}</h3>
+              <div className="mnv-grid">
+                {g.tiles.map((t, i) => (
+                  <Link
+                    key={t.href}
+                    href={t.href}
+                    tabIndex={open ? 0 : -1}
+                    className={`mnv-tile${on(t.href) ? " cur" : ""}`}
+                    style={{ "--i": gi * 4 + i } as React.CSSProperties}
+                  >
+                    <span className="mnv-ti"><Icon name={t.icon} /></span>
+                    <span className="mnv-tt">
+                      <b>{t.label}</b>
+                      <small>{t.hint}</small>
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            </section>
+          ))}
         </div>
       </div>
 

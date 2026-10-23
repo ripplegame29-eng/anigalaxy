@@ -372,12 +372,12 @@ export function WatchBox({
         <div className="min-w-0">
           {/* Переключатель источника: встроенный Kodik, наш плеер AniGalaxy
               на прямых HLS-потоках Kodik или каталог AniLiberty */}
-          <div className="mb-2.5 flex flex-wrap items-center justify-between gap-2">
+          <div className="wb-src mb-2.5 flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <span className="text-[11px] font-bold uppercase tracking-wider text-muted">
                 Источник
               </span>
-              <div className="flex rounded-xl bg-white/6 p-1 ring-1 ring-white/10">
+              <div className="wb-seg flex rounded-xl bg-white/6 p-1 ring-1 ring-white/10">
                 <button
                   type="button"
                   onClick={() => switchSource("kodik")}
@@ -412,7 +412,7 @@ export function WatchBox({
                       : "text-muted hover:text-white"
                   }`}
                 >
-                  AniLiberty · 1080p
+                  AniLiberty<span className="max-sm:hidden"> · 1080p</span>
                 </button>
               </div>
             </div>
@@ -425,7 +425,10 @@ export function WatchBox({
             </span>
           </div>
 
-            {/* Оболочка плеера — см. AltPlayer: тот ищет своё «плеер» по этому id */}
+            {/* Сцена: на телефоне плеер во всю ширину и липнет под шапкой,
+              чтобы список серий листался, пока серия идёт */}
+          <div className="wb-stage">
+          {/* Оболочка плеера — см. AltPlayer: тот ищет своё «плеер» по этому id */}
           <div
             id="player-shell"
             className={`wb-shell relative aspect-video w-full overflow-hidden rounded-2xl bg-black ring-1 ring-white/12 shadow-[0_40px_80px_-40px_rgba(0,0,0,1)] ${
@@ -500,6 +503,7 @@ export function WatchBox({
                 </span>
               </div>
             )}
+          </div>
           </div>
 
           {/* Подпись под плеером */}

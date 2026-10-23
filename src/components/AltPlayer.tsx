@@ -71,11 +71,11 @@ const CHIP =
 
 /** Кнопка-чип в нижней панели управления (крупная, как в референсе) */
 const CBAR_CHIP =
-  "whitespace-nowrap rounded-full bg-white/10 px-2.5 py-1.5 text-[11px] font-black sm:px-4 sm:py-2 sm:text-xs text-white ring-1 ring-white/15 transition hover:bg-white/18";
+  "whitespace-nowrap rounded-full bg-white/10 px-3.5 py-2.5 text-xs font-black sm:px-4 sm:py-2 text-white ring-1 ring-white/15 transition hover:bg-white/18";
 
 /** Иконочная кнопка в нижней панели управления (крупная, как в референсе) */
 const CBAR_BTN =
-  "grid h-9 w-9 place-items-center rounded-full text-white ring-1 ring-transparent sm:h-11 sm:w-11 transition hover:bg-white/12";
+  "grid h-11 w-11 place-items-center rounded-full text-white ring-1 ring-transparent transition hover:bg-white/12";
 
 /** Тонкие SVG-иконки: stroke currentColor, как во всём интерфейсе */
 const PATHS: Record<string, string[]> = {
@@ -1245,15 +1245,15 @@ export function AltPlayer({
 
       {/* Центр: −10 с, пуск/пауза, +10 с — как в референсе */}
       {started && mediaReady && (
-        <div className={`absolute left-1/2 top-1/2 z-[8] flex -translate-x-1/2 -translate-y-1/2 items-center gap-12 transition-opacity duration-300 sm:gap-20 ${uiVisible || !playing ? "opacity-100" : "pointer-events-none opacity-0"}`}>
-          <button type="button" aria-label="Назад на 10 секунд" title="−10 с (J)" onClick={() => skipBy(-10)} className="relative grid h-14 w-14 place-items-center rounded-full text-white/90 transition hover:scale-110 hover:text-white">
+        <div className={`absolute left-1/2 top-1/2 z-[8] hidden -translate-x-1/2 -translate-y-1/2 items-center gap-12 transition-opacity duration-300 sm:flex sm:gap-20 ${uiVisible || !playing ? "opacity-100" : "pointer-events-none opacity-0"}`}>
+          <button type="button" aria-label="Назад на 10 секунд" title="−10 с (J)" onClick={() => skipBy(-10)} className="relative grid h-14 w-14 place-items-center rounded-full text-white/90 transition hover:scale-110 hover:text-white max-sm:hidden">
             <Icon d={PATHS.back10} className="h-9 w-9" />
             <span className="absolute text-[10px] font-black">10</span>
           </button>
           <button type="button" aria-label={playing ? "Пауза" : "Воспроизвести"} onClick={toggle} className="grid h-16 w-16 place-items-center rounded-full text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.6)] transition hover:scale-110">
             <Icon d={playing ? PATHS.pause : PATHS.play} className="h-11 w-11" />
           </button>
-          <button type="button" aria-label="Вперёд на 10 секунд" title="+10 с (L)" onClick={() => skipBy(10)} className="relative grid h-14 w-14 place-items-center rounded-full text-white/90 transition hover:scale-110 hover:text-white">
+          <button type="button" aria-label="Вперёд на 10 секунд" title="+10 с (L)" onClick={() => skipBy(10)} className="relative grid h-14 w-14 place-items-center rounded-full text-white/90 transition hover:scale-110 hover:text-white max-sm:hidden">
             <Icon d={PATHS.fwd10} className="h-9 w-9" />
             <span className="absolute text-[10px] font-black">10</span>
           </button>
@@ -1388,14 +1388,23 @@ export function AltPlayer({
       {/* ------------------ Нижняя панель управления ------------------- */}
       {started && mediaReady && (
         <div
-          className={`absolute inset-x-0 bottom-0 z-20 bg-gradient-to-t from-black/85 via-black/45 to-transparent px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-14 sm:px-5 sm:pb-4 sm:pt-16 transition-opacity duration-300 ${
+          className={`ag-cbar absolute inset-x-0 bottom-0 z-20 bg-gradient-to-t from-black/85 via-black/45 to-transparent px-3 pb-3 pt-14 sm:px-5 sm:pb-4 sm:pt-16 transition-opacity duration-300 ${
             uiVisible || !playing ? "opacity-100" : "pointer-events-none opacity-0"
           }`}
         >
           {/* Ряд над прогрессом: звук слева, время по центру, инструменты справа */}
-          <div className="mb-3 flex items-center gap-2">
-            <div className="group/vol flex flex-none items-center gap-1 sm:flex-1">
-              <button type="button" aria-label={muted ? "Включить звук" : "Выключить звук"} onClick={toggleMute} className="grid h-10 w-10 place-items-center rounded-full text-white transition hover:bg-white/12">
+          <div className="mb-2 flex items-center gap-2 sm:mb-3">
+            <button
+              type="button"
+              aria-label={playing ? "Пауза" : "Воспроизвести"}
+              onClick={toggle}
+              className="grid h-11 w-11 flex-none place-items-center rounded-full text-white transition hover:bg-white/12 sm:hidden"
+            >
+              <Icon d={playing ? PATHS.pause : PATHS.play} className="h-6 w-6" />
+            </button>
+
+            <div className="group/vol hidden flex-none items-center gap-1 sm:flex sm:flex-1">
+              <button type="button" aria-label={muted ? "Включить звук" : "Выключить звук"} onClick={toggleMute} className="grid h-11 w-11 place-items-center rounded-full text-white transition hover:bg-white/12">
                 <Icon d={muted || volume === 0 ? PATHS.volumeOff : PATHS.volume} className="h-5 w-5" />
               </button>
               <DragBar
@@ -1408,7 +1417,7 @@ export function AltPlayer({
               />
             </div>
 
-            <span className="min-w-0 shrink truncate rounded-full bg-black/45 px-3 py-1.5 text-[11px] font-bold tabular-nums text-white ring-1 ring-white/10 backdrop-blur max-sm:mr-auto sm:px-4 sm:text-xs">
+            <span className="min-w-0 shrink truncate rounded-full bg-black/45 px-3 py-2 text-xs font-bold tabular-nums text-white ring-1 ring-white/10 backdrop-blur max-sm:mr-auto sm:px-4">
               {fmt(curTime)} / {fmt(dur)}
             </span>
 
@@ -1437,7 +1446,7 @@ export function AltPlayer({
 
           {/* Прогресс */}
           <DragBar
-            className="h-1.5 w-full transition-[height] hover:h-2"
+            className="h-2 w-full transition-[height] before:absolute before:inset-x-0 before:-inset-y-3 before:content-[''] hover:h-2.5 sm:h-1.5 sm:hover:h-2"
             ratio={dur ? curTime / dur : 0}
             onPick={seekTo}
             onStep={seekStep}

@@ -93,10 +93,26 @@
     background:linear-gradient(180deg,rgba(43,127,255,.22),rgba(43,127,255,.06));box-shadow:inset 0 0 0 1px rgba(90,160,255,.28);z-index:-1}
   .mnv-i.cur svg{filter:drop-shadow(0 0 6px rgba(43,127,255,.7));transform:none}
   .mnv-c.cur::before{display:none}
-  .mnv-orb{width:50px;height:50px;margin-top:-22px;border-width:3px;
-    background:linear-gradient(145deg,#2a7bff,#1aa7e8);box-shadow:0 10px 26px rgba(43,127,255,.5),inset 0 1px 0 rgba(255,255,255,.4)}
+  /* Центральная кнопка: плоский синий круг читался как заглушка.
+     Блик сверху, лёгкая тень внутри снизу и мягкое свечение под кругом
+     дают объём — ради этой кнопки и строится вся панель. */
+  .mnv-orb{position:relative;width:50px;height:50px;margin-top:-22px;border-width:3px;
+    background:
+      radial-gradient(120% 95% at 50% 0%,rgba(255,255,255,.42),transparent 58%),
+      linear-gradient(158deg,#3f8cff,#1f6fe8 48%,#12b0e8);
+    box-shadow:
+      0 12px 28px rgba(43,127,255,.5),
+      0 0 0 1px rgba(125,190,255,.35),
+      inset 0 1px 0 rgba(255,255,255,.55),
+      inset 0 -9px 16px -9px rgba(0,0,10,.55)}
+  .mnv-orb::after{content:"";position:absolute;inset:-10px;border-radius:50%;z-index:-1;pointer-events:none;
+    background:radial-gradient(circle,rgba(43,127,255,.34),transparent 70%)}
+  .mnv-c:active .mnv-orb{transform:scale(.94)}
+  .mnv-c.cur:active .mnv-orb{transform:rotate(90deg) scale(.99)}
 
-  .mnv-panel{padding:8px 14px calc(104px + env(safe-area-inset-bottom));border-radius:32px 32px 0 0;border-color:rgba(255,255,255,.08)}
+  .mnv-panel{padding:8px 14px calc(104px + env(safe-area-inset-bottom));border-radius:32px 32px 0 0;border-color:rgba(255,255,255,.08);
+    scrollbar-width:none;-ms-overflow-style:none}
+  .mnv-panel::-webkit-scrollbar{display:none}
   .mnv-grab{width:38px;height:4px;margin:4px auto 14px;background:rgba(255,255,255,.22)}
   .mnv-top b{font-size:22px}
   .mnv-x{border-radius:50%;width:36px;height:36px}
@@ -104,7 +120,45 @@
   .mnv-grid{gap:8px}
   .mnv-tile{flex-direction:row;align-items:center;gap:12px;padding:12px;border-radius:18px}
   .mnv-ti{margin:0;flex:none;width:38px;height:38px;border-radius:12px}
-  .mnv-tile b{font-size:14.5px}
+  /* «Боевой пропуск» не обрезаем многоточием — переносим на две строки */
+  .mnv-tile b{font-size:14.5px;line-height:1.15;display:block;min-width:0;overflow-wrap:anywhere}
   .mnv-tile small{display:none}
-  .mnv-tile>span:last-child{display:flex;flex-direction:column;min-width:0}
+  .mnv-tt{display:flex;flex-direction:column;min-width:0}
+
+  /* ---------- группы разделов ---------- */
+  .mnv-sec{margin-top:16px}
+  .mnv-sec:first-of-type{margin-top:12px}
+  .mnv-sh{margin:0 0 8px 4px;font:800 10.5px/1 var(--font-body);
+    letter-spacing:.16em;text-transform:uppercase;color:#6b7794}
+  /* оттенок иконок по группе: один синий ряд читался как сплошная стена */
+  .mnv-sec[data-g="2"] .mnv-ti{color:#5fe3f0;background:rgba(34,211,238,.13);border-color:rgba(34,211,238,.28)}
+  .mnv-sec[data-g="3"] .mnv-ti{color:#a3b2ff;background:rgba(124,140,255,.14);border-color:rgba(124,140,255,.3)}
+  /* нажатие: плитка проседает — на телефоне это единственная обратная связь */
+  .mnv-tile:active{transform:scale(.97);transition:transform .08s}
+}
+
+/* ═══ Плавающие кнопки (чат и кланы) ═══
+   Были двумя квадратами, которые висели над нижней панелью и ложились
+   поверх шторки меню. Теперь это док: обе кнопки выровнены по правому
+   краю панели навигации, а в шторке меню и в чате их не видно. */
+@media (max-width:900px){
+  /* правый край .mnv-bar: ширина min(440px, 100vw-24px), по центру */
+  .ag-fab{
+    --dock-right:calc(50vw - min(220px, (100vw - 24px) / 2));
+    position:fixed;bottom:calc(84px + env(safe-area-inset-bottom));
+    width:46px;height:46px;border-radius:16px;
+    background:linear-gradient(180deg,rgba(22,30,56,.82),rgba(8,11,24,.92));
+    border:1px solid rgba(255,255,255,.1);
+    box-shadow:0 14px 34px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.08);
+    backdrop-filter:blur(20px) saturate(1.5);-webkit-backdrop-filter:blur(20px) saturate(1.5);
+    transition:opacity .25s ease,transform .25s ease}
+  .ag-fab--chat{right:var(--dock-right)}
+  /* Кланы на телефоне живут плиткой в шторке меню: две кнопки подряд
+     закрывали правый нижний угол страницы (оценка тайтла, сетка серий). */
+  .ag-fab--clan{display:none}
+  /* шторка меню открыта или страница листается вниз — док уезжает */
+  html.mnv-lock .ag-fab,
+  html.ag-fab-hide .ag-fab{opacity:0;transform:translateY(18px) scale(.9);pointer-events:none}
+  /* последняя строка страницы не прячется под доком */
+  body{padding-bottom:calc(104px + env(safe-area-inset-bottom))}
 }

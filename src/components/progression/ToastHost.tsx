@@ -145,7 +145,7 @@ export function ToastHost() {
 
   return (
     <div
-      className="pointer-events-none fixed bottom-4 max-[900px]:bottom-[calc(92px+env(safe-area-inset-bottom))] right-4 z-[90] flex w-[min(92vw,340px)] flex-col items-stretch gap-2"
+      className="pointer-events-none fixed bottom-4 max-[900px]:bottom-[calc(140px+env(safe-area-inset-bottom))] right-4 z-[96] flex w-[min(92vw,340px)] flex-col items-stretch gap-2"
       role="status"
       aria-live="polite"
       aria-label="Уведомления о наградах"
