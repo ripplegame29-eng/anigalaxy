@@ -25,8 +25,14 @@ async function guard() {
 
 /* ------------------------------- Правка -------------------------------- */
 
-/** Поля, которые админ может править руками. */
-const ADJUSTABLE = new Set(["level", "acBalance", "xpTotal"] as const);
+/**
+ * Поля, которые админ может править руками.
+ *
+ * `level` здесь намеренно нет: уровень — следствие XP, и отдельная запись
+ * в него рассинхронизировала бы число с опытом. Экшен доступен по прямому
+ * запросу, поэтому защита должна быть здесь, а не только в форме.
+ */
+const ADJUSTABLE = new Set(["acBalance", "xpTotal"] as const);
 type Adjustable = (typeof ADJUSTABLE extends Set<infer T> ? T : never);
 
 /**

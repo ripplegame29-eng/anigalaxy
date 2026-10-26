@@ -4,7 +4,15 @@ import { useCallback, useEffect, useSyncExternalStore } from "react";
 
 type Theme = "paper" | "space";
 
-const STORAGE_KEY = "ag-theme";
+/**
+ * Ключ сменился с `ag-theme` на `ag-theme-v2` осознанно.
+ *
+ * Прежний переключатель не применял тёмную тему: CSS ждал атрибут на
+ * .ag-app, а код ставил его на <html>. Сохранённый `paper` у большинства
+ * означал не выбор, а сломанный дефолт. Новый ключ даёт всем тёмную по
+ * умолчанию, а явный выбор света продолжает сохраняться уже в v2.
+ */
+const STORAGE_KEY = "ag-theme-v2";
 
 /**
  * Тема панели.
@@ -17,7 +25,7 @@ const STORAGE_KEY = "ag-theme";
  */
 
 function currentTheme(): Theme {
-  return document.documentElement.dataset.theme === "dark" ? "space" : "paper";
+  return document.documentElement.dataset.theme === "light" ? "paper" : "space";
 }
 
 /**
@@ -35,22 +43,31 @@ function subscribe(onChange: () => void): () => void {
 }
 
 export function ThemeToggle() {
-  const theme = useSyncExternalStore(subscribe, currentTheme, () => "paper" as Theme);
+  // По умолчанию — тёмная тема: атрибута `light` на <html> нет.
+  const theme = useSyncExternalStore(subscribe, currentTheme, () => "space" as Theme);
 
   // Инлайн-скрипт в layout ставит тему только при полной загрузке страницы.
   // При переходе на /admin клиентом React его не выполняет (скрипт внутри
-  // компонента), и панель мигнула бы светлой, а потом «прыгнула» в тёмную,
-  // когда прочитает localStorage. Поэтому на монтировании применяем сохранённую
-  // тему явно. Запись в DOM, а не setState: значение и так приедет через
-  // useSyncExternalStore.
+  // компонента), и панель могла бы остаться светлой до ручного переключения.
+  // Поэтому на монтировании применяем сохранённую тему явно. Запись в DOM,
+  // а не setState: значение и так приедет через useSyncExternalStore.
   useEffect(() => {
-    const stored = currentTheme();
-    const applied = document.documentElement.dataset.theme === "dark" ? "space" : "paper";
+    let stored: Theme | null = null;
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      stored = raw === "paper" || raw === "space" ? raw : null;
+    } catch {
+      // Приватный режим: работаем с темой по умолчанию.
+    }
 
-    if (stored === applied) return;
+    // Нет сохранённого выбора — тёмная. Светлую включают только осознанно.
+    const next: Theme = stored === "paper" ? "paper" : "space";
+    const applied: Theme = currentTheme();
 
-    if (stored === "space") document.documentElement.dataset.theme = "dark";
-    else delete document.documentElement.dataset.theme;
+    if (next === applied) return;
+
+    if (next === "paper") document.documentElement.dataset.theme = "light";
+    else document.documentElement.dataset.theme = "dark";
 
     window.dispatchEvent(new Event("ag-theme-change"));
   }, []);
@@ -62,7 +79,9 @@ export function ThemeToggle() {
     // цвету. Без него при сорока переменных смена выглядит как вспышка.
     root.classList.add("theming");
 
-    if (next === "space") root.dataset.theme = "dark";
+    // Светлая — явный атрибут `light`; тёмная — значение по умолчанию,
+    // поэтому атрибут можно просто снять.
+    if (next === "paper") root.dataset.theme = "light";
     else delete root.dataset.theme;
 
     try {
@@ -104,7 +123,11 @@ export function ThemeToggle() {
 /**
  * Скрипт, ставящий тему до первой отрисовки.
  *
- * Если этого куска не будет, панель на тёмной теме сначала покажется светлой
- * и только потом перекрасится — заметно на медленной загрузке.
+ * По умолчанию — тёмная: светлую включают только явным выбором, и тогда
+ * на <html> появляется `data-theme="light"`. Если сохранён выбор «тёмная»
+ * или выбора ещё нет, атрибут снимается.
+ *
+ * Если этого куска не будет, панель на светлой теме сначала покажется
+ * тёмной и только потом перекрасится — заметно на медленной загрузке.
  */
-export const ADMIN_THEME_SCRIPT = `try{if(localStorage.getItem("${STORAGE_KEY}")==="space")document.documentElement.dataset.theme="dark"}catch(e){}`;
+export const ADMIN_THEME_SCRIPT = `try{if(localStorage.getItem("${STORAGE_KEY}")==="paper")document.documentElement.setAttribute("data-theme","light");else document.documentElement.removeAttribute("data-theme")}catch(e){}`;

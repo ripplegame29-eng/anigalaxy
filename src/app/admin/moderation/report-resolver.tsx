@@ -24,7 +24,7 @@ function Button({
       name="outcome"
       value={outcome}
       disabled={pending}
-      className="ag-btn sm"
+      className="ag-btn ag-sm"
       style={
         tone === "danger"
           ? { borderColor: "var(--ag-red)", color: "var(--ag-red)" }

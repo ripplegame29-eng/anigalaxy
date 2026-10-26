@@ -19,7 +19,7 @@ function Submit({ children, tone = "neutral" }: { children: React.ReactNode; ton
     <button
       type="submit"
       disabled={pending}
-      className={`ag-btn sm${tone === "danger" ? " danger" : ""}`}
+      className={`ag-btn ag-sm${tone === "danger" ? " ag-danger" : ""}`}
     >
       {pending ? "…" : children}
     </button>

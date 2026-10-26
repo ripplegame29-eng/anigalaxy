@@ -199,7 +199,7 @@ export async function toggleBlockAction(
     action: "content.toggle",
     targetType: "content",
     targetId: id,
-    summary: `Блок «${block.title ?? block.kind}»: ${block.enabled ? "выключен" : "включён"} → ${enabled ? "включён" : "выключен"}`,
+    summary: `Блок «${block.title ?? block.kind}»: ${block.enabled ? "включён" : "выключен"} → ${enabled ? "включён" : "выключен"}`,
     before: pick(block, BLOCK_FIELDS),
     after: pick(updated, BLOCK_FIELDS),
   });

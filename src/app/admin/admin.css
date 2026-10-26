@@ -16,37 +16,6 @@
    ========================================================================== */
 
 .ag-app {
-  --ag-bg: #ece9e1;
-  --ag-side: #e4e1d7;
-  --ag-card: #f6f4ee;
-  --ag-line: #cfcbbf;
-  --ag-text: #14130f;
-  --ag-mut: #5e5b52;
-  --ag-dim: #6b675c;
-  --ag-acc: #5b3fe0;
-  --ag-accbg: #e1dcf5;
-  --ag-amb: #8a5a00;
-  --ag-ambbg: #f3e6c4;
-  --ag-ambline: #c9a24a;
-  --ag-red: #b3261e;
-  --ag-crbg: #f5d9d6;
-  --ag-grn: #1e7a4d;
-  --ag-okbg: #d6ebdd;
-  --ag-ink: #14130f;
-  --ag-onink: #f6f4ee;
-  --ag-hov: #e6e3da;
-  --ag-bd2: #a9a598;
-  --ag-chipbg: #ddd9cd;
-  --ag-wt: #6b5320;
-  --ag-rul: #9a9689;
-  --ag-herobg: rgba(246, 244, 238, 0.72);
-  --ag-streak: #ece9e1;
-  --ag-bgink: #14130f;
-  --ag-ease: cubic-bezier(0.22, 0.8, 0.3, 1);
-  color-scheme: light;
-}
-
-.ag-app[data-theme="space"] {
   --ag-bg: #07080f;
   --ag-side: #0a0c14;
   --ag-card: #0e1018;
@@ -73,7 +42,48 @@
   --ag-herobg: rgba(14, 16, 24, 0.7);
   --ag-streak: #07080f;
   --ag-bgink: #ede9dd;
+  --ag-ease: cubic-bezier(0.22, 0.8, 0.3, 1);
   color-scheme: dark;
+}
+
+/*
+ * Светлая тема — только по явному выбору. По умолчанию панель тёмная:
+ * в макете она задумана «ночной», а светлый вариант на весь экран
+ * оказался слишком ярким для рабочего инструмента.
+ *
+ * Признак темы живёт на <html>, а не на .ag-app: инлайновый скрипт в
+ * layout выставляет его до первой отрисовки, поэтому при полной загрузке
+ * нет вспышки светлой темы. У светлой темы атрибут "light", у тёмной —
+ * "dark" (или атрибута нет вовсе).
+ */
+html[data-theme="light"] .ag-app {
+  --ag-bg: #ece9e1;
+  --ag-side: #e4e1d7;
+  --ag-card: #f6f4ee;
+  --ag-line: #cfcbbf;
+  --ag-text: #14130f;
+  --ag-mut: #5e5b52;
+  --ag-dim: #6b675c;
+  --ag-acc: #5b3fe0;
+  --ag-accbg: #e1dcf5;
+  --ag-amb: #8a5a00;
+  --ag-ambbg: #f3e6c4;
+  --ag-ambline: #c9a24a;
+  --ag-red: #b3261e;
+  --ag-crbg: #f5d9d6;
+  --ag-grn: #1e7a4d;
+  --ag-okbg: #d6ebdd;
+  --ag-ink: #14130f;
+  --ag-onink: #f6f4ee;
+  --ag-hov: #e6e3da;
+  --ag-bd2: #a9a598;
+  --ag-chipbg: #ddd9cd;
+  --ag-wt: #6b5320;
+  --ag-rul: #9a9689;
+  --ag-herobg: rgba(246, 244, 238, 0.72);
+  --ag-streak: #ece9e1;
+  --ag-bgink: #14130f;
+  color-scheme: light;
 }
 
 /* ---------------------------------- Каркас --------------------------------- */
@@ -139,13 +149,24 @@
   stroke: var(--ag-acc);
 }
 
-.ag-app[data-theme="space"] .ag-bg rect {
+/* В тёмной теме лучи и зерно приглушены, иначе на почти чёрном фоне
+   SVG-паттерн читается как шум. В светлой — остаются как в макете. */
+.ag-bg rect {
   opacity: 0.06;
   mix-blend-mode: overlay;
 }
 
-.ag-app[data-theme="space"] .ag-bg .rays {
+.ag-bg .rays {
   opacity: 1;
+}
+
+html[data-theme="light"] .ag-app .ag-bg rect {
+  opacity: 1;
+  mix-blend-mode: normal;
+}
+
+html[data-theme="light"] .ag-app .ag-bg .rays {
+  opacity: 0.45;
 }
 
 @keyframes ag-fade {
@@ -373,29 +394,33 @@
   opacity: 0.45;
 }
 
-.ag-btn.pri {
+/* Модификаторы тоже с префиксом `ag-`: у сайта уже есть глобальные `.sm`,
+   `.link`, `.danger`, и без префикса они перекрашивали админские кнопки
+   (`.sm` вообще превращал «Показать все» в иконку 32×32). */
+.ag-btn.ag-pri {
   background: var(--ag-ink);
   border-color: var(--ag-ink);
   color: var(--ag-onink);
   font-weight: 800;
 }
 
-.ag-btn.danger {
+.ag-btn.ag-danger {
   border-color: var(--ag-red);
   color: var(--ag-red);
 }
 
-.ag-btn.sm {
+.ag-btn.ag-sm {
   min-height: 36px;
   padding: 0 14px;
   font-size: 13px;
 }
 
-.ag-btn.link {
+.ag-btn.ag-link {
   min-height: 44px;
   padding: 0;
   border: 0;
   color: var(--ag-acc);
+  white-space: nowrap;
 }
 
 /* ---------------------------------- Верх ----------------------------------- */

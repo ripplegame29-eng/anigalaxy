@@ -119,7 +119,7 @@ export default async function AdminLayout({
         </div>
       </aside>
 
-      <main className="ag-main">
+      <div className="ag-main">
         <div className="ag-top">
           <TopSearch sections={visible} />
           <Link href="/" target="_blank" rel="noreferrer">
@@ -129,7 +129,7 @@ export default async function AdminLayout({
         </div>
 
         <ToastProvider>{children}</ToastProvider>
-      </main>
+      </div>
     </div>
   );
 }

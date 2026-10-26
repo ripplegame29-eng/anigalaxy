@@ -118,7 +118,7 @@ export function AuditFeed({ entries }: { entries: AuditEntry[] }) {
           </span>
           <button
             type="button"
-            className="ag-btn link sm"
+            className="ag-btn ag-link ag-sm"
             onClick={() => setExpanded((v) => !v)}
           >
             {expanded

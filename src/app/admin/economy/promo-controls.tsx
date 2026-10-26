@@ -20,7 +20,7 @@ function Submit({ children, tone = "neutral" }: { children: React.ReactNode; ton
     <button
       type="submit"
       disabled={pending}
-      className={`ag-btn sm${tone === "danger" ? " danger" : ""}`}
+      className={`ag-btn ag-sm${tone === "danger" ? " ag-danger" : ""}`}
     >
       {pending ? "…" : children}
     </button>
@@ -274,7 +274,7 @@ export function SeasonRow({
           <form action={formAction}>
             <input type="hidden" name="id" value={id} />
             <input type="hidden" name="status" value={next} />
-            <Submit>{next === "active" ? "Завершить" : "Активировать"}</Submit>
+            <Submit>{next === "active" ? "Активировать" : "Завершить"}</Submit>
           </form>
         </div>
       </div>

@@ -90,22 +90,32 @@ async function probe(url: string, init?: RequestInit): Promise<HealthResult> {
  */
 const PROBES: Record<
   ServiceName,
-  { url: string; init?: RequestInit; fallback: string }
+  { url: () => string; init?: RequestInit; fallback: string }
 > = {
   kodik: {
-    url: "https://kodik-api.com/genres",
+    // Kodik отвечает только на POST и требует токен — GET без него даёт 401,
+    // из-за чего здоровая проверка всегда показывала «источник лежит».
+    url: () => {
+      const token = process.env.KODIK_TOKEN ?? "";
+      return token
+        ? `https://kodik-api.com/genres?token=${encodeURIComponent(token)}`
+        : "https://kodik-api.com/genres";
+    },
+    init: { method: "POST" },
     fallback: "каталог и серии пропадают — резервных источников нет",
   },
   shikimori: {
-    url: "https://shikimori.io/api/titles?limit=1",
+    // У Shikimori нет `/api/titles` — этот адрес всегда отдавал 404.
+    url: () => "https://shikimori.io/api/animes?limit=1",
     fallback: "кадры и трейлеры берутся из Kodik, затем ищутся на YouTube",
   },
   mangadex: {
-    url: "https://api.mangadex.org/manga?limit=1",
+    url: () => "https://api.mangadex.org/manga?limit=1",
     fallback: "раздел «Манга» отдаёт последний успешный ответ с диска",
   },
   anilibria: {
-    url: "https://anilibria.top/api/public/updates?limit=1",
+    // Рабочая версия API — `/api/v1`, а не `/api/public`.
+    url: () => "https://anilibria.top/api/v1/anime/catalog/releases?limit=1",
     fallback: "подборки в каталоге пустеют",
   },
 };
@@ -119,7 +129,7 @@ export async function checkAllSources(): Promise<HealthResult[]> {
 
   const checked = await Promise.all(
     entries.map(async ([service, cfg]) => {
-      const result = await probe(cfg.url, cfg.init);
+      const result = await probe(cfg.url(), cfg.init);
       return { ...result, service, fallback: cfg.fallback };
     }),
   );

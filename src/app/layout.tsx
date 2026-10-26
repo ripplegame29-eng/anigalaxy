@@ -42,6 +42,7 @@ import { ChatWidget } from "@/components/ChatWidget";
 import { DailyBonusHost } from "@/components/DailyBonusHost";
 import { Footer } from "@/components/Footer";
 import { HeaderShell } from "@/components/site/HeaderShell";
+import { SiteOnly } from "@/components/site/SiteOnly";
 import "@/components/site/header.css";
 import "@/components/site/header-promo.css";
 import "@/components/site/search.css";
@@ -238,15 +239,19 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
         >
           Перейти к содержимому
         </a>
-        {/* Шапка перенесена из прототипа Header_AniGalaxy_flat: стили лежат в
-            components/site/header.css (под контейнером .agh), состояние
-            палитры поиска держит HeaderShell. При слиянии с веткой календаря
-            старый Header в разметку не выводится. */}
-        <HeaderShell />
-        {/* Фон макетов: один на весь сайт, показывается только под .ag-root —
-            см. body:has(.ag-root) в ag-theme.css. Идёт до <main>, чтобы лежать
-            под содержимым, и без участия в раскладке: обе картинки fixed. */}
-        <SkyBackdrop />
+        {/* Публичная оболочка скрыта на /admin: у панели свой каркас, тема и
+            тосты. Без этого админка открывалась внутри шапки и подвала сайта. */}
+        <SiteOnly>
+          {/* Шапка перенесена из прототипа Header_AniGalaxy_flat: стили лежат в
+              components/site/header.css (под контейнером .agh), состояние
+              палитры поиска держит HeaderShell. При слиянии с веткой календаря
+              старый Header в разметку не выводится. */}
+          <HeaderShell />
+          {/* Фон макетов: один на весь сайт, показывается только под .ag-root —
+              см. body:has(.ag-root) в ag-theme.css. Идёт до <main>, чтобы лежать
+              под содержимым, и без участия в раскладке: обе картинки fixed. */}
+          <SkyBackdrop />
+        </SiteOnly>
         {/* min-w-0 обязателен: main — флекс-элемент колоночного body, а у
             флекс-элементов min-width:auto. Без него любой широкий потомок
             (лента разделов магазина, карусели) растягивал всю страницу, и
@@ -257,46 +262,48 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
         <main id="main" className="relative z-[1] min-w-0 flex-1">
           {children}
         </main>
-        <Footer features={features} />
-        {/* Модалка авторизации живёт в layout, а не в шапке: у <header> есть
-          backdrop-blur, а элементы с backdrop-filter/filter становятся
-          containing block для position:fixed — панель тогда центрируется по
-          64-пиксельной шапке и открывается с перекосом. Хост ленивый: сам
-          модуль диалога подгружается только при первом клике «Войти».
-        */}
-        <AuthDialogHost />
+        <SiteOnly>
+          <Footer features={features} />
+          {/* Модалка авторизации живёт в layout, а не в шапке: у <header> есть
+            backdrop-blur, а элементы с backdrop-filter/filter становятся
+            containing block для position:fixed — панель тогда центрируется по
+            64-пиксельной шапке и открывается с перекосом. Хост ленивый: сам
+            модуль диалога подгружается только при первом клике «Войти».
+          */}
+          <AuthDialogHost />
 
-        {/* Модалка «Ежедневный бонус» — тот же приём, что у авторизации */}
-        <DailyBonusHost />
+          {/* Модалка «Ежедневный бонус» — тот же приём, что у авторизации */}
+          <DailyBonusHost />
 
-        {/* Тосты наград (§12.6): подписка должна встать до ежедневного входа,
-            иначе первые эффекты сессии уходят в никуда */}
-        <ToastHost />
+          {/* Тосты наград (§12.6): подписка должна встать до ежедневного входа,
+              иначе первые эффекты сессии уходят в никуда */}
+          <ToastHost />
 
-        {/* Ежедневный вход прогрессии: событие шлётся только в браузере (useEffect) */}
-        <ProgressionBoot />
+          {/* Ежедневный вход прогрессии: событие шлётся только в браузере (useEffect) */}
+          <ProgressionBoot />
 
-        {/* Уведомления о выходе серий: расписание → тост, колокольчик, браузер */}
-        <EpisodeNotifier />
+          {/* Уведомления о выходе серий: расписание → тост, колокольчик, браузер */}
+          <EpisodeNotifier />
 
-        {/* Dev-панель прогрессии (§15 этап 7): рендерится только в dev-сборке
-            и только с ?dev=1 — в production условие вырезается на этапе сборки */}
-        <DevPanel />
+          {/* Dev-панель прогрессии (§15 этап 7): рендерится только в dev-сборке
+              и только с ?dev=1 — в production условие вырезается на этапе сборки */}
+          <DevPanel />
 
-        {/* Режим «экономия» (§14): применяет <html data-eco> после гидратации */}
-        <EcoBoot />
+          {/* Режим «экономия» (§14): применяет <html data-eco> после гидратации */}
+          <EcoBoot />
 
-        {/* Пауза анимаций эмблем уровней вне экрана */}
-        <LevelEmblemIO />
+          {/* Пауза анимаций эмблем уровней вне экрана */}
+          <LevelEmblemIO />
 
-        {/* Пауза анимаций эмблем достижений вне экрана */}
-        <AchievementEmblemIO />
+          {/* Пауза анимаций эмблем достижений вне экрана */}
+          <AchievementEmblemIO />
 
-        {/* Дни Premium за приглашённых: начисляются при первом открытии */}
-        <ReferralPremiumFlush />
+          {/* Дни Premium за приглашённых: начисляются при первом открытии */}
+          <ReferralPremiumFlush />
 
-        {/* Общий чат: плавающая кнопка + боковая панель (локальная симуляция) */}
-        <ChatWidget showChat={features?.chat !== false} showClans={features?.clans !== false} />
+          {/* Общий чат: плавающая кнопка + боковая панель */}
+          <ChatWidget showChat={features?.chat !== false} showClans={features?.clans !== false} />
+        </SiteOnly>
 
         {/*
           Обработки картинки плеера здесь нет и не было: у Kodik кадр

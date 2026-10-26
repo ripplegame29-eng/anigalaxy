@@ -16,7 +16,7 @@ const FIELDS = [
 function Submit() {
   const { pending } = useFormStatus();
   return (
-    <button type="submit" disabled={pending} className="ag-btn sm">
+    <button type="submit" disabled={pending} className="ag-btn ag-sm">
       {pending ? "…" : "Записать"}
     </button>
   );
@@ -46,7 +46,7 @@ export function ProgressEditor({
 
   if (!open) {
     return (
-      <button type="button" onClick={() => setOpen(true)} className="ag-btn sm">
+      <button type="button" onClick={() => setOpen(true)} className="ag-btn ag-sm">
         Поправить
       </button>
     );
@@ -59,7 +59,7 @@ export function ProgressEditor({
           {nickname} · сейчас ур. {current.level}, XP {current.xpTotal}, AC{" "}
           {current.acBalance}
         </span>
-        <button type="button" className="ag-btn sm" onClick={() => setOpen(false)}>
+        <button type="button" className="ag-btn ag-sm" onClick={() => setOpen(false)}>
           Закрыть
         </button>
       </div>

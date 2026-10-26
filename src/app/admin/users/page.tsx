@@ -99,11 +99,11 @@ export default async function AdminUsersPage({
             className="ag-input"
             style={{ width: 260 }}
           />
-          <button type="submit" className="ag-btn pri">
+          <button type="submit" className="ag-btn ag-pri">
             Найти
           </button>
           {query ? (
-            <Link href="/admin/users" className="ag-btn link sm">
+            <Link href="/admin/users" className="ag-btn ag-link ag-sm">
               Сбросить
             </Link>
           ) : null}
@@ -199,7 +199,7 @@ export default async function AdminUsersPage({
           aria-label="Страницы списка"
         >
           {currentPage > 1 ? (
-            <Link href={pageHref(currentPage - 1)} className="ag-btn sm">
+            <Link href={pageHref(currentPage - 1)} className="ag-btn ag-sm">
               ← Назад
             </Link>
           ) : null}
@@ -207,7 +207,7 @@ export default async function AdminUsersPage({
             {currentPage} из {pages}
           </span>
           {currentPage < pages ? (
-            <Link href={pageHref(currentPage + 1)} className="ag-btn sm">
+            <Link href={pageHref(currentPage + 1)} className="ag-btn ag-sm">
               Вперёд →
             </Link>
           ) : null}

@@ -30,7 +30,7 @@ const CHEVRON = '<path d="M9 6l6 6-6 6"/>';
 function Submit({ children, tone }: { children: React.ReactNode; tone?: "danger" }) {
   const { pending } = useFormStatus();
   return (
-    <button type="submit" disabled={pending} className={`ag-btn sm${tone ? " danger" : ""}`}>
+    <button type="submit" disabled={pending} className={`ag-btn ag-sm${tone ? " ag-danger" : ""}`}>
       {pending ? "…" : children}
     </button>
   );
@@ -177,12 +177,12 @@ export function ErrorFeed({
               <input type="hidden" name="level" value={level} />
               <Submit tone="danger">Да, пометить</Submit>
             </form>
-            <button type="button" className="ag-btn sm" onClick={() => setConfirming(false)}>
+            <button type="button" className="ag-btn ag-sm" onClick={() => setConfirming(false)}>
               Отмена
             </button>
           </div>
         ) : (
-          <button type="button" className="ag-btn sm" onClick={() => setConfirming(true)}>
+          <button type="button" className="ag-btn ag-sm" onClick={() => setConfirming(true)}>
             Пометить решёнными всё неразобранное
           </button>
         )}

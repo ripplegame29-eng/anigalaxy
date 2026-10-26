@@ -30,7 +30,7 @@ function Button({
     <button
       type="submit"
       disabled={pending || disabled}
-      className={`ag-btn sm${tone === "danger" ? " danger" : ""}`}
+      className={`ag-btn ag-sm${tone === "danger" ? " ag-danger" : ""}`}
     >
       {pending ? "…" : children}
     </button>
@@ -105,7 +105,7 @@ export function UserRowActions({
         <button
           type="button"
           onClick={() => setOpen((v) => !v)}
-          className="ag-btn sm"
+          className="ag-btn ag-sm"
           aria-expanded={open}
         >
           {open ? "Скрыть" : "Ещё"}

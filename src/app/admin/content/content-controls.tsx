@@ -27,7 +27,7 @@ function Submit({
     <button
       type="submit"
       disabled={pending}
-      className={`ag-btn sm${tone === "danger" ? " danger" : ""}`}
+      className={`ag-btn ag-sm${tone === "danger" ? " ag-danger" : ""}`}
     >
       {pending ? "…" : children}
     </button>
@@ -81,7 +81,14 @@ export function CreateBlockForm() {
         />
       </div>
 
-      <PayloadEditor kind={kind} name="payload" defaultValue={JSON.stringify(spec.example, null, 2)} />
+      {/* key по виду блока: иначе при смене kind textarea сохраняла бы JSON
+          предыдущего вида (useState берёт defaultValue только при монтировании). */}
+      <PayloadEditor
+        key={kind}
+        kind={kind}
+        name="payload"
+        defaultValue={JSON.stringify(spec.example, null, 2)}
+      />
 
       <div>
         <Submit>Создать</Submit>
@@ -205,7 +212,7 @@ export function BlockRow({
           <button
             type="button"
             onClick={() => setOpen((v) => !v)}
-            className="ag-btn sm"
+            className="ag-btn ag-sm"
             aria-expanded={open}
           >
             {open ? "Скрыть" : "Править"}

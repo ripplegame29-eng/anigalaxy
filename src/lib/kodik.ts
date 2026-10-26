@@ -147,16 +147,21 @@ async function kodikPost<T>(
 
     return data;
   } catch (error: unknown) {
-    // Токен в params не пишется — redact() в логгере вычистил бы его и так,
-    // но и передавать секрет в журнал незачем.
-    void logError({
-      level: "error",
-      source: "kodik",
-      operation: path,
-      message: error instanceof Error ? error.message : String(error),
-      stack: error instanceof Error ? error.stack : null,
-      context: { params, isAbort: isAbortError(error) },
-    });
+    // Dynamic server usage / redirect / not-found — это не сбой Kodik, а
+    // служебный сигнал Next.js, который тот ловит сам. Писать его в журнал
+    // ошибок нельзя: сотни ложных строк прячут настоящие проблемы.
+    if (!isNextControlFlow(error)) {
+      // Токен в params не пишется — redact() в логгере вычистил бы его и так,
+      // но и передавать секрет в журнал незачем.
+      void logError({
+        level: "error",
+        source: "kodik",
+        operation: path,
+        message: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : null,
+        context: { params, isAbort: isAbortError(error) },
+      });
+    }
     throw error;
   } finally {
     clearTimeout(timer);
@@ -169,6 +174,15 @@ function isAbortError(error: unknown): boolean {
   return (
     error instanceof Error &&
     (error.name === "AbortError" || error.name === "TimeoutError")
+  );
+}
+
+/** Служебные ошибки Next.js (динамический рендер, redirect, not-found). */
+function isNextControlFlow(error: unknown): boolean {
+  const digest = (error as { digest?: unknown } | null)?.digest;
+  return (
+    typeof digest === "string" &&
+    (digest === "DYNAMIC_SERVER_USAGE" || digest.startsWith("NEXT_"))
   );
 }
 

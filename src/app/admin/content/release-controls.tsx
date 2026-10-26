@@ -29,7 +29,7 @@ function Submit({
     <button
       type="submit"
       disabled={pending}
-      className={`ag-btn sm${tone === "danger" ? " danger" : ""}`}
+      className={`ag-btn ag-sm${tone === "danger" ? " ag-danger" : ""}`}
     >
       {pending ? "…" : children}
     </button>
@@ -267,7 +267,7 @@ export function ReleaseRow({
           </form>
           <button
             type="button"
-            className="ag-btn sm"
+            className="ag-btn ag-sm"
             onClick={() => setOpen((v) => !v)}
             aria-expanded={open}
           >
