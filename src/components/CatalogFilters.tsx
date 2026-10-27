@@ -175,6 +175,8 @@ export function CatalogFilters({ value, meta }: { value: CatalogState; meta: Cat
   });
   const [favCount, setFavCount] = useState(0);
   const [genresOpen, setGenresOpen] = useState(false);
+  /* На телефоне панель фильтров свёрнута, чтобы выдача была под рукой */
+  const [panelOpen, setPanelOpen] = useState(false);
   const firstRender = useRef(true);
   const searchRef = useRef<HTMLInputElement>(null);
   const genresRef = useDismiss(genresOpen, () => setGenresOpen(false));
@@ -334,7 +336,17 @@ export function CatalogFilters({ value, meta }: { value: CatalogState; meta: Cat
         </span>
       </div>
 
-      <div className="cat-panel">
+      <button
+        type="button"
+        className={`cat-ftoggle${panelOpen ? " on" : ""}`}
+        aria-expanded={panelOpen}
+        onClick={() => setPanelOpen((v) => !v)}
+      >
+        Фильтры
+        <CaretIcon />
+      </button>
+
+      <div className={`cat-panel${panelOpen ? " open" : ""}`}>
       <div className="cat-row1">
         <div className="cat-grp">
           <span className="cat-lab">Тип</span>

@@ -1125,3 +1125,16 @@ html[data-cat-density="compact"] .cat-grid {
   .cat-fp .cat-dt { width: 100%; min-width: 0; }
   .cat-fp .cat-dd-sort .cat-dt { min-width: 0; }
 }
+
+.cat-fp .cat-ftoggle { display: none; }
+@media (max-width: 640px) {
+  .cat-fp .cat-ftoggle {
+    display: flex; align-items: center; justify-content: space-between; width: 100%; min-height: 48px; margin: 10px 0 0;
+    padding: 0 16px; border: 0; border-radius: 14px; background: #0f0f10; color: #fff; font: 800 14px/1 inherit;
+    touch-action: manipulation;
+  }
+  .cat-fp .cat-ftoggle .cat-caret { width: 18px; height: 18px; transition: transform .2s; }
+  .cat-fp .cat-ftoggle.on .cat-caret { transform: rotate(180deg); }
+  .cat-fp .cat-panel { display: none; margin-top: 8px; }
+  .cat-fp .cat-panel.open { display: grid; }
+}
