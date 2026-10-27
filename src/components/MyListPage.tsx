@@ -94,7 +94,7 @@ function Sel({ label, value, onChange, children }: { label?: string; value: stri
 function Ring({ pct, c, size = 60 }: { pct: number; c: string; size?: number }) {
   const r = 24, C = 2 * Math.PI * r;
   return (
-    <span className="al-ring" style={{ width: size, height: size }}>
+    <span className="al-ring" style={{ width: size, height: size, color: c }}>
       <svg viewBox="0 0 60 60"><circle cx="30" cy="30" r={r} className="t" /><circle cx="30" cy="30" r={r} className="f" style={{ stroke: c, strokeDasharray: `${(C * pct) / 100} ${C}` }} /></svg>
       <b>{Math.round(pct)}%</b>
     </span>
@@ -788,9 +788,9 @@ const CSS = `
 .al-cbody h3{font-size:16.5px;font-weight:800;line-height:1.25;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .al-chip{display:inline-flex;align-items:center;gap:7px;padding:4px 11px;border-radius:99px;background:color-mix(in srgb,var(--s,#22d3ee) 16%,#080c1a);border:1px solid color-mix(in srgb,var(--s,#22d3ee) 40%,transparent);color:var(--s,#22d3ee);font-size:11.5px;font-weight:800;white-space:nowrap}
 .al-chip i{width:6px;height:6px;border-radius:50%;background:var(--s,#22d3ee);box-shadow:0 0 8px var(--s,#22d3ee)}
-.al-ring{position:relative;flex:none;display:grid;place-items:center}.al-ring svg{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg)}
-.al-ring circle{fill:none;stroke-width:5}.al-ring .t{stroke:rgba(255,255,255,.09)}.al-ring .f{stroke-linecap:round;filter:drop-shadow(0 0 5px currentColor);transition:stroke-dasharray 1s cubic-bezier(.2,.8,.2,1)}
-.al-ring b{font-size:12.5px;font-weight:800;font-variant-numeric:tabular-nums}
+.al-ring{position:relative;flex:none;display:grid;place-items:center}.al-ring svg{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg);overflow:visible;filter:drop-shadow(0 0 4px color-mix(in srgb,currentColor 70%,transparent))}
+.al-ring circle{fill:none;stroke-width:5}.al-ring .t{stroke:rgba(255,255,255,.09)}.al-ring .f{stroke-linecap:round;transition:stroke-dasharray 1s cubic-bezier(.2,.8,.2,1)}
+.al-ring b{color:#fff;font-size:12.5px;font-weight:800;font-variant-numeric:tabular-nums}
 
 /* панель фильтров */
 .al-panel{margin-top:44px;padding:18px}
