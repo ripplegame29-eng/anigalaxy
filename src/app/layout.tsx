@@ -56,6 +56,7 @@ import "@/components/site/header.css";
 import "@/components/site/header-promo.css";
 import "@/components/site/search.css";
 import "@/components/row-highlight.css";
+import "./mobile-perf.css";
 import { ProgressionBoot } from "@/components/ProgressionBoot";
 import { EpisodeNotifier } from "@/components/EpisodeNotifier";
 import { DevPanel } from "@/components/progression/DevPanel";

@@ -59,6 +59,8 @@ export function HeroSlider({ items }: { items: AnimeCard[] }) {
   // Без WebGL канвас остаётся прозрачным, и виден исходный кадр.
   useEffect(() => {
     if (shaderStrength <= 0) return;
+    // На телефонах шейдер апскейла сильно грузит GPU — показываем исходный кадр
+    if (window.matchMedia("(max-width: 900px), (pointer: coarse)").matches) return;
     const canvas = canvasRefs.current[index];
     const video = videoRefs.current[index];
     if (!canvas || !video) return;

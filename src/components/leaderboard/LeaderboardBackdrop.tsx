@@ -58,7 +58,7 @@ export function LeaderboardBackdrop() {
     const mouse = { x: 0, y: 0, px: 0, py: 0, on: false };
 
     const resize = () => {
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const dpr = Math.min(window.devicePixelRatio || 1, window.matchMedia("(pointer: coarse)").matches ? 1.25 : 2);
       w = window.innerWidth;
       h = window.innerHeight;
       canvas.width = Math.round(w * dpr);

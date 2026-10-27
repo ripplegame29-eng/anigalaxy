@@ -209,7 +209,7 @@ export function initFx(): () => void {
   if (ectx && !reduced()) {
     let w = 0;
     let h = 0;
-    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    const dpr = Math.min(window.devicePixelRatio || 1, window.matchMedia("(pointer: coarse)").matches ? 1.25 : 2);
     interface Ember {
       x: number;
       y: number;
@@ -285,7 +285,7 @@ export function initFx(): () => void {
   fx.setAttribute("aria-hidden", "true");
   document.body.appendChild(fx);
   burstCtx = fx.getContext("2d");
-  const dpr2 = Math.min(2, window.devicePixelRatio || 1);
+  const dpr2 = Math.min(window.devicePixelRatio || 1, window.matchMedia("(pointer: coarse)").matches ? 1.25 : 2);
   const resizeBurst = (): void => {
     fx.width = window.innerWidth * dpr2;
     fx.height = window.innerHeight * dpr2;

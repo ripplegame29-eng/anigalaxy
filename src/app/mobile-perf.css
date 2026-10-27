@@ -1,0 +1,40 @@
+/* ═══ Лёгкий режим для телефонов и планшетов ═══
+   Подключается последним. Убирает самое дорогое для GPU: размытие заднего
+   плана (backdrop-filter) на десятках слоёв, бесконечные декоративные
+   анимации и Ken Burns. Вид остаётся прежним: стёкла и так почти
+   непрозрачные, а свечения просто перестают пульсировать. */
+@media (max-width: 900px), (pointer: coarse) {
+  *, *::before, *::after {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+  /* нижняя панель навигации — одно небольшое стекло, его оставляем */
+  .mnv-bar {
+    -webkit-backdrop-filter: blur(10px) !important;
+    backdrop-filter: blur(10px) !important;
+  }
+  /* затемнение шторки и окон без размытия — плотнее, чтобы читалось */
+  .mnv-sheet, .agh-mega-scrim { background: rgba(2, 4, 10, .78) !important; }
+
+  /* Ken Burns на постерах и фонах */
+  .animate-kenburns, .don-scene { animation: none !important; }
+  .don-sakura { display: none !important; }
+
+  /* декоративные свечения, блики, частицы не анимируются бесконечно */
+  [class*="glow"], [class*="shine"], [class*="aurora"], [class*="sparkle"],
+  [class*="particle"], [class*="float"], [class*="shimmer"], [class*="twinkle"],
+  [class*="glow"]::before, [class*="glow"]::after,
+  [class*="shine"]::before, [class*="shine"]::after,
+  [class*="aurora"]::before, [class*="aurora"]::after,
+  [class*="sparkle"]::before, [class*="sparkle"]::after {
+    animation: none !important;
+  }
+
+  /* быстрее реакция на касание, без задержки двойного тапа */
+  a, button, summary, [role="button"] { touch-action: manipulation; }
+  html { -webkit-text-size-adjust: 100%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-kenburns { animation: none !important; }
+}

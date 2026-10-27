@@ -151,7 +151,7 @@ export function attachSharpen(
 
     // Канвас держим в размерах контейнера с ограничением по devicePixelRatio,
     // чтобы на 4K-экранах шейдер не считал кадр втрое дороже без выигрыша.
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const dpr = Math.min(window.devicePixelRatio || 1, window.matchMedia("(pointer: coarse)").matches ? 1.25 : 2);
     const width = Math.max(1, Math.round(canvas.clientWidth * dpr));
     const height = Math.max(1, Math.round(canvas.clientHeight * dpr));
     const resized = width !== canvas.width || height !== canvas.height;
