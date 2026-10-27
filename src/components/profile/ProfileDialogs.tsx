@@ -930,7 +930,7 @@ function BackgroundDialog() {
   const [message, setMessage] = useState<{ text: string; tone: "error" | "ok" } | null>(null);
 
   const onFile = useCallback(async (file: File) => {
-    const result = await readImageFile(file, { maxDim: 1600, maxMb: IMAGE_LIMITS.background });
+    const result = await readImageFile(file, { maxDim: 2560, maxMb: IMAGE_LIMITS.background, quality: 0.94 });
     if (!result.ok) {
       setMessage({ text: result.error, tone: "error" });
       return;
@@ -2064,7 +2064,7 @@ export function SettingsPanel({
   }, [draftBio, draftSignature]);
 
   const onBanner = useCallback(async (file: File) => {
-    const result = await readImageFile(file, { maxDim: 1600, maxMb: IMAGE_LIMITS.background });
+    const result = await readImageFile(file, { maxDim: 2560, maxMb: IMAGE_LIMITS.background, quality: 0.94 });
     if (!result.ok) {
       setMessage(result.error);
       return;

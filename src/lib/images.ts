@@ -26,7 +26,7 @@ function readDataUrl(file: File): Promise<string> {
   });
 }
 
-function drawScaled(image: HTMLImageElement, maxDim: number): string {
+function drawScaled(image: HTMLImageElement, maxDim: number, quality = 0.86): string {
   const scale = Math.min(1, maxDim / Math.max(image.naturalWidth, image.naturalHeight));
   const width = Math.max(1, Math.round(image.naturalWidth * scale));
   const height = Math.max(1, Math.round(image.naturalHeight * scale));
@@ -40,7 +40,7 @@ function drawScaled(image: HTMLImageElement, maxDim: number): string {
   ctx.drawImage(image, 0, 0, width, height);
 
   // WebP сохраняет прозрачность и жмётся заметно лучше PNG
-  const webp = canvas.toDataURL("image/webp", 0.86);
+  const webp = canvas.toDataURL("image/webp", quality);
   if (webp.startsWith("data:image/webp")) return webp;
   return canvas.toDataURL("image/png");
 }
@@ -56,7 +56,7 @@ function loadImage(src: string): Promise<HTMLImageElement> {
 
 export async function readImageFile(
   file: File,
-  options: { maxDim: number; maxMb: number },
+  options: { maxDim: number; maxMb: number; quality?: number },
 ): Promise<ImageResult> {
   if (!ACCEPTED.includes(file.type)) {
     return { ok: false, error: "Нужен файл изображения: JPEG, PNG, WebP, GIF" };
@@ -73,7 +73,7 @@ export async function readImageFile(
 
   try {
     const image = await loadImage(raw);
-    const data = drawScaled(image, options.maxDim);
+    const data = drawScaled(image, options.maxDim, options.quality);
     if (!data) return { ok: false, error: "Браузер не смог обработать изображение" };
     return { ok: true, data, animated: false };
   } catch {
