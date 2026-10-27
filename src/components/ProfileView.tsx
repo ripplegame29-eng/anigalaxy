@@ -9,7 +9,7 @@ import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { openAuthDialog } from "@/lib/auth-dialog";
 import { isPremiumActive, displayNameOf } from "@/lib/auth";
 import { useAccount } from "@/lib/use-account";
-import { useProfile, unreadCount } from "@/lib/profile";
+import { useProfile, unreadCount, customBannerStyle } from "@/lib/profile";
 import { levelInfo } from "@/lib/levels";
 import { watchStore } from "@/lib/history";
 import { BACKGROUNDS, FRAMES, TITLES, titleTag } from "@/lib/cosmetics";
@@ -122,7 +122,7 @@ export function ProfileView({ mode = "owner", basePath: basePathProp }: { mode?:
 
   const bgItem = BACKGROUNDS.find((item) => item.id === profile.backgroundId) ?? BACKGROUNDS[0];
   const background = profile.backgroundCustom
-    ? { backgroundImage: `url(${profile.backgroundCustom})`, backgroundSize: "cover", backgroundPosition: "center" }
+    ? customBannerStyle(profile)
     : {
         // Градиенты — слои background-image: так многослойные узоры
         // (сетка) получают свой background-size из каталога

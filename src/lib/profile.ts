@@ -73,6 +73,10 @@ export interface ProfileState {
   backgroundId: string;
   /** data-URL своего фона, если он выбран */
   backgroundCustom: string;
+  /** Масштаб своего фона (1 — по ширине баннера) и точка фокуса, % */
+  bgZoom?: number;
+  bgX?: number;
+  bgY?: number;
   /** id открытого титула, "" — без титула */
   titleId: string;
   /** Дополнительные выбранные титулы (мультивыбор): показываются рядом с основным */
@@ -501,4 +505,15 @@ export function groupSignature(value: string): string[] {
   const out: string[] = [];
   for (let i = 0; i < clean.length; i += 4) out.push(clean.slice(i, i + 4));
   return out;
+}
+
+/** Стиль баннера со своей картинкой: масштаб и положение, заданные в «Изменить фон» */
+export function customBannerStyle(profile: Pick<ProfileState, "backgroundCustom" | "bgZoom" | "bgX" | "bgY">) {
+  const zoom = Math.min(4, Math.max(1, profile.bgZoom ?? 1));
+  return {
+    backgroundImage: `url(${profile.backgroundCustom})`,
+    backgroundRepeat: "no-repeat" as const,
+    backgroundSize: zoom === 1 ? "cover" : `${zoom * 100}% auto`,
+    backgroundPosition: `${profile.bgX ?? 50}% ${profile.bgY ?? 50}%`,
+  };
 }

@@ -15,6 +15,7 @@ import {
   updateProfile,
   profileStore,
   groupSignature,
+  customBannerStyle,
 } from "@/lib/profile";
 import {
   BACKGROUNDS,
@@ -842,6 +843,87 @@ function EffectsPanel() {
   );
 }
 
+/** Редактор своего баннера: тянуть — двигать, ползунок/колесо — масштаб */
+function BannerEditor() {
+  const profile = useProfile();
+  const zoom = profile.bgZoom ?? 1;
+  const x = profile.bgX ?? 50;
+  const y = profile.bgY ?? 50;
+  const box = useRef<HTMLDivElement>(null);
+  const drag = useRef<{ px: number; py: number; x: number; y: number } | null>(null);
+  const clamp = (v: number) => Math.min(100, Math.max(0, v));
+
+  const onDown = (event: React.PointerEvent<HTMLDivElement>) => {
+    event.currentTarget.setPointerCapture(event.pointerId);
+    drag.current = { px: event.clientX, py: event.clientY, x, y };
+  };
+  const onMove = (event: React.PointerEvent<HTMLDivElement>) => {
+    const d = drag.current;
+    const el = box.current;
+    if (!d || !el) return;
+    const rect = el.getBoundingClientRect();
+    /* Чем больше масштаб, тем медленнее «едет» кадр относительно пальца */
+    const k = zoom > 1 ? 100 / ((zoom - 1) * rect.width) : 0;
+    const kv = zoom > 1 ? 100 / ((zoom - 1) * rect.height) : 0;
+    updateProfile({
+      bgX: clamp(d.x - (event.clientX - d.px) * k * 1.0),
+      bgY: clamp(d.y - (event.clientY - d.py) * Math.max(kv, k) * 1.0),
+    });
+  };
+  const onUp = () => {
+    drag.current = null;
+  };
+  const setZoom = (value: number) => updateProfile({ bgZoom: Math.min(4, Math.max(1, value)) });
+
+  return (
+    <div className="mt-4 rounded-2xl bg-white/[0.04] p-3 ring-1 ring-white/10">
+      <div
+        ref={box}
+        className="h-28 w-full cursor-grab touch-none select-none rounded-xl ring-1 ring-white/15 active:cursor-grabbing"
+        style={customBannerStyle(profile)}
+        onPointerDown={onDown}
+        onPointerMove={onMove}
+        onPointerUp={onUp}
+        onPointerCancel={onUp}
+        onWheel={(event) => setZoom(zoom - event.deltaY * 0.002)}
+        role="img"
+        aria-label="Предпросмотр баннера: перетащите, чтобы сдвинуть"
+      />
+      <p className="mt-2 text-[11px] text-muted">Перетаскивайте картинку, чтобы сдвинуть. Колесо мыши или ползунок — масштаб.</p>
+      <label className="mt-2 flex items-center gap-3 text-xs font-bold text-white">
+        Масштаб
+        <input
+          type="range"
+          min={1}
+          max={4}
+          step={0.05}
+          value={zoom}
+          onChange={(event) => setZoom(Number(event.target.value))}
+          className="h-1 flex-1 accent-[var(--accent-2,#4ac5f5)]"
+        />
+        <span className="w-10 text-right tabular-nums text-muted">{Math.round(zoom * 100)}%</span>
+      </label>
+      <div className="mt-2 grid grid-cols-3 gap-2">
+        {[
+          ["← →", "Центр по горизонтали", { bgX: 50 }],
+          ["↑ ↓", "Центр по вертикали", { bgY: 50 }],
+          ["Сброс", "Сбросить масштаб и положение", { bgZoom: 1, bgX: 50, bgY: 50 }],
+        ].map(([label, title, patch]) => (
+          <button
+            key={String(title)}
+            type="button"
+            title={String(title)}
+            onClick={() => updateProfile(patch as Parameters<typeof updateProfile>[0])}
+            className="rounded-lg bg-white/8 px-2 py-1.5 text-[11px] font-bold text-white ring-1 ring-white/12 transition hover:bg-white/16"
+          >
+            {String(label)}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function BackgroundDialog() {
   const profile = useProfile();
   const ctx = useUnlockContext();
@@ -853,8 +935,8 @@ function BackgroundDialog() {
       setMessage({ text: result.error, tone: "error" });
       return;
     }
-    updateProfile({ backgroundId: "custom", backgroundCustom: result.data });
-    setMessage({ text: "Свой фон применён", tone: "ok" });
+    updateProfile({ backgroundId: "custom", backgroundCustom: result.data, bgZoom: 1, bgX: 50, bgY: 50 });
+    setMessage({ text: "Свой фон применён — подвиньте и приблизьте его ниже", tone: "ok" });
   }, []);
 
   return (
@@ -862,6 +944,8 @@ function BackgroundDialog() {
       <FilePicker label="Загрузить свой" onFile={(file) => void onFile(file)} />
 
       {message && <Note tone={message.tone}>{message.text}</Note>}
+
+      {profile.backgroundId === "custom" && profile.backgroundCustom && <BannerEditor />}
 
       <div className="mt-4 space-y-2">
         <div className="grid grid-cols-3 gap-2">
@@ -1985,7 +2069,7 @@ export function SettingsPanel({
       setMessage(result.error);
       return;
     }
-    updateProfile({ backgroundId: "custom", backgroundCustom: result.data });
+    updateProfile({ backgroundId: "custom", backgroundCustom: result.data, bgZoom: 1, bgX: 50, bgY: 50 });
     setMessage("Баннер обновлён");
   }, []);
 
@@ -3465,7 +3549,7 @@ function PreviewDialog() {
           className="h-24 w-full"
           style={
             profile.backgroundCustom
-              ? { backgroundImage: `url(${profile.backgroundCustom})`, backgroundSize: "cover", backgroundPosition: "center" }
+              ? customBannerStyle(profile)
               : { backgroundImage: bgItem.css, backgroundSize: bgItem.backgroundSize ?? "auto" }
           }
         />
