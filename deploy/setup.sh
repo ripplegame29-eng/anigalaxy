@@ -78,6 +78,7 @@ else
 fi
 ln -sf /etc/nginx/sites-available/anigalaxy /etc/nginx/sites-enabled/anigalaxy
 rm -f /etc/nginx/sites-enabled/default
+install -d -o www-data -g www-data -m 755 /var/cache/nginx/anigalaxy
 nginx -t && systemctl reload nginx
 
 say "Файрвол"

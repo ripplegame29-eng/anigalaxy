@@ -9,8 +9,7 @@ WorkingDirectory=/opt/anigalaxy
 EnvironmentFile=/opt/anigalaxy/.env.production
 Environment=NODE_ENV=production
 Environment=PORT=3000
-Environment=HOSTNAME=127.0.0.1
-ExecStart=/usr/bin/npm run start
+ExecStart=/usr/bin/npm run start -- -H 127.0.0.1 -p 3000
 Restart=always
 RestartSec=3
 # Лимит памяти: лучше перезапуск службы, чем зависший сервер
