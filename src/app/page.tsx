@@ -9,6 +9,8 @@ import { HeroSlider } from "@/components/HeroSlider";
 import { getTitleDetail, row } from "@/lib/kodik";
 import { mangaRow } from "@/lib/senku";
 import { HomePromo } from "@/components/HomePromo";
+import { TelegramCta } from "@/components/TelegramCta";
+import { HomeTopUsers } from "@/components/HomeTopUsers";
 
 /** Страница кэшируется на 5 минут — Kodik обновляет данные нечасто */
 export const revalidate = 300;
@@ -202,6 +204,12 @@ export default function HomePage() {
         <Suspense fallback={<RowSkeleton title="Манга" />}>
           <MangaSection />
         </Suspense>
+
+        {/* Закрытый канал в Telegram — финальный акцент главной */}
+        <TelegramCta />
+
+        {/* Лидеры сообщества — самый низ главной */}
+        <HomeTopUsers />
       </div>
     </>
   );

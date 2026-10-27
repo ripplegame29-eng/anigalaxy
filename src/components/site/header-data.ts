@@ -103,53 +103,6 @@ export const ALL_GENRES_HREF = "/catalog";
 
 /* ----------------------------- Уведомления ------------------------------ */
 
-export interface HeaderNotification {
-  icon: IconName;
-  title: string;
-  text: string;
-  color: string;
-  /** Подпись «когда» — в прототипе литерал */
-  ago: string;
-  /** Непрочитанное: рисует точку `.ntf.un` */
-  unread: boolean;
-}
-
-/**
- * Строки выпадающего уведомлений.
- *
- * TODO: это демо-строки прототипа. Настоящие уведомления проекта лежат в
- * `profile.notices` (lib/profile.ts) — у них есть только текст, дата и
- * признак «прочитано»; иконки и цвета у таких записей нет, поэтому список
- * пока наполнен макетом. Счётчик на иконке колокольчика при этом настоящий:
- * `unreadCount(profile)`.
- */
-export const NOTIFICATIONS: HeaderNotification[] = [
-  {
-    icon: "trophy",
-    title: "Новое достижение",
-    text: "«Хранитель пасхалок» получено",
-    color: "#4ac5f5",
-    ago: "2 мин",
-    unread: true,
-  },
-  {
-    icon: "msg",
-    title: "Ответ на комментарий",
-    text: "kira_77 ответил вам",
-    color: "#22d3ee",
-    ago: "1 ч",
-    unread: true,
-  },
-  {
-    icon: "film",
-    title: "Вышла новая серия",
-    text: "Блич: Тысячелетняя война · 5",
-    color: "#4a9dff",
-    ago: "3 ч",
-    unread: false,
-  },
-];
-
 /** Ссылка «Прочитать все» и строки уведомлений ведут сюда */
 export const NOTICES_HREF = "/notifications";
 

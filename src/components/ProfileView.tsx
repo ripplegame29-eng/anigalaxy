@@ -78,7 +78,7 @@ export function ProfileView({ mode = "owner", basePath: basePathProp }: { mode?:
   const guestSections = useMemo(() => {
     const p = profile.privacy;
     return VISIBLE_SECTIONS.filter((item) => {
-      if (item.id === "gifts" || item.id === "blacklist" || item.id === "history") return false;
+      if (item.id === "blacklist" || item.id === "history") return false;
       if (item.id === "achievements") return p.showAchievements;
       if (item.id === "comments") return p.showComments;
       return true;
@@ -111,6 +111,8 @@ export function ProfileView({ mode = "owner", basePath: basePathProp }: { mode?:
    */
   useEffect(() => {
     if (!isGuest && tab === "referrals") router.replace("/referrals");
+    /* Подарки переехали на отдельную страницу — старые ссылки ведут туда */
+    if (!isGuest && tab === "gifts") router.replace("/gifts");
   }, [tab, router, isGuest]);
 
   const favorites = useMemo(() => parseList<string>(favoritesRaw, []), [favoritesRaw]);

@@ -5,9 +5,10 @@
  * поля без новых миграций.
  */
 
+import { clanLevelFromXp, memberCap } from "../clan-rules";
+import { closeSeasonRow, openSeasonRow } from "./clan-points";
 import { num, str, transaction, type Database } from "./sqlite";
 
-export const MAX_MEMBERS = 30;
 export const WAR_DURATION_MS = 3 * 24 * 60 * 60 * 1000;
 const MAX_DATA_BYTES = 64 * 1024;
 /** Максимум за один вклад — защита от подделанных запросов */
@@ -31,6 +32,12 @@ export interface ClanSummary {
   prestige: number;
   members: number;
   createdAt: number;
+  league: number;
+  trophies: number;
+  crystals: number;
+  extraSlots: number;
+  level: number;
+  cap: number;
 }
 
 export interface ClanMember {
@@ -73,6 +80,12 @@ function toSummary(row: Record<string, unknown>): ClanSummary {
     prestige: num(row.prestige),
     members: num(row.members),
     createdAt: num(row.created_at),
+    league: num(row.league),
+    trophies: num(row.trophies),
+    crystals: num(row.crystals),
+    extraSlots: num(row.extra_slots),
+    level: clanLevelFromXp(num(row.xp)),
+    cap: memberCap(clanLevelFromXp(num(row.xp)), num(row.extra_slots)),
   };
 }
 
@@ -124,7 +137,7 @@ export function clanData(db: Database, clanId: number): Record<string, unknown> 
   }
 }
 
-function logEvent(
+export function logEvent(
   db: Database,
   clanId: number,
   userId: number | null,
@@ -179,6 +192,7 @@ export function createClan(
       id,
       now,
     );
+    openSeasonRow(db, leaderId, id, now);
     logEvent(db, id, leaderId, "created", 0, {}, now);
     const clan = getClan(db, id);
     return clan ? { ok: true, value: clan } : fail("Не удалось создать клан", "internal");
@@ -190,12 +204,13 @@ export function joinClan(db: Database, userId: number, clanId: number, now = Dat
     if (clanIdOfUser(db, userId) !== null) return fail("Вы уже состоите в клане", "in_clan");
     const clan = getClan(db, clanId);
     if (!clan) return fail("Клан не найден", "not_found");
-    if (clan.members >= MAX_MEMBERS) return fail("В клане нет свободных мест", "full");
+    if (clan.members >= clan.cap) return fail("В клане нет свободных мест", "full");
     db.prepare("INSERT INTO clan_members (user_id, clan_id, role, joined_at) VALUES (?, ?, 'member', ?)").run(
       userId,
       clanId,
       now,
     );
+    openSeasonRow(db, userId, clanId, now);
     logEvent(db, clanId, userId, "joined", 0, {}, now);
     return { ok: true, value: getClan(db, clanId) ?? clan };
   });
@@ -221,6 +236,7 @@ export function leaveClan(db: Database, userId: number, now = Date.now()): ClanR
       db.prepare("UPDATE clan_members SET role = 'leader' WHERE user_id = ?").run(num(heir.user_id));
       logEvent(db, clanId, num(heir.user_id), "leader_changed", 0, {}, now);
     }
+    closeSeasonRow(db, userId, clanId, now);
     db.prepare("DELETE FROM clan_members WHERE user_id = ?").run(userId);
     logEvent(db, clanId, userId, "left", 0, {}, now);
     return { ok: true, value: { disbanded: false } };
@@ -231,9 +247,13 @@ export function kickMember(db: Database, leaderId: number, targetId: number, now
   return transaction(db, (): ClanResult<true> => {
     const clanId = clanIdOfUser(db, leaderId);
     const clan = clanId === null ? null : getClan(db, clanId);
-    if (!clan || clan.leaderId !== leaderId) return fail("Исключать участников может только лидер", "forbidden");
-    if (targetId === leaderId) return fail("Лидер не может исключить себя", "invalid");
+    const myRole = str(db.prepare("SELECT role FROM clan_members WHERE user_id = ?").get(leaderId)?.role);
+    if (!clan || (myRole !== "leader" && myRole !== "officer")) return fail("Исключать участников могут глава и офицеры", "forbidden");
+    if (targetId === leaderId) return fail("Нельзя исключить себя", "invalid");
+    const targetRole = str(db.prepare("SELECT role FROM clan_members WHERE user_id = ?").get(targetId)?.role);
+    if (targetRole === "leader" || (targetRole === "officer" && myRole !== "leader")) return fail("Этого игрока исключить нельзя", "forbidden");
     if (clanIdOfUser(db, targetId) !== clan.id) return fail("Игрок не состоит в вашем клане", "not_found");
+    closeSeasonRow(db, targetId, clan.id, now);
     db.prepare("DELETE FROM clan_members WHERE user_id = ?").run(targetId);
     logEvent(db, clan.id, targetId, "kicked", 0, {}, now);
     return { ok: true, value: true };
@@ -279,7 +299,12 @@ export function updateClan(
       db.prepare("UPDATE clans SET description = ? WHERE id = ?").run(input.description.trim().slice(0, 280), clan.id);
     }
     if (input.data !== undefined) {
-      const json = JSON.stringify(input.data);
+      // Надетую косметику меняет только сервер после покупки
+      const prev = clanData(db, clan.id);
+      const next = { ...input.data };
+      delete next.equipped;
+      if (prev.equipped) next.equipped = prev.equipped;
+      const json = JSON.stringify(next);
       if (Buffer.byteLength(json, "utf8") > MAX_DATA_BYTES) return fail("Слишком много данных", "too_large");
       db.prepare("UPDATE clans SET data = ? WHERE id = ?").run(json, clan.id);
     }
@@ -407,4 +432,16 @@ export function settleWars(db: Database, now = Date.now()): WarInfo[] {
     finished.push({ ...war, status: "finished", winner: war.scoreA === war.scoreB ? null : war.scoreA > war.scoreB ? war.clanA : war.clanB });
   }
   return finished;
+}
+
+/** Глава назначает офицера или снимает с должности */
+export function setRole(db: Database, leaderId: number, targetId: number, role: "officer" | "member"): ClanResult<true> {
+  return transaction(db, (): ClanResult<true> => {
+    const clanId = clanIdOfUser(db, leaderId);
+    const clan = clanId === null ? null : getClan(db, clanId);
+    if (!clan || clan.leaderId !== leaderId) return fail("Назначать офицеров может только глава", "forbidden");
+    if (targetId === leaderId || clanIdOfUser(db, targetId) !== clan.id) return fail("Игрок не состоит в вашем клане", "not_found");
+    db.prepare("UPDATE clan_members SET role = ? WHERE user_id = ?").run(role, targetId);
+    return { ok: true, value: true };
+  });
 }

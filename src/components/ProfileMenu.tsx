@@ -48,6 +48,7 @@ const NAV: Record<string, string> = {
   cosmetics: "/cosmetics",
   invite: "/referrals",
   events: "/events",
+  apps: "/apps",
   notices: "/notifications",
   settings: "/settings",
   premium: "/premium",
@@ -62,6 +63,8 @@ interface ProfileMenuItem {
   id: string;
   label: string;
   icon: string;
+  /** Заголовок группы: меняется — в меню рисуется новый раздел */
+  group?: string;
   href?: string;
   badge?: number | ((p: ProfileData) => number);
 }
@@ -188,7 +191,7 @@ export function ProfileMenu({ onAfterSelect }: { onAfterSelect?: () => void }) {
       // а getProfile вызывается только при открытии
       items: [
         ...PM.DEFAULT_ITEMS,
-        ...(isAdmin ? [{ id: "admin", label: "Админ-панель", icon: "shield" }] : []),
+        ...(isAdmin ? [{ id: "admin", label: "Админ-панель", icon: "shield", group: "Ещё" }] : []),
       ].map((item: ProfileMenuItem) => {
         const { progress } = dataRef.current;
         return {

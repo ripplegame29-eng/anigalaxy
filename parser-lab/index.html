@@ -1,0 +1,1135 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Anime Parser Lab</title>
+<script src="https://cdn.jsdelivr.net/npm/hls.js@1/dist/hls.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/dashjs@4/dist/dash.all.min.js"></script>
+<style>
+  :root {
+    --bg: #0a0b0f;
+    --bg-soft: #11141a;
+    --card: #151922;
+    --card-hover: #1c2130;
+    --line: #232838;
+    --text: #eef1f7;
+    --muted: #8b93a7;
+    --accent: #ff4d6d;
+    --accent-2: #7c5cff;
+    --ok: #22c55e;
+    --bad: #ef4444;
+    --warn: #f59e0b;
+    --radius: 14px;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; min-height: 100%; }
+  body {
+    background:
+      radial-gradient(900px 500px at 15% -10%, rgba(124, 92, 255, .18), transparent 60%),
+      radial-gradient(700px 400px at 90% 0%, rgba(255, 77, 109, .12), transparent 55%),
+      var(--bg);
+    color: var(--text);
+    font: 15px/1.5 "Segoe UI", system-ui, -apple-system, sans-serif;
+  }
+  a { color: inherit; }
+  button, input, select { font: inherit; }
+
+  header {
+    position: sticky; top: 0; z-index: 30;
+    background: rgba(10, 11, 15, .82);
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--line);
+  }
+  .wrap { width: min(1240px, calc(100% - 32px)); margin: 0 auto; }
+  .head-row {
+    display: flex; align-items: center; gap: 18px;
+    padding: 14px 0; flex-wrap: wrap;
+  }
+  .logo { display: flex; align-items: center; gap: 11px; font-weight: 800; letter-spacing: -.02em; }
+  .logo-mark {
+    width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    font-size: 17px; box-shadow: 0 6px 22px rgba(255,77,109,.35);
+  }
+  .logo small { display: block; font-size: 11px; font-weight: 500; color: var(--muted); letter-spacing: .04em; }
+  .health { margin-left: auto; display: flex; gap: 8px; flex-wrap: wrap; }
+  .pill {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 6px 11px; border: 1px solid var(--line); border-radius: 999px;
+    background: var(--bg-soft); color: var(--muted); font-size: 12px; font-weight: 600;
+    cursor: pointer;
+  }
+  .pill:hover { border-color: #363d52; color: var(--text); }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); flex: none; }
+  .dot.ok { background: var(--ok); box-shadow: 0 0 8px rgba(34,197,94,.7); }
+  .dot.bad { background: var(--bad); box-shadow: 0 0 8px rgba(239,68,68,.7); }
+  .dot.load { background: var(--warn); animation: pulse 1s infinite; }
+  @keyframes pulse { 50% { opacity: .35; } }
+
+  .tabs { display: flex; gap: 6px; padding: 0 0 14px; flex-wrap: wrap; }
+  .tab {
+    padding: 8px 16px; border-radius: 10px; border: 1px solid transparent;
+    background: transparent; color: var(--muted); cursor: pointer; font-weight: 600; font-size: 13.5px;
+  }
+  .tab:hover { color: var(--text); background: var(--bg-soft); }
+  .tab.active { background: var(--card); border-color: var(--line); color: var(--text); }
+  .tab .tag {
+    margin-left: 7px; font-size: 10px; padding: 2px 6px; border-radius: 6px;
+    background: rgba(124,92,255,.18); color: #b7a7ff; vertical-align: 1px;
+  }
+
+  .toolbar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; padding: 4px 0 18px; }
+  .search {
+    flex: 1 1 340px; display: flex; align-items: center; gap: 10px;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 0 14px; height: 46px;
+  }
+  .search:focus-within { border-color: #3b4460; box-shadow: 0 0 0 3px rgba(124,92,255,.12); }
+  .search input { flex: 1; background: none; border: 0; outline: 0; color: var(--text); }
+  .search input::placeholder { color: #626b80; }
+  .btn {
+    height: 46px; padding: 0 18px; border-radius: 12px; cursor: pointer;
+    background: var(--card); border: 1px solid var(--line); color: var(--text); font-weight: 600;
+  }
+  .btn:hover { background: var(--card-hover); }
+  .btn.primary { background: linear-gradient(135deg, var(--accent), #ff7455); border: 0; color: #fff; }
+  .btn.primary:hover { filter: brightness(1.08); }
+  .btn.ghost { background: transparent; }
+
+  .status {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    min-height: 22px; margin: -6px 0 16px; color: var(--muted); font-size: 12.5px;
+  }
+  .status b { color: var(--text); font-weight: 600; }
+  .status .warn { color: var(--warn); }
+  .status .bad { color: var(--bad); }
+
+  .grid {
+    display: grid; gap: 16px;
+    grid-template-columns: repeat(auto-fill, minmax(152px, 1fr));
+    padding-bottom: 40px;
+  }
+  .card {
+    background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
+    overflow: hidden; cursor: pointer; text-align: left; padding: 0; color: inherit;
+    transition: transform .16s ease, border-color .16s ease, background .16s ease;
+    display: flex; flex-direction: column;
+  }
+  .card:hover { transform: translateY(-3px); border-color: #394159; background: var(--card-hover); }
+  .poster { position: relative; aspect-ratio: 2 / 3; background: #0e1117; overflow: hidden; }
+  .poster img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .poster .ph { width: 100%; height: 100%; display: grid; place-items: center; color: #2e3446; font-size: 30px; }
+  .badge {
+    position: absolute; top: 8px; left: 8px; padding: 3px 7px; border-radius: 6px;
+    background: rgba(10,11,15,.82); backdrop-filter: blur(4px);
+    font-size: 10px; font-weight: 800; letter-spacing: .04em; color: #fff;
+  }
+  .badge.hd { color: #6ee7a8; border: 1px solid rgba(110,231,168,.35); }
+  .badge.air { top: auto; left: 8px; bottom: 8px; background: rgba(255,77,109,.9); }
+  .card-body { padding: 10px 11px 12px; display: flex; flex-direction: column; gap: 5px; flex: 1; }
+  .card-title {
+    font-size: 13px; font-weight: 600; line-height: 1.35;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+  }
+  .card-meta { margin-top: auto; display: flex; justify-content: space-between; gap: 8px; color: var(--muted); font-size: 11.5px; }
+  .score { color: #ffd166; font-weight: 700; }
+
+  .skeleton { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+  .skeleton .poster { background: linear-gradient(100deg, #141821 30%, #1b202c 50%, #141821 70%); background-size: 220% 100%; animation: shimmer 1.2s infinite; }
+  @keyframes shimmer { to { background-position: -120% 0; } }
+  .empty { grid-column: 1 / -1; padding: 60px 20px; text-align: center; color: var(--muted); border: 1px dashed var(--line); border-radius: var(--radius); }
+
+  /* overlay */
+  .overlay {
+    position: fixed; inset: 0; z-index: 60; display: flex; align-items: flex-start; justify-content: center;
+    background: rgba(4,5,8,.78); backdrop-filter: blur(6px); overflow: auto; padding: 34px 16px 60px;
+  }
+  .overlay.hidden { display: none; }
+  .sheet {
+    width: min(1080px, 100%); background: var(--bg-soft); border: 1px solid var(--line);
+    border-radius: 18px; box-shadow: 0 30px 90px rgba(0,0,0,.65); overflow: hidden;
+  }
+  .sheet-head { display: flex; gap: 0; align-items: stretch; border-bottom: 1px solid var(--line); }
+  .sheet-poster { width: 210px; flex: none; background: #0d1016; }
+  .sheet-poster img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .sheet-info { padding: 22px 24px; flex: 1; min-width: 0; }
+  .sheet-info h2 { margin: 0 0 6px; font-size: 22px; line-height: 1.25; letter-spacing: -.01em; }
+  .sub { color: var(--muted); font-size: 12.5px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .chips { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 12px; }
+  .chip { padding: 4px 9px; border-radius: 7px; background: #1b2030; color: #a9b1c6; font-size: 11.5px; border: 1px solid #242a3b; }
+  .desc { margin: 14px 0 0; color: #b7bfd2; font-size: 13.5px; max-height: 118px; overflow: auto; white-space: pre-line; }
+  .desc::-webkit-scrollbar { width: 6px; }
+  .desc::-webkit-scrollbar-thumb { background: #2c3346; border-radius: 3px; }
+  .close {
+    position: absolute; top: 12px; right: 12px; width: 36px; height: 36px; border-radius: 10px;
+    background: rgba(10,11,15,.75); border: 1px solid var(--line); color: var(--text); cursor: pointer; font-size: 18px;
+  }
+  .sheet-body { padding: 20px 24px 26px; }
+  .player-wrap { position: relative; background: #000; border-radius: 12px; overflow: hidden; aspect-ratio: 16 / 9; }
+  .player-wrap video { width: 100%; height: 100%; display: block; background: #000; }
+  .player-note {
+    position: absolute; left: 12px; bottom: 12px; padding: 6px 10px; border-radius: 8px;
+    background: rgba(10,11,15,.8); font-size: 11.5px; color: #cfd5e4; pointer-events: none;
+    max-width: calc(100% - 24px); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .player-note.err { color: #ff9aa9; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 14px; }
+  .row-label { color: var(--muted); font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; margin-right: 4px; }
+  .qbtn, .epbtn, .vbtn {
+    padding: 6px 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--card);
+    color: #c3cadb; cursor: pointer; font-size: 12.5px; font-weight: 600;
+  }
+  .qbtn:hover, .epbtn:hover, .vbtn:hover { background: var(--card-hover); color: #fff; }
+  .qbtn.active { background: rgba(255,77,109,.16); border-color: rgba(255,77,109,.5); color: #ffb3c0; }
+  .epbtn.active { background: rgba(124,92,255,.18); border-color: rgba(124,92,255,.5); color: #c4b7ff; }
+  .vbtn.active { background: rgba(124,92,255,.18); border-color: rgba(124,92,255,.5); color: #c4b7ff; }
+  .vbtn { max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .vbtn small { color: var(--muted); font-weight: 500; margin-left: 5px; }
+  .stream-url {
+    margin-top: 12px; padding: 9px 11px; border-radius: 9px; background: #0b0e14;
+    border: 1px solid var(--line); color: #7f8aa3; font: 11px/1.45 Consolas, monospace;
+    word-break: break-all; max-height: 74px; overflow: auto;
+  }
+  .log { margin-top: 18px; border-top: 1px solid var(--line); padding-top: 14px; }
+  .log h4 { margin: 0 0 8px; font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+  .log-item { font: 11.5px/1.6 Consolas, monospace; color: #8e97ad; }
+  .log-item .t { color: #5b6478; }
+  .log-item .ok { color: var(--ok); }
+  .log-item .bad { color: var(--bad); }
+  .hidden { display: none !important; }
+
+  @media (max-width: 700px) {
+    .sheet-head { flex-direction: column; }
+    .sheet-poster { width: 100%; height: 230px; }
+    .sheet-poster img { object-position: 50% 28%; }
+    .grid { grid-template-columns: repeat(auto-fill, minmax(132px, 1fr)); gap: 12px; }
+    .health { width: 100%; margin-left: 0; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="head-row">
+      <div class="logo">
+        <div class="logo-mark">◈</div>
+        <div>Anime Parser Lab<small>проверка anime-parsers-ru · HLS 1080p</small></div>
+      </div>
+      <div class="health" id="health"></div>
+    </div>
+    <div class="tabs" id="tabs">
+      <button class="tab active" data-source="aniliberty">AniLiberty <span class="tag">1080p</span></button>
+      <button class="tab" data-source="sameband">SameBand <span class="tag">anicli</span></button>
+      <button class="tab" data-source="anilibria">AniLibria <span class="tag">anicli</span></button>
+      <button class="tab" data-source="cvh">CVH <span class="tag">озвучки</span></button>
+      <button class="tab" data-source="animego">AnimeGO</button>
+      <button class="tab" data-source="kodik">Kodik</button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="toolbar">
+    <div class="search">
+      <span style="color:#626b80">⌕</span>
+      <input id="search" type="search" placeholder="Найти аниме — например, Фрирен, Наруто, Ванпанчмен…" autocomplete="off">
+    </div>
+    <button class="btn primary" id="search-btn">Искать</button>
+    <button class="btn" id="latest-btn">Свежее</button>
+    <button class="btn ghost" id="random-btn">Случайное</button>
+  </div>
+
+  <div class="status" id="status">Загрузка…</div>
+  <div class="grid" id="grid"></div>
+</main>
+
+<div class="overlay hidden" id="overlay">
+  <div class="sheet" id="sheet">
+    <div class="sheet-head" style="position:relative">
+      <div class="sheet-poster"><img id="d-poster" alt=""></div>
+      <div class="sheet-info">
+        <h2 id="d-title">…</h2>
+        <div class="sub" id="d-sub"></div>
+        <div class="chips" id="d-chips"></div>
+        <p class="desc" id="d-desc"></p>
+      </div>
+      <button class="close" id="close">✕</button>
+    </div>
+
+    <div class="sheet-body">
+      <div class="player-wrap">
+        <video id="video" controls playsinline crossorigin="anonymous"></video>
+        <div class="player-note" id="player-note">выберите серию</div>
+      </div>
+
+      <div class="row" id="quality-row">
+        <span class="row-label">Качество</span>
+        <button class="qbtn" data-q="1080">1080p</button>
+        <button class="qbtn" data-q="720">720p</button>
+        <button class="qbtn" data-q="480">480p</button>
+      </div>
+
+      <div class="row hidden" id="season-row">
+        <span class="row-label">Сезон</span>
+        <div id="seasons" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+      </div>
+
+      <div class="row hidden" id="episodes-row">
+        <span class="row-label">Серии</span>
+        <div id="episodes" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+      </div>
+
+      <div class="row hidden" id="voices-row">
+        <span class="row-label">Озвучки</span>
+        <div id="voices" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+      </div>
+
+      <div class="row hidden" id="kdk-row">
+        <span class="row-label">Серия</span>
+        <input id="kdk-ep" type="number" min="1" value="1" style="width:74px;height:34px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--text);padding:0 9px">
+        <span class="row-label" style="margin-left:12px">Качество</span>
+        <select id="kdk-q" style="height:34px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--text);padding:0 8px">
+          <option value="1080">1080p</option>
+          <option value="720" selected>720p</option>
+          <option value="480">480p</option>
+        </select>
+      </div>
+
+      <div class="stream-url hidden" id="stream-url"></div>
+
+      <div class="log">
+        <h4>Журнал запросов</h4>
+        <div id="log"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+  "use strict";
+
+  const state = {
+    source: "aniliberty",
+    items: [],
+    detail: null,
+    episode: null,
+    quality: "1080",
+    videos: null,
+    cvh: null,
+    cvhItem: null,
+    cvhSeason: 1,
+    hls: null,
+    dash: null,
+  };
+
+  const $ = (id) => document.getElementById(id);
+  const grid = $("grid");
+  const overlay = $("overlay");
+  const video = $("video");
+  const logBox = $("log");
+
+  const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+  }[c]));
+
+  function log(label, ok, ms, extra) {
+    const line = document.createElement("div");
+    line.className = "log-item";
+    line.innerHTML = `<span class="t">${new Date().toLocaleTimeString("ru-RU")}</span> ` +
+      `<span class="${ok ? "ok" : "bad"}">${ok ? "OK" : "FAIL"}</span> ` +
+      `${esc(label)}${ms != null ? ` · ${ms} ms` : ""}${extra ? ` · ${esc(extra)}` : ""}`;
+    logBox.prepend(line);
+    while (logBox.children.length > 40) logBox.lastChild.remove();
+  }
+
+  async function api(path) {
+    const t0 = performance.now();
+    try {
+      const res = await fetch(path);
+      const data = await res.json().catch(() => ({}));
+      const ms = Math.round(performance.now() - t0);
+      if (!res.ok || data.error) {
+        log(path, false, ms, data.error || res.status);
+        throw new Error(data.error || `HTTP ${res.status}`);
+      }
+      log(path, true, ms, data.source);
+      return data;
+    } catch (err) {
+      if (!String(err.message).startsWith("HTTP")) log(path, false, Math.round(performance.now() - t0), err.message);
+      throw err;
+    }
+  }
+
+  // ------------------------------------------------------------- health ---
+  async function loadHealth(force) {
+    const box = $("health");
+    box.innerHTML = `<span class="pill"><span class="dot load"></span>проверка парсеров…</span>`;
+    try {
+      const data = await api("/api/health" + (force ? "?force=1" : ""));
+      box.innerHTML = "";
+      for (const s of data.sources) {
+        const el = document.createElement("button");
+        el.className = "pill";
+        el.title = s.detail || "";
+        el.innerHTML = `<span class="dot ${s.ok ? "ok" : "bad"}"></span>${esc(s.name)}`;
+        el.onclick = () => {
+          $("status").innerHTML = `<b>${esc(s.name)}</b> · ${s.ok ? "работает" : "недоступен"} · ${esc(s.detail || "")}`;
+        };
+        box.appendChild(el);
+      }
+      for (const lib of data.libraries || []) {
+        const pill = document.createElement("button");
+        pill.className = "pill";
+        pill.innerHTML = `<span class="dot ${lib.ok ? "ok" : "bad"}"></span>${esc(lib.id)} ${esc(lib.version || "—")}`;
+        pill.title = lib.error || `${lib.id} импортирована`;
+        pill.onclick = () => loadHealth(true);
+        box.appendChild(pill);
+      }
+    } catch (err) {
+      box.innerHTML = `<span class="pill"><span class="dot bad"></span>health: ${esc(err.message)}</span>`;
+    }
+  }
+
+  // --------------------------------------------------------------- cards ---
+  function skeletons(n = 12) {
+    grid.innerHTML = "";
+    for (let i = 0; i < n; i++) {
+      const d = document.createElement("div");
+      d.className = "skeleton";
+      d.innerHTML = `<div class="poster"></div><div style="padding:10px 11px"><div style="height:12px;width:80%;background:#1b2030;border-radius:4px"></div><div style="height:10px;width:45%;margin-top:8px;background:#1b2030;border-radius:4px"></div></div>`;
+      grid.appendChild(d);
+    }
+  }
+
+  function card(item, onClick) {
+    const el = document.createElement("button");
+    el.className = "card";
+    el.innerHTML = `
+      <div class="poster">
+        ${item.poster ? `<img loading="lazy" src="${esc(item.poster)}" alt="" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'ph',textContent:'◈'}))">` : `<div class="ph">◈</div>`}
+        <span class="badge hd">1080p</span>
+        ${item.ongoing ? `<span class="badge air">ОНГОИНГ</span>` : ""}
+      </div>
+      <div class="card-body">
+        <div class="card-title">${esc(item.title)}</div>
+        <div class="card-meta">
+          <span>${esc(item.year || "—")}${item.type ? " · " + esc(item.type) : ""}</span>
+          <span class="score">${item.rating ? "★ " + Number(item.rating).toFixed(1) : ""}</span>
+        </div>
+      </div>`;
+    el.onclick = () => onClick(item);
+    return el;
+  }
+
+  function renderCards(items, onClick) {
+    grid.innerHTML = "";
+    if (!items.length) {
+      grid.innerHTML = `<div class="empty">Ничего не найдено. Попробуйте другой запрос или источник.</div>`;
+      return;
+    }
+    const frag = document.createDocumentFragment();
+    items.forEach((it) => frag.appendChild(card(it, onClick)));
+    grid.appendChild(frag);
+  }
+
+  // ------------------------------------------------------------ aniliberty ---
+  async function loadAL(mode = "latest", query = "") {
+    skeletons();
+    $("status").textContent = "Запрос к AniLiberty…";
+    try {
+      const data = query
+        ? await api("/api/search?q=" + encodeURIComponent(query))
+        : await api("/api/list?limit=30&mode=" + mode);
+      renderCards(data.items, openAL);
+      $("status").innerHTML =
+        `<b>${data.items.length}</b> тайтлов · источник: <b>${esc(data.source)}</b> · ${data.took_ms} ms` +
+        (data.warning ? ` · <span class="warn">fallback: ${esc(data.warning)}</span>` : "");
+    } catch (err) {
+      grid.innerHTML = `<div class="empty">Ошибка: ${esc(err.message)}</div>`;
+      $("status").innerHTML = `<span class="bad">${esc(err.message)}</span>`;
+    }
+  }
+
+  async function openAL(item) {
+    openOverlay();
+    state.videos = null;
+    state.cvhStream = null;
+    setDetailShell(item.poster, item.title, `${item.year || ""} · ${item.type || ""}`, item.genres || [], "Загрузка серий…");
+    $("quality-row").classList.remove("hidden");
+    $("episodes-row").classList.remove("hidden");
+    $("voices-row").classList.add("hidden");
+    $("season-row").classList.add("hidden");
+    $("kdk-row").classList.add("hidden");
+    $("episodes").innerHTML = "";
+    $("player-note").textContent = "получаем данные…";
+
+    try {
+      const d = await api("/api/release?id=" + item.id);
+      state.detail = d;
+      state.episode = null;
+      setDetailShell(d.poster, d.title, `${d.year || ""} · ${d.type || ""}${d.episodes_total ? " · " + d.episodes_total + " эп." : ""}`, d.genres, d.description, d.rating);
+      $("player-note").textContent = d.episodes.length ? "выберите серию" : "серий нет";
+
+      const eps = $("episodes");
+      d.episodes.forEach((ep) => {
+        const b = document.createElement("button");
+        b.className = "epbtn";
+        b.textContent = ep.n ?? "?";
+        b.onclick = () => {
+          [...eps.children].forEach((x) => x.classList.remove("active"));
+          b.classList.add("active");
+          state.episode = ep;
+          playEpisode(ep);
+        };
+        eps.appendChild(b);
+      });
+
+      if (d.episodes.length) {
+        eps.firstChild.classList.add("active");
+        state.episode = d.episodes[0];
+        playEpisode(d.episodes[0]);
+      }
+    } catch (err) {
+      $("player-note").textContent = "ошибка: " + err.message;
+      $("player-note").classList.add("err");
+    }
+  }
+
+  function playEpisode(ep) {
+    const q = ep.hls[state.quality] ? state.quality : (ep.hls["1080"] ? "1080" : ep.hls["720"] ? "720" : "480");
+    state.quality = q;
+    markQuality(q);
+    const url = ep.hls[q];
+    if (!url) {
+      $("player-note").textContent = "у этой серии нет HLS-ссылки";
+      return;
+    }
+    $("player-note").textContent = `серия ${ep.n} · ${q}p · AniLiberty`;
+    $("player-note").classList.remove("err");
+    showStream(url);
+    playHls(url);
+  }
+
+  // ---------------------------------------------------------------- anicli ---
+  const ANICLI_LABEL = { sameband: "SameBand", anilibria: "AniLibria" };
+
+  async function loadAnicli(src, query) {
+    skeletons(6);
+    $("status").textContent = "Запрос к " + ANICLI_LABEL[src] + "…";
+    try {
+      const data = await api(`/api/anicli/search?src=${src}&q=${encodeURIComponent(query)}`);
+      renderCards(
+        data.items.map((i) => ({ ...i, year: "", type: "anicli", rating: null })),
+        (item) => openAnicli(src, query, item)
+      );
+      $("status").innerHTML = `<b>${data.items.length}</b> результатов · ${ANICLI_LABEL[src]} · ${data.took_ms} ms`;
+    } catch (err) {
+      grid.innerHTML = `<div class="empty">${ANICLI_LABEL[src]}:<br><br><code>${esc(err.message)}</code></div>`;
+      $("status").innerHTML = `<span class="bad">${esc(err.message)}</span>`;
+    }
+  }
+
+  async function openAnicli(src, query, item) {
+    openOverlay();
+    state.videos = null;
+    state.cvhStream = null;
+    setDetailShell(item.poster, item.title, `${ANICLI_LABEL[src]} · anicli-api`, [], "Загрузка…");
+    $("quality-row").classList.remove("hidden");
+    $("episodes-row").classList.remove("hidden");
+    $("voices-row").classList.add("hidden");
+    $("season-row").classList.add("hidden");
+    $("kdk-row").classList.add("hidden");
+    $("episodes").innerHTML = "";
+    $("player-note").textContent = "получаем серии…";
+
+    try {
+      const d = await api(`/api/anicli/detail?src=${src}&q=${encodeURIComponent(query)}&index=${item.index}`);
+      setDetailShell(
+        d.poster || item.poster,
+        d.title,
+        `${ANICLI_LABEL[src]} · ${d.episodes.length} эп. · anicli-api`,
+        [],
+        d.description
+      );
+      state.detail = d;
+
+      const box = $("episodes");
+      d.episodes.forEach((ep) => {
+        const b = document.createElement("button");
+        b.className = "epbtn";
+        b.textContent = ep.ordinal;
+        b.onclick = () => {
+          [...box.children].forEach((x) => x.classList.remove("active"));
+          b.classList.add("active");
+          state.episode = ep;
+          playAnicliEpisode(src, query, item.index, ep.ordinal);
+        };
+        box.appendChild(b);
+      });
+
+      if (d.episodes.length) {
+        box.firstChild.classList.add("active");
+        state.episode = d.episodes[0];
+        playAnicliEpisode(src, query, item.index, d.episodes[0].ordinal);
+      }
+    } catch (err) {
+      $("player-note").textContent = "ошибка: " + err.message;
+      $("player-note").classList.add("err");
+    }
+  }
+
+  async function playAnicliEpisode(src, query, index, ep) {
+    $("player-note").classList.remove("err");
+    $("player-note").textContent = `резолвим ${ANICLI_LABEL[src]} · серия ${ep}…`;
+    try {
+      const d = await api(
+        `/api/anicli/episode?src=${src}&q=${encodeURIComponent(query)}&index=${index}&ep=${ep}`
+      );
+      const source = (d.sources || []).find((s) => s.videos && s.videos.length);
+      if (!source) {
+        throw new Error((d.sources && d.sources[0] && d.sources[0].error) || "нет видеопотоков");
+      }
+      state.videos = source.videos;
+      const target = Number(state.quality);
+      const pick = source.videos.find((v) => v.quality === target) || source.videos[0];
+      state.quality = String(pick.quality);
+      markQuality(state.quality);
+      playVideo(pick);
+      $("player-note").textContent =
+        `${ANICLI_LABEL[src]} · серия ${ep} · ${pick.quality}p · ${pick.type}` +
+        (pick.needs_proxy ? " · через прокси" : "");
+    } catch (err) {
+      $("player-note").textContent = "ошибка: " + err.message;
+      $("player-note").classList.add("err");
+    }
+  }
+
+  function playVideo(v) {
+    const url = v.needs_proxy ? "/api/proxy?url=" + encodeURIComponent(v.url) : v.url;
+    showStream(url);
+    if (v.type === "mpd") {
+      playDash(url, false);
+    } else if (v.type === "m3u8") {
+      playHls(url);
+    } else {
+      destroyPlayer();
+      video.src = url;
+      video.play().catch(() => {});
+    }
+  }
+
+  // ------------------------------------------------------------------- cvh ---
+  async function loadCVH(query) {
+    skeletons(6);
+    $("status").textContent = "Поиск для CVH…";
+    try {
+      const data = await api("/api/search?q=" + encodeURIComponent(query));
+      const items = data.items.filter((i) => i.shikimori_id);
+      renderCards(items, openCVH);
+      $("status").innerHTML =
+        `<b>${items.length}</b> тайтлов · CVH-озвучки · ${data.took_ms} ms` +
+        (data.items.length !== items.length ? ` · ${data.items.length - items.length} без Shikimori ID` : "");
+    } catch (err) {
+      grid.innerHTML = `<div class="empty">CVH:<br><br><code>${esc(err.message)}</code></div>`;
+      $("status").innerHTML = `<span class="bad">${esc(err.message)}</span>`;
+    }
+  }
+
+  async function openCVH(item) {
+    openOverlay();
+    state.videos = null;
+    state.cvhStream = null;
+    state.cvhPlaylist = null;
+    state.cvhEpisode = null;
+    state.cvhItem = item;
+    state.quality = "1080";
+    markQuality("1080");
+    setDetailShell(item.poster, item.title, `${item.year || ""} · ${item.type || ""} · CVH`, item.genres || [], "Загрузка озвучек…");
+    $("quality-row").classList.remove("hidden");
+    $("episodes-row").classList.remove("hidden");
+    $("voices-row").classList.remove("hidden");
+    $("season-row").classList.add("hidden");
+    $("kdk-row").classList.add("hidden");
+    $("episodes").innerHTML = "";
+    $("voices").innerHTML = "";
+    $("seasons").innerHTML = "";
+    $("player-note").classList.remove("err");
+    $("player-note").textContent = "получаем плейлист CVH…";
+
+    if (!item.shikimori_id) {
+      $("player-note").textContent = "у этого тайтла нет Shikimori ID — CVH его не найдёт";
+      $("player-note").classList.add("err");
+      return;
+    }
+
+    try {
+      const d = await api(`/api/cvh/playlist?shikimori=${item.shikimori_id}`);
+      state.cvhPlaylist = d;
+      if (!d.seasons.length) throw new Error("CVH не отдал ни одной серии");
+      setDetailShell(
+        item.poster,
+        item.title,
+        `${item.year || ""} · CVH · ${d.seasons.length} сезон(ов) · ${d.total} дорожек`,
+        item.genres || [],
+        "Выберите серию и озвучку."
+      );
+      renderCvhSeasons();
+      selectCvhSeason(d.seasons[0]);
+    } catch (err) {
+      $("player-note").textContent = "CVH: " + err.message + " (у CVH может не быть этого тайтла)";
+      $("player-note").classList.add("err");
+    }
+  }
+
+  function renderCvhSeasons() {
+    const d = state.cvhPlaylist;
+    const box = $("seasons");
+    box.innerHTML = "";
+    if (d.seasons.length > 1) {
+      $("season-row").classList.remove("hidden");
+      d.seasons.forEach((s) => {
+        const b = document.createElement("button");
+        b.className = "epbtn";
+        b.dataset.season = s;
+        b.textContent = "Сезон " + s;
+        b.onclick = () => selectCvhSeason(s);
+        box.appendChild(b);
+      });
+    } else {
+      $("season-row").classList.add("hidden");
+    }
+  }
+
+  function selectCvhSeason(season) {
+    state.cvhSeason = season;
+    [...$("seasons").children].forEach((b) => b.classList.toggle("active", Number(b.dataset.season) === season));
+    const eps = state.cvhPlaylist.episodes.filter((e) => e.season === season);
+    const box = $("episodes");
+    box.innerHTML = "";
+    eps.forEach((e) => {
+      const b = document.createElement("button");
+      b.className = "epbtn";
+      b.dataset.ep = e.episode;
+      b.textContent = e.episode;
+      b.onclick = () => selectCvhEpisode(e);
+      box.appendChild(b);
+    });
+    if (eps.length) selectCvhEpisode(eps[0]);
+  }
+
+  function selectCvhEpisode(ep) {
+    state.cvhEpisode = ep;
+    [...$("episodes").children].forEach((b) =>
+      b.classList.toggle("active", Number(b.dataset.ep) === ep.episode)
+    );
+    renderCvhVoices(ep);
+  }
+
+  function renderCvhVoices(ep) {
+    const box = $("voices");
+    box.innerHTML = "";
+    const studios = ep.studios || [];
+    studios.forEach((name) => {
+      const b = document.createElement("button");
+      b.className = "vbtn";
+      b.textContent = name;
+      b.onclick = () => {
+        [...box.children].forEach((x) => x.classList.remove("active"));
+        b.classList.add("active");
+        state.cvhStudio = name;
+        playCVH(name);
+      };
+      box.appendChild(b);
+    });
+    if (!studios.length) {
+      $("player-note").textContent = "у этой серии нет озвучек";
+      return;
+    }
+    const pick = studios.includes(state.cvhStudio) ? state.cvhStudio : studios[0];
+    state.cvhStudio = pick;
+    const active = [...box.children].find((b) => b.textContent === pick);
+    if (active) active.classList.add("active");
+    playCVH(pick);
+  }
+
+  async function playCVH(studio) {
+    const ep = state.cvhEpisode;
+    const item = state.cvhItem;
+    if (!ep || !item) return;
+    $("player-note").classList.remove("err");
+    $("player-note").textContent = `резолвим CVH · ${studio} · серия ${ep.episode}…`;
+    try {
+      const d = await api(
+        `/api/cvh/stream?shikimori=${item.shikimori_id}&season=${ep.season}` +
+        `&episode=${ep.episode}&studio=${encodeURIComponent(studio)}`
+      );
+      if (!d.hls) throw new Error("CVH не вернул HLS-поток");
+      state.cvhStream = d;
+      state.videos = null;
+      const url = "/api/proxy?url=" + encodeURIComponent(d.hls);
+      showStream(url);
+      markQuality(state.quality);
+      playHls(url);
+      $("player-note").textContent =
+        `сезон ${ep.season} · серия ${ep.episode} · ${studio} · CVH · HLS`;
+    } catch (err) {
+      $("player-note").textContent = "ошибка: " + err.message;
+      $("player-note").classList.add("err");
+    }
+  }
+
+  function applyHlsQuality(q) {
+    const hls = state.hls;
+    if (!hls || !hls.levels || !hls.levels.length) return false;
+    const target = Number(q);
+    let idx = hls.levels.findIndex((l) => Math.round(l.height || 0) === target);
+    if (idx < 0) {
+      let best = Infinity;
+      hls.levels.forEach((l, i) => {
+        const delta = Math.abs((l.height || 0) - target);
+        if (delta < best) { best = delta; idx = i; }
+      });
+      if (best > 140) return false;
+    }
+    hls.currentLevel = idx;
+    return true;
+  }
+
+  // --------------------------------------------------------------- animego ---
+  async function loadAG(query) {
+    skeletons(6);
+    $("status").textContent = "Запрос к AnimeGO…";
+    try {
+      const data = await api("/api/animego/search?q=" + encodeURIComponent(query));
+      renderCards(data.items.map((i) => ({ ...i, title_en: i.title_orig })), openAG);
+      $("status").innerHTML = `<b>${data.items.length}</b> результатов · AnimeGO · ${data.took_ms} ms`;
+    } catch (err) {
+      grid.innerHTML = `<div class="empty">AnimeGO недоступен:<br><br><code>${esc(err.message)}</code><br><br>
+        Скорее всего IP дата-центра или не-RU регион. С домашнего RU-IP парсер обычно работает.
+        Для 1080p используйте вкладку AniLiberty.</div>`;
+      $("status").innerHTML = `<span class="bad">AnimeGO: ${esc(err.message)}</span>`;
+    }
+  }
+
+  async function openAG(item) {
+    openOverlay();
+    state.cvhStream = null;
+    setDetailShell("", item.title, `${item.year || ""} · AnimeGO`, [], "Загрузка…");
+    $("quality-row").classList.add("hidden");
+    $("episodes-row").classList.add("hidden");
+    $("voices-row").classList.remove("hidden");
+    $("season-row").classList.add("hidden");
+    $("kdk-row").classList.add("hidden");
+    $("voices").innerHTML = "";
+    $("player-note").textContent = "получаем озвучки…";
+
+    try {
+      const d = await api("/api/animego/detail?url=" + encodeURIComponent(item.link));
+      state.detail = d;
+      setDetailShell("", item.title, `${item.year || ""} · ${d.episodes.length} эп. · AnimeGO`, [], d.description || "", item.rating);
+
+      const vbox = $("voices");
+      (d.voices.voices || []).forEach((v) => {
+        const b = document.createElement("button");
+        b.className = "vbtn";
+        b.innerHTML = `${esc(v.label)} <small>${esc(v.player || "")}</small>`;
+        b.onclick = () => resolveAG(d, v);
+        vbox.appendChild(b);
+      });
+      $("player-note").textContent = "выберите озвучку";
+    } catch (err) {
+      $("player-note").textContent = "ошибка: " + err.message;
+      $("player-note").classList.add("err");
+    }
+  }
+
+  async function resolveAG(d, voice) {
+    $("player-note").textContent = `резолвим ${voice.player}…`;
+    $("player-note").classList.remove("err");
+    try {
+      const epNum = 1;
+      const s = await api(`/api/animego/stream?anime_id=${encodeURIComponent(d.anime_id)}&ep=${epNum}` +
+        `&translation_id=${encodeURIComponent(voice.translation_id)}` +
+        `&player=${encodeURIComponent(voice.player || "")}` +
+        (voice.cvh_id ? `&cvh_id=${encodeURIComponent(voice.cvh_id)}` : ""));
+      $("player-note").textContent = `${voice.label} · ${s.kind}`;
+      showStream(s.url || "(MPD сгенерирован из content)");
+      if (s.kind === "MPD") {
+        $("player-note").textContent += " · DASH (MPD)";
+        playDash(s.content || s.url, !!s.content);
+      } else {
+        playHls(s.url);
+      }
+    } catch (err) {
+      $("player-note").textContent = "ошибка: " + err.message;
+      $("player-note").classList.add("err");
+    }
+  }
+
+  // ----------------------------------------------------------------- kodik ---
+  async function loadKodik(query) {
+    skeletons(6);
+    $("status").textContent = "Запрос к Kodik…";
+    try {
+      const data = await api("/api/kodik/search?q=" + encodeURIComponent(query));
+      renderCards(data.items, openKodik);
+      $("status").innerHTML = `<b>${data.items.length}</b> результатов · Kodik · ${data.took_ms} ms`;
+    } catch (err) {
+      grid.innerHTML = `<div class="empty">Kodik недоступен: <code>${esc(err.message)}</code></div>`;
+      $("status").innerHTML = `<span class="bad">Kodik: ${esc(err.message)}</span>`;
+    }
+  }
+
+  async function openKodik(item) {
+    openOverlay();
+    state.cvhStream = null;
+    setDetailShell(item.poster, item.title, `${item.year || ""} · Kodik`, [], "", "");
+    $("quality-row").classList.add("hidden");
+    $("episodes-row").classList.add("hidden");
+    $("voices-row").classList.remove("hidden");
+    $("season-row").classList.add("hidden");
+    $("kdk-row").classList.remove("hidden");
+    $("voices").innerHTML = "";
+    $("player-note").textContent = "получаем озвучки…";
+
+    try {
+      const d = await api("/api/kodik/detail?shikimori=" + encodeURIComponent(item.shikimori_id));
+      state.detail = d;
+      const info = d.info || {};
+      $("d-sub").innerHTML = `<span>${esc(item.year || "")}</span><span>·</span><span>${info.series_count || "?"} серий</span><span>·</span><span>Kodik</span>`;
+      const box = $("voices");
+      (info.translations || []).forEach((t) => {
+        const b = document.createElement("button");
+        b.className = "vbtn";
+        b.innerHTML = `${esc(t.name)} <small>${esc(t.type || "")}</small>`;
+        b.onclick = async () => {
+          [...box.children].forEach((x) => x.style.borderColor = "");
+          b.style.borderColor = "rgba(255,77,109,.6)";
+          await playKodik(item.shikimori_id, t);
+        };
+        box.appendChild(b);
+      });
+      $("player-note").textContent = "выберите озвучку";
+    } catch (err) {
+      $("player-note").textContent = "ошибка: " + err.message;
+      $("player-note").classList.add("err");
+    }
+  }
+
+  async function playKodik(shikimoriId, translation) {
+    const ep = $("kdk-ep").value || 1;
+    const q = $("kdk-q").value || "720";
+    $("player-note").textContent = `Kodik · ${translation.name} · ${ep} серия`;
+    $("player-note").classList.remove("err");
+    try {
+      const s = await api(`/api/kodik/stream?shikimori=${encodeURIComponent(shikimoriId)}&ep=${ep}` +
+        `&translation_id=${encodeURIComponent(translation.id)}&quality=${q}`);
+      showStream(s.url);
+      playHls(s.url);
+    } catch (err) {
+      $("player-note").textContent = "ошибка: " + err.message;
+      $("player-note").classList.add("err");
+    }
+  }
+
+  // ---------------------------------------------------------------- player ---
+  function destroyPlayer() {
+    if (state.hls) { state.hls.destroy(); state.hls = null; }
+    if (state.dash) { try { state.dash.reset(); } catch (e) {} state.dash = null; }
+    video.pause();
+    video.removeAttribute("src");
+    video.load();
+  }
+
+  function playHls(url) {
+    destroyPlayer();
+    video.controls = true;
+    if (window.Hls && Hls.isSupported()) {
+      const hls = new Hls({ maxBufferLength: 40, enableWorker: true });
+      hls.loadSource(url);
+      hls.attachMedia(video);
+      hls.on(Hls.Events.MANIFEST_PARSED, () => {
+        if (state.cvhStream) applyHlsQuality(state.quality);
+      });
+      hls.on(Hls.Events.ERROR, (_e, data) => {
+        if (!data.fatal) return;
+        $("player-note").textContent = `HLS ошибка: ${data.type} / ${data.details}`;
+        $("player-note").classList.add("err");
+        log("hls", false, null, data.details);
+      });
+      state.hls = hls;
+    } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
+      video.src = url;
+    } else {
+      $("player-note").textContent = "браузер не поддерживает HLS";
+      return;
+    }
+    video.play().catch(() => {});
+  }
+
+  function playDash(source, isContent) {
+    destroyPlayer();
+    if (!window.dashjs) {
+      $("player-note").textContent = "dash.js не загрузился";
+      return;
+    }
+    const url = isContent
+      ? URL.createObjectURL(new Blob([source], { type: "application/dash+xml" }))
+      : source;
+    const player = dashjs.MediaPlayer().create();
+    player.initialize(video, url, true);
+    state.dash = player;
+  }
+
+  function showStream(url) {
+    const box = $("stream-url");
+    box.classList.remove("hidden");
+    box.textContent = url;
+  }
+
+  function markQuality(q) {
+    document.querySelectorAll(".qbtn").forEach((b) => b.classList.toggle("active", b.dataset.q === q));
+  }
+
+  // ---------------------------------------------------------------- detail ---
+  function openOverlay() {
+    overlay.classList.remove("hidden");
+    document.body.style.overflow = "hidden";
+    logBox.innerHTML = "";
+    $("stream-url").classList.add("hidden");
+    $("player-note").classList.remove("err");
+  }
+
+  function closeOverlay() {
+    overlay.classList.add("hidden");
+    document.body.style.overflow = "";
+    destroyPlayer();
+    $("player-note").textContent = "";
+    $("stream-url").classList.add("hidden");
+  }
+
+  function setDetailShell(poster, title, sub, genres, desc, rating) {
+    $("d-poster").src = poster || "";
+    $("d-poster").style.visibility = poster ? "visible" : "hidden";
+    $("d-title").textContent = title || "";
+    $("d-sub").innerHTML = `<span>${esc(sub || "")}</span>` + (rating ? `<span class="score">★ ${Number(rating).toFixed(1)}</span>` : "");
+    $("d-chips").innerHTML = (genres || []).slice(0, 8).map((g) => `<span class="chip">${esc(g)}</span>`).join("");
+    $("d-desc").textContent = desc || "";
+  }
+
+  // ------------------------------------------------------------------ wire ---
+  function route(query) {
+    const q = (query || "").trim();
+    switch (state.source) {
+      case "aniliberty":
+        loadAL("latest", q);
+        break;
+      case "sameband":
+        q ? loadAnicli("sameband", q) : hint("SameBand: введите название — источник ищет только по запросу");
+        break;
+      case "anilibria":
+        q ? loadAnicli("anilibria", q) : hint("AniLibria: введите название — источник ищет только по запросу");
+        break;
+      case "cvh":
+        q ? loadCVH(q) : hint("CVH: введите название — поиск идёт по каталогу AniLiberty, озвучки берутся из CVH");
+        break;
+      case "animego":
+        q ? loadAG(q) : hint("AnimeGO: введите название — источник ищет только по запросу");
+        break;
+      case "kodik":
+        q ? loadKodik(q) : hint("Kodik: введите название — источник ищет только по запросу");
+        break;
+    }
+  }
+
+  function hint(text) {
+    grid.innerHTML = `<div class="empty">${esc(text)}</div>`;
+    $("status").textContent = text;
+  }
+
+  document.querySelectorAll(".tab").forEach((tab) => {
+    tab.onclick = () => {
+      document.querySelectorAll(".tab").forEach((t) => t.classList.remove("active"));
+      tab.classList.add("active");
+      state.source = tab.dataset.source;
+      route($("search").value);
+    };
+  });
+
+  $("search-btn").onclick = doSearch;
+  $("search").addEventListener("keydown", (e) => { if (e.key === "Enter") doSearch(); });
+
+  function doSearch() {
+    const q = $("search").value.trim();
+    if (!q) return;
+    route(q);
+  }
+
+  $("latest-btn").onclick = () => {
+    document.querySelector('.tab[data-source="aniliberty"]').click();
+    $("search").value = "";
+    loadAL("latest");
+  };
+  $("random-btn").onclick = () => {
+    document.querySelector('.tab[data-source="aniliberty"]').click();
+    $("search").value = "";
+    loadAL("random");
+  };
+
+  $("close").onclick = closeOverlay;
+  overlay.onclick = (e) => { if (e.target === overlay) closeOverlay(); };
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeOverlay(); });
+
+  $("quality-row").onclick = (e) => {
+    const btn = e.target.closest(".qbtn");
+    if (!btn) return;
+    const q = btn.dataset.q;
+
+    if (state.cvhStream) {
+      if (!applyHlsQuality(q)) {
+        $("player-note").textContent = `в этом потоке нет ${q}p`;
+        $("player-note").classList.add("err");
+        return;
+      }
+      state.quality = q;
+      markQuality(q);
+      $("player-note").classList.remove("err");
+      $("player-note").textContent = `переключено на ${q}p · CVH`;
+      return;
+    }
+
+    if (state.videos) {
+      const v = state.videos.find((x) => x.quality === Number(q));
+      if (!v) {
+        $("player-note").textContent = `у этого источника нет ${q}p`;
+        $("player-note").classList.add("err");
+        return;
+      }
+      state.quality = q;
+      markQuality(q);
+      playVideo(v);
+      $("player-note").classList.remove("err");
+      $("player-note").textContent = `переключено на ${q}p · ${v.type}`;
+      return;
+    }
+
+    if (!state.episode) return;
+    if (!state.episode.hls[q]) {
+      $("player-note").textContent = `нет потока ${q}p`;
+      return;
+    }
+    state.quality = q;
+    playEpisode(state.episode);
+  };
+
+  // ------------------------------------------------------------------ init ---
+  markQuality("1080");
+  loadHealth(false);
+  loadAL("latest");
+})();
+</script>
+</body>
+</html>

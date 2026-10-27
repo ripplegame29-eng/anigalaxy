@@ -308,7 +308,7 @@ function applySideEffects(effects: ProgressEffect[]): void {
     if (effect.type === "LEVEL_UP") {
       const level = effect.level;
       const era = effect.era;
-      addNotice(`Новый уровень ${level}! Открыта «эра: ${era}».`);
+      addNotice(`Новый уровень ${level}! Открыто пробуждение «${era}».`);
       pushGift({
         name: PROGRESSION_CONFIG.economy.levelGiftName,
         hint: PROGRESSION_CONFIG.economy.levelGiftHint,

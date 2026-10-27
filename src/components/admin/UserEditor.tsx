@@ -152,7 +152,7 @@ function Overview({ d, now, run }: { d: Detail; now: number; run: Run }) {
     ["Уровень", String(b.level)],
     ["Опыт", `${fmtNum(b.xp)} XP`],
     ["Баланс", `${fmtNum(b.ac)} AC`],
-    ["Кубки", fmtNum(b.trophy)],
+    ["Очки славы", fmtNum(b.trophy)],
     ["Серия", `${b.streak} дн.`],
     ["Заморозки", String(b.freezes)],
   ];
@@ -308,7 +308,7 @@ function BalanceForm({ d, run }: { d: Detail; run: Run }) {
     { key: "ac", label: "AniCoin", hint: "Валюта магазина", current: fmtNum(b.ac), add: "ac", set: "setAc", unit: "AC" },
     { key: "xp", label: "Опыт", hint: "Уровень пересчитается сам", current: `${fmtNum(b.xp)} · ур. ${b.level}`, add: "xp", set: "setXp", unit: "XP" },
     { key: "level", label: "Уровень", hint: "Установить точный уровень", current: String(b.level), set: "setLevel", unit: "ур." },
-    { key: "trophy", label: "Кубки", hint: "Трофейные очки достижений", current: fmtNum(b.trophy), add: "trophy", set: "setTrophy", unit: "куб." },
+    { key: "trophy", label: "Очки славы", hint: "Очки славы за достижения", current: fmtNum(b.trophy), add: "trophy", set: "setTrophy", unit: "оч." },
     { key: "streak", label: "Серия дней", hint: `Рекорд ${b.streakBest}`, current: `${b.streak} дн.`, set: "setStreak", unit: "дн." },
     { key: "freezes", label: "Заморозки серии", hint: "Спасают серию при пропуске", current: String(b.freezes), add: "freezes", set: "setFreezes", unit: "шт." },
     { key: "bp", label: "Боевой пропуск", hint: "Опыт текущего сезона", current: fmtNum(b.battlepassXp), add: "battlepassXp", unit: "XP" },

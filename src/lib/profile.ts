@@ -252,7 +252,7 @@ export function addXp(amount: number): boolean {
       leveledUp = true;
       next = pushNotice(
         next,
-        `Новый уровень ${info.level}! Открыта «эра: ${info.era}».`,
+        `Новый уровень ${info.level}! Открыто пробуждение «${info.era}».`,
       );
     }
     return next;

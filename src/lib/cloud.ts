@@ -23,7 +23,7 @@ import {
   type Account,
   type AuthResult,
 } from "./auth";
-import { captureReferralOnRegister } from "./referrals";
+import { clearReferralLanding, pendingLandingCode } from "./referrals";
 import { PROGRESS_DOC_KEY, isSyncKey } from "./sync-keys";
 import { isViewMode } from "./view-mode";
 
@@ -445,12 +445,13 @@ export async function signUp(
     nickname: nickname.trim(),
     email: email.trim(),
     password,
+    ref: pendingLandingCode(),
   });
   if (reply.unavailable) return registerAccount(nickname, email, password, confirm);
 
   if (reply.data?.ok && reply.data.account) {
     await adopt(reply.data.account, hashPassword(password), true);
-    captureReferralOnRegister(reply.data.account.nickname);
+    clearReferralLanding();
     return { ok: true };
   }
   return { ok: false, error: reply.data?.error ?? "Не удалось зарегистрироваться" };

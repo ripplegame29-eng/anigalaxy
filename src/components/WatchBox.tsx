@@ -1,33 +1,163 @@
 "use client";
 
+import { SHIELD_SANDBOX, setShield, useShield } from "@/lib/shield";
+import { mergeVoices, pickDefaultVoice } from "@/lib/voice-merge";
 import { toggleFullscreen as toggleFs } from "@/lib/fullscreen";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { kindLabel, statusLabel, truncate } from "@/lib/anime";
+import { readAccount } from "@/lib/auth";
+import { noteGuestEpisode } from "@/lib/guest-wall";
 import { recordWatch, tickWatch } from "@/lib/history";
 import { rememberTitle } from "@/lib/titles";
 import { usePrefs } from "@/lib/prefs";
 import { PLAYER_FILTER } from "@/lib/quality";
 import { progressEmit } from "@/lib/progression/events";
-import type { TitleDetail, TranslationOption } from "@/lib/types";
+import type {
+  AniBoomMatch,
+  CvhPlaylist,
+  SameBandMatch,
+  TitleDetail,
+  TranslationOption,
+} from "@/lib/types";
 import { AltPlayer } from "./AltPlayer";
 
 /**
  * Источник видео в блоке просмотра:
  *   «kodik»      — встроенный плеер Kodik;
  *   «anigalaxy»  — наш плеер на прямых HLS-потоках Kodik;
- *   «anilibria»  — наш плеер на каталоге AniLiberty.
- * У «anigalaxy» и «anilibria» панель управления одна и та же.
+ *   «anilibria»  — наш плеер на каталоге AniLiberty;
+ *   «cvh»        — CdnVideoHub (озвучки AnimeGO);
+ *   «sameband»   — SameBand;
+ *   «aniboom»    — AniBoom (озвучки AnimeGO, HLS).
+ * У всех альтернатив панель управления одна и та же.
  */
-type PlayerSource = "kodik" | "anigalaxy" | "anilibria";
+/** Что выбрано в меню «Источник»: авто (лучшее качество) или конкретный плеер */
+type SourcePick = "auto" | "anigalaxy" | "kodik" | "cvh" | "aniboom";
+type PlayerSource = "kodik" | "anigalaxy" | "anilibria" | "cvh" | "sameband" | "aniboom";
 
 /**
- * Псевдо-id озвучки AniLiberty в списке студий.
+ * Псевдо-id озвучек альтернативных источников в общем списке студий.
  *
- * Отдельной кнопки источника у AniLiberty больше нет: их дорожка — это
- * ещё одна озвучка рядом с кодиковскими, и выбирается она там же. Id
- * отрицательный, чтобы никогда не столкнуться с настоящими id Kodik.
+ * AniLiberty и SameBand — по одной дорожке, у CVH — до двадцати. Id
+ * отрицательные, чтобы никогда не столкнуться с настоящими id Kodik.
+ * Для CVH id стабилен: хэш от названия студии, иначе при смене серии
+ * выбранная озвучка «переезжала» бы на другую.
  */
+const SOURCE_LABEL: Record<SourcePick, string> = {
+  auto: "Источник: авто",
+  anigalaxy: "AniGalaxy",
+  kodik: "Kodik",
+  cvh: "CVH",
+  aniboom: "AniBoom",
+};
+const SOURCE_ITEMS: { id: SourcePick; label: string; hint: string }[] = [
+  { id: "auto", label: "Авто", hint: "лучшее качество" },
+  { id: "anigalaxy", label: "AniGalaxy", hint: "наш плеер · до 4K" },
+  { id: "kodik", label: "Kodik", hint: "встроенный плеер" },
+  { id: "cvh", label: "CVH", hint: "1080p" },
+  { id: "aniboom", label: "AniBoom", hint: "1080p" },
+];
+
 const ANILIBERTY_TR = -1;
+const SAMEBAND_TR = -2;
+const CVH_TR_BASE = 10_000;
+const ANIBOOM_TR_BASE = 900_000;
+
+function hash32(value: string): number {
+  let hash = 2166136261;
+  for (let i = 0; i < value.length; i += 1) {
+    hash ^= value.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
+  }
+  return hash >>> 0;
+}
+
+/**
+ * Повторы для озвучек CVH/SameBand/AniBoom.
+ *
+ * Первый запрос уходит сразу. Если он упал — повторяем в фоне через 3 с,
+ * затем ещё через 6 с, но не ждём эти повторы перед показом уже полученных
+ * озвучек. Поздний успех просто добавляет источник в список.
+ */
+const BACKGROUND_RETRY_DELAYS = [3000, 6000] as const;
+
+function fetchJsonWithBackgroundRetry<T>(
+  url: string,
+  signal: AbortSignal,
+  onData: (data: T) => void,
+): () => void {
+  let timer: number | undefined;
+  let stopped = false;
+
+  const stop = () => {
+    stopped = true;
+    if (timer !== undefined) window.clearTimeout(timer);
+  };
+
+  const scheduleRetry = (retryIndex: number) => {
+    if (stopped || signal.aborted || retryIndex >= BACKGROUND_RETRY_DELAYS.length) return;
+    timer = window.setTimeout(() => {
+      timer = undefined;
+      void attempt(retryIndex + 1);
+    }, BACKGROUND_RETRY_DELAYS[retryIndex]);
+  };
+
+  const attempt = async (retryIndex: number) => {
+    if (stopped || signal.aborted) return;
+
+    let res: Response;
+    try {
+      res = await fetch(url, { signal });
+    } catch {
+      if (!stopped && !signal.aborted) scheduleRetry(retryIndex);
+      return;
+    }
+
+    if (res.ok) {
+      let data: T;
+      try {
+        data = (await res.json()) as T;
+      } catch {
+        if (!stopped && !signal.aborted) scheduleRetry(retryIndex);
+        return;
+      }
+      if (!stopped && !signal.aborted) onData(data);
+      return;
+    }
+
+    // 4xx кроме 429 повторять бессмысленно.
+    if (res.status >= 400 && res.status < 500 && res.status !== 429) return;
+    scheduleRetry(retryIndex);
+  };
+
+  void attempt(0);
+  return stop;
+}
+
+function cvhVoiceId(studio: string): number {
+  return -(CVH_TR_BASE + (hash32(studio) % 800_000));
+}
+
+/**
+ * AniBoom-дорожки держим отдельными записями: у CVH уже есть те же студии,
+ * и их id используются в глубоких ссылках. Слияние «по названию» сделало бы
+ * старые `?tr=` нерабочими, поэтому в title добавляется «· AniBoom».
+ */
+function aniboomVoiceId(animeId: string, translationId: number): number {
+  const hash = hash32(`${animeId}:${translationId}`);
+  return -(ANIBOOM_TR_BASE + (hash % 400_000));
+}
+
+function isAltSource(
+  source: PlayerSource,
+): source is "anilibria" | "cvh" | "sameband" | "aniboom" {
+  return (
+    source === "anilibria" ||
+    source === "cvh" ||
+    source === "sameband" ||
+    source === "aniboom"
+  );
+}
 
 /**
  * Блок просмотра: плеер Kodik + боковая панель со студиями озвучки
@@ -58,18 +188,30 @@ export function WatchBox({
   );
   const [season, setSeason] = useState<number>(initialDetail.seasons[0]?.number ?? 1);
   const [episode, setEpisode] = useState<number>(1);
+  const shield = useShield();
   const [switching, setSwitching] = useState(false);
   const [playerLoading, setPlayerLoading] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
-  // Источник видео: Kodik (по умолчанию), AniGalaxy (HLS Kodik) или AniLiberty
-  const [source, setSource] = useState<PlayerSource>("kodik");
+  // Источник видео: Kodik (по умолчанию), AniGalaxy (HLS Kodik),
+  // AniLiberty, CVH или SameBand
+  const [source, setSource] = useState<PlayerSource>("anigalaxy");
+  const [sourcePick, setSourcePick] = useState<SourcePick>("auto");
+  const [sourceMenuOpen, setSourceMenuOpen] = useState(false);
   /**
    * Релиз AniLiberty, подтверждённый по id Shikimori. Помечен id тайтла:
    * при смене озвучки материал меняется, и старый релиз не подставится.
    */
   const [aniMatch, setAniMatch] = useState<{ titleId: string; alias: string; episodesTotal: number | null } | null>(null);
-  /** Куда вернуться, когда зритель уйдёт с озвучки AniLiberty */
-  const sourceBeforeAni = useRef<PlayerSource>("kodik");
+  /** Плейлист CVH: сезоны и студии, ключ — shikimori id */
+  const [cvh, setCvh] = useState<{ shikimori: number; playlist: CvhPlaylist } | null>(null);
+  /** Подтверждённый тайтл SameBand: поиск идёт по названию/году */
+  const [sameband, setSameband] = useState<{ key: string; match: SameBandMatch } | null>(null);
+  /** Тайтл AnimeGO + дорожки AniBoom, найденные по названию/году */
+  const [aniboom, setAniboom] = useState<{ key: string; match: AniBoomMatch } | null>(null);
+  /** Куда вернуться, когда зритель уйдёт с альтернативного источника */
+  const sourceBeforeAlt = useRef<PlayerSource>("anigalaxy");
+  /** Озвучка Kodik, выбранная до переключения на альтернативу */
+  const transIdBeforeAlt = useRef<number | null>(null);
 
   // Кадр Kodik показывается как отдаёт источник: кнопки «Апскейл» под
   // плеером больше нет, а вместе с ней и конвейера захвата вкладки
@@ -159,46 +301,102 @@ export function WatchBox({
     };
   }, [detail.card]);
 
-  /* ------------------------- Глубокие ссылки ------------------------- */
-  useEffect(() => {
-    const sp = new URLSearchParams(window.location.search);
-    const epParam = Number(sp.get("ep"));
-    const sParam = Number(sp.get("s"));
-    const trParam = Number(sp.get("tr"));
-
-    if (trParam && translations.some((t) => t.id === trParam) && trParam !== transId) {
-      const opt = translations.find((t) => t.id === trParam);
-      if (opt) void switchTranslation(opt, { silent: true, keepEpisode: epParam || undefined, season: sParam });
-      return;
-    }
-    // season/episode применяются в callback'е rAF: setState синхронно внутри
-    // эффекта запрещён правилом react-hooks/set-state-in-effect
-    const raf = requestAnimationFrame(() => {
-      if (sParam && initialDetail.seasons.some((s) => s.number === sParam)) setSeason(sParam);
-      if (epParam) setEpisode(epParam);
-    });
-    return () => cancelAnimationFrame(raf);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
+  /* ------------------------- CVH: озвучки ---------------------------- */
   /**
-   * Глубокая ссылка вида ?tr=910 после догрузки списка.
-   *
-   * На первом проходе список может быть урезан, и нужной озвучки в нём нет —
-   * тогда ссылка «молча» не срабатывает. Повторяем попытку, когда список
-   * догрузился, но ровно один раз на параметр.
+   * CVH-плейлист привязан к shikimori_id. Он даёт до двадцати студий на
+   * тайтл; добавляем их в общий список озвучек и переключаем источник на
+   * CVH. Если плейлиста нет — источник просто не предлагается.
    */
-  const appliedTr = useRef<number | null>(null);
   useEffect(() => {
-    if (translations.length > 1) return;
-    const trParam = Number(new URLSearchParams(window.location.search).get("tr"));
-    if (!trParam || appliedTr.current === trParam) return;
-    const option = studioList.find((item) => item.id === trParam);
-    if (!option) return;
-    appliedTr.current = trParam;
-    void switchTranslation(option, { silent: true });
+    const id = detail.card.shikimoriId;
+    if (!id) return;
+    const controller = new AbortController();
+    const stop = fetchJsonWithBackgroundRetry<{ playlist?: CvhPlaylist }>(
+      `/api/cvh/playlist?shikimori=${id}`,
+      controller.signal,
+      (data) => {
+        if (controller.signal.aborted) return;
+        if (data?.playlist?.studios.length) {
+          setCvh({ shikimori: id, playlist: data.playlist });
+        }
+      },
+    );
+    return () => {
+      stop();
+      controller.abort();
+    };
+  }, [detail.card.shikimoriId]);
+
+  /* ---------------------- SameBand: подбор тайтла --------------------- */
+  /**
+   * У SameBand нет Shikimori id, поэтому подбираем по нормализованному
+   * названию и году. Ключ включает название/год: при смене озвучки Kodik
+   * материал меняется, но тайтл остаётся тем же — лишний поиск не нужен.
+   */
+  const samebandKey = `${detail.card.title}|${detail.card.year ?? ""}|${detail.card.titleOrig ?? ""}|${(detail.card.otherTitles ?? []).join("\u0001")}`;
+  useEffect(() => {
+    const card = detail.card;
+    const names = [card.title, card.titleOrig, ...(card.otherTitles ?? [])]
+      .filter((name): name is string => Boolean(name))
+      .slice(0, 3);
+    if (!names.length) return;
+
+    const controller = new AbortController();
+    const params = new URLSearchParams({ q: names[0] });
+    if (card.year) params.set("year", String(card.year));
+    names.slice(1).forEach((name, index) => params.set(`q${index + 2}`, name));
+
+    const stop = fetchJsonWithBackgroundRetry<{ match?: SameBandMatch | null }>(
+      `/api/sameband/match?${params}`,
+      controller.signal,
+      (data) => {
+        if (controller.signal.aborted) return;
+        if (data?.match) setSameband({ key: samebandKey, match: data.match });
+      },
+    );
+    return () => {
+      stop();
+      controller.abort();
+    };
+    // samebandKey уже содержит название, год и оригинальное название
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [studioList]);
+  }, [samebandKey]);
+
+  /* ------------------------ AniBoom: подбор тайтла -------------------- */
+  /**
+   * AniBoom живёт внутри AnimeGO: сначала ищем точное название (с годом,
+   * чтобы не открыть второй сезон), затем берём озвучки из плеера AnimeGO.
+   * Как и SameBand, ключ включает все названия — при смене озвучки Kodik
+   * материал тот же, повторный поиск не нужен.
+   */
+  const aniboomKey = `${detail.card.title}|${detail.card.year ?? ""}|${detail.card.titleOrig ?? ""}|${(detail.card.otherTitles ?? []).join("\u0001")}`;
+  useEffect(() => {
+    const card = detail.card;
+    const names = [card.title, card.titleOrig, ...(card.otherTitles ?? [])]
+      .filter((name): name is string => Boolean(name))
+      .slice(0, 4);
+    if (!names.length) return;
+
+    const controller = new AbortController();
+    const params = new URLSearchParams({ q: names[0] });
+    if (card.year) params.set("year", String(card.year));
+    names.slice(1).forEach((name, index) => params.set(`q${index + 2}`, name));
+
+    const stop = fetchJsonWithBackgroundRetry<{ match?: AniBoomMatch | null }>(
+      `/api/aniboom/match?${params}`,
+      controller.signal,
+      (data) => {
+        if (controller.signal.aborted) return;
+        if (data?.match) setAniboom({ key: aniboomKey, match: data.match });
+      },
+    );
+    return () => {
+      stop();
+      controller.abort();
+    };
+    // aniboomKey уже содержит название, год и альтернативные названия
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [aniboomKey]);
 
   /* ------------------------ Закрытие меню кликом ---------------------- */
   useEffect(() => {
@@ -289,6 +487,7 @@ export function WatchBox({
     };
     progressRef.current = ctx;
     progressEmit({ type: "EPISODE_OPENED", ...ctx });
+    if (!readAccount()) noteGuestEpisode(`${ctx.titleId}:${ctx.episodeKey}`);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     detail.card.id,
@@ -321,22 +520,100 @@ export function WatchBox({
   /** Подтверждённый релиз — только для тайтла, который открыт сейчас */
   const ani = aniMatch && aniMatch.titleId === detail.card.id ? aniMatch : null;
 
-  /** Студии Kodik плюс дорожка AniLiberty, если релиз подтверждён */
-  const voiceList: TranslationOption[] = ani
-    ? [
-        ...studioList,
-        {
-          id: ANILIBERTY_TR,
-          title: "AniLiberty · FHD",
-          type: "voice",
-          mediaId: "",
-          episodeCount: ani.episodesTotal ?? undefined,
-        },
-      ]
-    : studioList;
+  /** CVH-плейлист активен только для текущего shikimori id */
+  const cvhActive =
+    cvh && cvh.shikimori === detail.card.shikimoriId ? cvh.playlist : null;
+
+  /** SameBand-совпадение активно только для текущего названия/года */
+  const sb = sameband && sameband.key === samebandKey ? sameband.match : null;
+
+  /** AniBoom-совпадение активно только для текущего названия/года */
+  const ab = aniboom && aniboom.key === aniboomKey ? aniboom.match : null;
+
+  /**
+   * Студии Kodik + альтернативы. AniLiberty — одна дорожка, SameBand — одна,
+   * CVH — до двадцати (id стабильны: хэш от названия студии).
+   */
+  const cvhVoices: TranslationOption[] = (cvhActive?.studios ?? []).map((studio) => ({
+    id: cvhVoiceId(studio.name),
+    title: studio.name,
+    type: studio.subtitles ? "subtitles" : "voice",
+    mediaId: "",
+    episodeCount: studio.episodes,
+    provider: "cvh",
+    studio: studio.name,
+  }));
+
+  /**
+   * AniBoom не сливаем с CVH: у тех же студий разные id, а старые
+   * глубокие ссылки CVH должны продолжать работать. Суффикс в названии
+   * делает ключ уникальным и объясняет, какой источник выбран.
+   */
+  const aniboomVoices: TranslationOption[] = ab
+    ? ab.voices.map((voice) => ({
+        id: aniboomVoiceId(ab.animeId, voice.translationId),
+        title: `${voice.label} · AniBoom`,
+        type: /субтитр/i.test(voice.label) ? "subtitles" : "voice",
+        mediaId: "",
+        episodeCount: ab.episodesTotal,
+        provider: "aniboom",
+        studio: voice.label,
+        url: voice.embed,
+      }))
+    : [];
+
+  const samebandVoice: TranslationOption | null = sb
+    ? {
+        id: SAMEBAND_TR,
+        title: "SameBand",
+        type: "voice",
+        mediaId: "",
+        provider: "sameband",
+        url: sb.url,
+      }
+    : null;
+
+  /**
+   * Один общий список озвучек: одинаковые студии из разных источников
+   * схлопываются в запись с лучшим качеством (1080p у CVH/AniLiberty/SameBand
+   * против 720p у Kodik), уникальные студии Kodik добавляются как есть.
+   */
+  const mergedVoices: TranslationOption[] = mergeVoices(studioList, [
+    ...(ani
+      ? [
+          {
+            id: ANILIBERTY_TR,
+            title: "AniLiberty",
+            type: "voice" as const,
+            mediaId: "",
+            episodeCount: ani.episodesTotal ?? undefined,
+            provider: "anilibria" as const,
+          },
+        ]
+      : []),
+    ...cvhVoices,
+    ...aniboomVoices,
+    ...(samebandVoice ? [samebandVoice] : []),
+  ]);
+
+  /** Список озвучек зависит от выбранного в меню источника */
+  const voiceList: TranslationOption[] =
+    sourcePick === "auto"
+      ? mergedVoices
+      : sourcePick === "cvh"
+        ? mergeVoices([], cvhVoices)
+        : sourcePick === "aniboom"
+          ? mergeVoices([], aniboomVoices)
+          : mergeVoices(studioList, []);
 
   /** Релиз ещё не подтверждён — играем из Kodik, а не ищем по названию */
-  const playSource: PlayerSource = source === "anilibria" && !ani ? "kodik" : source;
+  const playSource: PlayerSource =
+    (source === "anilibria" && !ani) ||
+    (source === "cvh" && !cvhActive) ||
+    (source === "sameband" && !sb) ||
+    (source === "aniboom" && !ab)
+      ? "anigalaxy"
+      : source;
 
   /* --------------------------- Смена озвучки -------------------------- */
   async function switchTranslation(
@@ -344,17 +621,25 @@ export function WatchBox({
     opts: { silent?: boolean; keepEpisode?: number; season?: number } = {},
   ) {
     setMenuOpen(false);
+    if (!opts.silent) userPicked.current = true;
     if (option.id === transId && !opts.silent) return;
 
-    // Дорожка AniLiberty: материал Kodik не меняем, только переключаем плеер
-    if (option.id === ANILIBERTY_TR) {
-      if (source !== "anilibria") sourceBeforeAni.current = source;
-      setTransId(ANILIBERTY_TR);
-      setSource("anilibria");
+    // Дорожка альтернативного источника: материал Kodik не меняем, только
+    // переключаем плеер. Запоминаем, куда вернуться, если зритель выберет
+    // обычную озвучку Kodik.
+    if (option.provider) {
+      if (!isAltSource(source)) {
+        sourceBeforeAlt.current = source;
+        transIdBeforeAlt.current = transId;
+      }
+      setTransId(option.id);
+      setSource(option.provider);
       return;
     }
-    if (source === "anilibria") {
-      const back = sourceBeforeAni.current === "anilibria" ? "kodik" : sourceBeforeAni.current;
+
+    // Возврат с альтернативного плеера на голос Kodik/AniGalaxy
+    if (isAltSource(source)) {
+      const back = isAltSource(sourceBeforeAlt.current) ? "anigalaxy" : sourceBeforeAlt.current;
       if (back === "kodik") setPlayerLoading(true);
       setSource(back);
     }
@@ -392,13 +677,159 @@ export function WatchBox({
     }
   }
 
+  /* ------------------------- Глубокие ссылки ------------------------- */
+  useEffect(() => {
+    const sp = new URLSearchParams(window.location.search);
+    const epParam = Number(sp.get("ep"));
+    const sParam = Number(sp.get("s"));
+    const trParam = Number(sp.get("tr"));
+
+    // setState синхронно внутри эффекта запрещён правилом
+    // react-hooks/set-state-in-effect — применяем в следующем кадре.
+    const raf = requestAnimationFrame(() => {
+      if (trParam && translations.some((t) => t.id === trParam) && trParam !== transId) {
+        const opt = translations.find((t) => t.id === trParam);
+        if (opt) void switchTranslation(opt, { silent: true, keepEpisode: epParam || undefined, season: sParam });
+        return;
+      }
+      if (sParam && initialDetail.seasons.some((s) => s.number === sParam)) setSeason(sParam);
+      if (epParam) setEpisode(epParam);
+    });
+    return () => cancelAnimationFrame(raf);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  /**
+   * Глубокая ссылка вида ?tr=910 после догрузки списка.
+   *
+   * На первом проходе список может быть урезан, и нужной озвучки в нём нет —
+   * тогда ссылка «молча» не срабатывает. Повторяем попытку, когда список
+   * догрузился, но ровно один раз на параметр.
+   */
+  const appliedTr = useRef<number | null>(null);
+  useEffect(() => {
+    if (translations.length > 1) return;
+    const trParam = Number(new URLSearchParams(window.location.search).get("tr"));
+    if (!trParam || appliedTr.current === trParam) return;
+    const option = studioList.find((item) => item.id === trParam);
+    if (!option) return;
+    const raf = requestAnimationFrame(() => {
+      appliedTr.current = trParam;
+      void switchTranslation(option, { silent: true });
+    });
+    return () => cancelAnimationFrame(raf);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [studioList]);
+
   /* --------------------------- Смена источника ----------------------- */
   function switchSource(next: PlayerSource) {
     if (next === source) return;
+
+    // Кнопкой источника тоже выбирается дорожка альтернативы — держим
+    // список озвучек в согласии с тем, что реально играет.
+    if (isAltSource(next)) {
+      let nextTransId: number;
+      if (next === "anilibria") {
+        if (!ani) return;
+        nextTransId = ANILIBERTY_TR;
+      } else if (next === "sameband") {
+        if (!sb) return;
+        nextTransId = SAMEBAND_TR;
+      } else if (next === "aniboom") {
+        const first =
+          aniboomVoices.find((item) => item.type === "voice") ?? aniboomVoices[0];
+        if (!first) return;
+        nextTransId = first.id;
+      } else {
+        const first = cvhVoices.find((item) => item.type === "voice") ?? cvhVoices[0];
+        if (!first) return;
+        nextTransId = first.id;
+      }
+
+      if (!isAltSource(source)) {
+        sourceBeforeAlt.current = source;
+        transIdBeforeAlt.current = transId;
+      }
+      setTransId(nextTransId);
+    } else if (isAltSource(source)) {
+      setTransId(transIdBeforeAlt.current);
+    }
+
     // Возврат на Kodik: iframe монтируется заново — спиннер до onLoad
     if (next === "kodik") setPlayerLoading(true);
     setSource(next);
   }
+
+  /** Выбор плеера в меню «Источник» */
+  function pickSourceMenu(next: SourcePick) {
+    setSourcePick(next);
+    setSourceMenuOpen(false);
+    if (next === "auto") {
+      const best = pickDefaultVoice(mergedVoices, studioList.find((t) => t.id === transId)?.title);
+      if (best) void switchTranslation(best, { silent: true, keepEpisode: episode, season });
+      return;
+    }
+    if (next === "cvh" || next === "aniboom") {
+      switchSource(next);
+      return;
+    }
+    // Kodik / AniGalaxy: озвучки Kodik, различается только плеер
+    const kodikTr = isAltSource(source) ? transIdBeforeAlt.current : transId;
+    switchSource(next);
+    if (!studioList.some((t) => t.id === kodikTr)) setTransId(studioList[0]?.id ?? null);
+  }
+
+  /* --------------------- Глубокая ссылка на альтернативу --------------- */
+  /**
+   * `?tr=-10000` (CVH), `?tr=-2` (SameBand), `?tr=-1` (AniLiberty).
+   * Список альтернатив появляется асинхронно, поэтому ждём, пока нужный id
+   * окажется в voiceList. Для положительных id Kodik работает эффект выше.
+   */
+  const appliedProviderTr = useRef<string | null>(null);
+  /** Зритель сам выбрал озвучку — автовыбор 1080p больше не вмешивается */
+  const userPicked = useRef(false);
+  /**
+   * Запоминаем `tr` с первого клиентского рендера. Синхронизация адреса
+   * ниже может перезаписать его до того, как загрузится список CVH, а
+   * глубокая ссылка всё равно должна примениться.
+   */
+  const [initialProviderTr] = useState<number | null | undefined>(() => {
+    if (typeof window === "undefined") return undefined;
+    const param = Number(new URLSearchParams(window.location.search).get("tr"));
+    return Number.isFinite(param) && param < 0 ? param : null;
+  });
+  const initialProviderCardId = useRef(detail.card.id);
+  const providerTrKey = voiceList.map((item) => item.id).join(",");
+  useEffect(() => {
+    const trParam = initialProviderTr;
+    if (!trParam) return;
+    if (detail.card.id !== initialProviderCardId.current) return;
+    // Пока зритель сам не выбрал источник — иначе не перебиваем его выбор
+    if (isAltSource(source)) return;
+    const option = voiceList.find((item) => item.id === trParam && item.provider);
+    if (!option) return;
+    const key = `${detail.card.id}:${trParam}`;
+    if (appliedProviderTr.current === key) return;
+    appliedProviderTr.current = key;
+    void switchTranslation(option, { silent: true, keepEpisode: episode, season });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [providerTrKey, detail.card.id, source]);
+
+  /**
+   * Автовыбор: как только подтянулись дорожки 1080p, включаем лучшую —
+   * ту же студию, что играла у Kodik, а если такой нет, первую по списку.
+   */
+  useEffect(() => {
+    if (userPicked.current || initialProviderTr) return;
+    if (detail.card.id !== initialDetail.card.id || isAltSource(source)) return;
+    const best = pickDefaultVoice(voiceList, studioList.find((t) => t.id === transId)?.title);
+    if (!best || !best.provider) return;
+    const raf = requestAnimationFrame(() => {
+      void switchTranslation(best, { silent: true, keepEpisode: episode, season });
+    });
+    return () => cancelAnimationFrame(raf);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [providerTrKey]);
 
   /* ----------------------------- Визуал ------------------------------- */
   const activeOption = voiceList.find((t) => t.id === transId);
@@ -449,43 +880,52 @@ export function WatchBox({
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_330px]">
         {/* ------------------------- Плеер ------------------------- */}
         <div className="min-w-0">
-          {/* Переключатель источника: встроенный Kodik, наш плеер AniGalaxy
-              на прямых HLS-потоках Kodik или каталог AniLiberty */}
-          <div className="wb-src mb-2.5 flex flex-wrap items-center justify-between gap-2">
-            <div className="flex items-center gap-2">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-muted">
-                Источник
-              </span>
-              <div className="wb-seg flex rounded-xl bg-white/6 p-1 ring-1 ring-white/10">
-                <button
-                  type="button"
-                  onClick={() => switchSource("kodik")}
-                  aria-pressed={source === "kodik"}
-                  className={`rounded-lg px-3 py-1.5 text-xs font-bold transition-colors ${
-                    source === "kodik"
-                      ? "bg-accent text-white shadow-[0_8px_18px_-10px_rgba(31,123,255,1)]"
-                      : "text-muted hover:text-white"
-                  }`}
-                >
-                  Kodik
-                </button>
-                <button
-                  type="button"
-                  onClick={() => switchSource("anigalaxy")}
-                  aria-pressed={source === "anigalaxy"}
-                  className={`rounded-lg px-3 py-1.5 text-xs font-bold transition-colors ${
-                    source === "anigalaxy"
-                      ? "bg-accent text-white shadow-[0_8px_18px_-10px_rgba(31,123,255,1)]"
-                      : "text-muted hover:text-white"
-                  }`}
-                >
-                  AniGalaxy
-                </button>
-              </div>
-            </div>
-            <span className="text-[11px] text-muted">
-              {playSource === "anilibria" ? "озвучка AniLiberty · HLS" : playSource === "kodik" ? "основной плеер" : "прямые HLS-потоки"}
-            </span>
+          {/* Выбор плеера: авто (лучшее качество) или конкретный источник */}
+          <div className="wb-src relative mb-2.5 flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              aria-haspopup="listbox"
+              aria-expanded={sourceMenuOpen}
+              onClick={() => setSourceMenuOpen((v) => !v)}
+              className="inline-flex items-center gap-2 rounded-xl bg-white/6 px-3.5 py-2 text-xs font-bold text-white ring-1 ring-white/10 transition hover:bg-white/10"
+            >
+              <svg viewBox="0 0 24 24" className="h-4 w-4 text-white/70" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" aria-hidden>
+                <path d="M3 8h18v12H3zM3 8l2-4h4l-2 4M10 8l2-4h4l-2 4M17 8l2-4h2" />
+              </svg>
+              {SOURCE_LABEL[sourcePick]}
+              <svg viewBox="0 0 24 24" className={`h-3.5 w-3.5 transition ${sourceMenuOpen ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth="2.4" aria-hidden>
+                <path strokeLinecap="round" strokeLinejoin="round" d="m6 9 6 6 6-6" />
+              </svg>
+            </button>
+            {sourceMenuOpen && (
+              <>
+                <button type="button" aria-label="Закрыть меню" className="fixed inset-0 z-30 cursor-default" onClick={() => setSourceMenuOpen(false)} />
+                <ul role="listbox" aria-label="Источник" className="absolute left-0 top-[calc(100%+6px)] z-40 min-w-[220px] rounded-xl border border-line bg-[#0d0d15]/98 p-1.5 shadow-[0_28px_60px_-24px_rgba(0,0,0,1)] backdrop-blur-xl animate-fade-in">
+                  {SOURCE_ITEMS.map((item) => {
+                    const available =
+                      item.id === "auto" ||
+                      (item.id === "cvh" ? cvhVoices.length > 0 : item.id === "aniboom" ? aniboomVoices.length > 0 : studioList.length > 0);
+                    return (
+                      <li key={item.id}>
+                        <button
+                          type="button"
+                          role="option"
+                          aria-selected={sourcePick === item.id}
+                          disabled={!available}
+                          onClick={() => pickSourceMenu(item.id)}
+                          className={`flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2 text-left text-[13px] font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${
+                            sourcePick === item.id ? "bg-accent/20 text-white ring-1 ring-accent/40" : "text-white/80 hover:bg-white/8 hover:text-white"
+                          }`}
+                        >
+                          <span>{item.label}</span>
+                          <span className="text-[11px] font-medium text-muted">{available ? item.hint : "нет для тайтла"}</span>
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </>
+            )}
           </div>
 
             {/* Сцена: на телефоне плеер во всю ширину и липнет под шапкой,
@@ -509,8 +949,12 @@ export function WatchBox({
                 year={detail.card.year}
                 episode={episode}
                 titleId={detail.card.id}
-                backend={playSource === "anigalaxy" ? "kodik" : "anilibria"}
+                backend={playSource === "anigalaxy" ? "kodik" : playSource}
                 alias={playSource === "anilibria" ? ani?.alias : undefined}
+                cvhId={detail.card.shikimoriId}
+                cvhStudio={playSource === "cvh" ? activeOption?.studio : undefined}
+                samebandUrl={playSource === "sameband" ? sb?.url : undefined}
+                aniboomUrl={playSource === "aniboom" ? activeOption?.url : undefined}
                 kodikId={detail.card.id}
                 season={activeSeason?.number ?? season}
                 onBack={() => switchSource("kodik")}
@@ -534,18 +978,31 @@ export function WatchBox({
               // Без `*` Chrome трактует имя как «только для своего origin» и
               // cross-site кадру Kodik выдаёт отказ («Disallowed by permissions
               // policy»): полноэкранный режим, автозапуск и PiP не работали.
-              <iframe
-                key={playerSrc}
-                ref={iframeRef}
-                src={playerSrc}
-                title="Плеер Kodik"
-                className="absolute inset-0 h-full w-full transition-[filter] duration-500 ease-out"
-                style={{ filter: PLAYER_FILTER }}
-                allow="autoplay *; fullscreen *; picture-in-picture *; encrypted-media *"
-                allowFullScreen
-                loading="lazy"
-                onLoad={() => setPlayerLoading(false)}
-              />
+              <>
+                <iframe
+                  key={`${playerSrc}:${shield ? "s" : "o"}`}
+                  ref={iframeRef}
+                  src={playerSrc}
+                  title="Плеер Kodik"
+                  className="absolute inset-0 h-full w-full transition-[filter] duration-500 ease-out"
+                  style={{ filter: PLAYER_FILTER }}
+                  allow="autoplay *; fullscreen *; picture-in-picture *; encrypted-media *"
+                  sandbox={shield ? SHIELD_SANDBOX : undefined}
+                  allowFullScreen
+                  loading="lazy"
+                  onLoad={() => setPlayerLoading(false)}
+                />
+                <button
+                  type="button"
+                  onClick={() => { setPlayerLoading(true); setShield(!shield); }}
+                  aria-pressed={shield}
+                  title={shield ? "Щит включён: всплывающие окна и редиректы блокируются. Нажмите, если видео не запускается." : "Щит выключен — включить блокировку всплывающей рекламы"}
+                  className={`absolute left-2 top-2 z-10 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold backdrop-blur transition ${shield ? "bg-emerald-500/20 text-emerald-200 ring-1 ring-emerald-400/40" : "bg-black/55 text-white/70 ring-1 ring-white/15"}`}
+                >
+                  <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden><path strokeLinecap="round" strokeLinejoin="round" d="M12 3 5 6v5c0 4.5 3 8 7 10 4-2 7-5.5 7-10V6l-7-3z" /></svg>
+                  Щит {shield ? "вкл" : "выкл"}
+                </button>
+              </>
             ) : (
               <div className="grid h-full place-items-center text-sm text-muted">
                 Плеер недоступен
@@ -654,9 +1111,14 @@ export function WatchBox({
                         }`}
                       >
                         <span className="truncate font-semibold">{t.title}</span>
-                        {t.episodeCount ? (
-                          <span className="shrink-0 text-[11px] text-muted">{t.episodeCount} эп.</span>
-                        ) : null}
+                        <span className="flex shrink-0 items-center gap-2 text-[11px] text-muted">
+                          {t.episodeCount ? <span>{t.episodeCount} эп.</span> : null}
+                          {t.quality ? (
+                            <span className={`rounded px-1.5 py-0.5 font-bold ${t.quality >= 1080 ? "bg-mint/20 text-mint" : "bg-white/10"}`}>
+                              {t.quality >= 1080 ? "FHD" : `${t.quality}p`}
+                            </span>
+                          ) : null}
+                        </span>
                       </button>
                     </li>
                   ))}

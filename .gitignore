@@ -60,3 +60,11 @@ next-env.d.ts
 *.db
 *.db-wal
 *.db-shm
+
+# Исходники роликов главной (тяжёлые, не нужны сайту)
+/video-originals/
+
+# промо-съёмка (большие кадры)
+promo/raw/
+promo/clips/
+promo/out/

@@ -32,7 +32,7 @@ test("уровень: AC за каждый пройденный уровень, 
   const levels = r.effects.filter((e) => e.type === "LEVEL_UP");
   assert.equal(levels.length, 2, "две волны: 1→5 и 5→6");
   assert.equal(levels[0].level, 5);
-  assert.equal(levels[0].era, "Странник");
+  assert.equal(levels[0].era, "Голубая аура");
   assert.equal(levels[0].eraChanged, true, "эра сменилась на 5 уровне");
   assert.equal(levels[1].level, 6);
   assert.equal(levels[1].eraChanged, false);

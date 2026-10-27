@@ -46,6 +46,7 @@ import {
 } from "@/lib/premium-perks";
 import { PROGRESSION_CONFIG } from "@/lib/progression/progression.config";
 import { AUTORENEW_DAYS, autoRenewEnabled, setAutoRenew } from "@/lib/premium-autorenew";
+import { PremiumDrop } from "./PremiumLive";
 import { PLANS } from "./PremiumPlans";
 
 const DAY = 86_400_000;
@@ -113,6 +114,7 @@ const PERK_HREF: Record<string, string | undefined> = {
   cosmetics: "/cosmetics",
   daily: undefined,
   gifts: "#promo",
+  backgrounds: "/profile",
 };
 
 /**
@@ -487,6 +489,11 @@ export function PremiumStatus({ account }: { account: Account }) {
             <TickBox value={clock.seconds} label="секунд" />
           </div>
         </header>
+
+
+        <div style={{ paddingTop: 48, position: "relative", zIndex: 2 }}>
+          <PremiumDrop />
+        </div>
 
         {/* ------------------- Автопродление и продление -------------------- */}
         <div className="pra-row2">

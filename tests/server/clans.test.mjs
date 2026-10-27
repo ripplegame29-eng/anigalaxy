@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 
 import {
   createClan, joinClan, leaveClan, kickMember, contribute, updateClan, getClan, clanMembers,
-  clanData, listClans, declareWar, addWarScore, settleWars, activeWar, warHistory, clanIdOfUser, clanEvents, MAX_MEMBERS,
+  clanData, listClans, declareWar, addWarScore, settleWars, activeWar, warHistory, clanIdOfUser, clanEvents,
 } from "../../.tsc-tests/lib/server/clans.js";
 import { freshDb, makeUser } from "./helpers.mjs";
 
@@ -35,7 +35,7 @@ test("вступление, лимит состава, выход и перед�
   assert.equal(joinClan(db, makeUser(db).id, 9999).code, "not_found");
 
   const full = createClan(db, makeUser(db).id, { name: "Full Clan", tag: "FC" }).value;
-  for (let i = 1; i < MAX_MEMBERS; i += 1) assert.ok(joinClan(db, makeUser(db).id, full.id).ok);
+  for (let i = 1; i < full.cap; i += 1) assert.ok(joinClan(db, makeUser(db).id, full.id).ok);
   assert.equal(joinClan(db, makeUser(db).id, full.id).code, "full");
 
   // лидер уходит — власть у старейшего участника

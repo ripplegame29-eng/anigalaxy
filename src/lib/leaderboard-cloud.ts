@@ -34,6 +34,8 @@ export interface BoardRow {
   premium: boolean;
   avatar?: string;
   frameId?: string;
+  backgroundId?: string;
+  bgImage?: string;
 }
 
 export type BoardMetric = "xp" | "hours" | "series";
@@ -86,7 +88,8 @@ function notify(key: string): void {
 async function fetchBoard(period: "week" | "all", metric: BoardMetric): Promise<void> {
   const key = `${period}:${metric}`;
   const reply = await call<Omit<BoardReply, "ready">>(`/api/leaderboard?period=${period}&metric=${metric}`);
-  if (reply) {
+  // Ответ с ошибкой (например, {error}) без таблицы не кладём в кэш: иначе rows окажется undefined
+  if (reply && Array.isArray(reply.rows)) {
     cache.set(key, { ...reply, ready: true });
     notify(key);
   }

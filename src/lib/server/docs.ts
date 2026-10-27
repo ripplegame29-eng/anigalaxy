@@ -7,7 +7,7 @@
  * Прогресс дополнительно проверяется на правдоподобность роста опыта.
  */
 
-import { MAX_DOCS_PER_USER, MAX_DOC_BYTES, PROGRESS_DOC_KEY, isSyncKey } from "../sync-keys";
+import { MAX_DOCS_PER_USER, PROGRESS_DOC_KEY, isSyncKey, maxDocBytes } from "../sync-keys";
 import { weekKey } from "../leaderboard-prizes";
 import { num, str, transaction, type Database } from "./sqlite";
 
@@ -116,7 +116,7 @@ export function putDoc(
 ): PutResult {
   const { key, value } = input;
   if (!isSyncKey(key) || typeof value !== "string") return { ok: false, reason: "invalid" };
-  if (Buffer.byteLength(value, "utf8") > MAX_DOC_BYTES) return { ok: false, reason: "too_large" };
+  if (Buffer.byteLength(value, "utf8") > maxDocBytes(key)) return { ok: false, reason: "too_large" };
 
   return transaction(db, (): PutResult => {
     const existing = getDoc(db, userId, key);

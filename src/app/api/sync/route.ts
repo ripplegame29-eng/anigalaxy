@@ -1,4 +1,6 @@
 import { deleteAllDocs, listDocs, putDoc } from "@/lib/server/docs";
+import { flushGrants } from "@/lib/server/grants";
+import { onProgressSaved } from "@/lib/server/referrals";
 import { json, route, readJson } from "@/lib/server/http";
 
 export const runtime = "nodejs";
@@ -31,6 +33,14 @@ export const POST = route(
       });
       return { key, ...result };
     });
+    if (results.some((r: { key: string; ok?: boolean }) => r.key === "animehub:progress:v1" && r.ok)) {
+      try {
+        flushGrants(db, user!.id);
+      } catch (error) {
+        console.error("[grants]", error);
+      }
+      onProgressSaved(db, user!.id);
+    }
     return json({ results });
   },
   { write: true, auth: true },

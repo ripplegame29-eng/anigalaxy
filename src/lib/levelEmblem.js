@@ -1,12 +1,12 @@
 /* ============ КОМПОНЕНТ: levelEmblem(level, percent, sizePx) -> HTML ============ */
 export const ERAS=[
- {from:1,  n:'Новичок',  sh:'Круг-цветок',      c:'#34e0a1',c2:'#18a0ff',a:'#c8ff9a',st:4, orb:1,rp:0,beam:0,cmt:0,pt:0,em:0, rays:0},
- {from:5,  n:'Зритель',  sh:'Гексагон-радар',   c:'#38b6ff',c2:'#7a7dff',a:'#aee0ff',st:4, orb:1,rp:2,beam:1,cmt:0,pt:0,em:0, rays:0},
- {from:15, n:'Знаток',   sh:'Октаграмма-молнии',c:'#b06bff',c2:'#ff5fd2',a:'#e6d0ff',st:5, orb:1,rp:1,beam:0,cmt:2,pt:0,em:0, rays:0,neb:1},
- {from:30, n:'Мастер',   sh:'Солнце-клинки',    c:'#ff4fa3',c2:'#ff9a3d',a:'#ffd27a',st:6, orb:2,rp:1,beam:0,cmt:1,pt:6,em:0, rays:1,neb:1},
- {from:50, n:'Чемпион',  sh:'Щит с крыльями',   c:'#ffd04d',c2:'#ff8a1f',a:'#fff0b0',st:5, orb:2,rp:1,beam:0,cmt:1,pt:0,em:8, rays:1,neb:1},
- {from:75, n:'Легенда',  sh:'Пламенное кольцо', c:'#ff4d4d',c2:'#ffa31f',a:'#ffd9a0',st:6, orb:3,rp:2,beam:0,cmt:2,pt:0,em:12,rays:2,neb:1,fire:1},
- {from:100,n:'Трансцендент',sh:'Гексаграмма-космос',c:'#6cf0ff',c2:'#ff6bd6',a:'#ffffff',st:10,orb:4,rp:2,beam:0,cmt:3,pt:0,em:0,rays:2,neb:1,holo:1}
+ {from:1,  n:'Белая аура',  sh:'Круг-цветок',      c:'#eaf2ff',c2:'#8fb4e8',a:'#ffffff',st:4, orb:1,rp:0,beam:0,cmt:0,pt:0,em:0, rays:0},
+ {from:5,  n:'Голубая аура',  sh:'Гексагон-радар',   c:'#38b6ff',c2:'#4f8bff',a:'#aee0ff',st:4, orb:1,rp:2,beam:1,cmt:0,pt:0,em:0, rays:0},
+ {from:15, n:'Синяя аура',   sh:'Октаграмма-молнии',c:'#3b6bff',c2:'#6c4bff',a:'#c5d3ff',st:5, orb:1,rp:1,beam:0,cmt:2,pt:0,em:0, rays:0,neb:1},
+ {from:30, n:'Фиолетовая аура',   sh:'Солнце-клинки',    c:'#b06bff',c2:'#ff5fd2',a:'#e6d0ff',st:6, orb:2,rp:1,beam:0,cmt:1,pt:6,em:0, rays:1,neb:1},
+ {from:50, n:'Алая аура',  sh:'Щит с крыльями',   c:'#ff4d4d',c2:'#ffa31f',a:'#ffd9a0',st:5, orb:2,rp:1,beam:0,cmt:1,pt:0,em:8, rays:1,neb:1},
+ {from:75, n:'Золотая аура',  sh:'Пламенное кольцо', c:'#ffd04d',c2:'#ff8a1f',a:'#fff0b0',st:6, orb:3,rp:2,beam:0,cmt:2,pt:0,em:12,rays:2,neb:1,fire:1},
+ {from:100,n:'Радужная аура',sh:'Гексаграмма-космос',c:'#6cf0ff',c2:'#ff6bd6',a:'#ffffff',st:10,orb:4,rp:2,beam:0,cmt:3,pt:0,em:0,rays:2,neb:1,holo:1}
 ];
 export const eraOf=L=>{let i=0;ERAS.forEach((e,k)=>{if(L>=e.from)i=k});return i};
 export const rng=s=>()=>{s|=0;s=s+0x6D2B79F5|0;let t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296};
@@ -66,6 +66,6 @@ export function levelEmblem(L,pct=0,size=96,o={}){
   n(E.em,()=>`<i class="em" style="--x:${f(20+r()*60)}%;--dx:${f((r()-.5)*30)}px;--t:${(k==5?1.2:2)+r()*1.5}s;--d:${(-r()*3).toFixed(1)}s"></i>`);
   n(E.pt,()=>`<i class="pt" style="--x:${f(10+r()*80)}%;--dx:${f((r()-.5)*30)}px;--t:${(3+r()*2).toFixed(1)}s;--d:${(-r()*5).toFixed(1)}s"></i>`);
   const hue=(E.holo||o.locked)?0:Math.round((r()-.5)*40), dg=String(L).length, fs=dg>2?.24:dg>1?.3:.38;
-  return `<div class="le ${E.fire?'fire':''} ${E.holo?'holo':''} ${o.locked?'lk':''}" role="img" aria-label="Уровень ${L}, эра ${E.n}${o.locked?', закрыт':', прогресс '+pct+'%'}" style="--s:${size}px;--c:${E.c};--c2:${E.c2};--fs:${fs};--neb:${E.neb||0};--d0:${(-r()*3).toFixed(1)}s;${hue?`filter:hue-rotate(${hue}deg)`:''}">
+  return `<div class="le ${E.fire?'fire':''} ${E.holo?'holo':''} ${o.locked?'lk':''}" role="img" aria-label="Уровень ${L}, пробуждение ${E.n}${o.locked?', закрыт':', прогресс '+pct+'%'}" style="--s:${size}px;--c:${E.c};--c2:${E.c2};--fs:${fs};--neb:${E.neb||0};--d0:${(-r()*3).toFixed(1)}s;${hue?`filter:hue-rotate(${hue}deg)`:''}">
    <i class="gl"></i>${E.rays?'<i class="rays"></i>':''}${E.rays>1?'<i class="rays b"></i>':''}<i class="core"></i><svg viewBox="0 0 100 100">${s}</svg>${h}${o.up?'<i class="lu"></i>':''}<b>${L}</b></div>`;
 }

@@ -86,3 +86,10 @@
 .agh .hi {
   -webkit-backdrop-filter: blur(22px) saturate(1.5);
 }
+
+/* Пустое состояние выпадающего списка уведомлений */
+.agh .ntf-empty{display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px;padding:26px 18px 22px}
+.agh .ntf-empty .ic{width:48px;height:48px;border-radius:16px;display:grid;place-items:center;margin-bottom:4px;color:#6fb4ff;background:rgba(43,127,255,.14);box-shadow:inset 0 0 0 1px rgba(111,180,255,.28)}
+.agh .ntf-empty .ic svg{width:22px}
+.agh .ntf-empty b{font-size:15px;color:#fff}
+.agh .ntf-empty small{font-size:12.5px;line-height:1.45;color:#8c97b3;max-width:230px}

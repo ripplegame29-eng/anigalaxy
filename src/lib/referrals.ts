@@ -1,70 +1,71 @@
 /**
  * Реферальные ссылки и учёт приглашений.
  *
- * Как это работает в режиме local (сервера у проекта нет):
- *  - у каждого аккаунта есть свой код, он же часть ссылки `/?ref=КОД`;
- *  - при регистрации код из адресной строки запоминается у новичка
- *    (`REFERRED_KEY`) и уходит в движок событием `REFERRAL_REGISTERED` —
- *    тот начисляет награду пригласившему и пишет запись в журнал;
- *  - список «мои приглашения» хранится локально (`REF_KEY`) и показывается
- *    в разделе «Пригласи друзей».
+ * Всё считает сервер (`/api/referrals`): код игрока постоянный, приглашение
+ * фиксируется при регистрации по ссылке `/?ref=КОД`, друг засчитывается на
+ * 10 уровне после 30 минут просмотра, а награды выдаются на сервере и
+ * приходят игроку вместе с обычной синхронизацией.
  *
- * Честная оговорка: без сервера приглашение, сделанное с ДРУГОГО устройства,
- * сюда не попадёт — у каждого браузера своя база. Поэтому «топ месяца»
- * показывает приглашения с этого устройства, а не весь сайт. Это подписано
- * прямо в интерфейсе, чтобы не выдавать локальное за общее.
+ * Здесь — клиентская часть: запомнить код с ссылки до регистрации, получить
+ * состояние с сервера и отдать его компонентам. Без сервера (локальный режим)
+ * рефералка не работает: приглашение с другого устройства иначе не увидеть.
  */
 
 import { useSyncExternalStore } from "react";
-import { PROGRESSION_CONFIG } from "./progression/progression.config";
+import { REFERRAL_DAYS_PER_FRIEND } from "./referral-rules";
 import { createLocalStore } from "./store";
-import { progressEmit } from "./progression/events";
-import { activatePremium, readAccount } from "./auth";
+import { readAccount } from "./auth";
 
-/** Ключ списка моих приглашений */
-export const REF_KEY = "animehub:refs:v1";
-/** Ключ «меня пригласил такой-то код» */
-export const REFERRED_KEY = "animehub:referred-by:v1";
-/**
- * Ключ очереди приглашений: код пригласившего → сколько людей ещё не получили награду.
- *
- * Зачем очередь: пригласивший — это другой человек с другого устройства, и в
- * момент регистрации новичка его аккаунт здесь недоступен. Поэтому приглашение
- * сначала складывается в очередь под своим кодом, а награда начисляется, когда
- * владелец кода сам откроет приложение (`flushReferralPremium`).
- */
-export const PENDING_REF_KEY = "animehub:ref-pending:v1";
+/** Код с ссылки приглашения, который ждёт регистрации */
+export const REFERRAL_LANDING_KEY = "animehub:ref-landing:v1";
+/** Последнее состояние рефералки, полученное с сервера */
+export const REFERRAL_STATE_KEY = "animehub:ref-state:v1";
 
-/** Сколько дней Premium даёт одно приглашение — из конфига экономики */
-export const REFERRAL_PREMIUM_DAYS = PROGRESSION_CONFIG.economy.referralPremiumDays;
+/** Сколько дней Premium даёт один засчитанный друг */
+export const REFERRAL_PREMIUM_DAYS = REFERRAL_DAYS_PER_FRIEND;
 
 export interface ReferralEntry {
-  /** Код пригласившего */
-  code: string;
   /** Ник приглашённого */
   nick: string;
   /** Когда зарегистрировался, мс */
   at: number;
+  /** Дорос ли до условий (10 уровень и 30 минут) */
+  qualified: boolean;
+  level: number;
+  minutes: number;
 }
 
-export interface ReferredBy {
+export interface ReferralTopRow {
+  rank: number;
+  nickname: string;
+  count: number;
+  avatar: string;
+  frameId: string;
+}
+
+export interface ReferralState {
+  code: string;
+  qualified: number;
+  total: number;
+  friends: ReferralEntry[];
+  /** Номера рубежей, которые уже выданы */
+  claimed: number[];
+  top: ReferralTopRow[];
+  me: { month: number; rank: number };
+  rules: { minLevel: number; minMinutes: number };
+}
+
+interface Landing {
   code: string;
   at: number;
 }
 
+const landingStore = createLocalStore<Landing | null>(REFERRAL_LANDING_KEY, null);
+const stateStore = createLocalStore<ReferralState | null>(REFERRAL_STATE_KEY, null);
+
 /**
- * Реферальный код аккаунта.
- *
- * Строится из ника и даты создания: ник даёт узнаваемость («TEST1234»),
- * хвост из `createdAt` — уникальность, чтобы два аккаунта с одинаковым ником
- * не получили один код. Только латиница и цифры — код живёт в URL.
- */
-/**
- * Кириллица → латиница.
- *
- * Ник может быть на русском, а реферальный код живёт в URL и должен быть
- * из латиницы и цифр. Без транслитерации ник «Иван» превращался бы в
- * четырёхсимвольный хвост от `createdAt` — и ссылка выглядела бы сломанной.
+ * Кириллица → латиница для локального кода (пока сервер не ответил).
+ * Сервер строит код тем же способом и закрепляет его навсегда.
  */
 const CYRILLIC: Record<string, string> = {
   а: "A", б: "B", в: "V", г: "G", д: "D", е: "E", ё: "E", ж: "ZH", з: "Z",
@@ -81,7 +82,10 @@ function transliterate(value: string): string {
     .join("");
 }
 
+/** Код игрока: с сервера, а до ответа — тот же, что сервер построит сам */
 export function refCodeFor(account: { nickname?: string; createdAt?: number } | null): string {
+  const fromServer = stateStore.get()?.code;
+  if (fromServer) return fromServer;
   const base = transliterate(account?.nickname ?? "guest")
     .toUpperCase()
     .replace(/[^A-Z0-9]/g, "")
@@ -90,14 +94,7 @@ export function refCodeFor(account: { nickname?: string; createdAt?: number } | 
   return `${base}${tail}` || "ANIGALAXY";
 }
 
-/**
- * Ссылка для приглашения.
- *
- * Всегда относительная: на сервере `window` нет, и абсолютный адрес
- * получился бы другим, чем на клиенте — расхождение при гидрации.
- * Полный URL собирается в момент копирования (см. `absoluteRefLink`), когда
- * origin точно есть и различать его больше не нужно.
- */
+/** Относительная ссылка (на сервере window нет — иначе разойдётся гидрация) */
 export function refLink(code: string): string {
   return `/?ref=${encodeURIComponent(code)}`;
 }
@@ -108,118 +105,85 @@ export function absoluteRefLink(code: string): string {
   return `${window.location.origin}${refLink(code)}`;
 }
 
-/* ------------------------------ Хранилища -------------------------------- */
+/* ------------------------------ Хуки ------------------------------------- */
 
-const refStore = createLocalStore<Record<string, ReferralEntry[]>>(REF_KEY, {});
-const referredStore = createLocalStore<ReferredBy | null>(REFERRED_KEY, null);
-const pendingStore = createLocalStore<Record<string, number>>(PENDING_REF_KEY, {});
-
-export function useMyReferrals(): ReferralEntry[] {
-  const map = useSyncExternalStore(refStore.subscribe, refStore.get, refStore.getServer);
-  return Object.values(map)
-    .flat()
-    .sort((a, b) => b.at - a.at);
+export function useReferralState(): ReferralState | null {
+  return useSyncExternalStore(stateStore.subscribe, stateStore.get, stateStore.getServer);
 }
 
-export function useReferrer(): ReferredBy | null {
-  return useSyncExternalStore(referredStore.subscribe, referredStore.get, referredStore.getServer);
+/** Все приглашённые, свежие первыми (и засчитанные, и ещё растущие) */
+export function useMyReferrals(): ReferralEntry[] {
+  return useReferralState()?.friends ?? EMPTY;
+}
+const EMPTY: ReferralEntry[] = [];
+
+/** Код, по которому пришёл этот посетитель (если ещё не зарегистрировался) */
+export function useReferrer(): Landing | null {
+  return useSyncExternalStore(landingStore.subscribe, landingStore.get, landingStore.getServer);
 }
 
 /* ------------------------------ Действия --------------------------------- */
 
-/**
- * Зафиксировать приглашение при регистрации.
- *
- * Вызывается из `registerAccount` сразу после создания аккаунта. Код берём
- * из `?ref=` в адресной строке; если его нет или это собственный код —
- * ничего не делаем. Награда уходит движку, он же проверит идемпотентность.
- */
-export function captureReferralOnRegister(nick: string): void {
+/** Запомнить `?ref=` из адреса: человек может походить по сайту до регистрации */
+export function captureReferralLanding(): void {
   if (typeof window === "undefined") return;
-  const params = new URLSearchParams(window.location.search);
-  const code = (params.get("ref") ?? "").trim().toUpperCase();
+  const code = (new URLSearchParams(window.location.search).get("ref") ?? "")
+    .trim()
+    .toUpperCase()
+    .replace(/[^A-Z0-9]/g, "")
+    .slice(0, 24);
   if (!code) return;
-
-  // Свой код не считаем: иначе можно было бы приглашать самого себя
   const me = readAccount();
   if (me && refCodeFor(me) === code) return;
+  const current = landingStore.get();
+  if (current?.code !== code) landingStore.set({ code, at: Date.now() });
+}
 
-  const entry: ReferralEntry = { code, nick, at: Date.now() };
-  const current = referredStore.get();
-  if (!current || current.code !== code) referredStore.set({ code, at: entry.at });
+/** Код для отправки при регистрации (или пусто) */
+export function pendingLandingCode(): string {
+  return landingStore.get()?.code ?? "";
+}
 
-  const mine = refStore.get();
-  const list = mine[code] ?? [];
-  // Тот же ник по той же ссылке не должен множиться
-  if (!list.some((item) => item.nick === nick)) {
-    refStore.set({ ...mine, [code]: [...list, entry] });
+/** После регистрации код израсходован */
+export function clearReferralLanding(): void {
+  if (landingStore.get()) landingStore.remove();
+}
+
+/** Локальная регистрация без сервера рефералку не засчитывает */
+export function captureReferralOnRegister(): void {
+  clearReferralLanding();
+}
+
+/** Запросить у сервера актуальное состояние (заодно сервер засчитает созревших друзей) */
+export async function refreshReferrals(): Promise<ReferralState | null> {
+  try {
+    const response = await fetch("/api/referrals", { credentials: "same-origin", cache: "no-store" });
+    if (!response.ok) return null;
+    const data = (await response.json()) as ReferralState;
+    stateStore.set(data);
+    return data;
+  } catch {
+    return null;
   }
-
-  // Награда пригласившему — в очередь под его кодом: его аккаунт на этом
-  // устройстве недоступен, и начислим мы её, когда он сам откроет приложение
-  const pending = pendingStore.get();
-  pendingStore.set({ ...pending, [code]: (pending[code] ?? 0) + 1 });
-
-  progressEmit({ type: "REFERRAL_REGISTERED", refCode: code, newNick: nick });
 }
 
-/** Сколько приглашений начислено за всё время (для статистики) */
+/** Сколько друзей засчитано (для открытия предметов за рубежи) */
 export function referralCount(): number {
-  return Object.values(refStore.get()).reduce((sum, list) => sum + list.length, 0);
+  return stateStore.get()?.qualified ?? 0;
 }
 
-/**
- * Сколько приглашений было в этом месяце.
- *
- * Читает стор напрямую, без хука: список нужен и в разметке, и в
- * вычислениях внутри компонентов, а `useMyReferrals()` там запрещён
- * правилом хуков.
- */
-/**
- * Начислить пригласившему дни Premium из очереди.
- *
- * Вызывается при старте приложения: владелец кода открыл сайт, и все
- * приглашения по его ссылке, накопившиеся с других устройств, превращаются в
- * дни подписки. Идемпотентно по построению: начислили — запись из очереди
- * убрана, повторный вызов ничего не сделает.
- *
- * Возвращает, сколько дней и за сколько приглашений начислено (null — нечего).
- */
-export function flushReferralPremium(): { days: number; credited: number } | null {
-  const account = readAccount();
-  if (!account) return null;
-
-  const code = refCodeFor(account);
-  const pending = pendingStore.get();
-  const count = pending[code] ?? 0;
-  if (count <= 0) return null;
-
-  const days = count * REFERRAL_PREMIUM_DAYS;
-  activatePremium(days);
-  const rest = { ...pending };
-  delete rest[code];
-  // Ключ убираем совсем, а не оставляем пустой объект: мусор в хранилище
-  if (Object.keys(rest).length === 0) pendingStore.remove();
-  else pendingStore.set(rest);
-  return { days, credited: count };
-}
-
-/** Сколько приглашений ждёт награды по моему коду (для подписи в UI) */
+/** Сколько приглашённых ещё не дошли до условий */
 export function pendingReferralCount(): number {
-  const account = readAccount();
-  if (!account) return 0;
-  return pendingStore.get()[refCodeFor(account)] ?? 0;
+  const state = stateStore.get();
+  return state ? state.total - state.qualified : 0;
 }
 
+/** Засчитанные друзья этого месяца (по месяцу регистрации — оценка для подписей) */
 export function referralsThisMonth(now = Date.now()): ReferralEntry[] {
   const d = new Date(now);
-  const month = d.getMonth();
-  const year = d.getFullYear();
-  const all = Object.values(refStore.get())
-    .flat()
-    .sort((a, b) => b.at - a.at);
-  return all.filter((item) => {
+  return (stateStore.get()?.friends ?? []).filter((item) => {
+    if (!item.qualified) return false;
     const t = new Date(item.at);
-    return t.getMonth() === month && t.getFullYear() === year;
+    return t.getMonth() === d.getMonth() && t.getFullYear() === d.getFullYear();
   });
 }

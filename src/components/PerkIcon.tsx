@@ -45,6 +45,7 @@ export function PerkIcon({ id }: { id: string }) {
       );
       break;
     case "cosmetics":
+    case "backgrounds":
       body = (
         <>
           <g className="pk-spin">
@@ -58,6 +59,7 @@ export function PerkIcon({ id }: { id: string }) {
       );
       break;
     case "daily":
+    case "drop":
       body = (
         <>
           <g className="pk-lid">

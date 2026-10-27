@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Cinzel, Montserrat, Onest, Unbounded } from "next/font/google";
 import "./globals.css";
+import "./ui-system.css";
 import "./ag-theme.css";
 import "./effects.css";
 import "./ag-tag.css";
@@ -49,6 +50,8 @@ import { Footer } from "@/components/Footer";
 import CloudSync from "@/components/CloudSync";
 import { HeaderShell } from "@/components/site/HeaderShell";
 import { PwaBoot } from "@/components/PwaBoot";
+import { RouteProgress } from "@/components/RouteProgress";
+import { SfxBoot } from "@/components/SfxBoot";
 import "@/components/site/header.css";
 import "@/components/site/header-promo.css";
 import "@/components/site/search.css";
@@ -60,6 +63,8 @@ import { EcoBoot } from "@/components/progression/EcoBoot";
 import { LevelEmblemIO } from "@/components/progression/LevelEmblemIO";
 import { AchievementEmblemIO } from "@/components/progression/AchievementEmblemIO";
 import { ToastHost } from "@/components/progression/ToastHost";
+import { GuestWall } from "@/components/GuestWall";
+import { HideInEmbed } from "@/components/HideInEmbed";
 import { ReferralPremiumFlush } from "@/components/ReferralPremiumFlush";
 import { SkyBackdrop } from "@/components/design/SkyBackdrop";
 
@@ -210,6 +215,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             ниже на время отката и в разметку не выводится. */}
         <HeaderShell />
         <PwaBoot />
+        <RouteProgress />
+        <SfxBoot />
         {/* Фон макетов: один на весь сайт, показывается только под .ag-root —
             см. body:has(.ag-root) в ag-theme.css. Идёт до <main>, чтобы лежать
             под содержимым, и без участия в раскладке: обе картинки fixed. */}
@@ -235,11 +242,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <AuthDialogHost />
 
         {/* Модалка «Ежедневный бонус» — тот же приём, что у авторизации */}
-        <DailyBonusHost />
+        <HideInEmbed><DailyBonusHost /></HideInEmbed>
 
         {/* Тосты наград (§12.6): подписка должна встать до ежедневного входа,
             иначе первые эффекты сессии уходят в никуда */}
-        <ToastHost />
+        <HideInEmbed><ToastHost /></HideInEmbed>
 
         {/* Ежедневный вход прогрессии: событие шлётся только в браузере (useEffect) */}
         <ProgressionBoot />
@@ -249,7 +256,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
 
         {/* Dev-панель прогрессии (§15 этап 7): рендерится только в dev-сборке
             и только с ?dev=1 — в production условие вырезается на этапе сборки */}
-        <DevPanel />
+        <HideInEmbed><DevPanel /></HideInEmbed>
 
         {/* Режим «экономия» (§14): применяет <html data-eco> после гидратации */}
         <EcoBoot />
@@ -262,9 +269,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
 
         {/* Дни Premium за приглашённых: начисляются при первом открытии */}
         <ReferralPremiumFlush />
+        <HideInEmbed><GuestWall /></HideInEmbed>
 
         {/* Общий чат: плавающая кнопка + боковая панель (локальная симуляция) */}
-        <ChatWidget />
+        <HideInEmbed><ChatWidget /></HideInEmbed>
         <ErrorReporter />
 
         {/*

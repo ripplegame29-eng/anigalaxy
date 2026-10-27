@@ -26,11 +26,34 @@ let lastSweep = 0;
 const GENERAL = { windowMs: 60_000, max: 120 };
 const HEAVY = { windowMs: 60_000, max: 20 };
 /**
+ * HLS-сегменты идут пачками: одна серия — сотни запросов. Для прокси
+ * альтернативных источников нужен отдельный, высокий лимит, иначе плеер
+ * упрётся в 429 на середине серии. SSRF закрыт allowlist'ом в самих роутах.
+ */
+const STREAM = { windowMs: 60_000, max: 1200 };
+/**
  * Комнаты опрашиваются каждые 2 секунды (30 запросов в минуту с вкладки).
  * Несколько вкладок с одного IP не должны упираться в общий лимит.
  */
 const ROOMS = { windowMs: 60_000, max: 240 };
-const HEAVY_PREFIXES = ["/api/frame", "/api/kodik/stream", "/api/auth/", "/api/account/"];
+const STREAM_PREFIXES = [
+  "/api/cvh/proxy",
+  "/api/sameband/proxy",
+  "/api/aniboom/proxy",
+];
+const HEAVY_PREFIXES = [
+  "/api/frame",
+  "/api/kodik/stream",
+  "/api/cvh/playlist",
+  "/api/cvh/stream",
+  "/api/sameband/search",
+  "/api/sameband/match",
+  "/api/sameband/title",
+  "/api/aniboom/match",
+  "/api/aniboom/stream",
+  "/api/auth/",
+  "/api/account/",
+];
 /** Тело запроса больше этого не принимаем (поиск по кадру — до 4×10 МБ, берём запас) */
 const MAX_BODY = 45 * 1024 * 1024;
 
@@ -92,9 +115,10 @@ export function proxy(request: NextRequest) {
   sweep(now);
   const ip = clientKey(request);
   const rooms = pathname.startsWith(EXTRA_METHODS_PREFIX);
+  const stream = STREAM_PREFIXES.some((p) => pathname.startsWith(p));
   const heavy = HEAVY_PREFIXES.some((p) => pathname.startsWith(p));
-  const rule = rooms ? ROOMS : heavy ? HEAVY : GENERAL;
-  const bucket = rooms ? "w" : heavy ? "h" : "g";
+  const rule = rooms ? ROOMS : stream ? STREAM : heavy ? HEAVY : GENERAL;
+  const bucket = rooms ? "w" : stream ? "s" : heavy ? "h" : "g";
   const result = hit(`${bucket}:${ip}`, rule, now);
 
   if (!result.ok) {

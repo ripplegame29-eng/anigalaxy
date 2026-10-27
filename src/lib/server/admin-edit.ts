@@ -186,11 +186,11 @@ export function adjustBalance(db: Database, admin: UserRow, userId: number, inpu
       }
       if (has(input.setTrophy)) {
         p.trophyPoints = clampInt(input.setTrophy, 0, 1_000_000_000);
-        parts.push(`кубки → ${p.trophyPoints}`);
+        parts.push(`очки славы → ${p.trophyPoints}`);
       } else if (has(input.trophy)) {
         const d = clampInt(input.trophy, -1_000_000_000, 1_000_000_000);
         p.trophyPoints = Math.max(0, num(p.trophyPoints) + d);
-        parts.push(`кубки ${d > 0 ? "+" : ""}${d}`);
+        parts.push(`очки славы ${d > 0 ? "+" : ""}${d}`);
       }
       if (has(input.setFreezes)) {
         p.streakFreezes = clampInt(input.setFreezes, 0, 1000);

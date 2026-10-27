@@ -181,7 +181,8 @@ box-sizing:border-box;color-scheme:dark;
 /* Бегущая коническая рамка и свет за курсором — задаются --mx/--my из JS */
 .agh .dd.mega .mg-panel::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:1px;pointer-events:none;z-index:3;background:conic-gradient(from var(--ma),transparent 0 66%,var(--cyan) 80%,var(--violet) 92%,transparent);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;animation:hd-megab 8s linear infinite}
 .agh .dd.mega .mg-panel::after{content:"";position:absolute;inset:0;border-radius:inherit;z-index:-1;pointer-events:none;background:radial-gradient(420px circle at var(--mx,30%) var(--my,0%),rgba(120,160,255,.11),transparent 60%)}
-.agh .dd.mega .mg-body{display:grid;grid-template-columns:1fr 380px;gap:18px;padding:18px}
+.agh .dd.mega .mg-body{display:grid;grid-template-columns:minmax(0,1fr) clamp(260px,38%,380px);gap:18px;padding:18px}
+.agh .dd.mega .mg-body>*{min-width:0}
 /* Список разделов + плашка за курсором */
 .agh .dd.mega .mg-list{position:relative;display:flex;flex-direction:column;gap:2px;align-self:start}
 .agh .dd.mega .mg-pill{position:absolute;left:0;right:0;top:0;height:0;z-index:0;opacity:0;border-radius:16px;pointer-events:none;background:linear-gradient(90deg,color-mix(in srgb,var(--pc,#2aa7ff) 18%,transparent),rgba(255,255,255,.015));border:1px solid color-mix(in srgb,var(--pc,#2aa7ff) 30%,transparent);transform:translateY(var(--y,0));height:var(--h,0);transition:transform .38s cubic-bezier(.2,.85,.3,1),height .38s,opacity .25s}
@@ -202,7 +203,7 @@ box-sizing:border-box;color-scheme:dark;
 .agh .dd.mega .mg-mi:hover .mg-meta{transform:translateX(-4px)}
 /* Плитка «Аниме дня»: оттенок задаёт компонент через --h по жанру тайла,
    наклон и параллакс постера приходят из JS (--rx/--ry/--tx/--ty) */
-.agh-feat{--h:215;position:relative;min-height:372px;border-radius:22px;overflow:hidden;isolation:isolate;display:flex;flex-direction:column;justify-content:flex-end;padding:22px;border:1px solid var(--line);text-align:left;
+.agh-feat{--h:215;position:relative;min-width:0;max-width:100%;min-height:372px;border-radius:22px;overflow:hidden;isolation:isolate;display:flex;flex-direction:column;justify-content:flex-end;padding:22px;border:1px solid var(--line);text-align:left;
   transform:perspective(900px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg));transition:transform .35s cubic-bezier(.2,.8,.3,1),box-shadow .35s,opacity .6s .3s;
   background:
     radial-gradient(1.2px 1.2px at 14% 22%,#fff,transparent),

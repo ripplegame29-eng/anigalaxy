@@ -1,12 +1,26 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
+import { createPortal } from "react-dom";
+import type { ReaderMode, ReaderWidth } from "./MangaReader";
+
+const noop = () => () => {};
+
+const WIDTHS: ReaderWidth[] = ["s", "m", "l"];
+const WIDTH_LABEL: Record<ReaderWidth, string> = { s: "Узко", m: "Средне", l: "Широко" };
+
+function Chevron({ dir }: { dir: "l" | "r" }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden>
+      <path d={dir === "l" ? "m15 6-6 6 6 6" : "m9 6 6 6-6 6"} strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
 
 /**
- * Панель ридера: возврат к тайтлу, переключение «предыдущая / следующая
- * глава» и счётчик страниц. На мобильных сворачивается в компактную
- * полосу, чтобы не закрывать кадр.
+ * Плавающая панель ридера: к тайтлу, соседние главы, ползунок страниц,
+ * режим чтения и ширина ленты. В ленте уезжает вниз при прокрутке.
  */
 export function ReaderBar({
   mangaId,
@@ -16,6 +30,12 @@ export function ReaderBar({
   pages,
   prevChapter,
   nextChapter,
+  mode,
+  width,
+  hidden,
+  onMode,
+  onWidth,
+  onSeek,
 }: {
   mangaId: string;
   mangaTitle: string;
@@ -24,96 +44,126 @@ export function ReaderBar({
   pages: number;
   prevChapter?: { id: string; label: string };
   nextChapter?: { id: string; label: string };
+  mode: ReaderMode;
+  width: ReaderWidth;
+  hidden: boolean;
+  onMode: (m: ReaderMode) => void;
+  onWidth: (w: ReaderWidth) => void;
+  onSeek: (n: number) => void;
 }) {
-  const [solid, setSolid] = useState(false);
+  // Панель выносим в body: <main> и подвал сайта — отдельные слои, и без
+  // этого подвал рисуется поверх панели у конца страницы
+  const mounted = useSyncExternalStore(noop, () => true, () => false);
+  const shown = Math.max(page, 1);
+  const pct = pages > 1 ? ((shown - 1) / (pages - 1)) * 100 : 100;
 
-  useEffect(() => {
-    const onScroll = () => setSolid(window.scrollY > 80);
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+  if (!mounted) return null;
 
-  const percent = pages > 1 ? Math.round(((page - 1) / (pages - 1)) * 100) : 100;
-
-  return (
+  return createPortal(
     <>
-      {/* Прогресс по страницам */}
-      <div
-        aria-hidden
-        className="fixed inset-x-0 top-0 z-40 h-0.5 bg-white/8 transition-opacity duration-300"
-        style={{ opacity: solid ? 1 : 0 }}
-      >
-        <div
-          className="h-full bg-accent transition-[width] duration-150"
-          style={{ width: `${percent}%` }}
-        />
+      <div aria-hidden className="mr-top">
+        <i style={{ width: `${pct}%` }} />
       </div>
 
-      <div
-        className={`fixed inset-x-0 bottom-0 z-40 border-t transition-colors duration-300 ${
-          solid
-            ? "border-line bg-ink-soft/95 backdrop-blur-xl"
-            : "border-transparent bg-ink-soft/60 backdrop-blur-sm"
-        }`}
-      >
-        <div className="mx-auto flex max-w-5xl items-center gap-3 px-3 py-2.5 sm:px-4">
+      <div className={`mr-bar${hidden ? " is-hidden" : ""}`} role="toolbar" aria-label="Панель чтения">
+        <Link href={`/manga/${mangaId}`} className="mr-btn mr-back" title={mangaTitle} aria-label="К тайтлу">
+          <Chevron dir="l" />
+          <span>{mangaTitle}</span>
+        </Link>
+
+        <span className="mr-sep" aria-hidden />
+
+        {prevChapter ? (
           <Link
-            href={`/manga/${mangaId}`}
-            className="btn-ghost flex min-w-0 items-center gap-2 rounded-xl px-2 py-2 text-sm font-semibold text-white/85 transition-colors hover:bg-white/10"
+            href={`/manga/${mangaId}/read/${prevChapter.id}`}
+            className="mr-btn mr-ic"
+            title={`Предыдущая: глава ${prevChapter.label}`}
+            aria-label="Предыдущая глава"
           >
-            <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="m15 6-6 6 6 6" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-            <span className="hidden max-w-[30vw] truncate sm:inline">{mangaTitle}</span>
+            <Chevron dir="l" />
           </Link>
-
-          <span className="ml-auto shrink-0 text-xs tabular-nums text-muted">
-            Глава {chapterLabel}
-            {page > 0 && ` · ${page} / ${pages}`}
+        ) : (
+          <span className="mr-btn mr-ic is-off" aria-hidden>
+            <Chevron dir="l" />
           </span>
+        )}
 
-          <div className="flex shrink-0 items-center gap-1.5">
-            {prevChapter ? (
-              <Link
-                href={`/manga/${mangaId}/read/${prevChapter.id}`}
-                title={`Предыдущая: ${prevChapter.label}`}
-                aria-label="Предыдущая глава"
-                className="btn-ghost grid h-9 w-9 place-items-center rounded-xl bg-white/6 text-white/80 ring-1 ring-white/10 transition-colors hover:bg-white/12 hover:text-white"
-              >
-                <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="m15 6-6 6 6 6" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </Link>
-            ) : (
-              <span className="grid h-9 w-9 place-items-center rounded-xl opacity-25" aria-hidden>
-                <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="m15 6-6 6 6 6" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </span>
-            )}
-
-            {nextChapter ? (
-              <Link
-                href={`/manga/${mangaId}/read/${nextChapter.id}`}
-                title={`Следующая: ${nextChapter.label}`}
-                aria-label="Следующая глава"
-                className="btn-ghost grid h-9 w-9 place-items-center rounded-xl bg-white/6 text-white/80 ring-1 ring-white/10 transition-colors hover:bg-white/12 hover:text-white"
-              >
-                <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="m9 6 6 6-6 6" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </Link>
-            ) : (
-              <span className="grid h-9 w-9 place-items-center rounded-xl opacity-25" aria-hidden>
-                <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="m9 6 6 6-6 6" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </span>
-            )}
+        <div className="mr-seek">
+          <div className="mr-seek-h">
+            <b>Глава {chapterLabel}</b>
+            <span>
+              {shown} / {pages}
+            </span>
           </div>
+          <input
+            type="range"
+            min={1}
+            max={Math.max(pages, 1)}
+            value={Math.min(shown, Math.max(pages, 1))}
+            onChange={(e) => onSeek(Number(e.target.value))}
+            style={{ ["--p" as string]: `${pct}%` }}
+            aria-label="Страница главы"
+          />
         </div>
+
+        {nextChapter ? (
+          <Link
+            href={`/manga/${mangaId}/read/${nextChapter.id}`}
+            className="mr-btn mr-ic"
+            title={`Следующая: глава ${nextChapter.label}`}
+            aria-label="Следующая глава"
+          >
+            <Chevron dir="r" />
+          </Link>
+        ) : (
+          <span className="mr-btn mr-ic is-off" aria-hidden>
+            <Chevron dir="r" />
+          </span>
+        )}
+
+        <span className="mr-sep" aria-hidden />
+
+        <div className="mr-seg" role="group" aria-label="Режим чтения">
+          <button
+            type="button"
+            className="mr-btn mr-ic"
+            aria-pressed={mode === "scroll"}
+            title="Лента"
+            onClick={() => onMode("scroll")}
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" aria-hidden>
+              <rect x="7" y="3" width="10" height="7" rx="1.5" />
+              <rect x="7" y="14" width="10" height="7" rx="1.5" />
+            </svg>
+          </button>
+          <button
+            type="button"
+            className="mr-btn mr-ic"
+            aria-pressed={mode === "page"}
+            title="По одной странице"
+            onClick={() => onMode("page")}
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" aria-hidden>
+              <rect x="6" y="3" width="12" height="18" rx="2" />
+            </svg>
+          </button>
+        </div>
+
+        {mode === "scroll" && (
+          <button
+            type="button"
+            className="mr-btn mr-ic mr-w"
+            title={`Ширина: ${WIDTH_LABEL[width]}`}
+            aria-label={`Ширина ленты: ${WIDTH_LABEL[width]}. Нажмите, чтобы изменить`}
+            onClick={() => onWidth(WIDTHS[(WIDTHS.indexOf(width) + 1) % WIDTHS.length])}
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" aria-hidden>
+              <path d="M4 12h16M4 12l3-3M4 12l3 3M20 12l-3-3M20 12l-3 3" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </button>
+        )}
       </div>
-    </>
+    </>,
+    document.body,
   );
 }

@@ -5,7 +5,7 @@
   .mnv-bar{display:flex;position:fixed;z-index:70;left:50%;transform:translateX(-50%);bottom:calc(12px + env(safe-area-inset-bottom));width:min(440px,calc(100vw - 24px));height:68px;padding:0 8px;align-items:center;justify-content:space-between;border-radius:26px;
     background:linear-gradient(180deg,rgba(18,26,50,.78),rgba(8,12,26,.88));backdrop-filter:blur(24px) saturate(1.6);-webkit-backdrop-filter:blur(24px) saturate(1.6);
     border:1px solid rgba(120,170,255,.2);box-shadow:0 18px 50px rgba(0,0,0,.65),0 0 0 1px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.1),0 0 40px rgba(43,127,255,.14)}
-  .mnv-i{position:relative;flex:1;min-width:0;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;border:0;background:none;color:#8d98b4;font:700 10.5px/1 var(--font-body);letter-spacing:.02em;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:color .25s}
+  .mnv-i{position:relative;flex:1;min-width:0;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;border:0;background:none;color:#8d98b4;font:700 10.5px/1 var(--font-body);letter-spacing:.02em;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;transition:color .25s}
   .mnv-i svg{width:23px;height:23px;transition:transform .35s cubic-bezier(.3,1.6,.5,1),filter .25s}
   .mnv-i.cur{color:#fff}
   .mnv-i.cur svg{color:#4fb4ff;filter:drop-shadow(0 0 8px rgba(43,127,255,.9));transform:translateY(-1px)}
@@ -87,37 +87,75 @@
   /* контент не прячется под нижней панелью */
   body{padding-bottom:calc(92px + env(safe-area-inset-bottom))}
 }
-@media (prefers-reduced-motion:reduce){.mnv-sheet,.mnv-panel,.mnv-tile,.mnv-i svg{animation:none!important;transition-duration:.01ms!important}.mnv-tile{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){
+  .mnv-sheet,.mnv-panel,.mnv-tile,.mnv-i svg{animation:none!important;transition-duration:.01ms!important}
+  .mnv-tile{opacity:1;transform:none}
+  .mnv-orb::before{animation:none}
+}
 
 /* ═══ Премиальная доводка (поверх базовых правил) ═══ */
 @media (max-width:900px){
-  .mnv-bar{height:64px;border-radius:28px;padding:0 6px;
-    background:linear-gradient(180deg,rgba(22,30,56,.72),rgba(8,11,24,.9));
-    border:1px solid rgba(255,255,255,.09);
-    box-shadow:0 20px 48px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.08),0 0 0 .5px rgba(0,0,0,.6)}
-  .mnv-i{gap:3px;font-size:10px;font-weight:600;letter-spacing:.01em;color:#7f8aa6}
-  .mnv-i svg{width:22px;height:22px}
-  /* активный пункт — мягкая «таблетка» вместо линии сверху */
-  .mnv-i.cur::before{inset:9px 6px;left:6px;right:6px;top:9px;height:auto;border-radius:18px;
-    background:linear-gradient(180deg,rgba(43,127,255,.22),rgba(43,127,255,.06));box-shadow:inset 0 0 0 1px rgba(90,160,255,.28);z-index:-1}
-  .mnv-i.cur svg{filter:drop-shadow(0 0 6px rgba(43,127,255,.7));transform:none}
-  .mnv-c.cur::before{display:none}
-  /* Центральная кнопка: плоский синий круг читался как заглушка.
-     Блик сверху, лёгкая тень внутри снизу и мягкое свечение под кругом
-     дают объём — ради этой кнопки и строится вся панель. */
-  .mnv-orb{position:relative;width:50px;height:50px;margin-top:-22px;border-width:3px;
+  /* Стеклянный док: три слоя света (верхний блик, нижнее свечение,
+     тонкая градиентная рамка) вместо плоской тёмной полосы. */
+  .mnv-bar{height:66px;border-radius:24px;padding:0 6px;
     background:
-      radial-gradient(120% 95% at 50% 0%,rgba(255,255,255,.42),transparent 58%),
+      radial-gradient(130% 160% at 50% 135%,rgba(43,127,255,.22),transparent 58%),
+      linear-gradient(180deg,rgba(18,26,49,.91),rgba(5,8,18,.97));
+    border:1px solid rgba(255,255,255,.1);
+    box-shadow:
+      0 24px 60px -18px rgba(0,0,0,.95),
+      0 0 0 1px rgba(0,0,0,.55),
+      inset 0 1px 0 rgba(255,255,255,.16),
+      0 0 50px -14px rgba(43,127,255,.7)}
+  .mnv-bar::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:1px;pointer-events:none;
+    background:linear-gradient(135deg,rgba(140,200,255,.55),rgba(255,255,255,.04) 34%,rgba(255,255,255,.03) 63%,rgba(34,211,238,.4));
+    -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+    -webkit-mask-composite:xor;
+    mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+    mask-composite:exclude}
+  .mnv-bar::after{content:"";position:absolute;left:16%;right:16%;top:-1px;height:1px;pointer-events:none;
+    background:linear-gradient(90deg,transparent,rgba(150,210,255,.75),transparent)}
+
+  .mnv-i{gap:3px;font-size:10.5px;font-weight:600;letter-spacing:.01em;color:#8d99b6}
+  .mnv-i>svg,.mnv-i>span{position:relative;z-index:1}
+  .mnv-i svg{width:22px;height:22px}
+  /* Активный пункт — компактная светящаяся «таблетка» только под иконкой,
+     подпись остаётся на месте и не прыгает при переключении. */
+  .mnv-i.cur::before{inset:auto;top:7px;left:50%;right:auto;width:46px;height:31px;transform:translateX(-50%);
+    border-radius:11px;z-index:0;
+    background:linear-gradient(180deg,rgba(43,127,255,.3),rgba(43,127,255,.07));
+    box-shadow:
+      inset 0 0 0 1px rgba(110,180,255,.34),
+      0 8px 18px -10px rgba(43,127,255,.95)}
+  .mnv-i.cur{color:#fff}
+  .mnv-i.cur svg{filter:drop-shadow(0 0 7px rgba(90,180,255,.85));transform:translateY(-1px)}
+  .mnv-i.cur>span{color:#eaf4ff}
+  .mnv-i:active svg{transform:scale(.86)}
+  .mnv-c.cur::before{display:none}
+
+  /* Центральная кнопка: объём, блик, вращающееся кольцо и мягкое свечение
+     под кругом — главный акцент всей панели. */
+  .mnv-orb{position:relative;isolation:isolate;width:52px;height:52px;margin-top:-23px;border-width:3px;
+    background:
+      radial-gradient(120% 95% at 50% 0%,rgba(255,255,255,.45),transparent 58%),
       linear-gradient(158deg,#3f8cff,#1f6fe8 48%,#12b0e8);
     box-shadow:
-      0 12px 28px rgba(43,127,255,.5),
-      0 0 0 1px rgba(125,190,255,.35),
-      inset 0 1px 0 rgba(255,255,255,.55),
-      inset 0 -9px 16px -9px rgba(0,0,10,.55)}
-  .mnv-orb::after{content:"";position:absolute;inset:-10px;border-radius:50%;z-index:-1;pointer-events:none;
-    background:radial-gradient(circle,rgba(43,127,255,.34),transparent 70%)}
+      0 14px 30px rgba(43,127,255,.55),
+      0 0 34px rgba(43,127,255,.4),
+      0 0 0 1px rgba(125,190,255,.38),
+      inset 0 1px 0 rgba(255,255,255,.6),
+      inset 0 -10px 18px -9px rgba(0,0,10,.6)}
+  .mnv-orb::before{content:"";position:absolute;inset:-7px;border-radius:50%;z-index:2;pointer-events:none;
+    background:conic-gradient(from 0deg,rgba(140,220,255,.95),transparent 26%,transparent 70%,rgba(34,211,238,.85) 86%,rgba(140,220,255,.95));
+    -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 1.5px),#000 calc(100% - .5px));
+    mask:radial-gradient(farthest-side,transparent calc(100% - 1.5px),#000 calc(100% - .5px));
+    animation:mnv-halo 9s linear infinite}
+  @keyframes mnv-halo{to{transform:rotate(360deg)}}
+  .mnv-orb::after{display:none}
+  .mnv-orb svg{position:relative;z-index:3}
   .mnv-c:active .mnv-orb{transform:scale(.94)}
-  .mnv-c.cur:active .mnv-orb{transform:rotate(90deg) scale(.99)}
+  .mnv-c.cur .mnv-orb,
+  .mnv-c.cur:active .mnv-orb{transform:scale(1.03)}
 
   .mnv-panel{padding:8px 14px calc(104px + env(safe-area-inset-bottom));border-radius:32px 32px 0 0;border-color:rgba(255,255,255,.08);
     scrollbar-width:none;-ms-overflow-style:none}
@@ -170,4 +208,52 @@
   html.ag-fab-hide .ag-fab{opacity:0;transform:translateY(18px) scale(.9);pointer-events:none}
   /* последняя строка страницы не прячется под доком */
   body{padding-bottom:calc(104px + env(safe-area-inset-bottom))}
+}
+
+/* ═══ Док v3: без выступающей кнопки, активный пункт — заливка ═══
+   Прежний вариант (круг, выпирающий из панели, бегущее кольцо и несколько
+   цветных свечений) выглядел дёшево. Теперь все пять пунктов стоят в
+   одной линии, меню — такая же плитка с контуром, активный раздел —
+   сплошная градиентная «капсула» с белой иконкой. */
+@media (max-width:900px){
+  .mnv-bar{height:64px;padding:0 6px;border-radius:22px;
+    background:linear-gradient(180deg,rgba(14,19,36,.96),rgba(7,10,20,.98));
+    border:1px solid rgba(255,255,255,.07);
+    box-shadow:0 20px 44px -16px rgba(0,0,0,.95),0 0 0 .5px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.07)}
+  .mnv-bar::before{background:none;-webkit-mask:none;mask:none;border:0}
+  .mnv-bar::after{left:22%;right:22%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.22),transparent)}
+
+  .mnv-i{gap:5px;padding-top:2px;font-size:11px;font-weight:700;letter-spacing:.005em;color:#7f8aa6}
+  .mnv-i svg{width:22px;height:22px;stroke-width:1.9}
+  .mnv-i.cur{color:#fff}
+  .mnv-i.cur>span{color:#fff}
+  .mnv-i.cur svg{color:#fff;filter:none;transform:none}
+
+  /* капсула активного раздела */
+  .mnv-i.cur::before{display:block;top:8px;width:54px;height:32px;border-radius:12px;
+    background:linear-gradient(145deg,#3b8bff,#1c64e6 55%,#14a8e0);
+    box-shadow:0 8px 18px -6px rgba(43,127,255,.85),inset 0 1px 0 rgba(255,255,255,.35)}
+  .mnv-c.cur::before{display:block}
+
+  /* меню: тот же размер, что у остальных, но с контуром */
+  .mnv-orb{width:22px;height:22px;margin:0;border:0;border-radius:0;background:none;box-shadow:none;color:#c9d6f2;overflow:visible}
+  .mnv-orb::before{content:"";position:absolute;inset:-5px -16px;border-radius:12px;z-index:-1;animation:none;
+    background:linear-gradient(180deg,rgba(255,255,255,.07),rgba(255,255,255,.02));
+    -webkit-mask:none;mask:none;box-shadow:inset 0 0 0 1px rgba(150,190,255,.28)}
+  .mnv-orb svg{width:22px;height:22px;color:inherit!important;stroke-width:2}
+  .mnv-c span:last-child{margin-top:0}
+  .mnv-c:active .mnv-orb{transform:scale(.92)}
+  .mnv-c.cur .mnv-orb,.mnv-c.cur:active .mnv-orb{transform:none;color:#fff}
+  .mnv-c.cur .mnv-orb::before{background:linear-gradient(145deg,#3b8bff,#1c64e6 55%,#14a8e0);box-shadow:0 8px 18px -6px rgba(43,127,255,.85),inset 0 1px 0 rgba(255,255,255,.35)}
+  .mnv-c.cur::before{display:none}
+
+  .ag-fab{bottom:calc(82px + env(safe-area-inset-bottom))}
+}
+
+@media (max-width:900px){
+  .mnv-bar .mnv-i svg{width:24px;height:24px;stroke-width:1.7}
+  .mnv-bar .mnv-i svg .f{fill:currentColor;fill-opacity:.13;transition:fill-opacity .25s}
+  .mnv-bar .mnv-i.cur svg .f{fill-opacity:.3}
+  .mnv-bar .mnv-i.cur svg{filter:drop-shadow(0 1px 3px rgba(0,30,90,.45))}
+  .mnv-bar .mnv-orb svg{stroke-width:2;width:24px;height:24px}
 }

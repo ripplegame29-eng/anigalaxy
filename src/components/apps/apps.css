@@ -1,0 +1,91 @@
+/* Страница приложений. Одна яркая вещь — сцена с устройствами; остальное спокойное. */
+.ap { --ap-cyan: #00c8ff; --ap-blue: #1f7bff; --ap-violet: #7a4dff; --ap-line: rgba(255,255,255,.1);
+  position: relative; isolation: isolate; color: #eef2fb; max-width: 1240px; margin: 0 auto; padding: 36px 18px 90px; font-family: var(--font-body, inherit); }
+.ap h1, .ap h2, .ap h3 { font-family: var(--font-display, inherit); letter-spacing: -.01em; margin: 0; }
+.ap-sky { position: absolute; inset: -80px -40vw 0; z-index: -1; pointer-events: none;
+  background:
+    radial-gradient(60% 50% at 78% 8%, rgba(31,123,255,.28), transparent 70%),
+    radial-gradient(40% 40% at 12% 30%, rgba(122,77,255,.16), transparent 70%),
+    radial-gradient(1.5px 1.5px at 12% 22%, #fff9, transparent), radial-gradient(1.5px 1.5px at 34% 12%, #fff8, transparent),
+    radial-gradient(1px 1px at 58% 30%, #fff7, transparent), radial-gradient(1.5px 1.5px at 81% 18%, #fff9, transparent),
+    radial-gradient(1px 1px at 90% 44%, #fff6, transparent), radial-gradient(1px 1px at 22% 58%, #fff6, transparent); }
+
+/* ---- hero ---- */
+.ap-hero { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: 36px; align-items: center; min-height: 560px; }
+.ap-kicker { color: var(--ap-cyan); font-weight: 700; font-size: 13px; margin: 0 0 14px; }
+.ap h1 { font-size: clamp(36px, 5.2vw, 66px); line-height: 1.03; font-weight: 800; text-wrap: balance; }
+.ap-lead { font-size: 17px; line-height: 1.6; color: #b9c3dc; max-width: 520px; margin: 18px 0 26px; }
+.ap-cta { display: flex; flex-wrap: wrap; gap: 12px; }
+.ap-btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; padding: 14px 24px; border-radius: 14px; font-weight: 700; font-size: 15px; transition: transform .18s, box-shadow .18s, background .18s; }
+.ap-btn svg { width: 20px; height: 20px; }
+.ap-btn-main { background: linear-gradient(135deg, var(--ap-blue), var(--ap-cyan)); color: #04101f; box-shadow: 0 14px 40px -12px rgba(0,200,255,.6); }
+.ap-btn-main:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 20px 48px -12px rgba(0,200,255,.75); }
+.ap-btn-main:disabled { filter: saturate(.3) brightness(.8); cursor: default; }
+.ap-btn-ghost { background: rgba(255,255,255,.06); border: 1px solid var(--ap-line); color: #fff; }
+.ap-btn-ghost:hover { background: rgba(255,255,255,.12); }
+.ap-btn:focus-visible, .ap summary:focus-visible { outline: 2px solid var(--ap-cyan); outline-offset: 3px; }
+.ap-sm { padding: 10px 16px; font-size: 13px; border-radius: 11px; width: 100%; }
+.ap-hint { margin: 16px 0 0; padding: 12px 14px; border-radius: 12px; background: rgba(0,200,255,.1); border: 1px solid rgba(0,200,255,.3); font-size: 14px; max-width: 520px; }
+.ap-facts { display: flex; flex-wrap: wrap; gap: 8px 22px; list-style: none; padding: 0; margin: 28px 0 0; font-size: 13px; color: #9fb0d4; }
+.ap-facts li::before { content: ""; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--ap-cyan); margin-right: 8px; box-shadow: 0 0 8px var(--ap-cyan); }
+
+/* ---- сцена устройств ---- */
+.ap-stage { position: relative; aspect-ratio: 1 / .95; width: 100%; max-width: 600px; justify-self: center; }
+.ap-orbit { position: absolute; inset: -6% -8%; width: 116%; height: 116%; animation: ap-spin 120s linear infinite; }
+.ap-win { position: absolute; left: 0; top: 8%; width: 78%; border-radius: 16px; overflow: hidden; background: #0b0f1c; border: 1px solid rgba(255,255,255,.16); box-shadow: 0 50px 90px -30px #000, 0 0 80px -20px rgba(31,123,255,.55); }
+.ap-win-bar { display: flex; align-items: center; gap: 6px; padding: 9px 12px; background: #11172a; font-size: 11px; color: #8d9bbd; }
+.ap-win-bar i { width: 9px; height: 9px; border-radius: 50%; background: #2a3350; } .ap-win-bar i:first-child { background: #ff6b6b; } .ap-win-bar i:nth-child(2) { background: #ffd166; } .ap-win-bar i:nth-child(3) { background: #4ade80; } .ap-win-bar span { margin-left: 8px; }
+.ap-win-body { position: relative; aspect-ratio: 16 / 9; }
+.ap-scene { position: absolute; inset: 0; background: #0a0716 url(/bgs/bg13.webp) center / cover; }
+.ap-scene video { width: 100%; height: 100%; object-fit: cover; display: block; }
+.ap-scene::after { content: ""; position: absolute; inset: 0; background: radial-gradient(120% 90% at 50% 40%, transparent 55%, rgba(0,0,0,.45)); pointer-events: none; }
+.ap-play { position: absolute; left: 50%; top: 42%; width: 52px; height: 52px; margin: -26px 0 0 -26px; border-radius: 50%; display: grid; place-items: center; background: rgba(255,255,255,.2); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,.5); color: #fff; }
+.ap-play svg { width: 24px; height: 24px; margin-left: 2px; }
+.ap-ctl { position: absolute; inset: auto 0 0 0; padding: 18px 12px 10px; background: linear-gradient(0deg, rgba(0,0,0,.85), transparent); }
+.ap-seek { height: 4px; border-radius: 4px; background: rgba(255,255,255,.25); } .ap-seek i { display: block; width: 46%; height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--ap-blue), var(--ap-cyan)); box-shadow: 0 0 12px var(--ap-cyan); }
+.ap-btns { display: flex; gap: 6px; margin-top: 8px; align-items: center; } .ap-btns b { width: 16px; height: 16px; border-radius: 50%; background: rgba(255,255,255,.18); } .ap-btns em { margin-left: auto; font-style: normal; font-size: 8.5px; padding: 4px 9px; border-radius: 99px; background: rgba(255,255,255,.14); }
+
+.ap-phone { position: absolute; right: 0; bottom: -2%; width: 40%; aspect-ratio: 9 / 18.5; border-radius: 26px; padding: 8px; background: #0b0f1c; border: 1.5px solid rgba(255,255,255,.26); box-shadow: 0 40px 70px -24px #000, 0 0 60px -16px rgba(122,77,255,.7); display: flex; flex-direction: column; gap: 6px; }
+.ap-notch { align-self: center; width: 34%; height: 5px; border-radius: 9px; background: #1d2540; }
+.ap-ph-screen { position: relative; flex: 1; border-radius: 18px; overflow: hidden; background: #07070c; }
+.ap-ph-screen iframe { position: absolute; left: 0; top: 0; width: 390px; height: 844px; border: 0; transform-origin: 0 0; pointer-events: none; }
+
+/* ---- секции ---- */
+.ap-sec { margin-top: 84px; }
+.ap-head { margin-bottom: 26px; } .ap-head h2 { font-size: clamp(26px, 3.2vw, 38px); font-weight: 800; } .ap-head p { margin: 10px 0 0; color: #a7b3cf; max-width: 560px; line-height: 1.55; }
+.ap-grid { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 14px; }
+.ap-card { position: relative; display: flex; flex-direction: column; gap: 6px; padding: 22px 18px 18px; border-radius: 20px; background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02)); border: 1px solid var(--ap-line); transition: transform .2s, border-color .2s; }
+.ap-card:hover { transform: translateY(-3px); border-color: rgba(0,200,255,.4); }
+.ap-card.mine { border-color: rgba(0,200,255,.55); box-shadow: 0 0 40px -14px rgba(0,200,255,.5); }
+.ap-card-ico { width: 44px; height: 44px; border-radius: 13px; display: grid; place-items: center; background: rgba(31,123,255,.16); color: var(--ap-cyan); margin-bottom: 8px; } .ap-card-ico svg { width: 24px; height: 24px; }
+.ap-card h3 { font-size: 19px; font-weight: 800; } .ap-card p { margin: 0; font-size: 13px; color: #9fb0d4; }
+.ap-state { margin: 8px 0 12px; font-size: 12px; font-weight: 700; color: #8d9bbd; } .ap-state.ok { color: #4ade80; }
+.ap-card .ap-btn { margin-top: auto; }
+.ap-badge { position: absolute; top: 14px; right: 14px; font-style: normal; font-size: 10.5px; font-weight: 700; padding: 3px 9px; border-radius: 99px; background: rgba(0,200,255,.18); color: var(--ap-cyan); }
+
+.ap-feats ul { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 0; border-top: 1px solid var(--ap-line); }
+.ap-feats li { padding: 24px 22px 8px 0; border-bottom: 1px solid var(--ap-line); } .ap-feats h3 { font-size: 18px; font-weight: 800; } .ap-feats p { color: #a7b3cf; font-size: 14px; line-height: 1.6; margin: 8px 0 18px; }
+
+.ap-guides { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
+.ap-guide { padding: 22px; border-radius: 20px; background: rgba(255,255,255,.035); border: 1px solid var(--ap-line); }
+.ap-guide.mine { border-color: rgba(0,200,255,.5); background: rgba(0,200,255,.06); }
+.ap-guide h3 { font-size: 20px; font-weight: 800; } .ap-guide small { color: #8d9bbd; }
+.ap-guide ol { margin: 14px 0 0; padding: 0; list-style: none; counter-reset: s; display: grid; gap: 12px; }
+.ap-guide li { counter-increment: s; display: grid; grid-template-columns: 26px 1fr; gap: 10px; font-size: 14px; line-height: 1.5; color: #cdd6ec; }
+.ap-guide li::before { content: counter(s); width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; font-weight: 800; font-size: 12px; background: rgba(31,123,255,.25); color: var(--ap-cyan); }
+
+.ap-faq { max-width: 760px; }
+.ap details { border-bottom: 1px solid var(--ap-line); padding: 4px 0; }
+.ap summary { cursor: pointer; list-style: none; padding: 16px 0; font-weight: 700; font-size: 16px; display: flex; justify-content: space-between; gap: 12px; }
+.ap summary::-webkit-details-marker { display: none; } .ap summary::after { content: "+"; color: var(--ap-cyan); font-size: 22px; line-height: 1; transition: transform .2s; }
+.ap details[open] summary::after { transform: rotate(45deg); }
+.ap details p { margin: 0 0 16px; color: #a7b3cf; line-height: 1.6; font-size: 14.5px; }
+.ap-foot { margin-top: 22px; color: #8d9bbd; font-size: 14px; } .ap-foot a { color: var(--ap-cyan); text-decoration: underline; text-underline-offset: 3px; }
+
+@keyframes ap-spin { to { transform: rotate(360deg); } }
+@media (max-width: 900px) {
+  .ap { padding-top: 22px; } .ap-hero { grid-template-columns: 1fr; min-height: 0; gap: 22px; } .ap-stage { max-width: 440px; order: -1; margin-bottom: 6px; }
+  .ap-sec { margin-top: 60px; }
+}
+@media (max-width: 480px) { .ap-cta .ap-btn { width: 100%; } }
+@media (prefers-reduced-motion: reduce) { .ap-scene video { display: none; } .ap-orbit, .ap-phone { animation: none; } .ap-btn, .ap-card { transition: none; } }

@@ -128,7 +128,7 @@ test("REFERRAL_REGISTERED: за приглашение ещё и дни Premium"
   assert.ok(account, "аккаунт есть");
   const days = Math.round((account.premiumUntil - before) / 86_400_000);
   assert.equal(days, referralPremiumDays);
-  assert.equal(referralPremiumDays, 5, "по ТЗ награда — 5 дней Premium");
+  assert.equal(referralPremiumDays, 3, "страница обещает +3 дня Premium за друга");
 });
 
 test("REFERRAL_REGISTERED: два приглашения = 10 дней, а не 5", () => {

@@ -29,6 +29,7 @@ import {
   updateAccount,
   type BalanceInput,
 } from "@/lib/server/admin-edit";
+import { analytics } from "@/lib/server/analytics";
 import { clearErrors, listErrors, resolveError } from "@/lib/server/errors";
 import { json, readJson, route } from "@/lib/server/http";
 import { listReports, resolveReport } from "@/lib/server/social";
@@ -48,6 +49,8 @@ export const GET = route(
     switch (view) {
       case "dashboard":
         return json(dashboard(db));
+      case "analytics":
+        return json(analytics(db, int("days", 7)));
       case "users":
         return json(
           searchUsers(db, {

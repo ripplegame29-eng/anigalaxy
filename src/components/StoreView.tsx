@@ -413,16 +413,104 @@ function SparkleField({ spots, variant = "ag-sparkle" }: { spots: SparkleSpot[];
   );
 }
 
+/* --------------------------- Иконки кассы --------------------------- */
+/* Двухцветные: градиентный штрих и мягкая заливка. Градиенты `sv-g` и
+   `sv-w` задаются один раз в <SvgDefs /> внутри секции. */
+
+function SvgDefs() {
+  return (
+    <svg width="0" height="0" className="absolute" aria-hidden focusable="false">
+      <defs>
+        <linearGradient id="sv-g" x1="2" y1="2" x2="22" y2="22" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stopColor="#8fd0ff" />
+          <stop offset=".55" stopColor="#3b8bff" />
+          <stop offset="1" stopColor="#00c8ff" />
+        </linearGradient>
+        <linearGradient id="sv-w" x1="2" y1="2" x2="22" y2="22" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stopColor="#ffe7a8" />
+          <stop offset="1" stopColor="#ffb347" />
+        </linearGradient>
+      </defs>
+    </svg>
+  );
+}
+
+const ICON_BASE = {
+  viewBox: "0 0 24 24",
+  fill: "none",
+  strokeWidth: 1.6,
+  strokeLinecap: "round",
+  strokeLinejoin: "round",
+  "aria-hidden": true,
+  focusable: false,
+} as const;
+
+function IcSpark({ className = "h-3.5 w-3.5" }: { className?: string }) {
+  return (
+    <svg {...ICON_BASE} className={className}>
+      <path d="M11 3.5l2 5.6 5.6 2-5.6 2-2 5.6-2-5.6-5.6-2 5.6-2z" fill="url(#sv-w)" fillOpacity=".28" stroke="url(#sv-w)" />
+      <path d="M19 3v4M17 5h4" stroke="url(#sv-w)" />
+    </svg>
+  );
+}
+
+function IcGift({ className = "h-3.5 w-3.5", warm = false }: { className?: string; warm?: boolean }) {
+  const g = warm ? "url(#sv-w)" : "url(#sv-g)";
+  return (
+    <svg {...ICON_BASE} className={className}>
+      <rect x="3.5" y="9" width="17" height="11.5" rx="2.2" fill={g} fillOpacity=".18" stroke={g} />
+      <path d="M2.8 9h18.4v3H2.8zM12 9v11.5" stroke={g} />
+      <path d="M12 9S9.2 8.6 8.2 7a2 2 0 0 1 3-2.4C11.8 5.3 12 9 12 9zM12 9s2.8-.4 3.8-2a2 2 0 0 0-3-2.4C12.2 5.3 12 9 12 9z" stroke={g} />
+    </svg>
+  );
+}
+
+function IcWallet({ className = "h-5 w-5" }: { className?: string }) {
+  return (
+    <svg {...ICON_BASE} className={className}>
+      <path d="M4 7.5A2.5 2.5 0 0 1 6.5 5H17a2 2 0 0 1 2 2v1" stroke="url(#sv-g)" />
+      <rect x="3" y="7.5" width="18" height="12" rx="3" fill="url(#sv-g)" fillOpacity=".16" stroke="url(#sv-g)" />
+      <path d="M21 12.5h-3.2a1.8 1.8 0 0 0 0 3.6H21" stroke="url(#sv-g)" />
+      <circle cx="17.9" cy="14.3" r=".6" fill="#8fd0ff" stroke="none" />
+    </svg>
+  );
+}
+
+function IcFlame({ className = "h-3.5 w-3.5" }: { className?: string }) {
+  return (
+    <svg {...ICON_BASE} className={className}>
+      <path d="M12 3c.4 3.2-4.5 5.2-4.5 9.6A4.5 4.5 0 0 0 12 17.5a4.5 4.5 0 0 0 4.5-4.600c0-1.800-.9-3.200-1.900-4.300-.2 1.300-.8 2-1.600 2.300C13.300 8.300 13.300 5.200 12 3z" transform="translate(0 2)" fill="url(#sv-w)" fillOpacity=".25" stroke="url(#sv-w)" />
+    </svg>
+  );
+}
+
+function IcTrophy({ className = "h-3.5 w-3.5" }: { className?: string }) {
+  return (
+    <svg {...ICON_BASE} className={className}>
+      <path d="M7.5 4h9v5a4.5 4.5 0 0 1-9 0z" fill="url(#sv-g)" fillOpacity=".2" stroke="url(#sv-g)" />
+      <path d="M7.5 6H4.500v1.500a3 3 0 0 0 3.300 2.900M16.500 6h3v1.500a3 3 0 0 1-3.300 2.900M12 13.500V17M8.500 20.500h7M9.500 17h5v3.500h-5z" stroke="url(#sv-g)" />
+    </svg>
+  );
+}
+
+function IcArrow({ className = "h-4 w-4" }: { className?: string }) {
+  return (
+    <svg {...ICON_BASE} strokeWidth={2.2} className={className} stroke="currentColor">
+      <path d="M5 12h14M13 6l6 6-6 6" />
+    </svg>
+  );
+}
+
 function StatCaption({ children }: { children: React.ReactNode }) {
   return (
     <p className="text-[10px] font-black uppercase tracking-[0.16em] text-muted">{children}</p>
   );
 }
 
-function PackChip({ children }: { children: React.ReactNode }) {
+function PackChip({ children, icon }: { children: React.ReactNode; icon?: React.ReactNode }) {
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-lg bg-white/[0.06] px-2 py-1 text-[11px] font-bold text-muted ring-1 ring-white/10">
-      <span className="h-1.5 w-1.5 rounded-full bg-accent-2" aria-hidden />
+    <span className="inline-flex items-center gap-1.5 rounded-lg bg-white/[0.06] px-2.5 py-1.5 text-[11px] font-bold text-muted ring-1 ring-white/10">
+      {icon ?? <span className="h-1.5 w-1.5 rounded-full bg-accent-2" aria-hidden />}
       {children}
     </span>
   );
@@ -442,31 +530,20 @@ function CoinPackBanner() {
 
   return (
     <section className="space-y-4">
+      <SvgDefs />
       {/* ---------------------------- Шапка секции --------------------------- */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="flex items-center gap-2.5 text-lg font-black uppercase tracking-tight text-white">
           <span className="grid h-9 w-9 place-items-center rounded-xl bg-accent/15 text-accent-2 ring-1 ring-accent/30">
-            <svg
-              viewBox="0 0 24 24"
-              className="h-5 w-5"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.8"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
-              <rect x="3" y="6" width="18" height="13" rx="2" />
-              <path d="M3 10h18M16 14h2" />
-            </svg>
+            <IcWallet className="h-5 w-5" />
           </span>
           Пополнение кассы
         </h2>
         <Link
-          href="/profile"
+          href="/gifts"
           className="inline-flex items-center gap-2 rounded-full bg-white/[0.06] px-4 py-2 text-xs font-bold text-muted ring-1 ring-white/10 transition hover:text-white"
         >
-          <span aria-hidden>🎁</span>
+          <IcGift className="h-4 w-4" warm />
           Подарки за уровни
           <span className="font-medium text-muted/80">— забрать в профиле</span>
         </Link>
@@ -486,7 +563,7 @@ function CoinPackBanner() {
         <div className="relative grid gap-6 p-5 sm:p-6 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-center">
           <div className="min-w-0 space-y-5">
             <span className="inline-flex items-center gap-2 rounded-full bg-white/[0.07] px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-white ring-1 ring-white/12">
-              <span aria-hidden>✨</span>
+              <IcSpark className="h-4 w-4" />
               AC · бесплатно
             </span>
 
@@ -503,7 +580,12 @@ function CoinPackBanner() {
             {/* Три показателя — как на эталоне */}
             <div className="grid gap-3 rounded-2xl bg-black/25 p-4 ring-1 ring-white/8 sm:grid-cols-3">
               <div className="rounded-xl bg-white/[0.05] p-3.5 ring-1 ring-white/12">
-                <StatCaption>✨ Сразу за первый день</StatCaption>
+                <StatCaption>
+                  <span className="inline-flex items-center gap-1.5">
+                    <IcSpark className="h-3.5 w-3.5" />
+                    Сразу за первый день
+                  </span>
+                </StatCaption>
                 <p className="mt-2 flex items-center gap-2">
                   <Image src="/coin.png" alt="" aria-hidden width={28} height={28} className="ag-coin-mini h-7 w-7" />
                   <span className="text-3xl font-black leading-none text-white">{fmt(dayMax)}</span>
@@ -535,7 +617,10 @@ function CoinPackBanner() {
                 href="/quests"
                 className="btn-primary rounded-xl px-5 py-3 text-sm font-bold text-white"
               >
-                Квесты дня →
+                <span className="inline-flex items-center gap-2">
+                  Квесты дня
+                  <IcArrow className="h-4 w-4" />
+                </span>
               </Link>
               <span className="flex items-baseline gap-2">
                 <span className="text-xl font-black text-white">Бесплатно</span>
@@ -545,9 +630,9 @@ function CoinPackBanner() {
                 <span className="text-[10px] font-black uppercase tracking-[0.16em] text-muted">
                   Также в кассе:
                 </span>
-                <PackChip>Серия +50</PackChip>
-                <PackChip>Подарки 50 AC</PackChip>
-                <PackChip>{PROGRESSION_CONFIG.achievements.length} достижений</PackChip>
+                <PackChip icon={<IcFlame />}>Серия +50</PackChip>
+                <PackChip icon={<IcGift warm />}>Подарки 50 AC</PackChip>
+                <PackChip icon={<IcTrophy />}>{PROGRESSION_CONFIG.achievements.length} достижений</PackChip>
               </div>
             </div>
           </div>
@@ -701,7 +786,10 @@ function CoinPacks() {
 
             {pack.gift && (
               <p className="mt-1.5 text-center text-[10px] font-bold leading-tight text-mint">
-                🎁 {pack.gift}
+                <span className="inline-flex items-center justify-center gap-1">
+                  <IcGift className="h-3 w-3" />
+                  {pack.gift}
+                </span>
               </p>
             )}
 

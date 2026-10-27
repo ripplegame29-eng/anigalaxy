@@ -12,18 +12,30 @@ import { Icon, type IconName } from "./icons";
  */
 
 const svg = (d: ReactNode) => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
     {d}
   </svg>
 );
 
-const I_HOME = svg(<path d="M4 11l8-7 8 7v8a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1z" />);
-const I_GRID = svg(<path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z" />);
-const I_HEART = svg(<path d="M12 20s-7-4.6-7-10a4 4 0 0 1 7-2.5A4 4 0 0 1 19 10c0 5.4-7 10-7 10z" />);
+const I_HOME = svg(
+  <>
+    <path className="f" d="M4.5 10.6 12 4l7.5 6.6V18a2 2 0 0 1-2 2h-11a2 2 0 0 1-2-2z" />
+    <path d="M9.5 20v-5.2a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1V20" />
+  </>,
+);
+const I_GRID = svg(
+  <>
+    <rect className="f" x="4" y="4" width="6.5" height="6.5" rx="2" />
+    <rect x="13.5" y="4" width="6.5" height="6.5" rx="2" />
+    <rect x="4" y="13.5" width="6.5" height="6.5" rx="2" />
+    <rect className="f" x="13.5" y="13.5" width="6.5" height="6.5" rx="2" />
+  </>,
+);
+const I_HEART = svg(<path className="f" d="M12 19.6c-.3 0-.6-.1-.8-.3C7.6 16.6 4 13.5 4 9.9 4 7.7 5.7 6 7.8 6c1.6 0 3.2.9 4.2 2.4C13 6.9 14.600 6 16.200 6 18.300 6 20 7.700 20 9.900c0 3.600-3.600 6.700-7.200 9.400-.2.200-.5.300-.8.300z" />);
 const I_DICE = svg(
   <>
-    <rect x="4" y="4" width="16" height="16" rx="4" />
-    <path d="M9 9h.01M15 9h.01M12 12h.01M9 15h.01M15 15h.01" />
+    <rect className="f" x="4" y="4" width="16" height="16" rx="4.5" />
+    <path strokeWidth="2.6" d="M8.800 8.800h.01M15.200 8.800h.01M12 12h.01M8.800 15.200h.01M15.200 15.200h.01" />
   </>,
 );
 
@@ -172,7 +184,7 @@ export function MobileNav() {
           <span>Каталог</span>
         </Link>
         <button type="button" className={`mnv-i mnv-c${open ? " cur" : ""}`} aria-expanded={open} onClick={() => setOpen((v) => !v)}>
-          <span className="mnv-orb">{open ? svg(<path d="M6 6l12 12M18 6L6 18" />) : svg(<path d="M4 8h16M4 16h16" />)}</span>
+          <span className="mnv-orb">{open ? svg(<path d="M6 6l12 12M18 6L6 18" />) : svg(<path d="M5 8h14M5 16h9" />)}</span>
           <span>Меню</span>
         </button>
         <Link href="/list" className={`mnv-i${on("/list") ? " cur" : ""}`}>

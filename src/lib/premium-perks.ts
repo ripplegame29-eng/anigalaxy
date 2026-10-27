@@ -13,6 +13,13 @@
 
 export type PremiumIcon = "quality" | "boost" | "clan" | "pass" | "cosmetics" | "gifts" | "tag";
 
+/** Пробный период: дней Premium бесплатно, один раз на аккаунт */
+export const PREMIUM_TRIAL_DAYS = 3;
+
+/** Ежемесячный подарок подписчика: монеты и заморозки серии */
+export const PREMIUM_DROP = { ac: 300, freezes: 1 } as const;
+
+
 export interface PremiumPerk {
   id: string;
   icon: PremiumIcon;
@@ -86,6 +93,20 @@ export const PREMIUM_PERKS: PremiumPerk[] = [
     title: "Двойная награда за вход",
     text: "Ежедневный вход с Premium даёт вдвое больше AC и XP, включая коробки и гранд месяца.",
     where: "Шапка → Ежедневный вход",
+  },
+  {
+    id: "drop",
+    icon: "gifts",
+    title: `Подарок каждый месяц: ${PREMIUM_DROP.ac} монет и заморозка серии`,
+    text: "Раз в месяц на странице Premium забираешь монеты и заморозку, которая спасает серию дней.",
+    where: "Premium → Подарок месяца",
+  },
+  {
+    id: "backgrounds",
+    icon: "cosmetics",
+    title: "Три эксклюзивных фона профиля",
+    text: "Фоны «Золотой час», «Ночная сакура» и «Премиум-аврора» — только для подписчиков.",
+    where: "Профиль → Изменить фон",
   },
   {
     id: "gifts",

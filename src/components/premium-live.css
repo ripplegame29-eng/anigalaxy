@@ -1,0 +1,15 @@
+.pl-trial{margin-top:22px;display:flex;flex-direction:column;align-items:center;gap:8px}
+.pl-trial-btn{cursor:pointer;border:0;border-radius:18px;padding:14px 28px;color:#fff;display:flex;flex-direction:column;gap:2px;align-items:center;
+  background:linear-gradient(135deg,#f5b942,#ff7a45);box-shadow:0 14px 36px -10px rgba(255,140,60,.75),inset 0 1px 0 rgba(255,255,255,.4);transition:transform .2s,box-shadow .2s}
+.pl-trial-btn b{font:800 17px/1.2 var(--font-display,inherit);color:#2a1300}
+.pl-trial-btn small{font-size:12.5px;color:rgba(42,19,0,.75);font-weight:600}
+.pl-trial-btn:hover{transform:translateY(-2px)}
+.pl-trial-btn:disabled{opacity:.6;cursor:default;transform:none}
+.pl-trial-btn:focus-visible,.pl-drop button:focus-visible{outline:2px solid #22d3ee;outline-offset:3px}
+.pl-err{margin:0;color:#ff8a98;font-size:13px}
+.pl-drop{position:relative;z-index:1;clear:both;margin-top:40px !important;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px;margin:0 auto 22px;max-width:1100px;padding:18px 22px;border-radius:22px;
+  background:linear-gradient(120deg,rgba(245,185,66,.16),rgba(109,92,255,.12));border:1px solid rgba(245,185,66,.35);color:#eef2ff}
+.pl-drop h2{margin:0 0 4px;font:800 18px/1.2 var(--font-display,inherit)}
+.pl-drop p{margin:0;color:#c3cde8;font-size:14px}
+.pl-drop button{cursor:pointer;border:0;border-radius:14px;padding:12px 22px;font-weight:800;font-size:14.5px;color:#2a1300;background:linear-gradient(135deg,#f5b942,#ff9a3c)}
+.pl-drop button:disabled{opacity:.55;cursor:default}

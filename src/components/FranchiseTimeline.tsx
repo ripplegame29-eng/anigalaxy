@@ -96,15 +96,19 @@ export function FranchiseTimeline({ items }: { items: FranchiseItem[] }) {
         */}
         <div
           ref={listRef}
-          className="no-scrollbar -mx-1 flex overflow-x-auto px-1 pb-2"
-          style={{ scrollbarWidth: "none" }}
+          className="no-scrollbar -mx-4 flex snap-x snap-proximity overflow-x-auto scroll-px-4 px-4 pb-2 sm:-mx-1 sm:px-1 sm:scroll-px-1"
+          style={{
+            scrollbarWidth: "none",
+            maskImage: `linear-gradient(to right, ${edges.left ? "transparent 0, #000 36px" : "#000 0"}, ${edges.right ? "#000 calc(100% - 36px), transparent 100%" : "#000 100%"})`,
+            WebkitMaskImage: `linear-gradient(to right, ${edges.left ? "transparent 0, #000 36px" : "#000 0"}, ${edges.right ? "#000 calc(100% - 36px), transparent 100%" : "#000 100%"})`,
+          }}
         >
           <ol className="mx-auto flex flex-none gap-3 sm:gap-4">
             {items.map((item, index) => (
               <li
                 key={`${item.id}-${index}`}
                 ref={item.current ? activeRef : undefined}
-                className={`w-[150px] shrink-0 overflow-hidden rounded-2xl border bg-white/[0.03] transition-all duration-300 hover:-translate-y-1 sm:w-[190px] lg:w-[210px] ${
+                className={`w-[150px] shrink-0 snap-start overflow-hidden rounded-2xl border bg-white/[0.03] transition-all duration-300 hover:-translate-y-1 sm:w-[190px] lg:w-[210px] ${
                   item.current
                     ? "border-accent/60 bg-accent/10 shadow-[0_0_24px_-8px_rgba(31,123,255,0.7)] ring-1 ring-accent/40"
                     : "border-line hover:border-accent/35 hover:bg-white/[0.07]"
@@ -153,16 +157,7 @@ export function FranchiseTimeline({ items }: { items: FranchiseItem[] }) {
           </ol>
         </div>
 
-        {/* Края ленты уходят под градиент, чтобы стрелки не «липли» к карточкам */}
-        <span
-          aria-hidden
-          className="pointer-events-none absolute inset-y-0 left-0 w-10 bg-gradient-to-r from-ink via-ink/80 to-transparent sm:w-14"
-        />
-        <span
-          aria-hidden
-          className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-ink via-ink/80 to-transparent sm:w-14"
-        />
-
+        {/* Края ленты плавно гаснут маской самой ленты: отдельные «шторки» цвета фона давали светлые полосы */}
         <EdgeArrow direction={-1} hidden={!edges.left} onClick={scroll} />
         <EdgeArrow direction={1} hidden={!edges.right} onClick={scroll} />
       </div>
@@ -185,7 +180,7 @@ function EdgeArrow({
       type="button"
       onClick={() => onClick(direction)}
       aria-label={direction === -1 ? "Листать хронологию назад" : "Листать хронологию вперёд"}
-      className={`absolute top-1/2 z-10 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-full bg-ink/85 text-white ring-2 ring-white/25 shadow-[0_10px_28px_-10px_rgba(0,0,0,0.95)] backdrop-blur transition duration-200 hover:bg-accent/85 hover:ring-accent/70 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-accent disabled:cursor-not-allowed disabled:opacity-35 disabled:hover:bg-ink/85 disabled:hover:ring-white/25 sm:h-11 sm:w-11 ${
+      className={`absolute top-1/2 z-10 hidden h-10 w-10 -translate-y-1/2 place-items-center rounded-full bg-ink/85 text-white ring-2 ring-white/25 shadow-[0_10px_28px_-10px_rgba(0,0,0,0.95)] backdrop-blur transition duration-200 hover:bg-accent/85 hover:ring-accent/70 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-accent disabled:pointer-events-none disabled:opacity-0 disabled:hover:bg-ink/85 disabled:hover:ring-white/25 sm:grid sm:h-11 sm:w-11 ${
         direction === -1 ? "-left-2 sm:-left-3" : "-right-2 sm:-right-3"
       }`}
       disabled={hidden}

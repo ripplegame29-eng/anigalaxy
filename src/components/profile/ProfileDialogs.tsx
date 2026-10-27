@@ -83,6 +83,7 @@ import { useAccount } from "@/lib/use-account";
 import { clearWatchHistory, timeAgo } from "@/lib/history";
 import { useModalBehaviour } from "@/lib/use-local-storage";
 import { cpuCores, ecoActive, ecoStore, setEco, weakCpu, type EcoMode } from "@/lib/eco";
+import { setSfxEnabled, useSfxEnabled } from "@/lib/sfx";
 import { AvatarFrame } from "./AvatarFrame";
 import { LevelCard } from "./ProfileSections";
 import { WidgetShowcase } from "@/components/WidgetShowcase";
@@ -219,7 +220,7 @@ function useUnlockContext(): UnlockContext {
     premium: isPremiumActive(account),
     claimed: profile.claimed,
     purchased: profile.purchased,
-    referrals: referrals.length,
+    referrals: referrals.filter((item) => item.qualified).length,
   };
 }
 
@@ -1824,6 +1825,7 @@ export function SettingsPanel({
   const profile = useProfile();
   const account = useAccount();
   const eco = ecoStore.useStore();
+  const sfxOn = useSfxEnabled();
   const [draftBio, setDraftBio] = useState(profile.bio);
   const [draftSignature, setDraftSignature] = useState(profile.signature);
   const [message, setMessage] = useState<string | null>(null);
@@ -2335,6 +2337,24 @@ function useStorageStats(): { count: number; bytes: number } {
 
         {tab === "looks" && (
           <div className="space-y-4">
+            <SetBlock
+              icon={
+                <>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 10v4h3l4 3.5v-11L8 10z" />
+                  <path strokeLinecap="round" d="M15.5 9.5a3.5 3.5 0 0 1 0 5M18 7a7 7 0 0 1 0 10" />
+                </>
+              }
+              title="Звуки интерфейса"
+              hint="Тихие сигналы на кнопках, наградах и действиях"
+            >
+              <Toggle
+                checked={sfxOn}
+                onChange={setSfxEnabled}
+                label="Включить звуки"
+                hint="Короткие тоны без файлов. Можно выключить в любой момент"
+              />
+            </SetBlock>
+
             <SetBlock
               icon={
                 <>

@@ -20,18 +20,23 @@ import { LandTab } from "./LandTab";
 import { RosterTab } from "./RosterTab";
 import { VaultTab } from "./VaultTab";
 import { Landing } from "./Landing";
+import { ClansHub } from "../clans/ClansHub";
+import { WorldMapTab } from "./WorldMapTab";
 import "../../app/clan2.css";
 import "../../app/clan2-war.css";
 
-const TABS: { id: TabId; label: string }[] = [
+type AppTab = TabId | "league" | "world";
+const TABS: { id: AppTab; label: string }[] = [
   { id: "citadel", label: "Цитадель" },
   { id: "events", label: "Рейд недели" },
+  { id: "world", label: "Карта мира" },
   { id: "land", label: "Территории" },
   { id: "roster", label: "Состав" },
   { id: "war", label: "Война" },
   { id: "vault", label: "Сундук и казна" },
   { id: "treasury", label: "Сокровищница" },
   { id: "shop", label: "Лавка" },
+  { id: "league", label: "Лига и кристаллы" },
 ];
 
 export function ClanApp() {
@@ -39,7 +44,7 @@ export function ClanApp() {
   const account = useAccount();
   const selfName = account?.displayName || account?.nickname || "Вы";
   const doc = useProgress();
-  const [tab, setTab] = useState<TabId>("citadel");
+  const [tab, setTab] = useState<AppTab>("citadel");
   const [note, say] = useNote();
   const [preset, setPreset] = useState<{ rivalId: string; stake: TerritoryId } | null>(null);
   const assault = useCallback((rivalId: string, stake: TerritoryId) => { setPreset({ rivalId, stake }); setTab("war"); }, []);
@@ -87,7 +92,10 @@ export function ClanApp() {
         </header>
 
         {!clan ? (
-          <Landing selfName={selfName} />
+          <>
+            <Landing selfName={selfName} />
+            <WorldMapTab />
+          </>
         ) : (
           <>
             <nav className="c2-tabs" role="tablist" aria-label="Разделы клана">
@@ -107,6 +115,8 @@ export function ClanApp() {
             {tab === "war" && <WarTab s={s} preset={preset} />}
             {tab === "treasury" && <TreasuryTab s={s} />}
             {tab === "shop" && <ShopTab s={s} />}
+            {tab === "world" && <WorldMapTab />}
+            {tab === "league" && <ClansHub />}
 
             <footer className="c2-foot">
               {s.selfRole === "leader" ? (

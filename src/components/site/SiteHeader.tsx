@@ -51,7 +51,6 @@ import {
   CATALOG_LINKS,
   NAV_LINKS,
   NOTICES_HREF,
-  NOTIFICATIONS,
   QUICK_GENRES,
   type QuestId,
 } from "./header-data";
@@ -60,6 +59,7 @@ import { useAccount } from "@/lib/use-account";
 import { activatePremium } from "@/lib/auth";
 import { useLinks } from "@/lib/accounts";
 import { unreadCount, useProfile } from "@/lib/profile";
+import { timeAgo } from "@/lib/history";
 import { useLevelInfo } from "@/lib/progression/events";
 
 /** id градиента из прототипа: был общим `#xg`, стал уникальным ради страниц */
@@ -843,24 +843,32 @@ export function SiteHeader({ onOpenSearch }: SiteHeaderProps) {
                   УВЕДОМЛЕНИЯ
                   <Link href={NOTICES_HREF}>Прочитать все</Link>
                 </h5>
-                {NOTIFICATIONS.map((item, i) => (
-                  <Link
-                    key={item.title}
-                    className={`ntf it${item.unread ? " un" : ""}`}
-                    style={{ "--i": i + 1, "--c": item.color } as CSSProperties}
-                    href={NOTICES_HREF}
-                  >
+                {profile.notices.length === 0 ? (
+                  <div className="ntf-empty it" style={{ "--i": 1 } as CSSProperties}>
                     <div className="ic">
-                      <Icon name={item.icon} />
+                      <Icon name="bell" />
                     </div>
-                    <div>
-                      <b>{item.title}</b>
-                      <small>
-                        {item.text} · {item.ago}
-                      </small>
-                    </div>
-                  </Link>
-                ))}
+                    <b>Пока тихо</b>
+                    <small>Здесь появятся достижения, ответы на комментарии и новые серии.</small>
+                  </div>
+                ) : (
+                  profile.notices.slice(0, 5).map((item, i) => (
+                    <Link
+                      key={item.id}
+                      className={`ntf it${item.read ? "" : " un"}`}
+                      style={{ "--i": i + 1, "--c": "#4ac5f5" } as CSSProperties}
+                      href={NOTICES_HREF}
+                    >
+                      <div className="ic">
+                        <Icon name="bell" />
+                      </div>
+                      <div>
+                        <b>{item.text}</b>
+                        <small>{timeAgo(item.at)}</small>
+                      </div>
+                    </Link>
+                  ))
+                )}
               </div>
             </span>
           </div>

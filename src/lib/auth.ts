@@ -307,7 +307,7 @@ export function registerAccount(
   });
   // Реферальный код из адресной строки: пригласившему уйдёт награду через
   // движок (событие REFERRAL_REGISTERED), сам факт запоминается у новичка
-  captureReferralOnRegister(nickname.trim());
+  captureReferralOnRegister();
   return { ok: true };
 }
 

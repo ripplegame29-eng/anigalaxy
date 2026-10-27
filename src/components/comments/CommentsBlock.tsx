@@ -185,7 +185,7 @@ function CommentCard({
           {!nested && (
             <span
               className={`ag-cm-lvl rounded-md bg-gradient-to-br ${eraTone(meta.level)} px-1.5 py-0.5 text-[10px] font-black leading-none text-white shadow`}
-              title={`Уровень ${meta.level} · эра «${eraName(meta.level)}»`}
+              title={`Уровень ${meta.level} · пробуждение «${eraName(meta.level)}»`}
             >
               {meta.level}
             </span>

@@ -272,3 +272,11 @@
 .lb2-pod:hover .lb2-link, .lb2-card:hover .lb2-link { text-shadow: 0 0 14px rgba(var(--c), 0.65); }
 .lb2-link:focus-visible { outline: none; }
 .lb2-link:focus-visible::after { outline: 2px solid rgba(var(--c), 0.9); outline-offset: 2px; }
+
+/* Фон профиля игрока под карточкой подиума и строки рейтинга */
+.lb2-bg { position: absolute; inset: 0; z-index: -2; border-radius: inherit; transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1); }
+.lb2-bg::after { content: ""; position: absolute; inset: 0; border-radius: inherit; }
+.lb2-pod .lb2-bg::after { background: linear-gradient(180deg, rgba(8, 10, 20, 0.35) 0%, rgba(8, 10, 20, 0.62) 45%, rgba(8, 10, 20, 0.92) 100%); }
+.lb2-card .lb2-bg::after { background: linear-gradient(90deg, rgba(8, 10, 20, 0.94) 18%, rgba(8, 10, 20, 0.6) 60%, rgba(8, 10, 20, 0.2) 100%); }
+.lb2-pod:hover .lb2-bg, .lb2-card:hover .lb2-bg { transform: scale(1.05); }
+@media (prefers-reduced-motion: reduce) { .lb2-bg { transition: none; } }

@@ -137,18 +137,6 @@ export function LevelsView() {
               </small>
             </span>
           </button>
-          <button type="button" role="tab" aria-selected="false" disabled className="lv-tab">
-            <span className="lv-lock" aria-hidden>
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2">
-                <rect x="4" y="10" width="16" height="11" rx="2" />
-                <path d="M8 10V7a4 4 0 1 1 8 0v3" />
-              </svg>
-            </span>
-            <span>
-              <b>Заточка</b>
-              <small>Откроется на 10 000</small>
-            </span>
-          </button>
         </div>
 
         {/* -------------------------------- Герой ------------------------------ */}
@@ -166,7 +154,7 @@ export function LevelsView() {
               Всего опыта: <b>{num(totalXp)} XP</b>
               {nextEra && (
                 <>
-                  {" · "}до эры «{nextEra.name}» — {nextEra.from - info.level} {plural(nextEra.from - info.level, "уровень", "уровня", "уровней")}
+                  {" · "}до пробуждения «{nextEra.name}» — {nextEra.from - info.level} {plural(nextEra.from - info.level, "уровень", "уровня", "уровней")}
                 </>
               )}
             </p>
@@ -194,7 +182,7 @@ export function LevelsView() {
         <section className="lv-sec" aria-labelledby="lv-eras">
           <header className="lv-sec-h">
             <div>
-              <h2 id="lv-eras">Эры</h2>
+              <h2 id="lv-eras">Стадии пробуждения</h2>
               <p>Семь ступеней мастерства: у каждой свой знак, цвет и сияние.</p>
             </div>
           </header>
@@ -242,7 +230,7 @@ export function LevelsView() {
             </p>
           </header>
 
-          <div className="lv-chips" role="group" aria-label="Эры дорожки">
+          <div className="lv-chips" role="group" aria-label="Стадии пробуждения на дорожке">
             <button type="button" className="lv-chip now" onClick={() => scrollToLevel(info.level)}>
               <i /> Сейчас
             </button>
@@ -290,7 +278,7 @@ export function LevelsView() {
                     {you && <span className="lv-here">вы здесь</span>}
                   </div>
                   <article className="lv-card">
-                    {eraStart && <span className="lv-era-pill">эра «{ERAS[ei].name}»</span>}
+                    {eraStart && <span className="lv-era-pill">пробуждение «{ERAS[ei].name}»</span>}
                     <small>{level} уровень</small>
                     <p className="lv-ac">
                       <img src="/coin.png" alt="" width={20} height={20} />+{num(levelAcReward(level))}
@@ -496,7 +484,7 @@ function Planner({ info, totalXp }: { info: { level: number; left: number }; tot
     { label: "+1", to: min },
     { label: "+5", to: info.level + 5 },
     { label: "+10", to: info.level + 10 },
-    ...(ERAS[eraIndex(info.level) + 1] ? [{ label: `Эра «${ERAS[eraIndex(info.level) + 1].name}»`, to: ERAS[eraIndex(info.level) + 1].from }] : []),
+    ...(ERAS[eraIndex(info.level) + 1] ? [{ label: `Пробуждение «${ERAS[eraIndex(info.level) + 1].name}»`, to: ERAS[eraIndex(info.level) + 1].from }] : []),
     { label: `${MAX}`, to: MAX },
   ];
 
@@ -553,7 +541,7 @@ function Planner({ info, totalXp }: { info: { level: number; left: number }; tot
               <dt>Откроется</dt>
               <dd>
                 {calc.tags.length > 0 ? `${calc.tags.length} ${plural(calc.tags.length, "тег", "тега", "тегов")}` : "—"}
-                {calc.eras > 0 ? ` · новая эра` : ""}
+                {calc.eras > 0 ? ` · новое пробуждение` : ""}
               </dd>
             </div>
           </dl>

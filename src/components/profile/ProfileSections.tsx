@@ -9,18 +9,17 @@ import { useHydrated } from "@/lib/use-hydrated";
 import { useAccount } from "@/lib/use-account";
 import {
   addBlocked,
-  claimGift,
   markNoticesRead,
   removeBlocked,
   unreadCount,
   updateProfile,
   useProfile,
 } from "@/lib/profile";
-import { absoluteRefLink, pendingReferralCount, refCodeFor, referralCount, refLink, referralsThisMonth, useReferrer, useMyReferrals } from "@/lib/referrals";
-import { OrbitMap } from "./OrbitMap";
+import { absoluteRefLink, refCodeFor, referralCount, refLink, useReferralState, useReferrer } from "@/lib/referrals";
+import { REFERRAL_DAYS_PER_FRIEND, REFERRAL_RULES, REFERRAL_WELCOME } from "@/lib/referral-rules";
 import { clearWatchHistory, removeWatch, timeAgo, watchStore } from "@/lib/history";
 import { progressEmit, useLevelInfo, useProgress } from "@/lib/progression/events";
-import { collectMetrics, syncLegacyDelta } from "@/lib/progression/service";
+import { collectMetrics } from "@/lib/progression/service";
 import { PROGRESSION_CONFIG } from "@/lib/progression/progression.config";
 import { BATTLEPASS, BP_MISSIONS } from "@/lib/battlepass/config";
 import { bpCost, bpLevelFromXp, bpTotalFor } from "@/lib/battlepass/logic";
@@ -82,7 +81,6 @@ export type SectionId =
   | "collections"
   | "achievements"
   | "shop"
-  | "gifts"
   | "history"
   | "comments"
   | "blacklist"
@@ -121,7 +119,6 @@ export const SECTIONS: SectionMeta[] = [
   { id: "favorites", label: "Любимое" },
   { id: "collections", label: "Подборки", hidden: true },
   { id: "achievements", label: "Достижения" },
-  { id: "gifts", label: "Подарки" },
   { id: "history", label: "История", hidden: true },
   { id: "comments", label: "Комментарии" },
   { id: "blacklist", label: "Чёрный список" },
@@ -425,9 +422,9 @@ export function LevelCard() {
           </div>
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="era">
-              Эра: {emblemEra.n} · ещё {info.left.toLocaleString("ru-RU")} XP до уровня{" "}
+              Пробуждение: {emblemEra.n} · ещё {info.left.toLocaleString("ru-RU")} XP до уровня{" "}
               {info.level + 1}
-              {nextEmblemEra ? ` · следующая эра «${nextEmblemEra.name}» с ${nextEmblemEra.from} уровня` : ""}
+              {nextEmblemEra ? ` · следующее пробуждение «${nextEmblemEra.name}» с ${nextEmblemEra.from} уровня` : ""}
             </div>
             <button
               type="button"
@@ -442,7 +439,7 @@ export function LevelCard() {
 
       {!nextEra && (
         <p className="mt-3 max-w-[52ch] text-[11px] leading-relaxed text-muted">
-          Высшая эра достигнута — дальше только рекорды.
+          Высшее пробуждение достигнуто — дальше только рекорды.
         </p>
       )}
     </div>
@@ -570,7 +567,7 @@ export function AchievementsStrip({
                   {progress.progress.trophyPoints.toLocaleString("ru-RU")}
                 </span>
                 <span className="block text-[9px] font-bold uppercase tracking-wider text-muted">
-                  трофейный счёт
+                  очки славы
                 </span>
               </span>
             </div>
@@ -1554,7 +1551,7 @@ function AchievementDialog({ item, onClose }: { item: AchievementItem; onClose: 
               </span>
             </div>
             <div className="mt-1 flex justify-between text-xs">
-              <span className="text-muted">Трофеи</span>
+              <span className="text-muted">Очки славы</span>
               <span className="font-bold" style={{ color: "#2ec7ff" }}>
                 +{def.trophy}
               </span>
@@ -2663,84 +2660,6 @@ function DailyDealBanner({
   );
 }
 
-/* ------------------------------- Подарки -------------------------------- */
-
-function GiftsSection() {
-  const { profile } = useProfileData();
-  const pending = profile.gifts.filter((gift) => !gift.claimed);
-  const taken = profile.gifts.filter((gift) => gift.claimed);
-
-  return (
-    <div className="space-y-4">
-      <div className="ag-h1">
-        <span className="ag-lg">
-          <WidgetIcon name="gift" />
-        </span>
-        <em>Подарки</em>
-        <small>AC за новые уровни и события профиля</small>
-      </div>
-
-      {profile.gifts.length === 0 ? (
-        <div className="ag-card ag-big">
-          <div className="ag-big-ic">
-            <WidgetIcon name="gift" />
-          </div>
-          <b>Подарков пока нет</b>
-          <p>Подарки падают за новые уровни и за события в профиле — забирайте их здесь, внутри подарка.</p>
-        </div>
-      ) : (
-        <Panel>
-        <Heading right={<span className="ag-w-sub">{pending.length} ждут</span>}>
-          Полученные
-        </Heading>
-          <ul className="space-y-2.5">
-            {profile.gifts.map((gift) => (
-              <li key={gift.id} className="flex items-center justify-between gap-3 rounded-xl bg-white/[0.03] px-3.5 py-3 ring-1 ring-white/8">
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-bold text-white">{gift.name}</p>
-                  <p className="mt-0.5 text-[11px] text-muted">
-                    {gift.hint} · {timeAgo(gift.at)}
-                  </p>
-                </div>
-                {gift.claimed ? (
-                  <span className="shrink-0 rounded-lg bg-white/6 px-2.5 py-1.5 text-[11px] font-bold text-muted ring-1 ring-white/10">
-                    Забрано
-                  </span>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      claimGift(gift.id);
-                      // монеты подарка → баланс AC сразу, без перезагрузки
-                      syncLegacyDelta();
-                    }}
-                    className="btn-primary shrink-0 rounded-lg px-3 py-2 text-[11px] font-bold text-white"
-                  >
-                    Забрать +{gift.coins}
-                  </button>
-                )}
-              </li>
-            ))}
-          </ul>
-      </Panel>
-      )}
-
-      {taken.length > 0 && (
-        <Panel>
-          <Heading>Уже забрано</Heading>
-          <div className="flex flex-wrap gap-2 text-[11px] text-muted">
-            {taken.map((gift) => (
-              <span key={gift.id} className="rounded-lg bg-white/6 px-2.5 py-1.5 ring-1 ring-white/10">
-                {gift.name} · +{gift.coins}
-              </span>
-            ))}
-          </div>
-        </Panel>
-      )}
-    </div>
-  );
-}
-
 /* ------------------------------- История -------------------------------- */
 
 function HistorySection() {
@@ -2926,40 +2845,10 @@ function plural(n: number, one: string, few: string, many: string): string {
 /* ---------------------------- Рефералы -------------------------------- */
 
 /**
- * Восемь рубежей «галактики» — по числу приглашённых.
- *
- * Награды ссылаются на реальные предметы каталога: титулы и рамки из
- * `cosmetics.ts`. Придумывать предметы, которых в магазине нет, нельзя —
- * тогда блок обещал бы вещи, которых нельзя получить. XP и дни Premium
- * берутся из конфигурации экономики.
+ * Короткая карточка рефералки в профиле: код, ссылка и прогресс до ближайшего
+ * рубежа. Полная программа — на странице `/referrals`; оба места читают одно
+ * состояние сервера и одни и те же правила (`lib/referral-rules.ts`).
  */
-const REFERRAL_MILESTONES = [
-  { at: 1, name: "Первая искра", title: "t-first", frame: "frame-05" },
-  { at: 3, name: "Тёплая орбита", title: "t-curator", frame: "frame-13" },
-  { at: 5, name: "Бро", title: "t-marathon", frame: "frame-24" },
-  { at: 10, name: "Гильдмастер", title: "t-binge", frame: "frame-25" },
-  { at: 20, name: "Цифровая сакура", title: "t-zen", frame: "frame-27" },
-  { at: 30, name: "Орден созвездия", title: "t-veteran", frame: "frame-01" },
-  { at: 50, name: "Легенда AniGalaxy", title: "t-legend", frame: "frame-37" },
-  { at: 100, name: "Архитектор галактики", title: "t-archivist", frame: "frame-18" },
-].map((item) => {
-  const title = TITLES.find((t) => t.id === item.title);
-  const frame = FRAMES.find((f) => f.id === item.frame);
-  const tier = (item.at >= 50 ? 4 : item.at >= 20 ? 3 : item.at >= 5 ? 2 : item.at >= 3 ? 1 : 0) as
-    | 0 | 1 | 2 | 3 | 4;
-  return {
-    at: item.at,
-    name: item.name,
-    rarity: tier,
-    titleName: title?.name ?? "Титул",
-    frameName: frame?.name ?? "Рамка",
-    premiumDays: PROGRESSION_CONFIG.economy.referralPremiumDays * Math.max(1, Math.ceil(item.at / 10)),
-    xp: PROGRESSION_CONFIG.economy.referralXp * item.at,
-  };
-});
-
-const MILESTONE_RARITY = ["ОБЫЧНЫЙ", "РЕДКИЙ", "ЭПИЧЕСКИЙ", "ЛЕГЕНДАРНЫЙ", "МИФИЧЕСКИЙ"];
-
 /** Куда можно отправить ссылку — подписи и адреса мессенджеров */
 const SHARE_LINKS = [
   { id: "tg", label: "Telegram", url: "https://t.me/share/url?url=", icon: "send" },
@@ -2967,59 +2856,20 @@ const SHARE_LINKS = [
   { id: "wa", label: "WhatsApp", url: "https://wa.me/?text=", icon: "chat" },
 ] as const;
 
-/** Иконки рубежей — по одной на каждую ступень орбиты */
-const REFERRAL_ICON_NAMES = [
-  "star",
-  "bolt",
-  "users",
-  "crown",
-  "sparkle",
-  "grid",
-  "trophy",
-  "layers",
-] as const;
-
-/** Цвета редкостей — те же, что у плашек хранилища */
-const MILESTONE_COLORS = ["#9aa3b5", "#22d3ee", "#a78bfa", "#4ac5f5", "#ff4d8a"];
-
-/**
- * Шаги для карты орбит: тот же набор рубежей, что у хранилища, плюс
- * цвет редкости и иконка. Данные для карты берутся оттуда же, чтобы
- * два блока не разъехались по числам.
- */
-const ORBIT_STEPS = REFERRAL_MILESTONES.map((item, i) => ({
-  at: item.at,
-  name: item.name,
-  color: MILESTONE_COLORS[item.rarity],
-  icon: <WidgetIcon name={REFERRAL_ICON_NAMES[i]} />,
-  reward: `Титул «${item.titleName}»`,
-  xp: item.xp,
-}));
-
 export function ReferralsSection({ account }: StandaloneSectionProps) {
   const [copied, setCopied] = useState<boolean | null>(null);
-  const my = useMyReferrals();
+  const state = useReferralState();
   const referrer = useReferrer();
-  const pending = pendingReferralCount();
 
   const code = refCodeFor(account);
   const link = refLink(code);
+  const friends = state?.qualified ?? 0;
+  const waiting = state ? state.total - state.qualified : 0;
+  const next = REFERRAL_RULES.find((rule) => friends < rule.n);
 
-  const friendsCount = my.length;
-  const earnedXp = friendsCount * PROGRESSION_CONFIG.economy.referralXp;
-  const premiumDays = friendsCount * PROGRESSION_CONFIG.economy.referralPremiumDays;
-  const reached = REFERRAL_MILESTONES.filter((item) => friendsCount >= item.at);
-  const next = REFERRAL_MILESTONES.find((item) => friendsCount < item.at);
-
-  /* Копирование без useCallback: зависимость была бы от объекта аккаунта,
-     а он меняется на каждый рендер — мемоизация тут ничего не даёт, а
-     react-компилятор на такую сигнатуру ругается */
   const copy = async (value: string) => {
     try {
-      // В буфер уходит абсолютный адрес: относительный друг не откроет
-      await navigator.clipboard.writeText(
-        value === code ? code : absoluteRefLink(code),
-      );
+      await navigator.clipboard.writeText(value === code ? code : absoluteRefLink(code));
       setCopied(true);
     } catch {
       setCopied(false);
@@ -3028,248 +2878,96 @@ export function ReferralsSection({ account }: StandaloneSectionProps) {
 
   return (
     <div className="space-y-5">
-      {/* ------------------------------ Хиро ------------------------------ */}
       <header className="ag-ref-hero">
         <span className="ag-ref-badge">Реферальная программа</span>
         <h1>
           Собери свою <em>галактику</em>
         </h1>
         <p>
-          Каждый друг загорается звездой на твоей орбите. Закрывай кольца-рубежи, открывай
-          косметику, XP и Premium. Награды приходят сами, без кнопок.
+          Друг засчитывается, когда дорастёт до {state?.rules.minLevel ?? 10} уровня и посмотрит{" "}
+          {state?.rules.minMinutes ?? 30} минут. Тебе — {REFERRAL_DAYS_PER_FRIEND} дня Premium за каждого и подарки за рубежи.
         </p>
       </header>
 
-      <div className="ag-ref-top">
-        {/* ----------------------- Пропуск + правила ---------------------- */}
-        <div className="min-w-0">
-          <div className="ag-ticket">
-            <span className="ag-ticket-foil" aria-hidden />
-            <div className="ag-ticket-row">
-              <span className="ag-w-sub">Твой пропуск в галактику</span>
-              <span className="ag-ticket-live">АКТИВЕН</span>
-            </div>
-
-            <div className="ag-ticket-code">
-              {/* Дефис — только на экране. Сам код в ссылках остаётся слитным:
-                  с ним уже записаны приглашения, менять формат нельзя */}
-              <span>{code.length === 8 ? `${code.slice(0, 4)}-${code.slice(4)}` : code}</span>
-              <button
-                type="button"
-                aria-label="Скопировать код"
-                className="ag-ticket-copy"
-                onClick={() => void copy(code)}
-              >
-                <WidgetIcon name="copy" />
-              </button>
-            </div>
-
-            <div className="ag-ticket-link">
-              <span className="ag-ticket-url">
-                <WidgetIcon name="link" />
-                {link}
-              </span>
-              <button type="button" onClick={() => void copy(link)} className="btn shrink-0">
-                <WidgetIcon name="copy" />
-                Копировать
-              </button>
-            </div>
-
-            <div className="ag-ticket-share">
-              {SHARE_LINKS.map((item) => (
-                <a
-                  key={item.id}
-                  href={`${item.url}${encodeURIComponent(link)}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={item.label}
-                  title={item.label}
-                  className="ag-ticket-so"
-                >
-                  <WidgetIcon name={item.icon} />
-                </a>
-              ))}
-              <button
-                type="button"
-                className="ag-ticket-so"
-                title="Показать код для ввода"
-                aria-label="Показать код для ввода"
-                onClick={() => void copy(code)}
-              >
-                <WidgetIcon name="grid" />
-              </button>
-            </div>
-
-            {/* Перфорация отделяет «себе» от «другу» — как на билете */}
-            <div className="ag-ticket-stub">
-              <span>Другу</span>
-              <b>+{PROGRESSION_CONFIG.economy.referralPremiumDays}</b>
-              <span>дней Premium</span>
-              <b>+{PROGRESSION_CONFIG.economy.referralXp}</b>
-              <span>XP при старте</span>
-            </div>
-          </div>
-
-          <div className="ag-ref-how">
-            <span>
-              <b>+{PROGRESSION_CONFIG.economy.referralPremiumDays} дней Premium</b> тебе за каждого друга
-            </span>
-            <span>
-              Друг засчитывается сразу при <b>регистрации</b>
-            </span>
-          </div>
-
-          {copied !== null && (
-            <p className={copied ? "text-xs text-mint" : "text-xs text-rose-300"}>
-              {copied ? "Скопировано" : "Скопировать не удалось — выделите вручную"}
-            </p>
-          )}
-          {referrer && (
-            <p className="ag-sub">
-              Вас пригласил код <b className="text-accent-2">{referrer.code}</b> — ваш друг получил награду.
-            </p>
-          )}
+      <div className="ag-ticket">
+        <span className="ag-ticket-foil" aria-hidden />
+        <div className="ag-ticket-row">
+          <span className="ag-w-sub">Твой пропуск в галактику</span>
+          <span className="ag-ticket-live">АКТИВЕН</span>
         </div>
-
-        {/* ------------------------- Карта орбит -------------------------- */}
-        <OrbitMap
-          steps={ORBIT_STEPS}
-          friends={my.map((item) => item.nick)}
-          friendsCount={friendsCount}
-          xpEarned={earnedXp}
-          premiumDays={premiumDays}
-          nickname={account?.nickname ?? "R"}
-          nextLeft={next ? next.at - friendsCount : 0}
-          next={next ? ORBIT_STEPS[REFERRAL_MILESTONES.indexOf(next)] : null}
-        />
+        <div className="ag-ticket-code">
+          <span>{code.length === 8 ? `${code.slice(0, 4)}-${code.slice(4)}` : code}</span>
+          <button type="button" aria-label="Скопировать код" className="ag-ticket-copy" onClick={() => void copy(code)}>
+            <WidgetIcon name="copy" />
+          </button>
+        </div>
+        <div className="ag-ticket-link">
+          <span className="ag-ticket-url">
+            <WidgetIcon name="link" />
+            {link}
+          </span>
+          <button type="button" onClick={() => void copy(link)} className="btn shrink-0">
+            <WidgetIcon name="copy" />
+            Копировать
+          </button>
+        </div>
+        <div className="ag-ticket-share">
+          {SHARE_LINKS.map((item) => (
+            <a
+              key={item.id}
+              href={`${item.url}${encodeURIComponent(absoluteRefLink(code))}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={item.label}
+              title={item.label}
+              className="ag-ticket-so"
+            >
+              <WidgetIcon name={item.icon} />
+            </a>
+          ))}
+        </div>
+        <div className="ag-ticket-stub">
+          <span>Другу</span>
+          <b>+{REFERRAL_WELCOME.days}</b>
+          <span>дней Premium</span>
+          <b>+{REFERRAL_WELCOME.xp}</b>
+          <span>XP при старте</span>
+        </div>
       </div>
 
-      {/* ---------------------------- Три шага ---------------------------- */}
-      <section className="ag-ref-sec">
-        <span className="ag-w-sub">Как это работает</span>
-        <h2>Три шага до первой звезды</h2>
-        <div className="ag-ref-steps">
-          <div className="ag-ref-step">
-            <div className="ag-ref-no">1</div>
-            <b>Отправь пропуск</b>
-            <span>Скопируй ссылку или код и поделись с другом в Telegram, VK или WhatsApp.</span>
-          </div>
-          <div className="ag-ref-step">
-            <div className="ag-ref-no">2</div>
-            <b>Друг регистрируется</b>
-            <span>Вводит ваш код при регистрации — и сразу появляется на орбите.</span>
-          </div>
-          <div className="ag-ref-step">
-            <div className="ag-ref-no">3</div>
-            <b>Звезда загорается</b>
-            <span>Приходит {PROGRESSION_CONFIG.economy.referralPremiumDays} дней Premium, {PROGRESSION_CONFIG.economy.referralXp} XP и {PROGRESSION_CONFIG.economy.referralAc} AC, рубежи открываются автоматически.</span>
-          </div>
-        </div>
-      </section>
-
-      {/* ------------------------- Хранилище наград ---------------------- */}
-      <section className="ag-ref-sec">
-        <div className="ag-ref-sechead">
-          <div>
-            <span className="ag-w-sub">8 рубежей, от искры до архитектора</span>
-            <h2>Хранилище наград</h2>
-          </div>
-          <span className="ag-ref-count">
-            Получено <b>{reached.length}</b>/{REFERRAL_MILESTONES.length}
-          </span>
-        </div>
-
-        <div className="ag-ref-vault">
-          {REFERRAL_MILESTONES.map((item, index) => {
-            const open = friendsCount >= item.at;
-            return (
-              <article key={item.at} className={`ag-ref-card ${open ? "is-on" : ""}`}>
-                <div className="ag-ref-cardtop">
-                  <span>×{item.at}</span>
-                  <em data-r={item.rarity}>{MILESTONE_RARITY[item.rarity]}</em>
-                </div>
-                <div className="ag-ref-cardvis">
-                  <WidgetIcon name={REFERRAL_ICON_NAMES[index]} />
-                  {!open && <span className="ag-ref-lock"><WidgetIcon name="lock" /></span>}
-                </div>
-                <b>{item.name}</b>
-                <ul>
-                  <li>+{item.xp} XP</li>
-                  <li>Титул «{item.titleName}»</li>
-                  <li>Рамка «{item.frameName}»</li>
-                  <li>+{item.premiumDays} дней Premium</li>
-                </ul>
-                <span className="ag-ref-needs">
-                  {open ? "Получено" : `Ещё ${item.at - friendsCount} друзей`}
-                </span>
-              </article>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* ------------------------ Экипаж и созвездия ---------------------- */}
-      <section className="ag-ref-sec">
-        <span className="ag-w-sub">Люди и рейтинг</span>
-        <h2>Экипаж и созвездия</h2>
-        <div className="ag-ref-crew">
-          <div className="ag-ref-panel">
-            <header>
-              <b>Твой экипаж</b>
-              <em>{my.length}</em>
-            </header>
-            {my.length === 0 ? (
-              <div className="ag-ref-crewempty">
-                <WidgetIcon name="target" />
-                <span>Здесь пока тихо.</span>
-                <small>Отправь пропуск первому другу, и он появится в экипаже.</small>
-              </div>
-            ) : (
-              <ul className="ag-ref-crewlist">
-                {my.slice(0, 12).map((item, i) => (
-                  <li key={`${item.code}:${item.nick}:${item.at}`}>
-                    <span className="ag-ref-rank">{i + 1}</span>
-                    <b>{item.nick}</b>
-                    <span className="ag-w-sub">
-                      {new Date(item.at).toLocaleDateString("ru-RU")}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-
-          <div className="ag-ref-panel">
-            <header>
-              <b>Рейтинг созвездий</b>
-              <em>закрыт</em>
-            </header>
-            <div className="ag-ref-crewempty">
-              <WidgetIcon name="star" />
-              <span>Общего рейтинга пока нет.</span>
-              <small>
-                Сайт живёт в вашем браузере: чужих профилей и их вкусов здесь не существует,
-                сравнивать не с кем. Как только появится сервер, рейтинг соберётся сам.
-              </small>
-            </div>
-          </div>
-        </div>
-
-        <p className="ag-sub">
-          В списке только приглашения с этого браузера. Награды начисляет движок независимо
-          от списка: {pending > 0 ? `ещё ${pending} ждут начисления — ` : ""}
-          ≈ {dailyAcRate()} AC в день за активность.
+      {copied !== null && (
+        <p className={copied ? "text-xs text-mint" : "text-xs text-rose-300"}>
+          {copied ? "Скопировано" : "Скопировать не удалось — выделите вручную"}
         </p>
-      </section>
+      )}
+      {referrer && !account && (
+        <p className="ag-sub">
+          Вас пригласил код <b className="text-accent-2">{referrer.code}</b> — зарегистрируйтесь, и оба получите подарок.
+        </p>
+      )}
+
+      <div className="ag-ref-how">
+        <span>
+          Засчитано друзей: <b>{friends}</b>
+          {waiting > 0 ? ` · растут: ${waiting}` : ""}
+        </span>
+        <span>
+          {next ? (
+            <>
+              До рубежа «{next.title}»: ещё <b>{next.n - friends}</b>
+            </>
+          ) : (
+            <b>Все рубежи получены</b>
+          )}
+        </span>
+      </div>
+
+      <Link href="/referrals" className="btn">
+        Хранилище наград и рейтинг →
+      </Link>
     </div>
   );
 }
-
-/** Реалистичная оценка дневного заработка AC — из конфигурации экономики */
-function dailyAcRate(): number {
-  return PROGRESSION_CONFIG.economy.dailyAcEstimate;
-}
-
 
 /* ----------------------------- Уведомления ------------------------------ */
 
@@ -3333,8 +3031,6 @@ export function ProfileSection({ section, account, go, mode }: SectionProps & { 
          вкладку эту сюда попасть нельзя. Вкладка осталась запасным
          вариантом для прямой ссылки вида ?tab=shop. */
       return <ShopSection />;
-    case "gifts":
-      return <GiftsSection />;
     case "history":
       return <HistorySection />;
     case "comments":

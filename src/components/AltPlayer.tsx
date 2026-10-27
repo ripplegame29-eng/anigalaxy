@@ -3,6 +3,8 @@
 import { FS_EVENT, isFullscreen, toggleFullscreen as toggleFs } from "@/lib/fullscreen";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { PlayerSkinPicker } from "./PlayerSkinPicker";
+import { usePlayerSkin } from "@/lib/player-skins";
 import type Hls from "hls.js";
 import type { AniSearchCard, AniTitleDetail } from "@/lib/anilibria";
 import { FREE_HQ_EPISODES, hqFreeForEpisode, usePremium } from "@/lib/premium";
@@ -272,20 +274,20 @@ function DragBar({
       }}
       className={`group/bar relative cursor-pointer touch-none ${className}`}
     >
-      <div className="h-full w-full rounded-full bg-white/25" />
+      <div className="ag-bar-trk h-full w-full rounded-full bg-white/25" />
       {marks?.map((m) => (
         <div
           key={m.label}
-          className="absolute inset-y-0 rounded-sm bg-amber-400/80"
+          className="ag-bar-mark absolute inset-y-0 rounded-sm bg-amber-400/80"
           style={{ left: `${m.a * 100}%`, width: `${Math.max(0, m.b - m.a) * 100}%` }}
         />
       ))}
       <div
-        className="absolute inset-y-0 left-0 rounded-full bg-white"
+        className="ag-bar-fill absolute inset-y-0 left-0 rounded-full bg-white"
         style={{ width: `${pct}%` }}
       />
       <div
-        className="absolute top-1/2 h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white shadow-[0_0_0_4px_rgba(255,255,255,0.18)] transition-transform group-hover/bar:scale-125"
+        className="ag-bar-knob absolute top-1/2 h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white shadow-[0_0_0_4px_rgba(255,255,255,0.18)] transition-transform group-hover/bar:scale-125"
         style={{ left: `${pct}%` }}
       />
       {pins?.map((r) => (
@@ -323,10 +325,14 @@ export function AltPlayer({
   malId,
   nav,
   alias,
+  cvhId,
+  cvhStudio,
+  samebandUrl,
+  aniboomUrl,
 }: {
   /** Алиас тайтла в AniLiberty: если задан, поиск по названию пропускается (комнаты совместного просмотра) */
   alias?: string;
-  /** Название тайтла — запрос поиска AniLiberty и заголовок в оверлее */
+  /** Название тайтла — запрос поиска и заголовок в оверлее */
   query: string;
   /** Оригинальное название — запасной запрос, если первый пустой */
   altQuery?: string;
@@ -337,18 +343,27 @@ export function AltPlayer({
   /** Id тайтла (Kodik) — ключ позиций просмотра в localStorage */
   titleId: string;
   /**
-   * Откуда берём поток: «anilibria» — поиск по каталогу AniLiberty,
-   * «kodik» — прямые HLS-манифесты Kodik (плеер AniGalaxy). Панель
-   * управления, качество, скорости и позиции — одни и те же.
+   * Откуда берём поток: «anilibria» — каталог AniLiberty, «kodik» —
+   * прямые HLS-манифесты Kodik, «cvh» — CdnVideoHub, «sameband» — SameBand,
+   * «aniboom» — AniBoom (озвучки AnimeGO).
+   * Панель управления, качество, скорости и позиции — одни и те же.
    */
-  backend?: "anilibria" | "kodik";
+  backend?: "anilibria" | "kodik" | "cvh" | "sameband" | "aniboom";
   /** Id тайтла Kodik («serial-3566») — обязателен для backend="kodik" */
   kodikId?: string;
   /** Сезон Kodik; по умолчанию первый */
   season?: number;
+  /** Shikimori id для CVH (совпадает с cvh_id) */
+  cvhId?: number;
+  /** Выбранная озвучка CVH */
+  cvhStudio?: string;
+  /** Страница тайтла SameBand для backend="sameband" */
+  samebandUrl?: string;
+  /** Embed-ссылка выбранной озвучки AniBoom для backend="aniboom" */
+  aniboomUrl?: string;
   /** «Не нашли» → вернуть исходный плеер */
   onBack: () => void;
-  /** Авто-переключение: вызывается, если в AniLiberty есть следующая серия */
+  /** Авто-переключение: вызывается, если у источника есть следующая серия */
   onNextEpisode?: () => void;
   /** Есть ли следующая серия (для режима Kodik, где списка серий у плеера нет) */
   hasNext?: boolean;
@@ -377,7 +392,7 @@ export function AltPlayer({
    * «не нашли», хотя на самом деле могла не ответить сеть или сам Kodik —
    * по такому тексту непонятно, что делать.
    */
-  const [kodikError, setKodikError] = useState<string | null>(null);
+  const [sourceError, setSourceError] = useState<string | null>(null);
   /** Что выбрал пользователь. Действующее качество — выведено ниже:
       подписка может кончиться, и тогда цель апскейла сама откатывается
       на «Авто», без записи в состояние из эффекта. */
@@ -413,6 +428,16 @@ export function AltPlayer({
     }
   };
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [skinsOpen, setSkinsOpen] = useState(false);
+  const skin = usePlayerSkin();
+  useEffect(() => {
+    const shell = document.getElementById("player-shell");
+    if (!shell) return;
+    shell.dataset.pskin = skin;
+    return () => {
+      delete shell.dataset.pskin;
+    };
+  }, [skin]);
   /** Левая панель озвучек и оверлей сезонов/серий */
   const [panel, setPanel] = useState<null | "voices" | "episodes">(null);
   const [openSeason, setOpenSeason] = useState<number | null>(null);
@@ -506,6 +531,15 @@ export function AltPlayer({
   /** Последняя запись позиции в localStorage (троттлинг timeupdate) */
   const lastSaveRef = useRef(0);
 
+  /* На телефоне качество, настройки и панели серий — шторки поверх
+     страницы: пока они открыты, фон не должен прокручиваться под пальцем,
+     а нижнее меню и шапка не должны перекрывать их снизу и сверху. */
+  useEffect(() => {
+    if (!settingsOpen && !qualityOpen && !panel) return;
+    document.documentElement.classList.add("ag-pop-lock");
+    return () => document.documentElement.classList.remove("ag-pop-lock");
+  }, [settingsOpen, qualityOpen, panel]);
+
   /* ---------------------- Поиск тайтла и серий ---------------------- */
   useEffect(() => {
     let alive = true;
@@ -515,11 +549,11 @@ export function AltPlayer({
     if (backend === "kodik") {
       (async () => {
         setKodikLinks(null);
-        setKodikError(null);
+        setSourceError(null);
         try {
           if (!kodikId) {
             if (alive) {
-              setKodikError("Не указан id тайтла Kodik");
+              setSourceError("Не указан id тайтла Kodik");
               setStatus("empty");
             }
             return;
@@ -538,7 +572,7 @@ export function AltPlayer({
           if (!alive) return;
 
           if (!res.ok) {
-            setKodikError(data?.error ?? `Сервер ответил ${res.status}`);
+            setSourceError(data?.error ?? `Сервер ответил ${res.status}`);
             setStatus("empty");
             return;
           }
@@ -551,12 +585,12 @@ export function AltPlayer({
             setKodikLinks(links);
             setStatus("ok");
           } else {
-            setKodikError("Kodik не отдал ни одной ссылки на поток");
+            setSourceError("Kodik не отдал ни одной ссылки на поток");
             setStatus("empty");
           }
         } catch {
           if (alive) {
-            setKodikError("Не удалось связаться с сервером");
+            setSourceError("Не удалось связаться с сервером");
             setStatus("empty");
           }
         }
@@ -566,8 +600,203 @@ export function AltPlayer({
       };
     }
 
+    // CVH: shikimori id + выбранная студия + серия → готовые HLS-варианты.
+    // Плееру не нужно искать тайтл: всё уже подтверждено плейлистом CVH.
+    if (backend === "cvh") {
+      (async () => {
+        setSourceError(null);
+        setDetail(null);
+        setStatus("loading");
+        if (!cvhId || !cvhStudio) {
+          if (alive) {
+            setSourceError("Не выбрана озвучка CVH");
+            setStatus("empty");
+          }
+          return;
+        }
+
+        try {
+          const params = new URLSearchParams({
+            shikimori: String(cvhId),
+            season: String(season),
+            episode: String(episode),
+            studio: cvhStudio,
+          });
+          const res = await fetch(`/api/cvh/stream?${params.toString()}`);
+          const data = (await res.json().catch(() => null)) as {
+            sources?: Record<string, string>;
+            poster?: string;
+            translation?: string;
+            error?: string;
+          } | null;
+          if (!alive) return;
+
+          if (!res.ok || !data?.sources || !Object.keys(data.sources).length) {
+            setSourceError(data?.error ?? `CVH ответил ${res.status}`);
+            setStatus("empty");
+            return;
+          }
+
+          const sources: AniTitleDetail["episodes"][number]["sources"] = {};
+          for (const quality of ["480", "720", "1080"] as const) {
+            const url = data.sources[quality];
+            if (url) sources[quality] = url;
+          }
+          if (!Object.keys(sources).length) {
+            setSourceError("CVH не отдал ни одного качества");
+            setStatus("empty");
+            return;
+          }
+
+          setDetail({
+            card: {
+              id: `cvh:${cvhId}`,
+              alias: String(cvhId),
+              title: query,
+              year,
+              poster: data.poster,
+              genres: [],
+              shikimoriId: cvhId,
+            },
+            episodes: [{ id: `${season}:${episode}`, number: episode, sources }],
+          });
+          setStatus("ok");
+        } catch {
+          if (alive) {
+            setSourceError("Не удалось связаться с сервером CVH");
+            setStatus("empty");
+          }
+        }
+      })();
+      return () => {
+        alive = false;
+      };
+    }
+
+    // SameBand: страница тайтла уже подобрана по названию/году, сервер
+    // отдаёт все серии с проксированными HLS-ссылками.
+    if (backend === "sameband") {
+      (async () => {
+        setSourceError(null);
+        setDetail(null);
+        setStatus("loading");
+        if (!samebandUrl) {
+          if (alive) {
+            setSourceError("Не выбран тайтл SameBand");
+            setStatus("empty");
+          }
+          return;
+        }
+
+        try {
+          const res = await fetch(
+            `/api/sameband/title?url=${encodeURIComponent(samebandUrl)}`,
+          );
+          const data = (await res.json().catch(() => null)) as {
+            detail?: AniTitleDetail;
+            error?: string;
+          } | null;
+          if (!alive) return;
+
+          if (!res.ok || !data?.detail?.episodes.length) {
+            setSourceError(data?.error ?? `SameBand ответил ${res.status}`);
+            setStatus("empty");
+            return;
+          }
+
+          setDetail(data.detail);
+          setStatus("ok");
+        } catch {
+          if (alive) {
+            setSourceError("Не удалось связаться с сервером SameBand");
+            setStatus("empty");
+          }
+        }
+      })();
+      return () => {
+        alive = false;
+      };
+    }
+
+    // AniBoom: embed уже выбран в списке озвучек, сервер разбирает его
+    // в HLS-варианты и отдаёт проксированные ссылки.
+    if (backend === "aniboom") {
+      (async () => {
+        setSourceError(null);
+        setDetail(null);
+        setStatus("loading");
+        if (!aniboomUrl) {
+          if (alive) {
+            setSourceError("Не выбрана озвучка AniBoom");
+            setStatus("empty");
+          }
+          return;
+        }
+
+        try {
+          const params = new URLSearchParams({
+            url: aniboomUrl,
+            episode: String(episode),
+          });
+          const res = await fetch(`/api/aniboom/stream?${params.toString()}`);
+          const data = (await res.json().catch(() => null)) as {
+            sources?: Record<string, string>;
+            poster?: string;
+            duration?: number;
+            error?: string;
+          } | null;
+          if (!alive) return;
+
+          if (!res.ok || !data?.sources || !Object.keys(data.sources).length) {
+            setSourceError(data?.error ?? `AniBoom ответил ${res.status}`);
+            setStatus("empty");
+            return;
+          }
+
+          const sources: AniTitleDetail["episodes"][number]["sources"] = {};
+          for (const quality of ["480", "720", "1080"] as const) {
+            const url = data.sources[quality];
+            if (url) sources[quality] = url;
+          }
+          if (!Object.keys(sources).length) {
+            setSourceError("AniBoom не отдал ни одного качества");
+            setStatus("empty");
+            return;
+          }
+
+          setDetail({
+            card: {
+              id: `aniboom:${episode}`,
+              alias: "aniboom",
+              title: query,
+              year,
+              poster: data.poster,
+              genres: [],
+              shikimoriId: malId,
+              duration: data.duration,
+            },
+            episodes: [{ id: `${season}:${episode}`, number: episode, sources }],
+          });
+          setStatus("ok");
+        } catch {
+          if (alive) {
+            setSourceError("Не удалось связаться с сервером AniBoom");
+            setStatus("empty");
+          }
+        }
+      })();
+      return () => {
+        alive = false;
+      };
+    }
+
+    // AniLiberty: ищем релиз по названию, но играем только подтверждённый
+    // alias (в комнатах он приходит готовым).
     const names = [query, altQuery].filter((name): name is string => Boolean(name));
     (async () => {
+      setSourceError(null);
+      setDetail(null);
+      setStatus("loading");
       try {
         let picked: AniSearchCard | null = alias ? ({ alias } as AniSearchCard) : null;
         for (const name of alias ? [] : names) {
@@ -582,32 +811,59 @@ export function AltPlayer({
         }
         if (!alive) return;
         if (!picked) {
+          setSourceError("Этого тайтла нет в каталоге AniLiberty");
           setStatus("empty");
           return;
         }
         const res = await fetch(`/api/anilibria/title?id=${encodeURIComponent(picked.alias)}`);
         const data = res.ok ? ((await res.json()) as { detail?: AniTitleDetail }) : null;
         if (!alive) return;
-        if (data?.detail) {
+        if (data?.detail?.episodes.length) {
           setDetail(data.detail);
           setStatus("ok");
         } else {
+          setSourceError("AniLiberty не отдал серии этого тайтла");
           setStatus("empty");
         }
       } catch {
-        if (alive) setStatus("empty");
+        if (alive) {
+          setSourceError("Не удалось связаться с сервером");
+          setStatus("empty");
+        }
       }
     })();
     return () => {
       alive = false;
     };
-  }, [backend, kodikId, season, episode, query, altQuery, year, alias]);
+  }, [
+    backend,
+    kodikId,
+    season,
+    episode,
+    query,
+    altQuery,
+    year,
+    alias,
+    cvhId,
+    cvhStudio,
+    samebandUrl,
+    aniboomUrl,
+  ]);
 
   const router = useRouter();
   const { active: premiumActive } = usePremium();
 
-  /** Название источника в статусах: свой плеер Kodik — AniGalaxy, каталог — AniLiberty */
-  const brand = backend === "kodik" ? "AniGalaxy" : "AniLiberty";
+  /** Название источника в статусах */
+  const brand =
+    backend === "kodik"
+      ? "AniGalaxy"
+      : backend === "cvh"
+        ? "CVH"
+        : backend === "sameband"
+          ? "SameBand"
+          : backend === "aniboom"
+            ? "AniBoom"
+            : "AniLiberty";
 
   /* ------------------------ Текущая серия и src --------------------- */
   // Фильм/серии с другими номерами: для первого эпизода берём первый
@@ -1269,7 +1525,7 @@ export function AltPlayer({
 
       {/* ---------------- Верхняя плашка: название по центру ------------ */}
       {showTopBar && (
-        <div className="pointer-events-none absolute inset-x-0 top-0 z-20 bg-gradient-to-b from-black/75 via-black/35 to-transparent px-4 pb-12 pt-[max(1rem,env(safe-area-inset-top))] text-center">
+        <div className="ag-topbar pointer-events-none absolute inset-x-0 top-0 z-20 bg-gradient-to-b from-black/75 via-black/35 to-transparent px-4 pb-12 pt-[max(1rem,env(safe-area-inset-top))] text-center">
           {isFs && (
             <button type="button" aria-label="Выйти из полноэкранного режима" onClick={toggleFullscreen} className="pointer-events-auto absolute left-4 top-4 grid h-10 w-10 place-items-center rounded-full text-white/90 transition hover:bg-white/12 hover:text-white">
               <Icon d={PATHS.close} className="h-6 w-6" />
@@ -1347,7 +1603,7 @@ export function AltPlayer({
         const showEd = inEnding && watchOp !== `${epKey}:ed`;
         if (!showOp && !showEd) return null;
         return (
-          <div className={`absolute right-3 z-[21] flex max-w-[calc(100%-1.5rem)] flex-wrap items-center justify-end gap-2 transition-all duration-300 sm:right-5 sm:gap-3 ${uiVisible || !playing ? "bottom-32 sm:bottom-40" : "bottom-8"}`}>
+          <div className={`absolute right-3 z-[21] flex max-w-[calc(100%-1.5rem)] flex-wrap items-center justify-end gap-2 transition-all duration-300 sm:right-5 sm:gap-3 ${uiVisible || !playing ? "bottom-[6.75rem] sm:bottom-40" : "bottom-8"}`}>
             {showOp && (
               <>
                 <button type="button" onClick={skipOpening} title="Пропустить опенинг (O)" className="ag-skipbtn ag-skipbtn--white">
@@ -1392,8 +1648,33 @@ export function AltPlayer({
             uiVisible || !playing ? "opacity-100" : "pointer-events-none opacity-0"
           }`}
         >
+          {/* Перемотка: над кнопками, как в больших стримингах */}
+          <DragBar
+            className="ag-seek mb-3 h-[5px] w-full transition-[height] before:absolute before:inset-x-0 before:-inset-y-3 before:content-[''] hover:h-2 sm:mb-3.5 sm:h-1.5"
+            ratio={dur ? curTime / dur : 0}
+            onPick={seekTo}
+            onStep={seekStep}
+            label="Перемотка"
+            valueText={`${fmt(curTime)} из ${fmt(dur)}`}
+            pins={dur > 0 ? bookmarks.map((b) => Math.min(1, b / dur)) : undefined}
+            marks={
+              dur > 0
+                ? [
+                    ...(skips?.op ? [{ a: skips.op[0] / dur, b: Math.min(1, skips.op[1] / dur), label: "Опенинг" }] : []),
+                    ...(skips?.ed ? [{ a: skips.ed[0] / dur, b: Math.min(1, skips.ed[1] / dur), label: "Эндинг" }] : []),
+                  ]
+                : undefined
+            }
+            hintAt={(r) => {
+              const t = r * dur;
+              const inOp = skips?.op && t >= skips.op[0] && t <= skips.op[1];
+              const inEd = skips?.ed && t >= skips.ed[0] && t <= skips.ed[1];
+              return `${fmt(t)}${inOp ? " (Опенинг)" : inEd ? " (Эндинг)" : ""}`;
+            }}
+          />
+
           {/* Ряд над прогрессом: звук слева, время по центру, инструменты справа */}
-          <div className="mb-2 flex items-center gap-2 sm:mb-3">
+          <div className="ag-cbar-row flex items-center gap-2">
             <button
               type="button"
               aria-label={playing ? "Пауза" : "Воспроизвести"}
@@ -1417,12 +1698,12 @@ export function AltPlayer({
               />
             </div>
 
-            <span className="min-w-0 shrink truncate rounded-full bg-black/45 px-3 py-2 text-xs font-bold tabular-nums text-white ring-1 ring-white/10 backdrop-blur max-sm:mr-auto sm:px-4">
+            <span className="min-w-0 shrink truncate px-1 text-[13px] font-semibold tabular-nums text-white/90 [text-shadow:0_1px_3px_rgba(0,0,0,.8)] max-sm:mr-auto">
               {fmt(curTime)} / {fmt(dur)}
             </span>
 
             <div className="flex flex-none items-center justify-end gap-0.5 sm:flex-1 sm:gap-1">
-              <button type="button" aria-label="Качество" aria-expanded={qualityOpen} onClick={() => setQualityOpen(true)} className={`${CBAR_CHIP} ${qualityOpen ? "bg-white/18" : ""}`}>
+              <button type="button" aria-label="Качество" aria-expanded={qualityOpen} onClick={() => { setSettingsOpen(false); setQualityOpen(true); }} className={`${CBAR_CHIP} ${qualityOpen ? "bg-white/18" : ""}`}>
                 {quality === "2160" ? <span className="rounded bg-red-600 px-1.5 py-0.5 font-black text-white">4K</span> : qualityLabel}
               </button>
               <button type="button" aria-label="Скорость" onClick={cycleSpeed} className={`${CBAR_CHIP} max-sm:hidden`}>{rate}x</button>
@@ -1435,7 +1716,7 @@ export function AltPlayer({
               <button type="button" aria-label="Картинка в картинке" onClick={togglePip} className={`${CBAR_BTN} max-sm:hidden`}>
                 <Icon d={PATHS.pip} className="h-5 w-5" />
               </button>
-              <button type="button" aria-label="Настройки" aria-expanded={settingsOpen} onClick={() => setSettingsOpen((v) => !v)} className={`${CBAR_BTN} ${settingsOpen ? "bg-white/15" : ""}`}>
+              <button type="button" aria-label="Настройки" aria-expanded={settingsOpen} onClick={() => { setQualityOpen(false); setSettingsOpen((v) => !v); }} className={`${CBAR_BTN} ${settingsOpen ? "bg-white/15" : ""}`}>
                 <Icon d={PATHS.gear} className="h-5 w-5" />
               </button>
               <button type="button" aria-label={isFs ? "Выйти из полноэкранного режима" : "На весь экран"} onClick={toggleFullscreen} className={CBAR_BTN}>
@@ -1444,33 +1725,8 @@ export function AltPlayer({
             </div>
           </div>
 
-          {/* Прогресс */}
-          <DragBar
-            className="h-2 w-full transition-[height] before:absolute before:inset-x-0 before:-inset-y-3 before:content-[''] hover:h-2.5 sm:h-1.5 sm:hover:h-2"
-            ratio={dur ? curTime / dur : 0}
-            onPick={seekTo}
-            onStep={seekStep}
-            label="Перемотка"
-            valueText={`${fmt(curTime)} из ${fmt(dur)}`}
-            pins={dur > 0 ? bookmarks.map((b) => Math.min(1, b / dur)) : undefined}
-            marks={
-              dur > 0
-                ? [
-                    ...(skips?.op ? [{ a: skips.op[0] / dur, b: Math.min(1, skips.op[1] / dur), label: "Опенинг" }] : []),
-                    ...(skips?.ed ? [{ a: skips.ed[0] / dur, b: Math.min(1, skips.ed[1] / dur), label: "Эндинг" }] : []),
-                  ]
-                : undefined
-            }
-            hintAt={(r) => {
-              const t = r * dur;
-              const inOp = skips?.op && t >= skips.op[0] && t <= skips.op[1];
-              const inEd = skips?.ed && t >= skips.ed[0] && t <= skips.ed[1];
-              return `${fmt(t)}${inOp ? " (Опенинг)" : inEd ? " (Эндинг)" : ""}`;
-            }}
-          />
-
           {/* Ряд под прогрессом: панели слева, следующая серия справа */}
-          <div className="mt-3 flex items-center gap-2">
+          <div className="ag-cbar-tools mt-3 flex items-center gap-2">
             {nav && (
               <>
                 <button type="button" aria-label="Сезоны и эпизоды" aria-expanded={panel === "episodes"} onClick={() => { setOpenSeason(nav.season); setPanel("episodes"); }} className={`${CBAR_CHIP} inline-flex items-center gap-2 max-sm:hidden`}>
@@ -1485,6 +1741,10 @@ export function AltPlayer({
                 )}
               </>
             )}
+            <button type="button" aria-label="Оформление плеера" onClick={() => setSkinsOpen(true)} className={`${CBAR_CHIP} inline-flex items-center gap-2 max-sm:hidden`}>
+              <Icon d={PATHS.fill} className="h-4 w-4" />
+              Оформление
+            </button>
             <div className="flex-1" />
             {hasNextEp && (
               <button type="button" aria-label="Следующая серия" title="Следующая серия (N)" onClick={goNext} className="flex items-center gap-2 rounded-xl bg-white/8 px-2.5 py-1.5 text-left ring-1 max-sm:py-1 sm:gap-3 sm:px-3 ring-white/10 transition hover:bg-white/14">
@@ -1499,9 +1759,25 @@ export function AltPlayer({
         </div>
       )}
 
+      {skinsOpen && <PlayerSkinPicker onClose={() => setSkinsOpen(false)} />}
+
+      {/* Затемнение под мобильными шторками качества/настроек: тап мимо
+          закрывает их, а фон не перехватывает нажатия у кнопок плеера. */}
+      {(settingsOpen || qualityOpen) && (
+        <button
+          type="button"
+          aria-label="Закрыть меню плеера"
+          className="ag-pop-backdrop"
+          onClick={() => {
+            setSettingsOpen(false);
+            setQualityOpen(false);
+          }}
+        />
+      )}
+
       {/* ------------- Озвучки и сезоны/серии (оверлеи плеера) ------------- */}
       {nav && panel === "voices" && (
-        <div className="absolute inset-0 z-[45] flex animate-fade-in" role="dialog" aria-label="Озвучки">
+        <div className="ag-panel ag-panel--voices absolute inset-0 z-[45] flex animate-fade-in" role="dialog" aria-label="Озвучки">
           <div className="flex w-[min(20rem,85%)] flex-col gap-1 overflow-y-auto bg-[#0b0a14]/96 p-5 shadow-2xl backdrop-blur-xl">
             <h3 className="mb-3 flex items-center justify-between text-2xl font-black text-white">
               Озвучки
@@ -1526,7 +1802,7 @@ export function AltPlayer({
       )}
 
       {nav && panel === "episodes" && (
-        <div className="absolute inset-0 z-[45] overflow-y-auto bg-black/88 p-6 backdrop-blur-xl animate-fade-in" role="dialog" aria-label="Сезоны и эпизоды">
+        <div className="ag-panel ag-panel--episodes absolute inset-0 z-[45] overflow-y-auto bg-black/88 p-6 backdrop-blur-xl animate-fade-in" role="dialog" aria-label="Сезоны и эпизоды">
           <div className="mb-5 flex items-center justify-between">
             <h3 className="text-2xl font-black text-white">Сезоны и эпизоды</h3>
             <button type="button" aria-label="Закрыть" onClick={() => setPanel(null)} className="grid h-10 w-10 place-items-center rounded-full text-white/80 hover:bg-white/10 hover:text-white">
@@ -1573,11 +1849,24 @@ export function AltPlayer({
       {settingsOpen && mediaReady && (
         <div
           data-alt-settings
-          className="absolute bottom-28 right-3 z-30 w-60 rounded-2xl border border-line bg-[#0d0d15]/95 p-3.5 shadow-[0_28px_60px_-24px_rgba(0,0,0,1)] backdrop-blur-xl animate-fade-in"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Настройки плеера"
+          className="ag-pop ag-pop--settings absolute bottom-28 right-3 z-30 w-60 rounded-2xl border border-line bg-[#0d0d15]/95 p-3.5 shadow-[0_28px_60px_-24px_rgba(0,0,0,1)] backdrop-blur-xl animate-fade-in"
         >
-          <p className="mb-3 text-[11px] font-black uppercase tracking-wider text-muted">
-            Настройки
-          </p>
+          <div className="mb-3 flex items-center justify-between gap-2">
+            <p className="text-[11px] font-black uppercase tracking-wider text-muted">
+              Настройки
+            </p>
+            <button
+              type="button"
+              aria-label="Закрыть настройки"
+              onClick={() => setSettingsOpen(false)}
+              className="grid h-8 w-8 place-items-center rounded-full text-white/55 transition hover:bg-white/10 hover:text-white"
+            >
+              <Icon d={PATHS.close} className="h-4 w-4" />
+            </button>
+          </div>
 
           <p className="mb-1.5 text-[11px] font-bold uppercase tracking-wider text-muted">
             Скорость
@@ -1657,6 +1946,54 @@ export function AltPlayer({
               />
             </button>
           </div>
+
+          {/* На телефоне нижние чипы «Сезоны»/«Озвучки» скрыты, чтобы
+              панель управления влезала в кадр. Дублируем их здесь: шторка
+              настроек — единственное место, где до них можно дотянуться. */}
+          {(nav || hasNextEp) && (
+            <div className="ag-settings-nav">
+              {nav && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSettingsOpen(false);
+                    setOpenSeason(nav.season);
+                    setPanel("episodes");
+                  }}
+                >
+                  <Icon d={PATHS.list} className="h-4 w-4" />
+                  Серии и эпизоды
+                  <span>{nav.season} сезон</span>
+                </button>
+              )}
+              {nav && nav.voices.length > 1 && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSettingsOpen(false);
+                    setPanel("voices");
+                  }}
+                >
+                  <Icon d={PATHS.voices} className="h-4 w-4" />
+                  Озвучка
+                  <span>{nav.voices.length}</span>
+                </button>
+              )}
+              {hasNextEp && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSettingsOpen(false);
+                    goNext();
+                  }}
+                >
+                  <Icon d={PATHS.next} className="h-4 w-4" />
+                  Следующая серия
+                  <span>{episode + 1}</span>
+                </button>
+              )}
+            </div>
+          )}
         </div>
       )}
 
@@ -1664,7 +2001,10 @@ export function AltPlayer({
       {qualityOpen && mediaReady && (
         <div
           data-alt-quality
-          className="absolute bottom-28 right-3 z-30 w-64 overflow-hidden rounded-2xl border border-line bg-[#0d0d15]/95 shadow-[0_28px_60px_-24px_rgba(0,0,0,1)] backdrop-blur-xl animate-fade-in"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Качество видео"
+          className="ag-pop ag-pop--quality absolute bottom-28 right-3 z-30 w-64 overflow-hidden rounded-2xl border border-line bg-[#0d0d15]/95 shadow-[0_28px_60px_-24px_rgba(0,0,0,1)] backdrop-blur-xl animate-fade-in"
         >
           <div className="relative flex items-center justify-center px-4 pb-2.5 pt-3.5">
             <button
@@ -1879,7 +2219,7 @@ export function AltPlayer({
           <div className="grid justify-items-center gap-3 text-center">
             <span className="h-9 w-9 animate-spin-slow rounded-full border-[3px] border-white/20 border-t-accent" />
             <span className="text-xs font-semibold uppercase tracking-widest text-muted">
-              Ищем на {brand}…
+              {backend === "anilibria" ? `Ищем на ${brand}…` : `Загружаем ${brand}…`}
             </span>
           </div>
         </div>
@@ -1895,7 +2235,7 @@ export function AltPlayer({
               <>
                 <p className="text-sm font-semibold text-white">Поток не получен</p>
                 <p className="text-xs text-muted">
-                  {kodikError ?? "Kodik не ответил"}
+                  {sourceError ?? "Kodik не ответил"}
                 </p>
                 <p className="text-xs text-muted/80">
                   Если с VPN работает, а без него — нет, значит до сервера Kodik
@@ -1904,10 +2244,12 @@ export function AltPlayer({
               </>
             ) : (
               <>
-                <p className="text-sm font-semibold text-white">Не нашли на {brand}</p>
+                <p className="text-sm font-semibold text-white">Поток не получен</p>
                 <p className="text-xs text-muted">
-                  Возможно, этого тайтла нет в каталоге альтернативы — вернитесь на
-                  основной плеер.
+                  {sourceError ?? `Не удалось получить поток с ${brand}`}
+                </p>
+                <p className="text-xs text-muted/80">
+                  Выберите другую озвучку или вернитесь на основной плеер.
                 </p>
               </>
             )}
@@ -1924,7 +2266,7 @@ export function AltPlayer({
 
       {/* Нет именно этой серии в каталоге: у Kodik серии приходят по номеру,
           пустой результат сюда не попадает — там своя проверка выше */}
-      {status === "ok" && !current && backend === "anilibria" && (
+      {status === "ok" && !current && backend !== "kodik" && (
         <div className="absolute inset-0 z-40 grid place-items-center bg-ink/85 animate-fade-in">
           <div className="grid max-w-xs justify-items-center gap-2 px-6 text-center">
             <p className="text-sm font-semibold text-white">Серии {episode} нет на {brand}</p>

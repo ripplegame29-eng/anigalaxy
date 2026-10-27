@@ -9,6 +9,8 @@
  * (`service.applySideEffects`), поэтому тост можно пропустить — запись останется.
  */
 
+import { playSfx } from "@/lib/sfx";
+import "./toast.css";
 import { BP_MISSIONS } from "@/lib/battlepass/config";
 import { useCallback, useEffect, useSyncExternalStore } from "react";
 import { AgTag } from "@/components/progression/AgTag";
@@ -46,7 +48,7 @@ export function toastsForEffect(effect: ProgressEffect): ToastInput[] {
         {
           kind: "level",
           title: `Уровень ${effect.level}!`,
-          text: `Эра «${effect.era}»${effect.acReward > 0 ? ` · +${effect.acReward} AC` : ""}`,
+          text: `Пробуждение «${effect.era}»${effect.acReward > 0 ? ` · +${effect.acReward} AC` : ""}`,
         },
       ];
     case "ACHIEVEMENT_UNLOCKED": {
@@ -78,55 +80,57 @@ export function toastsForEffect(effect: ProgressEffect): ToastInput[] {
   }
 }
 
-const KIND_CLASS: Record<ToastItem["kind"], string> = {
-  xp: "ring-accent/45 bg-accent/12 text-accent-2",
-  level: "ring-gold/50 bg-gold/14 text-gold",
-  achievement: "ring-gold/40 bg-gold/10 text-gold",
-  tag: "ring-accent-2/45 bg-accent-2/12 text-accent-2",
-  quest: "ring-rose-400/45 bg-rose-500/14 text-rose-200",
-  ac: "ring-accent-2/45 bg-accent-2/12 text-accent-2",
-  premium: "ring-gold/50 bg-gold/14 text-gold",
+const ico = (d: string, fill = false) => (
+  <svg viewBox="0 0 24 24" fill={fill ? "currentColor" : "none"} stroke={fill ? "none" : "currentColor"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+    <path d={d} />
+  </svg>
+);
+
+/** Иконка медальона по типу тоста */
+const KIND_ICON: Record<ToastItem["kind"], React.ReactNode> = {
+  xp: ico("M13 2 4.5 13.5H11L10 22l8.5-11.5H12.5z", true),
+  level: ico("M12 3.5 19 12h-4.2v8.5H9.2V12H5z", true),
+  achievement: ico("M8 4h8v5a4 4 0 0 1-8 0V4ZM8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v4M8.5 20h7"),
+  tag: ico("M3.5 12.2V4.5a1 1 0 0 1 1-1h7.7l8.3 8.3a1.4 1.4 0 0 1 0 2l-6.7 6.7a1.4 1.4 0 0 1-2 0L3.5 12.2ZM8 8h.01"),
+  quest: ico("m5 12.5 4.5 4.5L19 7.5"),
+  ac: ico("M12 3.5a8.5 8.5 0 1 0 0 17 8.5 8.5 0 0 0 0-17ZM12 8v8M9.5 10.5h4a1.5 1.5 0 0 1 0 3h-3"),
+  premium: ico("M3 8l4.5 4L12 5l4.5 7L21 8l-2 11H5L3 8Z", true),
 };
 
 function ToastCard({ toast }: { toast: ToastItem }) {
   // Тост живёт сам: исчезает сам и по клику, без таймеров в рендере
+  const life = toast.kind === "xp" ? 4200 : 7000;
   useEffect(() => {
-    const timer = setTimeout(() => dismissToast(toast.id), toast.kind === "xp" ? 4200 : 7000);
+    const timer = setTimeout(() => dismissToast(toast.id), life);
     return () => clearTimeout(timer);
-  }, [toast.id, toast.kind]);
+  }, [toast.id, life]);
 
   const tagDef = toast.tagId
     ? PROGRESSION_CONFIG.tags.find((item) => item.id === toast.tagId)
     : undefined;
 
   return (
-    <div
-      className={`pointer-events-auto animate-fade-up rounded-xl px-3.5 py-3 ring-1 backdrop-blur ${KIND_CLASS[toast.kind]}`}
-      style={{ animationDuration: "220ms" }}
-    >
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p className="text-sm font-black leading-tight text-white">{toast.title}</p>
-          {tagDef ? (
-            /* о получении тега — сама капсула, а не только название (FIX §2) */
-            <div className="mt-1.5">
-              <AgTag tag={tagDef} size="sm" />
-            </div>
-          ) : (
-            toast.text && <p className="mt-0.5 text-xs leading-snug text-muted">{toast.text}</p>
-          )}
-        </div>
-        <button
-          type="button"
-          onClick={() => dismissToast(toast.id)}
-          aria-label="Скрыть уведомление"
-          className="-mr-2 -mt-2 shrink-0 rounded-md p-2.5 text-muted transition hover:bg-white/10 hover:text-white"
-        >
-          <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2.4">
-            <path strokeLinecap="round" d="M6 6l12 12M18 6L6 18" />
-          </svg>
-        </button>
+    <div className={`tst tst--${toast.kind} pointer-events-auto`} style={{ ["--life" as string]: `${life}ms` }}>
+      <span className="tst-ic">{KIND_ICON[toast.kind]}</span>
+      <div className="min-w-0">
+        <p className="tst-t">{toast.title}</p>
+        {tagDef ? (
+          /* о получении тега — сама капсула, а не только название (FIX §2) */
+          <div className="mt-1.5">
+            <AgTag tag={tagDef} size="sm" />
+          </div>
+        ) : (
+          toast.text && <p className="tst-s">{toast.text}</p>
+        )}
       </div>
+      <button type="button" onClick={() => dismissToast(toast.id)} aria-label="Скрыть уведомление" className="tst-x">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">
+          <path strokeLinecap="round" d="M6 6l12 12M18 6L6 18" />
+        </svg>
+      </button>
+      <span className="tst-bar" aria-hidden>
+        <i />
+      </span>
     </div>
   );
 }
@@ -134,9 +138,14 @@ function ToastCard({ toast }: { toast: ToastItem }) {
 export function ToastHost() {
   // Стабильная ссылка: подписка на эффекты живёт всё время работы страницы
   const onEffects = useCallback((effects: ProgressEffect[]) => {
+    let shown = false;
     for (const effect of effects) {
-      for (const toast of toastsForEffect(effect)) pushToast(toast);
+      for (const toast of toastsForEffect(effect)) {
+        pushToast(toast);
+        shown = true;
+      }
     }
+    if (shown) playSfx("reward");
   }, []);
 
   useProgressEffects(onEffects);

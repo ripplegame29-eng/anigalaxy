@@ -29,6 +29,7 @@
     /* Ивент: календарь с отметкой — в меню стоит вместо «Подарки Premium» */
     event:'<rect x="3.5" y="5" width="17" height="16" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4M12 13v4M10 15h4"/>',
     palette:'<path d="M12 3a9 9 0 1 0 0 18c1.5 0 2-1 1.5-2-.6-1.2.2-2.5 1.6-2.5H17a4 4 0 0 0 4-4c0-5-4-9.5-9-9.5z"/><circle cx="8" cy="11" r="1"/><circle cx="12" cy="7.5" r="1"/><circle cx="16" cy="11" r="1"/>',
+    device:'<rect x="2.5" y="4" width="13" height="10" rx="2"/><path d="M6 18h5M8.5 14v4M17 8h3.5v12H17z"/>',
     uplus:'<circle cx="10" cy="8" r="4"/><path d="M2 21c0-4 3.5-6 8-6M19 8v6M16 11h6"/>',
     bell:'<path d="M6 16v-5a6 6 0 0 1 12 0v5l2 2H4zM10 21h4"/>',
     gear:'<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/>',
@@ -37,19 +38,23 @@
     shield:'<path d="M12 3l8 3v6c0 4.5-3.2 7.8-8 9-4.8-1.2-8-4.5-8-9V6zM9 12l2.2 2.2L15.5 10"/>',
     out:'<path d="M10 4H5v16h5M15 8l4 4-4 4M19 12H9"/>'
   };
+  /* Пункты сгруппированы по смыслу: одиннадцать одинаковых строк подряд
+     читались сплошным списком, в котором нечего зацепить глазом. Группа
+     задаёт и порядок, и оттенок иконок (data-g в разметке). */
   var DEFAULT_ITEMS = [
-    {id:'profile',label:'Мой профиль',icon:'user'},
-    {id:'list',label:'Мой список',icon:'list'},
-    {id:'shop',label:'Магазин',icon:'store'},
-    {id:'quests',label:'Квесты',icon:'bulb'},
-    {id:'achievements',label:'Достижения',icon:'trophy'},
-    {id:'levels',label:'Уровни',icon:'levels'},
-    {id:'cosmetics',label:'Косметика',icon:'palette'},
-    {id:'invite',label:'Пригласи друзей',icon:'uplus'},
+    {id:'profile',label:'Мой профиль',icon:'user',group:'Профиль'},
+    {id:'list',label:'Мой список',icon:'list',group:'Профиль'},
+    {id:'achievements',label:'Достижения',icon:'trophy',group:'Профиль'},
+    {id:'cosmetics',label:'Косметика',icon:'palette',group:'Профиль'},
+    {id:'levels',label:'Уровни',icon:'levels',group:'Прогресс'},
+    {id:'quests',label:'Квесты',icon:'bulb',group:'Прогресс'},
+    {id:'shop',label:'Магазин',icon:'store',group:'Прогресс'},
     /* Пункт «Подарки Premium» заменён на «Ивенты»: подарки ушли из меню */
-    {id:'events',label:'Ивенты',icon:'event'},
-    {id:'settings',label:'Настройки',icon:'gear'},
-    {id:'premium',label:'Premium',icon:'crown'}
+    {id:'events',label:'Ивенты',icon:'event',group:'Ещё'},
+    {id:'invite',label:'Пригласи друзей',icon:'uplus',group:'Ещё'},
+    {id:'apps',label:'Приложения',icon:'device',group:'Ещё'},
+    {id:'settings',label:'Настройки',icon:'gear',group:'Ещё'},
+    {id:'premium',label:'Premium',icon:'crown',group:'Ещё'}
   ];
   var FX_CLASSES = ['pm-fx-neon', 'pm-fx-glitch', 'pm-fx-rainbow'];
 
@@ -97,9 +102,15 @@
     var scrim = document.createElement('div'); scrim.className = 'pm-scrim';
     var menu = document.createElement('div'); menu.className = 'pm-menu'; menu.id = uid; menu.setAttribute('role', 'menu'); menu.setAttribute('aria-label', 'Профиль');
 
+    var lastGroup = null, groupNo = 0;
     var itemsHTML = o.items.map(function(it, i){
       var ch = '<svg class="pm-ch" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>';
-      return '<div class="pm-it'+(it.id === 'premium' ? ' pm-prem' : '')+'" style="--i:'+(i + 3)+'"><a class="pm-link" role="menuitem" data-id="'+esc(it.id)+'" href="'+esc(it.href||'#')+'">'+
+      var head = '';
+      if (it.group && it.group !== lastGroup) {
+        lastGroup = it.group; groupNo++;
+        head = '<div class="pm-gh pm-rv" style="--i:'+(i + 3)+'">'+esc(it.group)+'</div>';
+      }
+      return head + '<div class="pm-it'+(it.id === 'premium' ? ' pm-prem' : '')+'" data-g="'+groupNo+'" style="--i:'+(i + 3)+'"><a class="pm-link" role="menuitem" data-id="'+esc(it.id)+'" href="'+esc(it.href||'#')+'">'+
         '<span class="pm-ico">'+ic(it.icon||'user')+'</span><span class="pm-tx">'+esc(it.label)+'</span>'+
         (it.badge ? '<span class="pm-badge" data-badge="'+esc(typeof it.badge==='string'?it.badge:it.id)+'" hidden></span>' : '') + ch +'</a></div>';
     }).join('');
@@ -145,7 +156,7 @@
       q('premium').hidden = !prof.premium;
       q('lvtile').textContent = prof.level != null ? prof.level : '';
       q('lvline').textContent = 'Уровень ' + (prof.level != null ? prof.level : '—') + (prof.xp != null ? ' · ' + fmt(prof.xp) + ' XP' : '');
-      q('era').textContent = prof.era ? 'Эра: ' + prof.era : '';
+      q('era').textContent = prof.era ? 'Пробуждение: ' + prof.era : '';
       q('remain').textContent = prof.xpToNext != null ? 'ещё ' + fmt(prof.xpToNext) + ' XP' : '';
       q('pct').textContent = clampPct(prof.xpPercent) + '%';
       menu.querySelectorAll('[data-badge]').forEach(function(b){

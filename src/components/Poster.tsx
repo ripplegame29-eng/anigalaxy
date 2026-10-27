@@ -23,6 +23,7 @@ export function Poster({
   priority?: boolean;
 }) {
   const [failed, setFailed] = useState(false);
+  const [loaded, setLoaded] = useState(false);
 
   if (!src || failed) {
     return (
@@ -45,7 +46,12 @@ export function Poster({
       sizes={sizes}
       priority={priority}
       loading={priority ? "eager" : "lazy"}
-      className={className}
+      className={`${className} ui-img${loaded ? " is-loaded" : ""}`}
+      ref={(el) => {
+        // Картинка могла загрузиться до гидрации — тогда onLoad уже не придёт
+        if (el && el.complete && el.naturalWidth > 0) setLoaded(true);
+      }}
+      onLoad={() => setLoaded(true)}
       onError={() => setFailed(true)}
     />
   );

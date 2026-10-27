@@ -20,7 +20,8 @@
  */
 
 import { useEffect, useRef, useState } from "react";
-import { absoluteRefLink, refCodeFor, refLink, useMyReferrals } from "@/lib/referrals";
+import { REFERRAL_DAYS_PER_FRIEND, REFERRAL_RULES } from "@/lib/referral-rules";
+import { absoluteRefLink, refCodeFor, refLink, refreshReferrals, useReferralState } from "@/lib/referrals";
 import { useAccount } from "@/lib/use-account";
 import "./referral.css";
 
@@ -35,26 +36,16 @@ import "./referral.css";
  * рубеж не только показывает название, но и действительно открывает
  * предмет: счётчик приглашений проверяет и каталог, и выдачу в движке.
  */
-const R = [
-  { n: 1, t: "Первая искра", r: "common", xp: 500, it: "Тег «Сенсей»", d: 0 },
-  { n: 3, t: "Тёплая орбита", r: "common", xp: 1500, it: "Рамка «Геасс»", d: 0 },
-  { n: 5, t: "Бро", r: "rare", xp: 2500, it: "Эффект «Неон»", d: 0 },
-  { n: 10, t: "Гильдмастер", r: "rare", xp: 5000, it: "Рамка «Маска гуля»", d: 7 },
-  { n: 20, t: "Цифровая сакура", r: "epic", xp: 10000, it: "Эффект «Глитч»", d: 14 },
-  { n: 30, t: "Орден созвездия", r: "epic", xp: 15000, it: "Рамка «Крылья свободы»", d: 30 },
-  { n: 50, t: "Легенда AniGalaxy", r: "leg", xp: 25000, it: "Эффект «Голограмма»", d: 90 },
-  { n: 100, t: "Архитектор галактики", r: "leg", xp: 50000, it: "Тег «Герой иного мира»", d: 365 },
-] as const;
+const R = REFERRAL_RULES.map((rule) => ({
+  n: rule.n,
+  t: rule.title,
+  r: rule.rarity,
+  xp: rule.xp,
+  it: rule.item,
+  d: rule.days,
+}));
 
-/**
- * Рейтинг созвездий и месяц — из прототипа.
- *
- * TODO(рефералка): данные чужого рейтинга. Сервера у сайта нет, а список
- * подписчиков месяца хранить негде. Как только появится бэкенд — брать
- * оттуда, здесь оставить только пустое состояние.
- */
-const TOP: [string, number][] = [];
-const MONTH = "ОКТЯБРЬ";
+const MONTH = new Date().toLocaleDateString("ru-RU", { month: "long" }).toUpperCase();
 
 /** Демо-кнопка «+1 друг» — только в разработке, в продакшне её нет */
 const DEMO = process.env.NODE_ENV !== "production";
@@ -127,11 +118,12 @@ const SHOOTS = Array.from({ length: 6 }, (_, i) => ({
 
 export function ReferralPage() {
   const account = useAccount();
-  const invited = useMyReferrals();
+  const state = useReferralState();
+  const invited = state?.friends ?? [];
 
   const code = refCodeFor(account);
   /** Число друзей — настоящее, из хранилища; demoAdd добавляет демо-кнопка */
-  const invitedCount = invited.length;
+  const invitedCount = state?.qualified ?? 0;
   const [demoAdd, setDemoAdd] = useState(0);
   const friends = invitedCount + demoAdd;
   const [sel, setSel] = useState<number | null>(null);
@@ -158,8 +150,9 @@ export function ReferralPage() {
   const curRef = useRef<Record<string, number>>({});
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  /** Настоящие ники приглашённых; порядок — от свежих к старым */
-  const names = invited.map((item) => item.nick);
+  useEffect(() => {
+    void refreshReferrals();
+  }, []);
 
   /**
    * Меньше движения спрашиваем в момент использования, а не в состоянии:
@@ -281,10 +274,16 @@ export function ReferralPage() {
       t.innerHTML = `<div class="empty"><svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="32" cy="32" r="6"/><ellipse cx="32" cy="32" rx="26" ry="10" transform="rotate(-25 32 32)" stroke-dasharray="3 5"/><circle cx="52" cy="22" r="2" fill="currentColor"/></svg>Здесь пока тихо.<br>Отправь пропуск первому другу, и он появится в экипаже.</div>`;
       return;
     }
-    t.innerHTML = Array.from({ length: Math.min(friends, 8) }, (_, k) => {
-      const n = names[k] ?? `Друг ${friends - k}`;
-      return `<div class="tm" ${k ? 'style="animation:none"' : ""}>${av(n, k)}<div class="i"><b>${esc(n)}</b><span>Засчитан · +3 дня Premium</span></div><span class="tag gb" style="padding:3px 10px;letter-spacing:0">★</span></div>`;
-    }).join("");
+    const rules = state?.rules ?? { minLevel: 10, minMinutes: 30 };
+    t.innerHTML = invited
+      .slice(0, 12)
+      .map((f, k) => {
+        const note = f.qualified
+          ? `Засчитан · +${REFERRAL_DAYS_PER_FRIEND} дня Premium`
+          : `Растёт: ур. ${Math.min(f.level, rules.minLevel)}/${rules.minLevel} · ${Math.min(f.minutes, rules.minMinutes)}/${rules.minMinutes} мин`;
+        return `<div class="tm" ${k ? 'style="animation:none"' : ""}>${av(f.nick, k)}<div class="i"><b>${esc(f.nick)}</b><span>${note}</span></div>${f.qualified ? '<span class="tag gb" style="padding:3px 10px;letter-spacing:0">★</span>' : ""}</div>`;
+      })
+      .join("");
   };
 
   const renderRating = () => {
@@ -292,9 +291,9 @@ export function ReferralPage() {
     const you = youRef.current;
     if (!top || !you) return;
 
-    /* TODO(рефералка): подставить ответ бэкенда, когда он появится */
+    const TOP: [string, number][] = (state?.top ?? []).map((row) => [row.nickname, row.count]);
     if (TOP.length === 0) {
-      top.innerHTML = `<div class="empty">Рейтинг за месяц пока пуст. Он появится, когда у проекта появится сервер.</div>`;
+      top.innerHTML = `<div class="empty">В этом месяце ещё никто не засчитал друзей. Будь первым в созвездии.</div>`;
       you.innerHTML = "";
       return;
     }
@@ -308,13 +307,14 @@ export function ReferralPage() {
         .map((x, i) => `<div class="lr"><span class="rb" style="--w:${(x[1] / TOP[0][1]) * 100}%"></span><span class="rk">${i + 4}</span>${av(x[0], i + 4)}<b>${esc(x[0])}${CROWN}</b><span class="c">${x[1]}</span></div>`)
         .join("");
 
-    const rank = TOP.filter((x) => x[1] > friends).length + 1;
-    const inTop = rank <= TOP.length;
-    const need = TOP[TOP.length - 1][1] - friends + 1;
+    const mine = state?.me.month ?? 0;
+    const rank = state?.me.rank ?? 0;
+    const inTop = mine > 0 && rank > 0 && rank <= TOP.length;
+    const need = Math.max(1, TOP[TOP.length - 1][1] - mine + 1);
     const nick = account?.nickname ?? "Вы";
     you.innerHTML =
       `<span class="rk" style="border-color:rgba(43,127,255,.6);color:#fff">${inTop ? rank : "—"}</span>` +
-      `${av(nick, 0)}<b>${esc(nick)}<small>${inTop ? "ты в топе месяца" : `ещё ${need} ${pl(need, ["друг", "друга", "друзей"])} до топ-${TOP.length}`}</small></b><span class="c">${friends}</span>`;
+      `${av(nick, 0)}<b>${esc(nick)}<small>${inTop ? "ты в топе месяца" : `ещё ${need} ${pl(need, ["друг", "друга", "друзей"])} до топ-${TOP.length}`}</small></b><span class="c">${mine}</span>`;
   };
 
   const renderAll = () => {
@@ -504,7 +504,7 @@ export function ReferralPage() {
               </div>
               <div className="stub"><span className="lab" style={{ color: "#9fb6e0" }}>Другу</span><b>+7</b><span>дней Premium</span><b style={{ fontSize: 22 }}>+500</b><span>XP при старте</span></div>
             </div>
-            <div className="how"><span><b>+3 дня Premium</b> тебе за каждого друга</span><span>Друг засчитывается на <b>10 уровне</b></span></div>
+            <div className="how"><span><b>+{REFERRAL_DAYS_PER_FRIEND} дня Premium</b> тебе за каждого друга</span><span>Друг засчитывается на <b>10 уровне</b></span></div>
           </div>
 
           <div className="card map" id="map" ref={mapRef} aria-label="Карта орбит">

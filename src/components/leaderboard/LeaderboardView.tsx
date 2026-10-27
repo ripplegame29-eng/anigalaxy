@@ -16,7 +16,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { LevelBadge } from "@/components/levels/LevelBadge";
-import { FRAMES, TITLES, type TitleItem } from "@/lib/cosmetics";
+import { BACKGROUNDS, FRAMES, TITLES, type TitleItem } from "@/lib/cosmetics";
 import { isPremiumActive } from "@/lib/auth";
 import { PROGRESSION_CONFIG } from "@/lib/progression/progression.config";
 import type { TagDef } from "@/lib/progression/types";
@@ -84,6 +84,17 @@ function PlayerAvatar({ row, size }: { row: BoardRow; size: "md" | "xs" }) {
   return <AvatarFrame nickname={row.nickname} avatar={row.avatar || undefined} frame={frame} size={size} />;
 }
 
+/** Фон профиля игрока под карточкой: свой загруженный или пресет каталога */
+function ProfileBg({ row }: { row: BoardRow }) {
+  const preset = row.backgroundId ? BACKGROUNDS.find((b) => b.id === row.backgroundId) : undefined;
+  const style: React.CSSProperties | null = row.bgImage
+    ? { backgroundImage: `url(${row.bgImage})`, backgroundSize: "cover", backgroundPosition: "center" }
+    : preset
+      ? { background: preset.css, backgroundSize: preset.backgroundSize ?? "cover" }
+      : null;
+  return style ? <span className="lb2-bg" style={style} aria-hidden /> : null;
+}
+
 const CROWN = (
   <svg className="lb2-crown" viewBox="0 0 34 26" fill="currentColor" aria-hidden>
     <path d="M2 8l7 6 8-11 8 11 7-6-3 16H5z" />
@@ -95,6 +106,7 @@ function PodiumCard({ row, place, metric }: { row: BoardRow; place: 1 | 2 | 3; m
   const points = useCountUp(shown.value);
   return (
     <article className={`lb2-pod p${place}`} onPointerMove={spotlight}>
+      <ProfileBg row={row} />
       <span className="lb2-aura" aria-hidden />
       {place === 1 && CROWN}
       <span className="lb2-medal" aria-hidden>{place}</span>
@@ -141,6 +153,7 @@ function RankRow({ row, max, index, metric }: { row: BoardRow; max: number; inde
       style={{ "--n": index, "--w": `${((row.points / Math.max(1, max)) * 100).toFixed(1)}%` } as React.CSSProperties}
       onPointerMove={spotlight}
     >
+      <ProfileBg row={row} />
       <span className="lb2-rank">{`#${row.rank}`}</span>
       <div className="lb2-av lb2-s">
         <PlayerAvatar row={row} size="xs" />

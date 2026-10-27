@@ -160,7 +160,7 @@ export interface AnimeCard {
 
 /** Озвучка (студия перевода), найденная на странице плеера Kodik */
 export interface TranslationOption {
-  /** id перевода в Kodik */
+  /** id перевода в Kodik или отрицательный синтетический id альтернативы */
   id: number;
   title: string;
   type: "voice" | "subtitles";
@@ -170,6 +170,59 @@ export interface TranslationOption {
   episodeCount?: number;
   /** Выбрана ли сейчас (для первого рендера) */
   current?: boolean;
+  /** Откуда дорожка: Kodik (не задано), AniLiberty, CVH или SameBand */
+  provider?: "anilibria" | "cvh" | "sameband" | "aniboom";
+  /** Название студии внутри CVH (для резолва серии) */
+  studio?: string;
+  /** Страница тайтла SameBand (для резолва серий) */
+  url?: string;
+  /** Максимальное качество дорожки (720 у Kodik, 1080 у остальных) */
+  quality?: number;
+  /** Дорожки той же студии из других источников — запасные, если эта не играет */
+  fallbacks?: TranslationOption[];
+}
+
+/** Озвучка CVH: сколько серий ею закрыто в плейлисте */
+export interface CvhStudio {
+  name: string;
+  episodes: number;
+  seasons: number[];
+  /** Дорожка помечена как субтитры, а не голос */
+  subtitles: boolean;
+}
+
+/** Сгруппированный плейлист CVH — ответ `/api/cvh/playlist` */
+export interface CvhPlaylist {
+  shikimori: string;
+  seasons: number[];
+  episodesTotal: number;
+  studios: CvhStudio[];
+}
+
+/** Совпадение тайтла на SameBand (по названию и году) */
+export interface SameBandMatch {
+  url: string;
+  title: string;
+  poster?: string;
+  year?: number;
+  description?: string;
+}
+
+/** Одна дорожка AniBoom, найденная на странице плеера AnimeGO */
+export interface AniBoomVoice {
+  label: string;
+  translationId: number;
+  /** Embed-URL AniBoom; в нём уже есть токен видео и translation */
+  embed: string;
+}
+
+/** Подтверждённый тайтл AnimeGO + его дорожки AniBoom */
+export interface AniBoomMatch {
+  animeId: string;
+  title: string;
+  year?: number;
+  episodesTotal?: number;
+  voices: AniBoomVoice[];
 }
 
 export interface EpisodeRef {

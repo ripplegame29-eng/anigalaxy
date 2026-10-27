@@ -176,7 +176,7 @@ export function useAccountItems(onNavigate?: () => void): Item[] {
       { kind: "link", href: "/profile?tab=achievements", label: "Достижения", icon: ICONS.trophy },
       { kind: "link", href: "/cosmetics", label: "Косметика", icon: ICONS.palette },
       { kind: "link", href: "/profile?tab=referrals", label: "Пригласи друзей", icon: ICONS.users },
-      { kind: "link", href: "/profile?tab=gifts", label: "Подарки Premium", icon: ICONS.gift },
+      { kind: "link", href: "/gifts", label: "Подарки Premium", icon: ICONS.gift },
       /* Уведомлений в меню нет: колокольчик с их счётчиком уже стоит в шапке,
          второй вход в то же место только путает. */
       { kind: "link", href: "/settings", label: "Настройки", icon: ICONS.settings },

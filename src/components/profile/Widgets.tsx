@@ -282,7 +282,7 @@ export function AchievementsWidget({ onOpenAll }: { onOpenAll?: () => void }) {
           <div className="ag-aw-score">{nf.format(shown)}</div>
           <div className="ag-aw-score-label">
             <WidgetIcon name="trophy" />
-            ТРОФЕЙНЫЙ СЧЁТ
+            ОЧКИ СЛАВЫ
           </div>
         </div>
       </div>

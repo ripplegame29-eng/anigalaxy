@@ -23,6 +23,26 @@
  * Стало: сцена выходит за поля страницы во всю ширину — кадр крупнее на
  * пятую часть, и под панель управления появилось место.
  * ------------------------------------------------------------------ */
+/* Мобильные шторки и дублирующие пункты в настройках: на компьютере
+   работают прежние поповеры и чипы под плеером. */
+.ag-pop-backdrop { display: none; }
+.ag-settings-nav { display: none; }
+
+/* Двойной тап по кнопке плеера не должен зумить страницу на телефоне. */
+.ag-cbar button,
+.ag-pop button,
+.ag-panel button,
+.ag-skipbtn { touch-action: manipulation; }
+
+/* На ноутбуках 900–1100 px плеер ещё невысокий, и список качества
+   упирался в overflow-hidden оболочки. Ограничиваем высоту поповера
+   свободным местом над ним и включаем прокрутку вместо обрезки. */
+.ag-pop {
+  max-height: calc(100% - 7.5rem);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
 @media (max-width: 639px) {
   .wb-stage { margin-inline: -1rem; }   /* поля .px-4 страницы тайтла */
 
@@ -41,9 +61,183 @@
       0 1px 0 rgba(var(--accent-rgb), .45),
       0 18px 44px -18px #000;
   }
+
+  /* ------------------------------------------------------------------ *
+   * Панель управления. На кадре 360×202 прежняя панель занимала 169 px:
+   * верхняя плашка + два ряда кнопок перекрывали почти всё видео, а
+   * поповеры качества и настроек вылезали за overflow-hidden и обрезались.
+   * Теперь это компактная нижняя полоса и шторки поверх экрана.
+   * ------------------------------------------------------------------ */
+  .ag-topbar.ag-topbar {
+    padding: .55rem .75rem 1.85rem !important;
+  }
+  /* Во встроенном плеере название и серия уже написаны под кадром.
+     В полноэкранном режиме плашка остаётся — там она заменяет шапку. */
+  #player-shell:not(:fullscreen):not(.ag-pseudo-fs) .ag-topbar { display: none; }
+  .ag-topbar p:first-of-type { font-size: .95rem; line-height: 1.2; }
+  .ag-topbar p + p { margin-top: .15rem; font-size: .65rem; }
+
+  .ag-cbar.ag-cbar {
+    padding: 2rem .75rem .5rem;
+    background: linear-gradient(to top, rgba(0,0,0,.92), rgba(0,0,0,.55) 55%, transparent);
+  }
+  .ag-cbar .ag-seek {
+    height: 4px;
+    margin-bottom: .5rem;
+  }
+  .ag-cbar-row { gap: .3rem; }
+  .ag-cbar-row > button[aria-label="Пауза"],
+  .ag-cbar-row > button[aria-label="Воспроизвести"] { margin-left: -.25rem; }
+  /* Пальцем в чип качества: высота 44 px, как у соседних круглых кнопок. */
+  .ag-cbar-row button[aria-label="Качество"] { min-height: 44px; }
+  .ag-cbar-row .tabular-nums { font-size: 12px; letter-spacing: -.01em; }
+
+  /* Второй ряд («Сезоны», «Озвучки», «Следующая серия») на телефоне
+     прячем: те же действия есть в шторке настроек. */
+  .ag-cbar-tools { display: none !important; }
+}
+
+/* Планшеты и телефоны: качество/настройки — шторки поверх экрана.
+   На 640–900 px старый поповер тоже не влезал в кадр: 400 px списка
+   при кадре высотой 400 px и отступе 112 px обрезались сверху. */
+@media (max-width: 900px) {
+  /* Затемнение и шторки качества/настроек — фиксированные, поэтому
+     overflow-hidden оболочки плеера их больше не режет. */
+  html.ag-pop-lock,
+  html.ag-pop-lock body { overflow: hidden; }
+  /* Шторка живёт внутри main (у него свой stacking context), поэтому
+     поднять её над нижним меню нельзя одним z-index. Пока шторка открыта,
+     прячем док, шапку и плавающие кнопки — они и не нужны поверх неё. */
+  html.ag-pop-lock .mnv-bar,
+  html.ag-pop-lock .ag-fab,
+  html.ag-pop-lock header.hd {
+    opacity: 0;
+    pointer-events: none;
+  }
+  .mnv-bar { transition: opacity .2s ease; }
+
+  .ag-pop-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 128;
+    border: 0;
+    background: rgba(2, 4, 10, .64);
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+    touch-action: none;
+  }
+  .ag-pop.ag-pop {
+    position: fixed !important;
+    left: 10px !important;
+    right: 10px !important;
+    bottom: calc(10px + env(safe-area-inset-bottom)) !important;
+    width: auto !important;
+    max-height: min(78dvh, 620px);
+    z-index: 129 !important;
+    border-radius: 22px !important;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    box-shadow: 0 30px 80px -20px rgba(0, 0, 0, 1);
+    animation: ag-sheet-up .28s cubic-bezier(.2,.9,.3,1) both;
+  }
+  @keyframes ag-sheet-up {
+    from { opacity: 0; transform: translateY(24px); }
+  }
+  .ag-pop--quality::before,
+  .ag-pop--settings::before {
+    content: "";
+    display: block;
+    width: 38px;
+    height: 4px;
+    margin: 8px auto 2px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, .22);
+  }
+  .ag-pop--quality > div:first-of-type { padding-top: 6px; }
+  .ag-pop--quality button[aria-label="Назад"] {
+    left: 12px;
+    width: 44px;
+    height: 44px;
+  }
+  .ag-pop--settings { padding: 10px 16px max(16px, env(safe-area-inset-bottom)); }
+  .ag-pop--settings button[aria-label="Закрыть настройки"] {
+    width: 40px;
+    height: 40px;
+  }
+
+  .ag-settings-nav {
+    display: grid;
+    gap: 6px;
+    margin-top: 12px;
+    border-top: 1px solid rgba(255, 255, 255, .08);
+    padding-top: 10px;
+  }
+  .ag-settings-nav button {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    width: 100%;
+    min-height: 44px;
+    padding: 11px 12px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, .06);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    text-align: left;
+    transition: background .2s;
+  }
+  .ag-settings-nav button:active { background: rgba(var(--accent-rgb), .22); }
+  .ag-settings-nav button span {
+    margin-left: auto;
+    color: rgba(255, 255, 255, .5);
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  /* Полноэкранные панели серий и озвучек: раньше жили внутри кадра
+     высотой 202 px и были непригодны для выбора. */
+  .ag-panel.ag-panel {
+    position: fixed;
+    inset: 0;
+    z-index: 132;
+  }
+  .ag-panel--episodes {
+    padding: max(1rem, env(safe-area-inset-top)) 1rem calc(1rem + env(safe-area-inset-bottom)) !important;
+  }
+  .ag-panel--voices > div:first-child {
+    width: min(22rem, 92%) !important;
+    padding: max(1rem, env(safe-area-inset-top)) 1rem 1rem !important;
+  }
 }
 
 /* Полный экран: панель управления отступает от «чёлки» и жестовой полосы.
    Во врезанном плеере этот отступ не нужен — там кадр не у края экрана. */
 .ag-pseudo-fs .ag-cbar,
 :fullscreen .ag-cbar { padding-bottom: max(0.75rem, env(safe-area-inset-bottom)); }
+
+/* ------------------------------------------------------------------ *
+ * Полоса перемотки
+ *
+ * Была белой чертой с крупной белой точкой и ярко-жёлтыми метками
+ * опенинга — на тёмном кадре это читалось как ошибка. Теперь заливка
+ * берёт акцент тайтла, точка меньше и со свечением, метки приглушены.
+ * ------------------------------------------------------------------ */
+.ag-seek .ag-bar-trk { background: rgba(255, 255, 255, .2); }
+.ag-seek .ag-bar-fill {
+  background: linear-gradient(90deg, rgb(var(--accent-rgb, 43 127 255)), #7cd4ff);
+  box-shadow: 0 0 12px -2px rgba(var(--accent-rgb, 43 127 255), .9);
+}
+.ag-seek .ag-bar-knob {
+  width: 12px;
+  height: 12px;
+  box-shadow:
+    0 0 0 4px rgba(var(--accent-rgb, 43 127 255), .28),
+    0 2px 8px rgba(0, 0, 0, .7);
+}
+.ag-seek .ag-bar-mark { background: rgba(255, 206, 92, .42); }
+
+@media (prefers-reduced-motion: reduce) {
+  .ag-pop.ag-pop { animation: none; }
+}

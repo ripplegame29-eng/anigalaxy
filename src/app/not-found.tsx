@@ -4,8 +4,8 @@ import Link from "next/link";
 export default function NotFound() {
   return (
     <div className="mx-auto flex max-w-xl flex-col items-center px-4 py-24 text-center">
-      <div className="relative grid h-24 w-24 place-items-center rounded-3xl bg-gradient-to-br from-accent/25 to-accent-2/25 ring-1 ring-white/10">
-        <span className="text-4xl font-extrabold text-gradient-accent">404</span>
+      <div className="ui-state-art !h-28 !w-28" aria-hidden>
+        <span className="relative text-3xl font-extrabold text-gradient-accent">404</span>
       </div>
 
       <h1 className="mt-7 text-2xl font-extrabold tracking-tight sm:text-3xl">

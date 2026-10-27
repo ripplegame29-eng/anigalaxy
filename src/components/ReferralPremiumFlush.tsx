@@ -1,31 +1,55 @@
 "use client";
 
 /**
- * Разовое начисление дней Premium за приглашения.
- *
- * Пригласивший — другой человек с другого устройства, поэтому в момент
- * регистрации новичка его аккаунт здесь недоступен: приглашение складывается
- * в очередь под кодом (`lib/referrals.ts`). Этот компонент висит в корневом
- * макете и при загрузке страницы превращает накопившееся в дни подписки.
- *
- * Ничего не рендерит и не имеет состояния — только один вызов при монтировании.
- * Повторные вызовы безопасны: начисление идемпотентно.
+ * Рефералка в фоне: запоминает код с ссылки приглашения и подтягивает с
+ * сервера состояние (друзья, рубежи). Награды выдаёт сервер, сюда они
+ * приходят вместе с обычной синхронизацией; здесь лишь тост о новом друге.
  */
 
 import { useEffect } from "react";
-import { flushReferralPremium } from "@/lib/referrals";
+import { captureReferralLanding, refreshReferrals, useReferralState } from "@/lib/referrals";
 import { pushToast } from "@/lib/toasts";
+import { useAccount } from "@/lib/use-account";
+
+const SEEN_KEY = "animehub:ref-seen:v1";
 
 export function ReferralPremiumFlush() {
+  const account = useAccount();
+  const state = useReferralState();
+
   useEffect(() => {
-    const result = flushReferralPremium();
-    if (!result) return;
-    pushToast({
-      kind: "xp",
-      title: `+${result.days} дн. Premium`,
-      text: `Приглашено друзей: ${result.credited}. Подписка продлена.`,
-    });
+    captureReferralLanding();
   }, []);
+
+  useEffect(() => {
+    if (!account) return;
+    void refreshReferrals();
+    const id = window.setInterval(() => void refreshReferrals(), 5 * 60 * 1000);
+    return () => window.clearInterval(id);
+  }, [account]);
+
+  const qualified = state?.qualified ?? 0;
+  useEffect(() => {
+    if (!state) return;
+    let seen = -1;
+    try {
+      seen = Number(window.localStorage.getItem(SEEN_KEY) ?? "-1");
+    } catch {
+      /* без хранилища просто не показываем тост */
+    }
+    try {
+      window.localStorage.setItem(SEEN_KEY, String(qualified));
+    } catch {
+      /* ничего */
+    }
+    if (seen >= 0 && qualified > seen) {
+      pushToast({
+        kind: "xp",
+        title: "Друг засчитан",
+        text: `Засчитано друзей: ${qualified}. Premium и награды рубежей уже начислены.`,
+      });
+    }
+  }, [qualified, state]);
 
   return null;
 }

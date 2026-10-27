@@ -1,0 +1,189 @@
+/* Чат 2.0: лента, пузыри, реакции, голосовые, поле ввода.
+   Префикс agc-. Оболочка панели (позиция, ширина) — в ChatWidget. */
+
+.agc-list{
+  position:relative;flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;
+  padding:14px 14px 10px;display:flex;flex-direction:column;
+  scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.14) transparent;
+  background:
+    radial-gradient(120% 60% at 100% 0%,rgba(124,92,255,.09),transparent 60%),
+    radial-gradient(90% 50% at 0% 100%,rgba(0,200,255,.06),transparent 60%);
+}
+.agc-list::-webkit-scrollbar{width:6px}
+.agc-list::-webkit-scrollbar-thumb{background:rgba(255,255,255,.14);border-radius:9px}
+
+.agc-empty{margin:auto;text-align:center;display:grid;gap:4px;padding:28px 16px;color:var(--color-muted,#8b93a7)}
+.agc-empty span{font-size:34px;filter:grayscale(.2)}
+.agc-empty b{color:#e8ecf6;font-size:14px}
+.agc-empty small{font-size:12px}
+
+.agc-day{display:flex;justify-content:center;margin:14px 0 8px;position:sticky;top:0;z-index:3;pointer-events:none}
+.agc-day span{font-size:11px;font-weight:700;color:#aab3c8;padding:4px 12px;border-radius:99px;background:rgba(18,21,32,.82);border:1px solid rgba(255,255,255,.08);backdrop-filter:blur(8px)}
+
+/* ---- строка сообщения ---- */
+.agc-row{display:flex;align-items:flex-end;gap:8px;margin-top:10px;position:relative;border-radius:14px;transition:background .6s}
+.agc-row.is-grouped{margin-top:3px}
+.agc-row.is-self{flex-direction:row-reverse}
+.agc-row.is-flash{background:rgba(124,92,255,.22)}
+.agc-row.is-mention .agc-bubble{box-shadow:inset 3px 0 0 var(--color-accent-2,#00c8ff)}
+.agc-ava{flex:0 0 28px;width:28px;align-self:flex-end;margin-bottom:2px}
+.agc-col{min-width:0;max-width:calc(100% - 44px);display:flex;flex-direction:column;align-items:flex-start}
+.agc-row.is-self .agc-col{align-items:flex-end}
+
+.agc-head{display:flex;align-items:center;gap:6px;margin:0 0 3px 6px;flex-wrap:wrap}
+.agc-name{font:800 11.5px/1.2 inherit;color:#f1f4fb;background:none;border:0;padding:0;cursor:pointer}
+.agc-name:hover{color:var(--color-accent-2,#00c8ff)}
+
+.agc-bubble-wrap{position:relative;max-width:100%}
+.agc-bubble{
+  position:relative;max-width:100%;padding:8px 12px 6px;border-radius:18px 18px 18px 6px;
+  color:rgba(255,255,255,.93);font-size:13.5px;line-height:1.45;word-break:break-word;
+  background:linear-gradient(180deg,rgba(255,255,255,.075),rgba(255,255,255,.045));
+  border:1px solid rgba(255,255,255,.09);box-shadow:0 8px 24px -16px rgba(0,0,0,.8);
+  cursor:default;transition:border-color .2s,transform .2s;
+}
+.agc-row.is-grouped:not(.is-self) .agc-bubble{border-top-left-radius:6px}
+.agc-row.is-self .agc-bubble{
+  border-radius:18px 18px 6px 18px;color:#fff;border-color:rgba(160,150,255,.35);
+  background:linear-gradient(135deg,rgba(46,111,255,.62),rgba(124,92,255,.62));
+  box-shadow:0 10px 28px -14px rgba(90,100,255,.75);
+}
+.agc-row.is-self.is-grouped .agc-bubble{border-top-right-radius:6px}
+.agc-bubble p{margin:0;white-space:pre-wrap}
+.agc-bubble.is-big{background:none;border-color:transparent;box-shadow:none;padding:2px 4px}
+.agc-bubble.is-big p{font-size:34px;line-height:1.15}
+.agc-bubble.is-deleted{background:transparent;border:1px dashed rgba(255,255,255,.14);box-shadow:none}
+.agc-gone{font-size:12px;font-style:italic;color:var(--color-muted,#8b93a7)}
+.agc-bubble.is-voice{padding:8px 12px 5px}
+.agc-meta{display:flex;gap:6px;justify-content:flex-end;margin-top:2px;font-size:10px;font-weight:700;color:rgba(255,255,255,.48);font-variant-numeric:tabular-nums}
+.agc-meta em{font-style:normal;opacity:.85}
+.agc-link{color:#8fd4ff;text-decoration:underline;text-underline-offset:2px;text-decoration-color:rgba(143,212,255,.4)}
+.agc-row.is-self .agc-link{color:#e0f2ff}
+.agc-mention{font-weight:800;color:#8fd4ff}
+.agc-mention.is-me{color:#0b1020;background:linear-gradient(120deg,#00c8ff,#a78bfa);padding:0 5px;border-radius:6px}
+
+/* цитата внутри пузыря */
+.agc-quote{
+  display:grid;gap:1px;width:100%;text-align:left;margin:0 0 6px;padding:5px 9px;border-radius:10px;cursor:pointer;
+  background:rgba(0,0,0,.22);border:0;border-left:3px solid var(--color-accent-2,#00c8ff);color:inherit;
+}
+.agc-quote b{font-size:11px;color:#8fd4ff;font-weight:800}
+.agc-quote span{font-size:12px;opacity:.78;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:240px}
+.agc-quote.is-gone{cursor:default;font-size:11px;opacity:.6;border-left-color:rgba(255,255,255,.3)}
+
+/* ---- панель действий над сообщением ---- */
+.agc-tools{
+  position:absolute;bottom:calc(100% - 4px);z-index:6;display:flex;align-items:center;gap:1px;padding:3px;border-radius:14px;
+  background:rgba(20,23,36,.96);border:1px solid rgba(255,255,255,.12);box-shadow:0 14px 34px -10px #000;backdrop-filter:blur(14px);
+  opacity:0;transform:translateY(4px) scale(.97);pointer-events:none;transition:opacity .15s,transform .15s;
+}
+.agc-row:not(.is-self) .agc-tools{left:0}
+.agc-row.is-self .agc-tools{right:0}
+.agc-tools.is-open,
+.agc-bubble-wrap:hover .agc-tools{opacity:1;transform:none;pointer-events:auto}
+@media (hover:none){.agc-bubble-wrap:hover .agc-tools:not(.is-open){opacity:0;pointer-events:none}}
+.agc-tools i{width:1px;height:18px;background:rgba(255,255,255,.12);margin:0 3px}
+.agc-t,.agc-t-emoji{display:grid;place-items:center;width:30px;height:30px;border-radius:9px;border:0;background:none;color:#cfd6e6;cursor:pointer;transition:background .15s,transform .15s}
+.agc-t-emoji{font-size:17px;line-height:1}
+.agc-t:hover,.agc-t-emoji:hover{background:rgba(255,255,255,.1);color:#fff}
+.agc-t-emoji:hover{transform:scale(1.18)}
+
+.agc-pop{
+  position:absolute;z-index:8;padding:6px;border-radius:14px;background:rgba(20,23,36,.98);
+  border:1px solid rgba(255,255,255,.13);box-shadow:0 18px 40px -10px #000;backdrop-filter:blur(16px);
+  animation:agc-pop .16s ease-out;
+}
+@keyframes agc-pop{from{opacity:0;transform:translateY(4px) scale(.97)}}
+.agc-pop-react{top:calc(100% + 6px);left:0;display:grid;grid-template-columns:repeat(6,1fr);gap:2px;width:max-content}
+.agc-row.is-self .agc-pop-react{left:auto;right:0}
+.agc-pop-react button{width:34px;height:34px;font-size:19px;border-radius:9px;border:0;background:none;cursor:pointer}
+.agc-pop-react button:hover{background:rgba(255,255,255,.1)}
+.agc-pop-menu{top:calc(100% + 6px);right:0;display:grid;min-width:160px}
+.agc-pop-menu button{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:9px;border:0;background:none;color:#dfe5f3;font:600 13px inherit;cursor:pointer;text-align:left}
+.agc-pop-menu button:hover{background:rgba(255,255,255,.08)}
+.agc-pop-menu button.is-danger{color:#ff8b9a}
+
+/* ---- реакции ---- */
+.agc-reacts{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
+.agc-reacts button{
+  display:inline-flex;align-items:center;gap:5px;padding:2px 9px 2px 7px;border-radius:99px;font-size:13px;cursor:pointer;
+  background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:#cfd6e6;transition:transform .15s,background .15s,border-color .15s;
+}
+.agc-reacts button b{font-size:11.5px;font-weight:800;font-variant-numeric:tabular-nums}
+.agc-reacts button:hover:not(:disabled){transform:translateY(-1px);background:rgba(255,255,255,.1)}
+.agc-reacts button.is-mine{background:rgba(124,92,255,.28);border-color:rgba(167,139,250,.7);color:#fff;box-shadow:0 0 16px -6px #a78bfa}
+.agc-reacts button:disabled{cursor:default}
+
+/* ---- голосовое ---- */
+.agc-voice{display:flex;align-items:center;gap:10px;min-width:210px;max-width:250px}
+.agc-voice-btn{flex:0 0 36px;width:36px;height:36px;border-radius:50%;display:grid;place-items:center;border:0;cursor:pointer;color:#0b1020;
+  background:linear-gradient(135deg,#00c8ff,#a78bfa);box-shadow:0 8px 18px -8px #7c5cff;transition:transform .15s}
+.agc-voice-btn:hover{transform:scale(1.07)}
+.agc-voice-btn svg{width:17px;height:17px}
+.agc-voice-wave{flex:1;height:30px;display:flex;align-items:center;gap:2px;cursor:pointer}
+.agc-voice-wave i{flex:1;min-width:2px;border-radius:2px;background:rgba(255,255,255,.3);transition:background .1s}
+.agc-voice-wave i.is-played{background:#fff}
+.agc-row:not(.is-self) .agc-voice-wave i.is-played{background:#8fd4ff}
+.agc-voice-meta{display:grid;gap:2px;justify-items:end;font-size:10.5px;font-weight:800;font-variant-numeric:tabular-nums;color:rgba(255,255,255,.7)}
+.agc-voice-meta button{border:0;border-radius:6px;padding:1px 5px;background:rgba(255,255,255,.12);color:#fff;font:800 10px inherit;cursor:pointer}
+.agc-voice.is-failed .agc-voice-meta span{color:#ff8b9a}
+
+/* ---- «к новым» ---- */
+.agc-down{
+  position:absolute;right:14px;bottom:calc(100% + 10px);z-index:5;display:inline-flex;align-items:center;gap:6px;
+  height:34px;min-width:34px;justify-content:center;padding:0 10px;border-radius:99px;cursor:pointer;color:#fff;
+  background:linear-gradient(135deg,rgba(46,111,255,.95),rgba(124,92,255,.95));border:1px solid rgba(255,255,255,.25);
+  box-shadow:0 12px 26px -10px #5b6bff;animation:agc-pop .2s ease-out;
+}
+.agc-down b{font-size:11.5px;font-weight:800}
+
+/* ---- поле ввода ---- */
+.agc-composer{position:relative;flex:0 0 auto;padding:10px 12px max(12px,env(safe-area-inset-bottom));border-top:1px solid rgba(255,255,255,.08);
+  background:linear-gradient(180deg,rgba(255,255,255,.02),rgba(0,0,0,.25))}
+.agc-notice{margin:0 0 8px;padding:7px 11px;border-radius:10px;font-size:12px;font-weight:600;color:#cfe9ff;background:rgba(0,200,255,.1);border:1px solid rgba(0,200,255,.25)}
+.agc-notice.is-error{color:#ffb3bd;background:rgba(255,80,100,.1);border-color:rgba(255,80,100,.3);cursor:pointer}
+
+.agc-context{display:flex;align-items:center;gap:10px;margin:0 0 8px;padding:7px 10px;border-radius:12px;color:#8fd4ff;
+  background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09);border-left:3px solid var(--color-accent-2,#00c8ff)}
+.agc-context div{min-width:0;flex:1;display:grid}
+.agc-context b{font-size:11.5px;font-weight:800}
+.agc-context span{font-size:12px;color:#b3bccf;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.agc-context button{width:26px;height:26px;display:grid;place-items:center;border:0;border-radius:8px;background:rgba(255,255,255,.07);color:#b3bccf;cursor:pointer}
+.agc-context button:hover{color:#fff;background:rgba(255,255,255,.14)}
+
+.agc-input{display:flex;align-items:flex-end;gap:6px;padding:5px;border-radius:18px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);transition:border-color .2s,box-shadow .2s;position:relative}
+.agc-input:focus-within{border-color:rgba(124,92,255,.7);box-shadow:0 0 0 3px rgba(124,92,255,.18)}
+.agc-input textarea{flex:1;min-width:0;resize:none;border:0;outline:0;background:none;color:#fff;font:500 16px/1.4 inherit;padding:8px 4px;max-height:120px}
+.agc-input textarea::placeholder{color:rgba(190,198,216,.55)}
+@media (min-width:640px){.agc-input textarea{font-size:14px}}
+.agc-emoji-btn{flex:0 0 36px;width:36px;height:36px;border-radius:12px;display:grid;place-items:center;border:0;background:none;color:#aab3c8;cursor:pointer}
+.agc-emoji-btn:hover,.agc-emoji-btn[aria-expanded="true"]{color:#fff;background:rgba(255,255,255,.1)}
+.agc-send{flex:0 0 38px;width:38px;height:38px;border-radius:13px;display:grid;place-items:center;border:0;cursor:pointer;color:#fff;
+  background:linear-gradient(135deg,#2e6fff,#7c5cff);box-shadow:0 10px 22px -10px #6a5cff;transition:transform .15s,opacity .2s}
+.agc-send:hover:not(:disabled){transform:scale(1.06)}
+.agc-send:disabled{opacity:.4;cursor:not-allowed}
+.agc-send.is-mic{background:rgba(255,255,255,.1);box-shadow:none;color:#dfe5f3}
+.agc-send.is-mic:hover:not(:disabled){background:linear-gradient(135deg,#00c8ff,#a78bfa);color:#0b1020}
+.agc-count{align-self:center;font-size:11px;font-weight:800;color:#aab3c8;font-variant-numeric:tabular-nums}
+.agc-count.is-max{color:#ff8b9a}
+
+.agc-emoji-grid{position:absolute;left:12px;right:12px;bottom:calc(100% - 4px);display:grid;grid-template-columns:repeat(8,1fr);gap:1px;max-height:196px;overflow-y:auto}
+.agc-emoji-grid button{aspect-ratio:1;font-size:20px;border:0;border-radius:9px;background:none;cursor:pointer}
+.agc-emoji-grid button:hover{background:rgba(255,255,255,.1);transform:scale(1.12)}
+
+/* ---- запись ---- */
+.agc-rec{display:flex;align-items:center;gap:10px;padding:5px;border-radius:18px;background:rgba(255,70,90,.09);border:1px solid rgba(255,90,110,.4)}
+.agc-rec-cancel{width:38px;height:38px;border-radius:13px;display:grid;place-items:center;border:0;background:rgba(255,255,255,.08);color:#ff9aa8;cursor:pointer}
+.agc-rec-cancel:hover{background:rgba(255,90,110,.25)}
+.agc-rec-dot{width:9px;height:9px;border-radius:50%;background:#ff4d63;box-shadow:0 0 12px #ff4d63;animation:agc-blink 1s ease-in-out infinite}
+@keyframes agc-blink{50%{opacity:.25}}
+.agc-rec b{font-size:13px;font-variant-numeric:tabular-nums;color:#fff;min-width:34px}
+.agc-rec-wave{flex:1;height:30px;display:flex;align-items:center;gap:2px;overflow:hidden}
+.agc-rec-wave i{flex:1;min-width:2px;max-height:100%;border-radius:2px;background:linear-gradient(180deg,#ff8b9a,#ff4d63);transition:height .08s}
+
+.agc-guest{margin:0;padding:11px 14px;border-radius:14px;text-align:center;font-size:12px;color:var(--color-muted,#8b93a7);background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08)}
+
+@media (prefers-reduced-motion:reduce){
+  .agc-pop,.agc-down,.agc-rec-dot{animation:none}
+  .agc-tools,.agc-reacts button,.agc-voice-btn,.agc-send{transition:none}
+}

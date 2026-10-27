@@ -13,9 +13,11 @@ export const GET = route(({ db, request }) => {
   const id = Number(request.nextUrl.searchParams.get("u") ?? 0);
   if (!Number.isInteger(id) || id <= 0) return new NextResponse(null, { status: 404 });
   const row = db.prepare("SELECT value FROM user_docs WHERE user_id = ? AND doc_key = 'animehub:profile:v1'").get(id);
+  // kind=bg — свой фон профиля вместо аватара
+  const field = request.nextUrl.searchParams.get("kind") === "bg" ? "backgroundCustom" : "avatar";
   let avatar = "";
   try {
-    avatar = str((JSON.parse(str(row?.value)) as { avatar?: unknown }).avatar);
+    avatar = str((JSON.parse(str(row?.value)) as Record<string, unknown>)[field]);
   } catch {
     avatar = "";
   }

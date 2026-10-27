@@ -4,6 +4,8 @@ import { PremiumEntry } from "@/components/PremiumEntry";
 import { PerkIcon } from "@/components/PerkIcon";
 import { PREMIUM_PERKS } from "@/lib/premium-perks";
 import { PremiumLoginNote, PremiumPlans, PromoCode } from "@/components/PremiumPlans";
+import { PremiumTrial } from "@/components/PremiumLive";
+import { PREMIUM_DROP, PREMIUM_TRIAL_DAYS } from "@/lib/premium-perks";
 
 export const metadata: Metadata = {
   title: "Premium-подписка",
@@ -31,17 +33,27 @@ const FAQ = [
   {
     question: "Что входит в Premium?",
     answer:
-      "Удвоенные XP и AC за квесты и ежедневный вход, +50% очков клану, дополнительная линия наград в боевом пропуске, эксклюзивные рамки и титулы, тег Premium. Апскейл до 2K/4K в плеере открыт после первых двух серий.",
+      "Удвоенные XP и AC за квесты и ежедневный вход, подарок месяца (монеты и заморозка серии), +50% очков клану, вторая лента боевого пропуска, три эксклюзивных фона, рамки и титулы, тег Premium и 2K/4K во всех сериях.",
+  },
+  {
+    question: "Как работает пробный период?",
+    answer:
+      "Нажмите «Попробовать 3 дня бесплатно» вверху страницы: подписка включится сразу, без оплаты и без карты. Пробный период доступен один раз на аккаунт. Если подписка уже активна, он не нужен.",
   },
 ];
 
 const COMPARE: { row: string; free: string; prem: string }[] = [
+  { row: "Просмотр, каталог, расписание", free: "✓", prem: "✓" },
   { row: "XP и AC за квесты", free: "×1", prem: "×2" },
   { row: "Награда за ежедневный вход", free: "×1", prem: "×2" },
-  { row: "Очки клану", free: "базовые", prem: "+50%" },
+  { row: "Подарок месяца", free: "—", prem: `${PREMIUM_DROP.ac} монет + заморозка` },
   { row: "Боевой пропуск", free: "бесплатная лента", prem: "обе ленты наград" },
-  { row: "Эксклюзивные рамки и титулы", free: "—", prem: "✓" },
+  { row: "Очки клану", free: "базовые", prem: "+50%" },
+  { row: "Качество 2K/4K в плеере", free: "первые 2 серии", prem: "все серии" },
+  { row: "Фоны профиля", free: "обычные", prem: "+3 эксклюзивных" },
+  { row: "Рамки и титулы", free: "каталог", prem: "+4 эксклюзивных" },
   { row: "Тег Premium у ника", free: "—", prem: "✓" },
+  { row: "Пробный период", free: `${PREMIUM_TRIAL_DAYS} дня бесплатно`, prem: "—" },
 ];
 
 export default function PremiumPage() {
@@ -124,6 +136,7 @@ export default function PremiumPage() {
             <span>🎟️ Ленты пропуска</span>
           </div>
 
+          <PremiumTrial />
           <PremiumLoginNote />
         </div>
       </section>

@@ -24,6 +24,18 @@ const KEY_RE = /^[A-Za-z0-9:._-]{3,80}$/;
 export const MAX_DOC_BYTES = 1024 * 1024;
 export const MAX_DOCS_PER_USER = 150;
 
+/**
+ * Профиль хранит аватар и свой фон картинками (до 4 и 6 МБ), поэтому ему
+ * нужен запас: с лимитом в 1 МБ он тихо не доезжал до сервера, и в рейтингах
+ * не было ни аватара, ни фона игрока.
+ */
+const PROFILE_DOC_KEY = "animehub:profile:v1";
+const MAX_PROFILE_DOC_BYTES = 16 * 1024 * 1024;
+
+export function maxDocBytes(key: string): number {
+  return key === PROFILE_DOC_KEY ? MAX_PROFILE_DOC_BYTES : MAX_DOC_BYTES;
+}
+
 export function isSyncKey(key: string): boolean {
   if (!KEY_RE.test(key)) return false;
   if (LOCAL_ONLY.has(key)) return false;

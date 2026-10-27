@@ -1,9 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
-import { Logo } from "./Logo";
+import { useCallback, useRef, useState, useSyncExternalStore } from "react";
+import Image from "next/image";
+import "./auth-dialog.css";
 import {
-  loginTelegramVerified,
   validateNickname,
   validateEmail,
 } from "@/lib/auth";
@@ -16,7 +16,10 @@ import {
   type AuthTab,
 } from "@/lib/auth-dialog";
 import { useModalBehaviour } from "@/lib/use-local-storage";
-import { adoptTelegramSession, signIn, signUp } from "@/lib/cloud";
+import { signIn, signUp } from "@/lib/cloud";
+import { TelegramBotLogin } from "./TelegramBotLogin";
+import "./telegram-login.css";
+import { SIGNUP_BONUS_AC } from "@/lib/welcome-rules";
 
 /* ------------------------------ Иконки -------------------------------- */
 
@@ -65,79 +68,45 @@ function EyeIcon({ open, className = "h-4 w-4" }: { open: boolean; className?: s
   );
 }
 
-function CheckIcon({ className = "h-3.5 w-3.5" }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 16 16" className={className} fill="none" aria-hidden>
-      <path
-        d="M13.5 4.5 6 12l-3.5-3.5"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
+/* ------------------------- Сцена справа ------------------------------- */
 
-/* --------------------------- Левая панель ----------------------------- */
-
-const PERKS = [
-  "Большая библиотека и хронология франшизы",
-  "Свои подборки, избранное и история просмотра",
-  "Premium: 4K, без рекламы и ранний доступ",
-  "Работает на телефоне, планшете и ТВ",
+const STARS = [
+  { l: "8%", t: "14%", d: "0s" },
+  { l: "90%", t: "10%", d: "1.1s" },
+  { l: "96%", t: "46%", d: "2.2s" },
+  { l: "3%", t: "52%", d: ".6s" },
+  { l: "84%", t: "88%", d: "1.7s" },
+  { l: "20%", t: "6%", d: "2.6s" },
 ];
 
-function Aside() {
+/** Шапка карточки: сцена с котом справа и приветствием слева.
+ *  Лежит внутри прокручиваемой области — ничего не перекрывает форму. */
+function Banner({ tab, bannerRef }: { tab: AuthTab; bannerRef: React.RefObject<HTMLElement | null> }) {
   return (
-    <div className="relative hidden w-[42%] shrink-0 flex-col justify-between overflow-hidden border-r border-white/8 bg-gradient-to-b from-accent/28 via-accent-2/12 to-transparent p-8 lg:flex">
-      {/* Декоративные blob'ы */}
-      <div className="pointer-events-none absolute -left-24 -top-24 h-72 w-72 rounded-full bg-accent/30 blur-3xl" aria-hidden />
-      <div className="pointer-events-none absolute -right-16 top-1/3 h-64 w-64 rounded-full bg-accent-2/25 blur-3xl" aria-hidden />
-      <div className="pointer-events-none absolute bottom-0 left-1/4 h-56 w-56 rounded-full bg-mint/12 blur-3xl" aria-hidden />
-      <span
-        className="pointer-events-none absolute inset-0 opacity-[0.05]"
-        style={{
-          backgroundImage:
-            "linear-gradient(rgba(255,255,255,.6) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.6) 1px, transparent 1px)",
-          backgroundSize: "34px 34px",
-        }}
-        aria-hidden
-      />
-
-      <div className="relative">
-        <Logo />
+    <header ref={bannerRef} className="ad-banner">
+      <span className="ad-aurora" aria-hidden />
+      {STARS.slice(0, 4).map((st) => (
+        <span key={st.l + st.t} className="ad-bstar" style={{ left: st.l, top: st.t, animationDelay: st.d }} aria-hidden />
+      ))}
+      <div className="ad-scene" aria-hidden>
+        <span className="ad-ring r1"><i /></span>
+        <span className="ad-ring r2"><i /></span>
+        <span className="ad-glow" />
+        <Image className="ad-cat" src="/cat.png" alt="" width={768} height={768} sizes="200px" priority />
       </div>
-
-      <div className="relative">
-        <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-[11px] font-extrabold uppercase tracking-[0.18em] text-white/85 ring-1 ring-white/15">
-          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-mint" />
-          Аккаунт AniGalaxy
+      <div key={tab} className="ad-btext ad-swap">
+        <span className="ad-brandline">
+          <i />
+          AniGalaxy
         </span>
-        <h2 className="mt-4 text-[26px] font-extrabold leading-tight tracking-tight text-white">
-          Смотри аниме, собирай коллекцию
+        <h2 id="auth-title" className="ad-title">
+          {tab === "login" ? "С возвращением!" : "Создай аккаунт"}
         </h2>
-        <p className="mt-3 max-w-sm text-sm leading-relaxed text-white/70">
-          Огромная библиотека, высокое качество и удобный просмотр на любом устройстве — вход
-          сохраняет подборки, избранное и статус подписки.
+        <p className="ad-sub">
+          {tab === "login" ? "Продолжи с того же места." : "Меньше минуты — и списки под рукой."}
         </p>
-
-        <ul className="mt-6 space-y-3">
-          {PERKS.map((perk) => (
-            <li key={perk} className="flex items-start gap-2.5 text-sm text-white/85">
-              <span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-accent/25 text-accent ring-1 ring-accent/45">
-                <CheckIcon />
-              </span>
-              {perk}
-            </li>
-          ))}
-        </ul>
       </div>
-
-      <p className="relative text-xs text-white/45">
-        Аккаунт хранится локально в этом браузере — серверу данные не передаются.
-      </p>
-    </div>
+    </header>
   );
 }
 
@@ -169,14 +138,12 @@ function Field({
   toggle,
 }: FieldProps) {
   return (
-    <div>
-      <label htmlFor={id} className="mb-1.5 block text-xs font-bold uppercase tracking-[0.14em] text-muted">
+    <div className="ad-field">
+      <label htmlFor={id} className="ad-label">
         {label}
       </label>
-      <div className="group relative">
-        <span className="pointer-events-none absolute left-3.5 top-3.5 text-muted transition-colors group-focus-within:text-accent">
-          {icon}
-        </span>
+      <div className="ad-wrap">
+        <span className="ad-ic">{icon}</span>
         <input
           id={id}
           type={type}
@@ -186,9 +153,6 @@ function Field({
           autoComplete={autoComplete}
           maxLength={maxLength}
           required
-          className={`h-12 w-full rounded-xl bg-white/[0.04] text-sm text-white ring-1 ring-white/10 transition placeholder:text-muted/60 focus:outline-none focus:ring-2 focus:ring-accent/55 ${
-            toggle ? "pl-11 pr-11" : "pl-11 pr-4"
-          }`}
         />
         {toggle && (
           <button
@@ -196,7 +160,7 @@ function Field({
             onClick={toggle.onToggle}
             tabIndex={-1}
             aria-label={toggle.shown ? "Скрыть пароль" : "Показать пароль"}
-            className="absolute right-3.5 top-3.5 text-muted transition hover:text-white"
+            className="ad-eye"
           >
             <EyeIcon open={toggle.shown} />
           </button>
@@ -223,7 +187,15 @@ export function AuthDialog() {
   const [confirm, setConfirm] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const tgContainerRef = useRef<HTMLDivElement | null>(null);
+  const shellRef = useRef<HTMLElement | null>(null);
+
+  /** Лёгкий параллакс: кот и плашки смещаются вслед за курсором */
+  const onMove = useCallback((event: React.PointerEvent<HTMLDivElement>) => {
+    const el = shellRef.current;
+    if (!el) return;
+    el.style.setProperty("--mx", ((event.clientX / window.innerWidth - 0.5) * 2).toFixed(3));
+    el.style.setProperty("--my", ((event.clientY / window.innerHeight - 0.5) * 2).toFixed(3));
+  }, []);
 
   /** Закрытие: сбрасываем ошибку, чтобы она не всплывала при следующем открытии */
   const close = useCallback(() => {
@@ -290,53 +262,6 @@ export function AuthDialog() {
     [nickname, email, regPassword, confirm, close],
   );
 
-  useEffect(() => {
-    if (tab !== "login" || !tgContainerRef.current) return;
-    const container = tgContainerRef.current;
-    container.innerHTML = "";
-    const botUsername = process.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME || "anigalaxy_bot";
-
-    (window as unknown as { onTelegramAuth?: (user: unknown) => void }).onTelegramAuth = async (user) => {
-      try {
-        const response = await fetch("/api/auth/telegram", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(user),
-        });
-        const data = await response.json();
-        if (!response.ok || !data.ok) {
-          setError(data.error || "Не удалось войти через Telegram");
-          return;
-        }
-        const result = loginTelegramVerified({ nickname: data.nickname, telegram: data.telegram });
-        if (!result.ok) {
-          setError(result.error);
-          return;
-        }
-        await adoptTelegramSession(data.account);
-        setError(null);
-        close();
-      } catch {
-        setError("Не удалось связаться с сервером");
-      }
-    };
-
-    const script = document.createElement("script");
-    script.async = true;
-    script.src = "https://telegram.org/js/telegram-widget.js?22";
-    script.setAttribute("data-telegram-login", botUsername);
-    script.setAttribute("data-size", "large");
-    script.setAttribute("data-radius", "12");
-    script.setAttribute("data-userpic", "false");
-    script.setAttribute("data-request-access", "write");
-    script.setAttribute("data-onauth", "onTelegramAuth(user)");
-    container.appendChild(script);
-
-    return () => {
-      container.innerHTML = "";
-    };
-  }, [tab, close]);
-
   if (!state.open) return null;
 
   const loginReady = login.trim().length > 0 && password.length > 0;
@@ -348,10 +273,14 @@ export function AuthDialog() {
 
   return (
     <div
-      className="fixed inset-0 z-[120] flex items-center justify-center sm:p-6"
+      className="ad-root fixed inset-0 z-[120] flex items-end justify-center sm:items-center sm:p-6"
       onMouseDown={onBackdrop}
+      onPointerMove={onMove}
     >
-      <div className="absolute inset-0 bg-ink/88 backdrop-blur-sm" aria-hidden />
+      <div className="ad-backdrop" aria-hidden />
+      {STARS.map((st) => (
+        <span key={st.l + st.t} className="ad-star" style={{ left: st.l, top: st.t, animationDelay: st.d }} aria-hidden />
+      ))}
 
       <div
         ref={panelRef}
@@ -359,57 +288,31 @@ export function AuthDialog() {
         aria-modal="true"
         aria-labelledby="auth-title"
         tabIndex={-1}
-        className="relative flex h-full w-full overflow-hidden bg-ink-soft outline-none sm:h-[640px] sm:max-h-[calc(100vh-3rem)] sm:w-[900px] sm:rounded-3xl sm:border sm:border-white/10 sm:shadow-[0_40px_100px_-30px_rgba(0,0,0,1)]"
+        className="ad-panel relative flex w-full flex-col outline-none"
       >
-        <Aside />
-
         {/* Форма */}
-        <div className="relative flex min-w-0 flex-1 flex-col overflow-y-auto">
-          <button
-            type="button"
-            onClick={close}
-            aria-label="Закрыть"
-            className="absolute right-4 top-4 z-10 grid h-9 w-9 place-items-center rounded-full text-muted ring-1 ring-transparent transition hover:bg-white/10 hover:text-white hover:ring-white/10"
-          >
-            <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.2">
-              <path strokeLinecap="round" d="M6 6l12 12M18 6 6 18" />
-            </svg>
-          </button>
+        <div className="ad-scroll relative flex min-w-0 flex-1 flex-col overflow-y-auto">
+          <Banner tab={tab} bannerRef={shellRef} />
 
-          <div className="flex flex-1 flex-col px-5 pb-8 pt-10 sm:px-10 sm:pt-12">
+          <div className="ad-body flex flex-1 flex-col px-5 pb-7 sm:px-9">
             {/* Переключатель «Вход / Регистрация» */}
-            <div className="grid grid-cols-2 gap-1 rounded-xl bg-white/[0.05] p-1 ring-1 ring-white/10">
+            <div className="ad-tabs" data-tab={tab}>
               {(["login", "register"] as AuthTab[]).map((value) => (
                 <button
                   key={value}
                   type="button"
                   onClick={() => switchTab(value)}
                   aria-pressed={tab === value}
-                  className={`rounded-lg px-3 py-2 text-sm font-extrabold transition ${
-                    tab === value
-                      ? "bg-gradient-to-r from-accent to-accent-2 text-white shadow-[0_8px_20px_-10px_rgba(31,123,255,1)]"
-                      : "text-muted hover:text-white"
-                  }`}
+                  className="ad-tab"
                 >
                   {value === "login" ? "Вход" : "Регистрация"}
                 </button>
               ))}
             </div>
 
-            <div className="mt-7">
-              <h2 id="auth-title" className="text-2xl font-extrabold tracking-tight text-white sm:text-[28px]">
-                {tab === "login" ? "С возвращением!" : "Создай аккаунт"}
-              </h2>
-              <p className="mt-1.5 text-sm text-muted">
-                {tab === "login"
-                  ? "Войди, чтобы продолжить с того же места."
-                  : "Это займёт меньше минуты — и все твои списки будут под рукой."}
-              </p>
-            </div>
-
             {tab === "login" ? (
               <>
-              <form onSubmit={onLogin} className="mt-6 flex flex-col gap-4">
+              <form key="l" onSubmit={onLogin} className="ad-form ad-swap mt-6 flex flex-col gap-4">
                 <Field
                   id="auth-login"
                   label="Никнейм или почта"
@@ -445,6 +348,7 @@ export function AuthDialog() {
                   className="btn-auth-submit"
                 >
                   Войти
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M5 12h14M13 6l6 6-6 6" /></svg>
                 </button>
 
                 <p className="text-center text-sm text-muted">
@@ -452,7 +356,7 @@ export function AuthDialog() {
                   <button
                     type="button"
                     onClick={() => switchTab("register")}
-                    className="font-bold text-accent transition hover:text-white"
+                    className="ad-link"
                   >
                     Зарегистрироваться
                   </button>
@@ -461,20 +365,15 @@ export function AuthDialog() {
 
               {/* Вход через Telegram: один настоящий виджет, без кастомной
                   кнопки-дублёра поверх него */}
-              <div className="mt-5">
-                <div className="flex items-center gap-3 text-[11px] font-bold uppercase tracking-[0.14em] text-muted/70">
-                  <span className="h-px flex-1 bg-white/10" aria-hidden />
-                  или
-                  <span className="h-px flex-1 bg-white/10" aria-hidden />
-                </div>
-
-                <div className="mt-3 flex min-h-[52px] items-center justify-center rounded-xl border border-white/10 bg-white/[0.03] p-3">
-                  <div ref={tgContainerRef} className="flex items-center justify-center" />
+              <div className="mt-5 ad-swap">
+                <div className="ad-or">или войти через</div>
+                <div className="ad-tg">
+                  <TelegramBotLogin onDone={close} onError={setError} />
                 </div>
               </div>
               </>
             ) : (
-              <form onSubmit={onRegister} className="mt-6 flex flex-col gap-4">
+              <form key="r" onSubmit={onRegister} className="ad-form ad-swap mt-6 flex flex-col gap-4">
                 <Field
                   id="auth-nickname"
                   label="Никнейм"
@@ -526,6 +425,10 @@ export function AuthDialog() {
                   />
                 </div>
 
+                <PasswordStrength value={regPassword} />
+
+                <p className="text-center text-xs text-[#f5b942]">Бонус за регистрацию: +{SIGNUP_BONUS_AC} монет на счёт</p>
+
                 {error && <ErrorBox message={error} />}
 
                 <button
@@ -534,6 +437,7 @@ export function AuthDialog() {
                   className="btn-auth-submit"
                 >
                   Создать аккаунт
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M5 12h14M13 6l6 6-6 6" /></svg>
                 </button>
 
                 <p className="text-center text-sm text-muted">
@@ -541,7 +445,7 @@ export function AuthDialog() {
                   <button
                     type="button"
                     onClick={() => switchTab("login")}
-                    className="font-bold text-accent transition hover:text-white"
+                    className="ad-link"
                   >
                     Войти
                   </button>
@@ -549,25 +453,57 @@ export function AuthDialog() {
               </form>
             )}
 
-            <p className="mt-5 text-center text-xs leading-relaxed text-muted/70">
+            <p className="mt-6 text-center text-xs leading-relaxed text-[#566082]">
               Аккаунт и прогресс сохраняются на сервере AniGalaxy и доступны на любом устройстве
               после входа. Входя или регистрируясь, вы принимаете{" "}
-              <a href="/terms" target="_blank" rel="noopener" className="underline hover:text-white">соглашение</a> и{" "}
-              <a href="/privacy" target="_blank" rel="noopener" className="underline hover:text-white">политику конфиденциальности</a>.
+              <a href="/terms" target="_blank" rel="noopener" className="underline decoration-white/20 underline-offset-2 hover:text-white">соглашение</a> и{" "}
+              <a href="/privacy" target="_blank" rel="noopener" className="underline decoration-white/20 underline-offset-2 hover:text-white">политику конфиденциальности</a>.
             </p>
           </div>
         </div>
+
+        <button
+            type="button"
+            onClick={close}
+            aria-label="Закрыть"
+            className="ad-x"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+              <path strokeLinecap="round" d="M6 6l12 12M18 6 6 18" />
+            </svg>
+          </button>
       </div>
+    </div>
+  );
+}
+
+function PasswordStrength({ value }: { value: string }) {
+  if (!value) return null;
+  let score = 0;
+  if (value.length >= 6) score++;
+  if (value.length >= 10) score++;
+  if (/[A-ZА-Я]/.test(value) && /[a-zа-я]/.test(value)) score++;
+  if (/\d/.test(value) && /[^\w\s]/.test(value)) score++;
+  const color = ["#ff5a7d", "#ffa63d", "#3ddc97", "#00c8ff"][Math.max(0, score - 1)];
+  const label = ["Слишком короткий", "Простой", "Хороший", "Надёжный", "Отличный"][score];
+  return (
+    <div style={{ ["--c" as string]: color }}>
+      <div className="ad-strength" aria-hidden>
+        {[0, 1, 2, 3].map((i) => (
+          <i key={i} className={i < score ? "on" : ""} />
+        ))}
+      </div>
+      <p className="mt-1.5 text-xs font-semibold" style={{ color: score ? color : "#8c97b3" }}>
+        {label}
+      </p>
     </div>
   );
 }
 
 function ErrorBox({ message }: { message: string }) {
   return (
-    <div className="flex items-start gap-2.5 rounded-xl border border-accent-2/35 bg-accent-2/10 px-3.5 py-3 text-sm text-accent-2 animate-fade-in">
-      <span className="mt-0.5 grid h-4 w-4 shrink-0 place-items-center rounded-full bg-accent-2/25 text-xs font-bold">
-        !
-      </span>
+    <div className="ad-err" role="alert">
+      <b>!</b>
       <p>{message}</p>
     </div>
   );

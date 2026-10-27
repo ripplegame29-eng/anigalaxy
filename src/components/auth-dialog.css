@@ -1,0 +1,136 @@
+/* Окно входа и регистрации — AniGalaxy. Все классы с префиксом ad-. */
+@keyframes ad-pop{from{opacity:0;transform:translateY(26px) scale(.965)}to{opacity:1;transform:none}}
+@keyframes ad-fade{from{opacity:0}to{opacity:1}}
+@keyframes ad-rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes ad-swap{from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:none}}
+@keyframes ad-drift1{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(60px,40px) scale(1.18)}}
+@keyframes ad-drift2{0%,100%{transform:translate(0,0) scale(1.1)}50%{transform:translate(-50px,-36px) scale(.92)}}
+@keyframes ad-spin{to{transform:rotate(360deg)}}
+@keyframes ad-float{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-9px) rotate(4deg)}}
+@keyframes ad-twinkle{0%,100%{opacity:.15;transform:scale(.6)}50%{opacity:.9;transform:scale(1)}}
+@keyframes ad-fill{from{width:0}to{width:var(--w)}}
+@keyframes ad-shine{0%{transform:translateX(-120%) skewX(-18deg)}60%,100%{transform:translateX(260%) skewX(-18deg)}}
+@keyframes ad-shake{20%{transform:translateX(-6px)}40%{transform:translateX(5px)}60%{transform:translateX(-3px)}80%{transform:translateX(2px)}}
+
+.ad-root{animation:ad-fade .25s ease both}
+.ad-backdrop{position:absolute;inset:0;overflow:hidden;background:rgba(4,5,12,.88);backdrop-filter:blur(14px) saturate(1.3);-webkit-backdrop-filter:blur(14px) saturate(1.3)}
+.ad-backdrop::before,.ad-backdrop::after{content:"";position:absolute;width:55vmax;height:55vmax;border-radius:50%;filter:blur(90px);opacity:.5}
+.ad-backdrop::before{left:-18vmax;top:-22vmax;background:radial-gradient(circle,#1f7bff,transparent 65%);animation:ad-drift1 16s ease-in-out infinite}
+.ad-backdrop::after{right:-20vmax;bottom:-26vmax;background:radial-gradient(circle,#8b5cf6,transparent 65%);animation:ad-drift2 20s ease-in-out infinite}
+
+/* панель + вращающаяся градиентная рамка */
+.ad-panel{position:relative;isolation:isolate;animation:ad-pop .55s cubic-bezier(.2,.9,.25,1) both;background:linear-gradient(180deg,#0d1020,#080a14)}
+@media (min-width:640px){
+  .ad-panel{border:0!important;box-shadow:0 50px 120px -30px #000,0 0 0 1px rgba(255,255,255,.07)!important}
+  .ad-panel::before{content:"";position:absolute;inset:-1px;z-index:-1;border-radius:inherit;padding:1.5px;
+    background:conic-gradient(from var(--ad-a,0deg),rgba(31,123,255,.0),rgba(31,123,255,.9) 12%,rgba(0,200,255,.7) 22%,rgba(139,92,246,.0) 40%,rgba(139,92,246,.7) 70%,rgba(31,123,255,0));
+    -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0);
+    animation:ad-ring 9s linear infinite}
+}
+@property --ad-a{syntax:"<angle>";inherits:false;initial-value:0deg}
+@keyframes ad-ring{to{--ad-a:360deg}}
+
+/* ---------- карточка и шапка со сценой ---------- */
+.ad-panel{width:100%;max-width:460px;max-height:min(760px,calc(100dvh - 40px));border-radius:30px;background:linear-gradient(180deg,#0d1124,#070916);z-index:1}
+.ad-scroll{scrollbar-width:none;border-radius:inherit}
+.ad-scroll::-webkit-scrollbar{display:none}
+.ad-star{position:absolute;width:4px;height:4px;border-radius:50%;background:#fff;box-shadow:0 0 10px #9fd0ff;animation:ad-twinkle 3.4s ease-in-out infinite;pointer-events:none}
+
+.ad-banner{--mx:0;--my:0;position:relative;flex:none;height:176px;overflow:hidden;padding:26px 24px 0 28px;
+  background:radial-gradient(70% 120% at 85% 60%,rgba(52,92,255,.55),transparent 70%),radial-gradient(60% 90% at 0 0,rgba(139,92,246,.4),transparent 70%),linear-gradient(180deg,#0e1540,#0a0e28)}
+.ad-banner::after{content:"";position:absolute;left:0;right:0;bottom:0;height:60px;pointer-events:none;background:linear-gradient(180deg,transparent,#0b0f22)}
+.ad-aurora{position:absolute;inset:-12%;pointer-events:none;background:radial-gradient(38% 50% at 78% 72%,rgba(0,200,255,.3),transparent 72%),radial-gradient(40% 50% at 18% 18%,rgba(183,155,255,.28),transparent 72%);animation:ad-drift2 14s ease-in-out infinite}
+.ad-bstar{position:absolute;width:3px;height:3px;border-radius:50%;background:#fff;box-shadow:0 0 8px #9fd0ff;animation:ad-twinkle 3.4s ease-in-out infinite}
+.ad-scene{position:absolute;right:10px;bottom:0;width:190px;height:176px}
+.ad-ring{position:absolute;left:50%;top:58%;border-radius:50%;border:1px solid rgba(150,190,255,.25);animation:ad-spin var(--t) linear infinite}
+.ad-ring i{position:absolute;left:50%;top:-4px;width:8px;height:8px;margin-left:-4px;border-radius:50%;background:var(--c);box-shadow:0 0 12px 2px var(--c)}
+.ad-ring.r1{--t:18s;--c:#6fb4ff;width:170px;height:170px;margin:-85px 0 0 -85px}
+.ad-ring.r2{--t:30s;--c:#b79bff;width:250px;height:250px;margin:-125px 0 0 -125px;animation-direction:reverse;border-style:dashed;border-color:rgba(183,155,255,.2)}
+.ad-glow{position:absolute;left:50%;top:58%;width:170px;height:170px;margin:-85px 0 0 -85px;border-radius:50%;background:radial-gradient(circle,rgba(80,150,255,.6),transparent 66%);filter:blur(12px);animation:ad-breathe 5s ease-in-out infinite}
+@keyframes ad-breathe{50%{transform:scale(1.2);opacity:.7}}
+.ad-cat{position:absolute;left:50%;bottom:-4px;width:176px;height:176px;max-width:none;margin-left:-88px;object-fit:contain;filter:drop-shadow(0 14px 18px rgba(8,16,80,.7));
+  animation:ad-bob 6s ease-in-out infinite;translate:calc(var(--mx)*8px) calc(var(--my)*6px);transition:translate .3s ease-out}
+@keyframes ad-bob{50%{transform:translateY(-8px)}}
+.ad-btext{position:relative;z-index:2;max-width:62%}
+.ad-brandline{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;font-weight:700;color:#cfe0ff;padding:5px 11px 5px 9px;border-radius:99px;background:rgba(255,255,255,.08);box-shadow:inset 0 0 0 1px rgba(255,255,255,.13)}
+.ad-brandline i{width:6px;height:6px;border-radius:50%;background:#3ddc97;box-shadow:0 0 0 0 rgba(61,220,151,.6);animation:ad-ping 2s infinite}
+@keyframes ad-ping{70%{box-shadow:0 0 0 8px rgba(61,220,151,0)}100%{box-shadow:0 0 0 0 rgba(61,220,151,0)}}
+.ad-title{margin-top:14px;font-size:25px;line-height:1.08;font-weight:800;letter-spacing:-.03em;color:#fff}
+.ad-sub{margin-top:7px;font-size:13.5px;line-height:1.4;color:#9aa8cc}
+.ad-body{position:relative;z-index:3;margin-top:-22px}
+.ad-tabs{box-shadow:inset 0 0 0 1px rgba(255,255,255,.1),0 16px 30px -14px rgba(0,0,0,.9);background:#0c1124!important}
+.ad-form{margin-top:22px!important}
+.ad-x{top:12px;right:12px}
+
+@media (max-width:639px){
+  .ad-panel{max-width:none;max-height:94dvh;border-radius:28px 28px 0 0}
+  .ad-banner{height:156px;padding:22px 18px 0 22px}
+  .ad-scene{right:6px;width:160px;height:156px}
+  .ad-cat{width:150px;height:150px;margin-left:-75px}
+  .ad-ring.r1{width:140px;height:140px;margin:-70px 0 0 -70px}
+  .ad-ring.r2{width:210px;height:210px;margin:-105px 0 0 -105px}
+  .ad-title{font-size:24px;margin-top:12px}
+  .ad-btext{max-width:64%}
+  .ad-body{padding-bottom:calc(22px + env(safe-area-inset-bottom))}
+}
+@media (max-height:540px){.ad-banner{height:128px}.ad-title{font-size:21px;margin-top:8px}.ad-sub{display:none}.ad-cat{width:120px;height:120px;margin-left:-60px}.ad-panel{max-height:calc(100dvh - 12px)}}
+
+/* ---------- форма ---------- */
+.ad-tabs{position:relative;display:grid;grid-template-columns:1fr 1fr;padding:4px;border-radius:15px;background:rgba(255,255,255,.04);box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}
+.ad-tabs::before{content:"";position:absolute;top:4px;bottom:4px;left:4px;width:calc(50% - 4px);border-radius:11px;
+  background:linear-gradient(135deg,#2b86ff,#1565e8 55%,#06b6e8);box-shadow:0 10px 24px -10px rgba(31,123,255,1),inset 0 1px 0 rgba(255,255,255,.35);
+  transition:transform .45s cubic-bezier(.3,1.3,.5,1)}
+.ad-tabs[data-tab="register"]::before{transform:translateX(100%)}
+.ad-tab{position:relative;z-index:1;height:40px;border:0;background:none;border-radius:11px;font:800 14px/1 inherit;color:#8c97b3;cursor:pointer;transition:color .25s}
+.ad-tab[aria-pressed="true"]{color:#fff}
+.ad-tab:not([aria-pressed="true"]):hover{color:#fff}
+.ad-swap{animation:ad-swap .45s cubic-bezier(.2,.9,.3,1) both}
+
+.ad-field{position:relative}
+.ad-label{display:block;margin:0 0 7px 2px;font-size:12.5px;font-weight:700;color:#aab4cf}
+.ad-wrap{position:relative;border-radius:15px;padding:1.5px;background:rgba(255,255,255,.09);transition:background .3s,box-shadow .3s}
+.ad-wrap:focus-within{background:linear-gradient(135deg,#2b86ff,#00c8ff 55%,#8b5cf6);box-shadow:0 0 0 4px rgba(31,123,255,.14),0 12px 30px -14px rgba(31,123,255,.9)}
+.ad-wrap input{display:block;width:100%;height:50px;border:0;outline:0;border-radius:13.5px;background:#0b0f20;color:#fff;font-size:15px;padding:0 46px}
+.ad-wrap input::placeholder{color:#566082}
+.ad-wrap input:-webkit-autofill{-webkit-text-fill-color:#fff;box-shadow:0 0 0 40px #0b0f20 inset}
+.ad-ic{position:absolute;left:15px;top:50%;margin-top:-9px;color:#667194;transition:color .25s,transform .35s cubic-bezier(.3,1.6,.5,1);pointer-events:none}
+.ad-ic svg{width:18px;height:18px;display:block}
+.ad-wrap:focus-within .ad-ic{color:#6fb4ff;transform:scale(1.12)}
+.ad-eye{position:absolute;right:8px;top:50%;margin-top:-17px;width:34px;height:34px;display:grid;place-items:center;border:0;background:none;border-radius:10px;color:#667194;cursor:pointer;transition:color .2s,background .2s}
+.ad-eye:hover{color:#fff;background:rgba(255,255,255,.08)}
+.ad-eye svg{width:18px;height:18px}
+
+.ad-strength{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-top:9px}
+.ad-strength i{height:4px;border-radius:4px;background:rgba(255,255,255,.1);transition:background .3s,box-shadow .3s}
+.ad-strength i.on{background:var(--c);box-shadow:0 0 10px var(--c)}
+
+.ad-form .btn-auth-submit{position:relative;overflow:hidden;height:52px;border-radius:15px;font-size:15px;letter-spacing:.01em;gap:10px;border:0;
+  background:linear-gradient(135deg,#2b86ff,#1565e8 50%,#06b6e8);box-shadow:0 18px 36px -14px rgba(31,123,255,1),inset 0 1px 0 rgba(255,255,255,.4);transition:transform .25s,box-shadow .25s,filter .25s,opacity .25s}
+.ad-form .btn-auth-submit::after{content:"";position:absolute;top:0;bottom:0;width:38%;left:0;pointer-events:none;background:linear-gradient(100deg,transparent,rgba(255,255,255,.4),transparent);animation:ad-shine 3.6s ease-in-out infinite}
+.ad-form .btn-auth-submit:disabled{animation:none}
+.ad-form .btn-auth-submit:disabled::after{display:none}
+.ad-form .btn-auth-submit svg{width:18px;height:18px;transition:transform .3s}
+.ad-form .btn-auth-submit:hover:not(:disabled) svg{transform:translateX(4px)}
+
+.ad-or{display:flex;align-items:center;gap:12px;font-size:12px;font-weight:600;color:#566082}
+.ad-or::before,.ad-or::after{content:"";height:1px;flex:1;background:linear-gradient(90deg,transparent,rgba(255,255,255,.14))}
+.ad-or::after{transform:scaleX(-1)}
+.ad-tg{margin-top:12px;display:flex;min-height:54px;align-items:center;justify-content:center;padding:10px;border-radius:15px;background:rgba(255,255,255,.035);box-shadow:inset 0 0 0 1px rgba(255,255,255,.09);transition:box-shadow .25s,background .25s}
+.ad-tg:hover{background:rgba(255,255,255,.055);box-shadow:inset 0 0 0 1px rgba(124,192,255,.35)}
+.ad-link{background:none;border:0;padding:0;font-weight:700;color:#6fb4ff;cursor:pointer;transition:color .2s}
+.ad-link:hover{color:#fff}
+.ad-err{display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border-radius:14px;font-size:13.5px;color:#ff9bb0;background:rgba(255,70,110,.1);box-shadow:inset 0 0 0 1px rgba(255,90,125,.35);animation:ad-shake .45s both}
+.ad-err b{width:18px;height:18px;border-radius:50%;flex:none;display:grid;place-items:center;font-size:12px;background:rgba(255,90,125,.3);margin-top:1px}
+.ad-x{position:absolute;right:14px;top:14px;z-index:6;z-index:5;width:38px;height:38px;border-radius:50%;display:grid;place-items:center;border:0;background:rgba(255,255,255,.05);color:#8c97b3;cursor:pointer;transition:transform .35s cubic-bezier(.3,1.6,.5,1),background .2s,color .2s}
+.ad-x:hover{background:rgba(255,255,255,.12);color:#fff;transform:rotate(90deg)}
+.ad-x svg{width:16px;height:16px}
+
+@media (max-width:639px){
+  .ad-panel{animation:ad-sheet .5s cubic-bezier(.2,.9,.25,1) both}
+  .ad-wrap input{font-size:16px}
+}
+@keyframes ad-sheet{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){
+  .ad-root *,.ad-root *::before,.ad-root *::after{animation-duration:.01ms!important;animation-iteration-count:1!important}
+}
+

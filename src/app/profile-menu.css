@@ -303,3 +303,44 @@
   .pm-sep{margin:6px 8px;opacity:.6}
   .pm-note{font-size:11px;line-height:1.35;padding:0 8px}
 }
+
+/* ------------------------------------------------------------------ *
+ * Разделы меню профиля
+ *
+ * Одиннадцать одинаковых строк подряд читались сплошным списком.
+ * Заголовок задаёт порядок чтения, а оттенок иконок отделяет раздел от
+ * раздела — тот же приём, что в меню на телефоне.
+ * ------------------------------------------------------------------ */
+.pm-gh{
+  margin:16px 10px 7px;
+  font:800 10.5px/1 var(--font-body);
+  letter-spacing:.16em;
+  text-transform:uppercase;
+  color:#6b7794;
+}
+.pm-list>.pm-gh:first-child{margin-top:4px}
+
+/* Прогресс — холодный циан, «Ещё» — приглушённый индиго */
+.pm-it[data-g="2"] .pm-ico{
+  color:#5fe3f0;
+  background:rgba(34,211,238,.12);
+  border-color:rgba(34,211,238,.26);
+}
+.pm-it[data-g="3"] .pm-ico{
+  color:#a3b2ff;
+  background:rgba(124,140,255,.13);
+  border-color:rgba(124,140,255,.28);
+}
+.pm-it[data-g="1"] .pm-ico{
+  color:#8fc2ff;
+  background:rgba(43,127,255,.13);
+  border-color:rgba(43,127,255,.28);
+}
+/* Premium и выход держат свой цвет поверх группового */
+.pm-prem .pm-ico,.pm-out .pm-ico{color:inherit}
+
+/* Нажатие пальцем: строка слегка проседает — на телефоне это
+   единственная обратная связь, подсветки по наведению там нет */
+@media (hover:none){
+  .pm-link:active{transform:scale(.985)}
+}

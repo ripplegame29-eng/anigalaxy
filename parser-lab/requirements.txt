@@ -1,0 +1,4 @@
+anime-parsers-ru>=1.18
+anicli-api>=0.12
+anime-dl-core>=0.5
+requests>=2.31

@@ -24,7 +24,6 @@ const ICON: Record<SectionId, string> = {
   favorites: "heart",
   collections: "layers",
   achievements: "trophy",
-  gifts: "gift",
   history: "clock",
   comments: "chat",
   blacklist: "ban",

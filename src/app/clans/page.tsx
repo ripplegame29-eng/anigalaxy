@@ -5,7 +5,7 @@ import { ClanApp } from "@/components/clan2/ClanApp";
 export const metadata: Metadata = {
   title: "Кланы",
   description:
-    "Кланы AniGalaxy: босс недели, общий сундук и казна, роли и управление составом, карта территорий и осады соперников. Всё считается из реальной активности на сайте.",
+    "Кланы AniGalaxy: босс недели, общий сундук и казна, роли и управление составом, карта территорий и осады соперников, недельные лиги и кристаллы.",
 };
 
 export default function ClansPage() {

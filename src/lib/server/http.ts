@@ -6,6 +6,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 
 import { dbAvailable, getDb, type Database } from "./db";
+import { touchActivity } from "./analytics";
 import { logError } from "./errors";
 import { SESSION_COOKIE, SESSION_TTL_MS, sessionUser, type UserRow } from "./users";
 
@@ -80,6 +81,7 @@ export function route(
     if (!dbAvailable()) return json({ error: "База данных недоступна", code: "no_db" }, 503);
     const db = getDb();
     const user = sessionUser(db, request.cookies.get(SESSION_COOKIE)?.value);
+    if (user) touchActivity(db, user.id);
     if (opts.auth && !user) return json({ error: "Нужен вход", code: "unauthorized" }, 401);
     try {
       const params = context?.params ? await context.params : {};

@@ -132,8 +132,9 @@ test("лидерборд: прогресс из синхронизации по�
   const c = await signUp("BoardC");
   const progress = JSON.stringify({ schema: 1, progress: { xpTotal: 700, level: 3, acBalance: 10 } });
   await api("sync").POST(makeReq("POST", "/api/sync", { docs: [{ key: "animehub:progress:v1", value: progress }] }, c));
+  // Версия 2: после первого сохранения сервер выдал бонус за регистрацию
   const progress2 = JSON.stringify({ schema: 1, progress: { xpTotal: 1100, level: 3, acBalance: 10 } });
-  await api("sync").POST(makeReq("POST", "/api/sync", { docs: [{ key: "animehub:progress:v1", value: progress2, baseVersion: 1 }] }, c));
+  await api("sync").POST(makeReq("POST", "/api/sync", { docs: [{ key: "animehub:progress:v1", value: progress2, baseVersion: 2 }] }, c));
 
   const all = await (await api("leaderboard").GET(makeReq("GET", "/api/leaderboard?period=all", undefined, c))).json();
   assert.ok(all.rows.some((r) => r.nickname === "BoardC" && r.points === 1100));
@@ -146,7 +147,7 @@ test("лидерборд: прогресс из синхронизации по�
   assert.deepEqual((await rewards.json()).rewards, []);
 });
 
-test("кланы: создание, вступление, вклад, мой клан, война", async () => {
+test("кланы: создание, вступление, мой клан, сезон, доверие только серверу", async () => {
   const lead = await signUp("ClanLead");
   const mate = await signUp("ClanMate");
   const lead2 = await signUp("ClanLead2");
@@ -158,24 +159,22 @@ test("кланы: создание, вступление, вклад, мой к�
   const second = await (await api("clans").POST(makeReq("POST", "/api/clans", { name: "Rival Clan", tag: "RIV" }, lead2))).json();
 
   assert.equal((await act(mate, { action: "join", clanId })).status, 200);
-  assert.equal((await act(mate, { action: "contribute", xp: 250, ac: 40 })).status, 200);
+  // опыт со слов браузера больше не принимается
+  assert.equal((await act(mate, { action: "contribute", xp: 250, ac: 40 })).status, 400);
   assert.equal((await act(mate, { action: "kick", userId: 1 })).status, 403);
   assert.equal((await act(mate, { action: "fly" })).status, 400);
 
   const mine = await (await api("clans/me").GET(makeReq("GET", "/api/clans/me", undefined, mate))).json();
-  assert.equal(mine.clan.xp, 250);
+  assert.equal(mine.clan.xp, 0);
+  assert.equal(mine.points, 0);
+  assert.equal(mine.goals.targets.length, 3);
   assert.equal(mine.members.length, 2);
 
   const list = await (await api("clans").GET(makeReq("GET", "/api/clans?q=api"))).json();
   assert.equal(list.clans.length, 1);
 
-  await act(lead, { action: "contribute", ac: 500 });
-  await act(lead2, { action: "contribute", ac: 500 });
-  const war = await act(lead, { action: "declare_war", clanId: second.clan.id, stake: 200 });
-  assert.equal(war.status, 200);
-  assert.equal((await act(mate, { action: "war_score", points: 120 })).status, 200);
-  const warState = await (await api("clans/me").GET(makeReq("GET", "/api/clans/me", undefined, lead))).json();
-  assert.equal(warState.war.scoreA, 120);
+  assert.equal((await act(lead, { action: "declare_war", clanId: second.clan.id, stake: 200 })).status, 400);
+  assert.equal((await act(mate, { action: "buy", itemId: "banner-dawn", currency: "treasury" })).status, 400);
 });
 
 test("комментарии, друзья, оценки, уведомления через API", async () => {
