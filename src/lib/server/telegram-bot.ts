@@ -199,7 +199,31 @@ export function startEpisodeWatcher(): void {
   const g = globalThis as { __agEpWatcher?: boolean };
   if (g.__agEpWatcher || !process.env.TELEGRAM_BOT_TOKEN) return;
   g.__agEpWatcher = true;
+  setTimeout(() => void configureBot().catch((e) => console.error("[tgbot] настройка:", e)), 15_000);
   const run = () => void checkNewEpisodes().catch((e) => console.error("[tgbot] серии:", e));
   setTimeout(run, 2 * 60_000);
   setInterval(run, 30 * 60_000);
+}
+
+/** Список команд, описание и кнопка меню бота: ставится сам при запуске сайта */
+export async function configureBot(): Promise<void> {
+  if (!process.env.TELEGRAM_BOT_TOKEN) return;
+  const results = await Promise.all([
+    tg("setMyCommands", {
+      commands: [
+        { command: "menu", description: "Меню" },
+        { command: "search", description: "Найти аниме по названию" },
+        { command: "me", description: "Профиль, уровень и баланс" },
+        { command: "notify", description: "Уведомления о новых сериях" },
+        { command: "help", description: "Что умеет бот" },
+      ],
+    }),
+    tg("setMyDescription", {
+      description: "Бот AniGalaxy: вход на сайт, поиск аниме, профиль и уведомления о новых сериях.",
+    }),
+    tg("setMyShortDescription", { short_description: "Поиск аниме, профиль и новые серии на AniGalaxy" }),
+    tg("setChatMenuButton", { menu_button: { type: "commands" } }),
+  ]);
+  const bad = results.find((r) => !r.ok);
+  if (bad) console.error("[tgbot] настройка бота:", bad.description);
 }
