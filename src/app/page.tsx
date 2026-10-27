@@ -13,7 +13,9 @@ import { TelegramCta } from "@/components/TelegramCta";
 import { HomeTopUsers } from "@/components/HomeTopUsers";
 
 /** Страница кэшируется на 5 минут — Kodik обновляет данные нечасто */
-export const revalidate = 300;
+// Главная тянет внешние каталоги (Kodik, манга): при сборке на сервере они бывают медленными,
+// поэтому страница строится по запросу, а данные кэшируются внутри.
+export const dynamic = "force-dynamic";
 
 /* Аниме-жанры (Shikimori), а не киношные: названия как в фильтре каталога */
 const GENRES = [
