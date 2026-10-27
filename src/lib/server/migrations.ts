@@ -590,4 +590,21 @@ export const MIGRATIONS: Migration[] = [
       ALTER TABLE users ADD COLUMN telegram_username TEXT NOT NULL DEFAULT '';
     `,
   },
+  {
+    version: 18,
+    name: "tg_bot_notify",
+    sql: `
+      -- Уведомления бота о новых сериях: выключатель и последняя известная серия.
+      CREATE TABLE tg_notify (
+        user_id INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+        enabled INTEGER NOT NULL DEFAULT 1
+      );
+      CREATE TABLE tg_episodes (
+        user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        title_id TEXT NOT NULL,
+        last_ep INTEGER NOT NULL DEFAULT 0,
+        PRIMARY KEY (user_id, title_id)
+      );
+    `,
+  },
 ];

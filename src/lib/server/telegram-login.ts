@@ -17,6 +17,7 @@ import { randomBytes, randomInt } from "node:crypto";
 import { getDb } from "./db";
 import { createSession, upsertTelegramUser, type UserRow } from "./users";
 import { num, str, type Database } from "./sqlite";
+import { handleBotMessage, handleBotCallback } from "./telegram-bot";
 
 export const LOGIN_TTL_MS = 5 * 60 * 1000;
 const POLLER_IDLE_MS = 10 * 60 * 1000;
@@ -52,7 +53,7 @@ let transport: Transport = defaultTransport;
 export function setTelegramTransport(next: Transport | null): void {
   transport = next ?? defaultTransport;
 }
-const tg = (method: string, body: Record<string, unknown>, timeoutMs = 15_000) => transport(method, body, timeoutMs);
+export const tg = (method: string, body: Record<string, unknown>, timeoutMs = 15_000) => transport(method, body, timeoutMs);
 
 export const botUsername = (): string =>
   (process.env.TELEGRAM_BOT_USERNAME || process.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME || "").replace(/^@/, "");
@@ -146,16 +147,14 @@ export async function handleUpdate(db: Database, update: TgUpdate, now = Date.no
     const text = m.text.trim();
     const hit = /^\/start(?:@\w+)?\s+(?:login|link)_([A-Za-z0-9_-]{16,64})$/.exec(text);
     if (hit) return askConfirm(db, hit[1], m.from, m.chat.id, now);
-    if (text.startsWith("/start") || text === "/help") {
-      await say(
-        m.chat.id,
-        "Привет! Это бот AniGalaxy. Он нужен для входа на сайт.\n\nОткройте сайт, нажмите «Войти через Telegram» — и вернитесь сюда по кнопке.",
-      );
-    }
+    await handleBotMessage(db, text, m.from, m.chat.id);
     return;
   }
   const cb = update.callback_query;
-  if (cb?.data) return answerCallback(db, cb, now);
+  if (cb?.data) {
+    if (/^(ok|no):/.test(cb.data)) return answerCallback(db, cb, now);
+    return handleBotCallback(db, cb);
+  }
 }
 
 async function askConfirm(db: Database, token: string, from: TgFrom, chatId: number, now: number): Promise<void> {
