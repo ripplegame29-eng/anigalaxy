@@ -1295,3 +1295,13 @@
     transition: none !important;
   }
 }
+
+/* Зритель в комнате: перемотка и скорость отданы ведущему */
+.wt-guest .ag-seek { pointer-events: none; }
+.wt-guest button[aria-label="Скорость"],
+.wt-guest button[aria-label="Закладка на этот момент"] { opacity: .35; pointer-events: none; }
+.wt-note {
+  position: absolute; left: 50%; top: 14px; transform: translateX(-50%); z-index: 60; pointer-events: none;
+  padding: 8px 14px; border-radius: 12px; font-size: 12px; font-weight: 800; color: #fff;
+  background: rgba(10, 12, 20, .88); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .14);
+}

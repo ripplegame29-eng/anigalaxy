@@ -32,6 +32,10 @@ export interface WtRoomInfo {
   createdAt: number;
   viewers: number;
   limit: number;
+  /** clientId того, кто управляет комнатой (создатель, а если он вышел — самый ранний участник) */
+  host: string;
+  /** Скорость воспроизведения, заданная ведущим */
+  rate: number;
 }
 
 export interface WtMemberInfo {
@@ -59,6 +63,7 @@ export interface RoomState {
   episode: number;
   position: number;
   playing: boolean;
+  rate?: number;
 }
 
 const CLIENT_KEY = "ag:wt:client";

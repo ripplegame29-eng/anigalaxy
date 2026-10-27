@@ -26,6 +26,7 @@ interface Incoming {
   playing: boolean;
   /** Серия не менялась — применяем сразу, иначе после загрузки новой */
   sameEpisode: boolean;
+  rate: number;
 }
 
 export function RoomAltPlayer({
@@ -34,6 +35,7 @@ export function RoomAltPlayer({
   startEpisode,
   clientId,
   sync,
+  hostName,
   onPublish,
 }: {
   title: string;
@@ -41,6 +43,8 @@ export function RoomAltPlayer({
   startEpisode: number;
   clientId: string;
   sync: WtRoomInfo;
+  /** Ник ведущего — для подсказки зрителям */
+  hostName?: string;
   onPublish: (state: RoomState) => void;
 }) {
   const [episode, setEpisode] = useState(startEpisode);
@@ -55,13 +59,25 @@ export function RoomAltPlayer({
   const quietUntil = useRef(0);
   const lastPublish = useRef(0);
   /** Что применить, когда у видео появятся метаданные новой серии */
-  const pendingRef = useRef<{ position: number; playing: boolean } | null>(null);
+  const pendingRef = useRef<{ position: number; playing: boolean; rate?: number } | null>(null);
   const appliedRef = useRef(0);
   const onPublishRef = useRef(onPublish);
+  /** Управляет создатель комнаты (или, если он вышел, самый ранний участник) */
+  const isHost = sync.host === clientId;
+  const hostRef = useRef(isHost);
+  /** Последнее состояние комнаты: к нему возвращаем зрителя, если он нажал лишнее */
+  const roomRef = useRef({ position: 0, playing: false, rate: 1, at: 0 });
+  const [note, setNote] = useState("");
+  const noteTimer = useRef(0);
+
+  useEffect(() => {
+    roomRef.current = { position: sync.position, playing: sync.playing, rate: sync.rate || 1, at: Date.now() };
+  }, [sync.at, sync.position, sync.playing, sync.rate]);
 
   useEffect(() => {
     episodeRef.current = episode;
     onPublishRef.current = onPublish;
+    hostRef.current = isHost;
   });
 
   // Новое состояние комнаты. Первое применяем всегда (встаём туда, где
@@ -69,7 +85,7 @@ export function RoomAltPlayer({
   if (sync.at !== seenAt) {
     setSeenAt(sync.at);
     if (seenAt === 0 || sync.by !== clientId) {
-      setIncoming({ at: sync.at, position: sync.position, playing: sync.playing, sameEpisode: sync.episode === episode });
+      setIncoming({ at: sync.at, position: sync.position, playing: sync.playing, sameEpisode: sync.episode === episode, rate: sync.rate || 1 });
       if (sync.episode !== episode) setEpisode(sync.episode);
     }
   }
@@ -95,7 +111,7 @@ export function RoomAltPlayer({
 
   const publish = (override?: Partial<RoomState>) => {
     const el = video();
-    if (!el) return;
+    if (!el || !hostRef.current) return;
     if (!override && Date.now() < quietUntil.current) return;
     const now = Date.now();
     if (!override && now - lastPublish.current < 250) return;
@@ -104,11 +120,13 @@ export function RoomAltPlayer({
       episode: override?.episode ?? episodeRef.current,
       position: override?.position ?? el.currentTime ?? 0,
       playing: override?.playing ?? !el.paused,
+      rate: el.playbackRate || 1,
     });
   };
 
-  const apply = (el: HTMLVideoElement, target: { position: number; playing: boolean }) => {
+  const apply = (el: HTMLVideoElement, target: { position: number; playing: boolean; rate?: number }) => {
     quietUntil.current = Date.now() + QUIET_MS;
+    if (target.rate && Math.abs(el.playbackRate - target.rate) > 0.01) el.playbackRate = target.rate;
     if (target.position > 0 && Math.abs((el.currentTime || 0) - target.position) > 1.5) el.currentTime = target.position;
     if (target.playing && el.paused) el.play().catch(() => undefined);
     else if (!target.playing && !el.paused) el.pause();
@@ -118,7 +136,7 @@ export function RoomAltPlayer({
   useEffect(() => {
     if (!incoming || incoming.at <= appliedRef.current) return;
     appliedRef.current = incoming.at;
-    const target = { position: incoming.position, playing: incoming.playing };
+    const target = { position: incoming.position, playing: incoming.playing, rate: incoming.rate };
     const el = video();
     if (incoming.sameEpisode && el && el.readyState >= 1) apply(el, target);
     else {
@@ -130,12 +148,40 @@ export function RoomAltPlayer({
   // Подписка на события <video>: он один на всё время и подменяет источник
   useEffect(() => {
     let attached: HTMLVideoElement | null = null;
-    const onPlay = () => publish({ playing: true });
+    /** Зритель нажал лишнее: возвращаем плеер к состоянию комнаты */
+    const revert = () => {
+      const el = attached;
+      if (!el || Date.now() < quietUntil.current) return false;
+      const room = roomRef.current;
+      const est = room.position + (room.playing ? (Date.now() - room.at) / 1000 : 0);
+      const wrong =
+        el.paused === room.playing ||
+        Math.abs((el.currentTime || 0) - est) > 3 ||
+        Math.abs(el.playbackRate - room.rate) > 0.01;
+      if (!wrong) return false;
+      apply(el, { position: est, playing: room.playing, rate: room.rate });
+      setNote("Управляет создатель комнаты");
+      window.clearTimeout(noteTimer.current);
+      noteTimer.current = window.setTimeout(() => setNote(""), 2200);
+      return true;
+    };
+    const onPlay = () => {
+      if (!hostRef.current) return void revert();
+      publish({ playing: true });
+    };
     const onPause = () => {
       if (attached?.ended || Date.now() < quietUntil.current) return;
+      if (!hostRef.current) return void revert();
       publish({ playing: false });
     };
-    const onSeeked = () => publish();
+    const onSeeked = () => {
+      if (!hostRef.current) return void revert();
+      publish();
+    };
+    const onRate = () => {
+      if (!hostRef.current) return void revert();
+      publish();
+    };
     const onMeta = () => {
       const pending = pendingRef.current;
       if (!pending || !attached) return;
@@ -150,6 +196,7 @@ export function RoomAltPlayer({
       el.addEventListener("play", onPlay);
       el.addEventListener("pause", onPause);
       el.addEventListener("seeked", onSeeked);
+      el.addEventListener("ratechange", onRate);
       el.addEventListener("loadedmetadata", onMeta);
       if (pendingRef.current && el.readyState >= 1) onMeta();
     };
@@ -157,6 +204,7 @@ export function RoomAltPlayer({
       attached?.removeEventListener("play", onPlay);
       attached?.removeEventListener("pause", onPause);
       attached?.removeEventListener("seeked", onSeeked);
+      attached?.removeEventListener("ratechange", onRate);
       attached?.removeEventListener("loadedmetadata", onMeta);
       attached = null;
     };
@@ -177,6 +225,7 @@ export function RoomAltPlayer({
   }, []);
 
   const pickEpisode = (next: number) => {
+    if (!hostRef.current) return;
     if (next === episodeRef.current || next < 1) return;
     quietUntil.current = Date.now() + QUIET_MS * 2;
     pendingRef.current = { position: 0, playing: true };
@@ -185,7 +234,7 @@ export function RoomAltPlayer({
   };
 
   const episodes = detail?.episodes ?? [];
-  const nav = episodes.length
+  const nav = episodes.length && isHost
     ? {
         seasons: [{ number: 1, episodes: episodes.map((ep) => ({ number: ep.number })) }],
         season: 1,
@@ -195,7 +244,7 @@ export function RoomAltPlayer({
         onPickVoice: () => undefined,
       }
     : undefined;
-  const hasNext = episodes.some((ep) => ep.number > episode);
+  const hasNext = isHost && episodes.some((ep) => ep.number > episode);
 
   return (
     <div>
@@ -203,7 +252,7 @@ export function RoomAltPlayer({
       <div
         id="player-shell"
         ref={shellRef}
-        className="relative aspect-video w-full overflow-hidden rounded-2xl bg-black ring-1 ring-white/12 shadow-[0_40px_80px_-40px_rgba(0,0,0,1)]"
+        className={`relative aspect-video w-full overflow-hidden rounded-2xl bg-black ring-1 ring-white/12 shadow-[0_40px_80px_-40px_rgba(0,0,0,1)]${isHost ? "" : " wt-guest"}`}
       >
         <AltPlayer
           key={`${alias ?? title}:${nonce}`}
@@ -217,6 +266,11 @@ export function RoomAltPlayer({
           hasNext={hasNext}
           onNextEpisode={() => pickEpisode(episodeRef.current + 1)}
         />
+        {note && (
+          <span role="status" className="wt-note">
+            {note}
+          </span>
+        )}
         {burst && (
           <span
             key={burst.key}
@@ -229,7 +283,11 @@ export function RoomAltPlayer({
       </div>
 
       <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
-        <p className="text-xs text-muted">Пауза, перемотка и серия общие для всех в комнате</p>
+        <p className="text-xs text-muted">
+          {isHost
+            ? "Вы ведёте просмотр: пауза, перемотка, серия и скорость — для всех в комнате"
+            : `Управляет ${hostName || "создатель комнаты"}: пауза, перемотка, серия и скорость. Качество — на ваше усмотрение`}
+        </p>
         <div className="flex flex-wrap gap-1.5">
           {REACTIONS.map((emoji) => (
             <button

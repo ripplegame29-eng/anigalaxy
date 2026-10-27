@@ -39,6 +39,10 @@ const TITLE_MAX = 60;
 const MESSAGE_MAX = 300;
 
 export interface WtRoom {
+  /** clientId того, кто управляет комнатой */
+  host: string;
+  /** Скорость воспроизведения, заданная ведущим */
+  rate: number;
   code: string;
   title: string;
   anime: string;
@@ -90,6 +94,7 @@ export function wtStatus(code: string): number {
     case "full":
       return 409;
     case "not_member":
+    case "not_host":
       return 403;
     case "rate_limit":
       return 429;
@@ -113,6 +118,7 @@ export interface RoomStateInput {
   episode: number;
   position: number;
   playing: boolean;
+  rate?: number;
 }
 
 /* ------------------------------ Утилиты ----------------------------- */
@@ -155,6 +161,8 @@ interface RoomRow {
   state_by: string;
   state_at: number;
   created_at: number;
+  host_id: string;
+  rate: number;
 }
 
 function asRoomRow(row: Record<string, unknown> | undefined): RoomRow | null {
@@ -175,6 +183,8 @@ function asRoomRow(row: Record<string, unknown> | undefined): RoomRow | null {
     state_by: str(row.state_by),
     state_at: num(row.state_at),
     created_at: num(row.created_at),
+    host_id: str(row.host_id),
+    rate: num(row.rate, 1) || 1,
   };
 }
 
@@ -205,7 +215,17 @@ function activeMembers(db: Database, roomId: number, now: number): WtMember[] {
   }));
 }
 
-function toRoom(row: RoomRow, viewers: number): WtRoom {
+/**
+ * Кто управляет комнатой: создатель, пока он в комнате. Если он вышел или
+ * пропал, управление переходит к самому раннему из оставшихся участников —
+ * иначе комната осталась бы без пульта.
+ */
+function hostOf(row: RoomRow, members: WtMember[]): string {
+  if (members.some((m) => m.clientId === row.host_id)) return row.host_id;
+  return members[0]?.clientId ?? row.host_id;
+}
+
+function toRoom(row: RoomRow, viewers: number, host: string): WtRoom {
   return {
     code: row.code,
     title: row.title,
@@ -222,6 +242,8 @@ function toRoom(row: RoomRow, viewers: number): WtRoom {
     createdAt: row.created_at,
     viewers,
     limit: WT_LIMITS[row.access],
+    host,
+    rate: row.rate,
   };
 }
 
@@ -250,7 +272,7 @@ function roomByCode(db: Database, code: string): RoomRow | null {
 function snapshot(db: Database, row: RoomRow, now: number, afterId = 0): WtSnapshot {
   const members = activeMembers(db, row.id, now);
   return {
-    room: toRoom(row, members.length),
+    room: toRoom(row, members.length, hostOf(row, members)),
     members,
     messages: listMessages(db, row.id, afterId),
     serverTime: now,
@@ -284,7 +306,10 @@ export function listOpenRooms(db: Database, now = Date.now()): WtRoom[] {
     .map((row) => asRoomRow(row))
     .filter((row): row is RoomRow => Boolean(row));
 
-  return rows.map((row) => toRoom(row, activeMembers(db, row.id, now).length));
+  return rows.map((row) => {
+    const members = activeMembers(db, row.id, now);
+    return toRoom(row, members.length, hostOf(row, members));
+  });
 }
 
 export function createRoom(
@@ -315,8 +340,8 @@ export function createRoom(
     const info = db
       .prepare(
         `INSERT INTO watch_rooms
-           (code, title, anime, alias, poster, dub, access, episode, position, playing, state_by, state_at, created_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, 1, 0, 0, ?, ?, ?)`,
+           (code, title, anime, alias, poster, dub, access, episode, position, playing, state_by, state_at, created_at, host_id)
+         VALUES (?, ?, ?, ?, ?, ?, ?, 1, 0, 0, ?, ?, ?, ?)`,
       )
       .run(
         code,
@@ -329,6 +354,7 @@ export function createRoom(
         clientId,
         now,
         now,
+        clientId,
       );
 
     db.prepare(
@@ -442,15 +468,20 @@ export function setRoomState(
   if (!row) return fail("Комната не найдена или уже закрыта", "not_found");
   if (!amMember(db, row.id, clientId, now)) return fail("Сначала войдите в комнату", "not_member");
 
+  if (hostOf(row, activeMembers(db, row.id, now)) !== clientId) {
+    return fail("Управляет создатель комнаты", "not_host");
+  }
+
   const episode = Math.min(10_000, Math.max(1, Math.round(Number(state.episode) || 1)));
   const position = Math.min(86_400, Math.max(0, Number(state.position) || 0));
   const playing = state.playing ? 1 : 0;
+  const rate = Math.min(4, Math.max(0.25, Number(state.rate) || row.rate || 1));
 
   db.prepare(
     `UPDATE watch_rooms
-        SET episode = ?, position = ?, playing = ?, state_by = ?, state_at = ?
+        SET episode = ?, position = ?, playing = ?, rate = ?, state_by = ?, state_at = ?
       WHERE id = ?`,
-  ).run(episode, position, playing, clientId, now, row.id);
+  ).run(episode, position, playing, rate, clientId, now, row.id);
   db.prepare("UPDATE watch_room_members SET seen_at = ? WHERE room_id = ? AND client_id = ?").run(
     now,
     row.id,

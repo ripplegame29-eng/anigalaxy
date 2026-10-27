@@ -32,6 +32,7 @@ export const PATCH = route(
       episode: Number(body.episode ?? 1),
       position: Number(body.position ?? 0),
       playing: Boolean(body.playing),
+      rate: Number(body.rate ?? 1),
     });
 
     return result.ok

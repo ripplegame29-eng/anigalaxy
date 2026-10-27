@@ -1333,6 +1333,7 @@ function RoomPanel({
             startEpisode={initial.room.episode}
             clientId={clientId}
             sync={room}
+            hostName={snap.members.find((m) => m.clientId === room.host)?.nickname}
             onPublish={onPublish}
           />
         </div>

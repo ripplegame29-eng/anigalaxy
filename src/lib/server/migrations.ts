@@ -636,4 +636,14 @@ export const MIGRATIONS: Migration[] = [
       CREATE INDEX idx_ticket_messages ON ticket_messages(ticket_id, id);
     `,
   },
+  {
+    version: 20,
+    name: "watch_room_host",
+    sql: `
+      -- Совместный просмотр: управляет создатель комнаты (пауза, перемотка, серия, скорость).
+      ALTER TABLE watch_rooms ADD COLUMN host_id TEXT NOT NULL DEFAULT '';
+      ALTER TABLE watch_rooms ADD COLUMN rate REAL NOT NULL DEFAULT 1;
+      UPDATE watch_rooms SET host_id = state_by WHERE host_id = '';
+    `,
+  },
 ];
