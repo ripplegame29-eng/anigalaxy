@@ -25,6 +25,7 @@ import {
 } from "./auth";
 import { clearReferralLanding, pendingLandingCode } from "./referrals";
 import { PROGRESS_DOC_KEY, isSyncKey } from "./sync-keys";
+import { PROFILE_KEY, mergeProfileDocs } from "./profile-merge";
 import { isViewMode } from "./view-mode";
 
 const META_KEY = "animehub:sync:meta:v1";
@@ -253,6 +254,14 @@ async function doPush(keepalive: boolean): Promise<boolean> {
       if (key === PROGRESS_DOC_KEY && result.reason === "conflict" && localXp > xpOf(result.server.value)) {
         /* локальный прогресс больше — отправим ещё раз поверх новой версии */
         if (!fresh.dirty.includes(key)) fresh.dirty.push(key);
+      } else if (key === PROFILE_KEY && readRaw(key) !== null) {
+        /* Профиль: уведомления сливаем, чтобы «прочитано» и «очищено» не терялись */
+        const merged = mergeProfileDocs(readRaw(key) ?? "", result.server.value);
+        writeRaw(key, merged);
+        if (merged !== result.server.value) {
+          if (!fresh.dirty.includes(key)) fresh.dirty.push(key);
+        } else fresh.dirty = fresh.dirty.filter((k) => k !== key);
+        serverWon = true;
       } else {
         writeRaw(key, result.server.value);
         fresh.dirty = fresh.dirty.filter((k) => k !== key);
@@ -301,6 +310,14 @@ async function pull(): Promise<boolean> {
     /* Прогресс никогда не откатываем назад */
     if (doc.key === PROGRESS_DOC_KEY && local !== null && xpOf(local) > xpOf(doc.value)) {
       if (!meta.dirty.includes(doc.key)) meta.dirty.push(doc.key);
+      continue;
+    }
+    if (doc.key === PROFILE_KEY && local !== null && meta.dirty.includes(doc.key)) {
+      /* Есть несохранённые правки профиля, а на сервере новее — сливаем, а не затираем */
+      const merged = mergeProfileDocs(local, doc.value);
+      writeRaw(doc.key, merged);
+      if (merged === doc.value) meta.dirty = meta.dirty.filter((k) => k !== doc.key);
+      changed = true;
       continue;
     }
     writeRaw(doc.key, doc.value);
@@ -493,7 +510,11 @@ export async function syncPasswordChange(current: string, next: string): Promise
 async function signOutCloud(): Promise<void> {
   if (!active) return;
   /* Сначала досылаем несохранённое, и только потом стираем данные устройства */
-  const clean = await push();
+  /* Отправка могла уже идти без последней правки — повторяем, пока не уйдёт всё */
+  let clean = await push();
+  for (let attempt = 0; attempt < 3 && !clean && readMeta().dirty.length > 0; attempt += 1) {
+    clean = await push();
+  }
   active = false;
   await call("/api/account/logout", {});
   if (clean) {

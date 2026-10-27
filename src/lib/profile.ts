@@ -110,6 +110,10 @@ export interface ProfileState {
   comments: ProfileComment[];
   blacklist: string[];
   notices: ProfileNotice[];
+  /** Когда уведомления очищали в последний раз: старше этой метки не возвращаются при синхронизации */
+  noticesClearedAt?: number;
+  /** Удалённые по одному уведомления — чтобы синхронизация не вернула их */
+  removedNotices?: string[];
   /** Косметика, купленная за монеты */
   purchased: string[];
   privacy: PrivacySettings;
@@ -446,11 +450,14 @@ export function removeNotice(id: string): void {
   profileStore.update((state) => ({
     ...state,
     notices: state.notices.filter((notice) => notice.id !== id),
+    removedNotices: [...(state.removedNotices ?? []), id].slice(-200),
   }));
 }
 
 export function clearNotices(): void {
-  profileStore.update((state) => (state.notices.length ? { ...state, notices: [] } : state));
+  profileStore.update((state) =>
+    state.notices.length ? { ...state, notices: [], noticesClearedAt: Date.now() } : state,
+  );
 }
 
 export function unreadCount(state: ProfileState): number {
