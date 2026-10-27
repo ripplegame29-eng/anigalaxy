@@ -12,7 +12,8 @@ export const metadata: Metadata = {
   description: "Подборки манги, манхвы и маньхуа с русским переводом: лучшее по оценке, новинки и жанровые списки.",
 };
 
-export const revalidate = 600;
+// Источник манги отвечает медленно: не собираем страницу на этапе сборки, данные кэшируются при запросе
+export const dynamic = "force-dynamic";
 
 const GENRE_BLURB: Record<string, string> = {
   боевик: "Схватки, турниры и герои, которых не остановить.",
