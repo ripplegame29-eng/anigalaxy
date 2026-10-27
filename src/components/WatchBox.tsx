@@ -5,6 +5,7 @@ import { mergeVoices, pickDefaultVoice } from "@/lib/voice-merge";
 import { toggleFullscreen as toggleFs } from "@/lib/fullscreen";
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
+import { createPortal } from "react-dom";
 import { kindLabel, statusLabel, truncate } from "@/lib/anime";
 import { readAccount } from "@/lib/auth";
 import { noteGuestEpisode } from "@/lib/guest-wall";
@@ -28,6 +29,11 @@ function subscribeCompact(cb: () => void) {
   mq.addEventListener("change", cb);
   return () => mq.removeEventListener("change", cb);
 }
+/** Рисует детей в <body>: fixed-шторка внутри колонки обрезалась предком с transform/overflow */
+function PortalIf({ on, children }: { on: boolean; children: React.ReactNode }) {
+  return on && typeof document !== "undefined" ? createPortal(children, document.body) : <>{children}</>;
+}
+
 /** Телефон или узкий планшет: другой порядок блоков и список серий вместо сетки */
 function useCompactUi(): boolean {
   return useSyncExternalStore(subscribeCompact, () => window.matchMedia(COMPACT_MQ).matches, () => false);
@@ -419,7 +425,10 @@ export function WatchBox({
   useEffect(() => {
     if (!menuOpen) return;
     const onDown = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuOpen(false);
+      const t = e.target as Element;
+      // шторка озвучек на телефоне вынесена в <body> — это не «клик мимо»
+      if (t.closest?.(".wb-vmenu,.wb-vback,.wb-mvoice")) return;
+      if (menuRef.current && !menuRef.current.contains(t)) setMenuOpen(false);
     };
     const onEsc = (e: KeyboardEvent) => e.key === "Escape" && setMenuOpen(false);
     document.addEventListener("mousedown", onDown);
@@ -1156,9 +1165,8 @@ export function WatchBox({
               </button>
 
               {menuOpen && (
+                <PortalIf on={compactUi}>
                 <button type="button" aria-label="Закрыть список озвучек" className="wb-vback" onClick={() => setMenuOpen(false)} />
-              )}
-              {menuOpen && (
                 <ul
                   role="listbox"
                   className="wb-vmenu absolute left-0 right-0 top-[calc(100%+6px)] z-30 max-h-64 overflow-y-auto rounded-xl border border-line bg-[#0d0d15]/98 p-1.5 shadow-[0_28px_60px_-24px_rgba(0,0,0,1)] backdrop-blur-xl animate-fade-in"
@@ -1193,6 +1201,7 @@ export function WatchBox({
                     </li>
                   ))}
                 </ul>
+                </PortalIf>
               )}
             </div>
           </div>

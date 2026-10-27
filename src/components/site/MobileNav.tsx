@@ -144,18 +144,21 @@ export function MobileNav() {
           </button>
         </div>
         <div className="mdk-scroll">
-          <Link className="mdk-row mdk-row--prem" href="/premium" tabIndex={open ? 0 : -1}>
-            <Icon name="crown" />
-            <span>Premium — подписка</span>
+          <Link className="mdk-prem" href="/premium" tabIndex={open ? 0 : -1}>
+            <b className="mdk-ic"><Icon name="crown" /></b>
+            <span>
+              <strong>Premium</strong>
+              <small>Без рекламы, эффекты и бонусы</small>
+            </span>
             <i aria-hidden>{svg(<path d="m9 6 6 6-6 6" />)}</i>
           </Link>
           <button type="button" className={`mdk-row${busy ? " busy" : ""}`} tabIndex={open ? 0 : -1} onClick={random}>
-            <Icon name="dice" />
+            <b className="mdk-ic"><Icon name="dice" /></b>
             <span>Случайное аниме</span>
             <i aria-hidden>{svg(<path d="m9 6 6 6-6 6" />)}</i>
           </button>
-          {SECTIONS.map((sec) => (
-            <section key={sec.title}>
+          {SECTIONS.map((sec, si) => (
+            <section key={sec.title} data-g={si % 2 ? "b" : "a"}>
               <h3 className="mdk-sh">{sec.title}</h3>
               {sec.rows.map((r) => (
                 <Link
@@ -164,7 +167,7 @@ export function MobileNav() {
                   tabIndex={open ? 0 : -1}
                   className={`mdk-row${on(r.href) ? " cur" : ""}`}
                 >
-                  <Icon name={r.icon} />
+                  <b className="mdk-ic"><Icon name={r.icon} /></b>
                   <span>{r.label}</span>
                   <i aria-hidden>{svg(<path d="m9 6 6 6-6 6" />)}</i>
                 </Link>
