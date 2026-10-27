@@ -127,22 +127,30 @@ export function TelegramLink({ onChange }: { onChange?: (linked: boolean) => voi
   if (!state.loaded) return null;
   if (state.guest) return <p className="ag-set-hint">Войдите в аккаунт, чтобы привязать Telegram.</p>;
 
+  const hint = pending ? (
+    <>
+      Откройте бота и подтвердите привязку. Код в боте должен совпасть: <strong>{pending.code}</strong> · осталось {Math.floor(left / 60)}:
+      {String(left % 60).padStart(2, "0")}
+    </>
+  ) : state.linked ? (
+    <>{state.username ? `@${state.username} · ` : ""}привязан, вход через бота открывает этот аккаунт</>
+  ) : (
+    "Подтверждение через бота AniGalaxy"
+  );
+
   return (
     <div className="ag-set-r">
-      <span className="min-w-0">
-        <b>Telegram</b>
-        {pending ? (
-          <small>
-            Откройте бота и подтвердите привязку. Код в боте должен совпасть: <strong>{pending.code}</strong> · осталось{" "}
-            {Math.floor(left / 60)}:{String(left % 60).padStart(2, "0")}
-          </small>
-        ) : state.linked ? (
-          <small>{state.username ? `@${state.username} · ` : ""}привязан, вход через бота открывает этот аккаунт</small>
-        ) : (
-          <small>Подтверждение через бота AniGalaxy</small>
-        )}
-        {error && <small className="ag-set-warn">{error}</small>}
+      <span className="ag-set-ri" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M21 3L3 10.5l6 2.5 2.5 6.5 3-4.5L19 19z" />
+          <path d="M9 13l12-10" />
+        </svg>
       </span>
+      <div className="ag-set-rx">
+        <b>Telegram</b>
+        <small>{hint}</small>
+        {error && <small className="ag-set-warn">{error}</small>}
+      </div>
       {pending ? (
         <a className="ag-set-btn" href={pending.link} target="_blank" rel="noopener">
           Открыть бота
