@@ -965,3 +965,32 @@
 @keyframes don-bolt-spin{to{transform:rotate(360deg)}}
 @keyframes don-bolt-zap{0%,70%,100%{transform:scale(1);filter:brightness(1)}80%{transform:scale(1.12);filter:brightness(1.5)}90%{transform:scale(1)}}
 @media(prefers-reduced-motion:reduce){.don-page .don-bolt-r2,.don-page .don-bolt-z{animation:none}}
+
+/* Телефон: липкая плашка занимает всю ширину между полями и не выезжает за
+   экран (раньше max-content + translateX уводили её вбок) */
+@media (max-width: 900px) {
+  .don-page .don-cta {
+    left: 12px;
+    right: 12px;
+    width: auto;
+    max-width: none;
+    transform: none;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 8px;
+    box-sizing: border-box;
+  }
+  .don-page .don-cta.don-hide {
+    transform: translateY(16px);
+  }
+  .don-page .don-cta .don-ghost,
+  .don-page .don-cta .don-btn {
+    flex: 1 1 0;
+    min-width: 0;
+    padding-left: 10px;
+    padding-right: 10px;
+    text-align: center;
+    white-space: nowrap;
+    font-size: 14px;
+  }
+}

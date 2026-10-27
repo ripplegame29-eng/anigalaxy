@@ -1,0 +1,2 @@
+[    1660ms] [ERROR] Failed to load resource: net::ERR_CERT_AUTHORITY_INVALID @ https://hdrc.yandex.net/:0
+[    1660ms] [ERROR] Failed to load resource: net::ERR_CERT_AUTHORITY_INVALID @ https://mdd.yandex.net/:0

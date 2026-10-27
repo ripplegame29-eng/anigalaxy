@@ -1,0 +1,529 @@
+- generic [ref=e2]:
+  - banner [ref=e3]:
+    - generic [ref=e5]:
+      - link "Главная страница" [ref=e6] [cursor=pointer]:
+        - /url: /
+        - generic: AnimeGO
+      - navigation [ref=e15]:
+        - listitem [ref=e16]:
+          - link "Аниме" [ref=e17] [cursor=pointer]:
+            - /url: /anime
+        - listitem [ref=e18]:
+          - link "ТОП-250" [ref=e19] [cursor=pointer]:
+            - /url: /anime/top-250
+        - listitem [ref=e20]:
+          - link "Онгоинг" [ref=e21] [cursor=pointer]:
+            - /url: /anime/status/ongoing
+        - listitem [ref=e22]:
+          - link "2026" [ref=e23] [cursor=pointer]:
+            - /url: /anime/season/2026
+        - listitem [ref=e24]:
+          - link "2025" [ref=e25] [cursor=pointer]:
+            - /url: /anime/season/2025
+        - listitem [ref=e26]:
+          - link "Случайное аниме" [ref=e27] [cursor=pointer]:
+            - /url: /anime/random
+      - button "Открыть поиск" [ref=e30] [cursor=pointer]
+      - generic [ref=e32]:
+        - link "Войти" [ref=e34] [cursor=pointer]:
+          - /url: /login
+        - button "Переключатель между светлой и тёмной темой" [ref=e36] [cursor=pointer]
+  - generic [ref=e37]:
+    - generic [ref=e38]:
+      - link [ref=e40] [cursor=pointer]:
+        - /url: /anime/season/2026/fall
+        - heading "Аниме осеннего сезона" [level=2] [ref=e42]
+      - button "Вперёд"
+      - generic [ref=e44]:
+        - generic [ref=e45]:
+          - generic: "8.6"
+          - link [ref=e46] [cursor=pointer]:
+            - /url: /anime/svad-ba-svetlyachkov-3815
+            - img "Свадьба светлячков" [ref=e47]
+          - generic [ref=e48]:
+            - generic [ref=e49]: Hotaru no Yomeiri
+            - link "Свадьба светлячков" [ref=e51] [cursor=pointer]:
+              - /url: /anime/svad-ba-svetlyachkov-3815
+        - generic [ref=e52]:
+          - generic: "8.9"
+          - link [ref=e53] [cursor=pointer]:
+            - /url: /anime/ao-asi-2-3813
+            - img "Ао Аси 2" [ref=e54]
+          - generic [ref=e55]:
+            - generic [ref=e56]: Ao Ashi Season 2
+            - link "Ао Аси 2" [ref=e58] [cursor=pointer]:
+              - /url: /anime/ao-asi-2-3813
+        - generic [ref=e59]:
+          - generic: "8.3"
+          - link [ref=e60] [cursor=pointer]:
+            - /url: /anime/vo-vseoruzhii-sila-artefaktov-3835
+            - 'img "Во всеоружии: Сила артефактов" [ref=e61]'
+          - generic [ref=e62]:
+            - generic [ref=e63]: "Tempal: Item no Chikara"
+            - 'link "Во всеоружии: Сила артефактов" [ref=e65] [cursor=pointer]':
+              - /url: /anime/vo-vseoruzhii-sila-artefaktov-3835
+        - generic [ref=e66]:
+          - generic: "8.9"
+          - link [ref=e67] [cursor=pointer]:
+            - /url: /anime/ledyanaya-stena-2-3814
+            - img "Ледяная стена 2" [ref=e68]
+          - generic [ref=e69]:
+            - generic [ref=e70]: Koori no Jouheki 2nd Season
+            - link "Ледяная стена 2" [ref=e72] [cursor=pointer]:
+              - /url: /anime/ledyanaya-stena-2-3814
+        - generic [ref=e73]:
+          - generic: "8.4"
+          - link [ref=e74] [cursor=pointer]:
+            - /url: /anime/ya-ved-ma-kotoruyu-vozlyublennyi-poprosil-sozdat-lyubovnoye-zel-ye-4054
+            - img "Я ведьма, которую возлюбленный попросил создать любовное зелье" [ref=e75]
+          - generic [ref=e76]:
+            - generic [ref=e77]: Doumo, Suki na Hito ni Horegusuri wo Irai sareta Majo desu.
+            - link "Я ведьма, которую возлюбленный попросил создать любовное зелье" [ref=e79] [cursor=pointer]:
+              - /url: /anime/ya-ved-ma-kotoruyu-vozlyublennyi-poprosil-sozdat-lyubovnoye-zel-ye-4054
+        - generic [ref=e80]:
+          - generic: "8.3"
+          - link [ref=e81] [cursor=pointer]:
+            - /url: /anime/dazhe-u-studsoveta-yest-kosyaki-3821
+            - img "Даже у студсовета есть косяки!" [ref=e82]
+          - generic [ref=e83]:
+            - generic [ref=e84]: Seitokai ni mo Ana wa Aru!
+            - link "Даже у студсовета есть косяки!" [ref=e86] [cursor=pointer]:
+              - /url: /anime/dazhe-u-studsoveta-yest-kosyaki-3821
+        - generic [ref=e87]:
+          - generic: "7.7"
+          - link [ref=e88] [cursor=pointer]:
+            - /url: /anime/tokiiskiye-mstiteli-bitva-trekh-nebozhitelei-3811
+            - 'img "Токийские мстители: Битва трёх небожителей" [ref=e89]'
+          - generic [ref=e90]:
+            - generic [ref=e91]: "Tokyo Revengers: Santen Sensou-hen"
+            - 'link "Токийские мстители: Битва трёх небожителей" [ref=e93] [cursor=pointer]':
+              - /url: /anime/tokiiskiye-mstiteli-bitva-trekh-nebozhitelei-3811
+        - generic [ref=e94]:
+          - generic: "8.6"
+          - link [ref=e95] [cursor=pointer]:
+            - /url: /anime/golubaya-shkatulka-2-3806
+            - img "Голубая шкатулка 2" [ref=e96]
+          - generic [ref=e97]:
+            - generic [ref=e98]: Ao no Hako Season 2
+            - link "Голубая шкатулка 2" [ref=e100] [cursor=pointer]:
+              - /url: /anime/golubaya-shkatulka-2-3806
+        - generic [ref=e101]:
+          - generic: "8.4"
+          - link [ref=e102] [cursor=pointer]:
+            - /url: /anime/voyennaya-khronika-romelii-4033
+            - img "Военная хроника Ромелии" [ref=e103]
+          - generic [ref=e104]:
+            - generic [ref=e105]: Romelia Senki
+            - link "Военная хроника Ромелии" [ref=e107] [cursor=pointer]:
+              - /url: /anime/voyennaya-khronika-romelii-4033
+        - generic [ref=e108]:
+          - generic: "8.1"
+          - link [ref=e109] [cursor=pointer]:
+            - /url: /anime/kiberpank-begushchiye-po-krayu-2-3807
+            - 'img "Киберпанк: Бегущие по краю 2" [ref=e110]'
+          - generic [ref=e111]:
+            - generic [ref=e112]: "Cyberpunk: Edgerunners 2"
+            - 'link "Киберпанк: Бегущие по краю 2" [ref=e114] [cursor=pointer]':
+              - /url: /anime/kiberpank-begushchiye-po-krayu-2-3807
+    - generic [ref=e116]:
+      - generic [ref=e119]:
+        - heading "Расписание аниме" [level=3] [ref=e120]
+        - generic [ref=e121]: Внимание! В графике указаны даты выхода эпизодов на телеэкранах Японии. На сайте появится в течение дня либо на следующий день.
+        - generic [ref=e122]:
+          - generic [ref=e125] [cursor=pointer]:
+            - generic [ref=e126]: Понедельник
+            - generic [ref=e127]: 2 ноября
+          - generic [ref=e128]:
+            - generic [ref=e130] [cursor=pointer]:
+              - generic [ref=e131]: Вторник
+              - generic [ref=e132]: Сегодня
+            - generic [ref=e135]:
+              - link "Окутывая небеса Окутывая небеса Серия 187 (из 208)" [ref=e136] [cursor=pointer]:
+                - /url: /anime/okutyvaya-nebesa-3978
+                - img "Окутывая небеса" [ref=e139]
+                - generic [ref=e140]:
+                  - generic [ref=e141]: Окутывая небеса
+                  - generic [ref=e142]: Серия 187 (из 208)
+              - link "Практикуя ци сто тысяч лет Практикуя ци сто тысяч лет Серия 389 (из 420)" [ref=e143] [cursor=pointer]:
+                - /url: /anime/praktikuya-tsi-sto-tysyach-let-3473
+                - img "Практикуя ци сто тысяч лет" [ref=e146]
+                - generic [ref=e147]:
+                  - generic [ref=e148]: Практикуя ци сто тысяч лет
+                  - generic [ref=e149]: Серия 389 (из 420)
+              - link "Боевой мастер Боевой мастер Серия 704 (из 720)" [ref=e150] [cursor=pointer]:
+                - /url: /anime/boyevoi-master-3875
+                - img "Боевой мастер" [ref=e153]
+                - generic [ref=e154]:
+                  - generic [ref=e155]: Боевой мастер
+                  - generic [ref=e156]: Серия 704 (из 720)
+              - link "Полицейский-экстрасенс Тёдзё! Полицейский-экстрасенс Тёдзё! Серия 4 — 19:00 (Екатеринбург)" [ref=e157] [cursor=pointer]:
+                - /url: /anime/politseiskii-yekstrasens-tedze-3842
+                - img "Полицейский-экстрасенс Тёдзё!" [ref=e160]
+                - generic [ref=e161]:
+                  - generic [ref=e162]: Полицейский-экстрасенс Тёдзё!
+                  - generic [ref=e163]: Серия 4 — 19:00 (Екатеринбург)
+              - 'link "Дух битвы [Перезапуск]: Небеса изолированного мира Дух битвы [Перезапуск]: Небеса изолированного мира Серия 4 — 19:00 (Екатеринбург)" [ref=e164] [cursor=pointer]':
+                - /url: /anime/dukh-bitvy-perezapusk-nebesa-izolirovannogo-mira-3847
+                - 'img "Дух битвы [Перезапуск]: Небеса изолированного мира" [ref=e167]'
+                - generic [ref=e168]:
+                  - generic [ref=e169]: "Дух битвы [Перезапуск]: Небеса изолированного мира"
+                  - generic [ref=e170]: Серия 4 — 19:00 (Екатеринбург)
+              - link "Фантазии Речных заводей Фантазии Речных заводей Серия 4 (из 23) — 19:30 (Екатеринбург)" [ref=e171] [cursor=pointer]:
+                - /url: /anime/fantazii-rechnykh-zavodei-4082
+                - img "Фантазии Речных заводей" [ref=e174]
+                - generic [ref=e175]:
+                  - generic [ref=e176]: Фантазии Речных заводей
+                  - generic [ref=e177]: Серия 4 (из 23) — 19:30 (Екатеринбург)
+              - link "Красная река Красная река Серия 17 (из 24) — 21:35 (Екатеринбург)" [ref=e178] [cursor=pointer]:
+                - /url: /anime/krasnaya-reka-3489
+                - img "Красная река" [ref=e181]
+                - generic [ref=e182]:
+                  - generic [ref=e183]: Красная река
+                  - generic [ref=e184]: Серия 17 (из 24) — 21:35 (Екатеринбург)
+              - link "Тёмная машина Тёмная машина Серия 3 — 21:45 (Екатеринбург)" [ref=e185] [cursor=pointer]:
+                - /url: /anime/temnaya-mashina-3999
+                - img "Тёмная машина" [ref=e188]
+                - generic [ref=e189]:
+                  - generic [ref=e190]: Тёмная машина
+                  - generic [ref=e191]: Серия 3 — 21:45 (Екатеринбург)
+          - generic [ref=e194] [cursor=pointer]:
+            - generic [ref=e195]: Среда
+            - generic [ref=e196]: Завтра
+          - generic [ref=e199] [cursor=pointer]:
+            - generic [ref=e200]: Четверг
+            - generic [ref=e201]: 29 октября
+          - generic [ref=e204] [cursor=pointer]:
+            - generic [ref=e205]: Пятница
+            - generic [ref=e206]: 30 октября
+          - generic [ref=e209] [cursor=pointer]:
+            - generic [ref=e210]: Суббота
+            - generic [ref=e211]: 31 октября
+          - generic [ref=e214] [cursor=pointer]:
+            - generic [ref=e215]: Воскресенье
+            - generic [ref=e216]: 1 ноября
+      - generic [ref=e219]:
+        - heading "Обновления аниме" [level=3] [ref=e220]
+        - generic [ref=e223]:
+          - 'link "Киберпанк: Бегущие по краю 2 Киберпанк: Бегущие по краю 2 Серии 2 · ТО Дубляжная — Сегодня, 05:55" [ref=e224] [cursor=pointer]':
+            - /url: /anime/kiberpank-begushchiye-po-krayu-2-3807#player
+            - 'img "Киберпанк: Бегущие по краю 2" [ref=e227]'
+            - generic [ref=e228]:
+              - generic [ref=e229]: "Киберпанк: Бегущие по краю 2"
+              - generic [ref=e230]: Серии 2 · ТО Дубляжная — Сегодня, 05:55
+          - link "Боевой мастер Боевой мастер Серии 703 · ПВА ШОУ — Сегодня, 03:30" [ref=e231] [cursor=pointer]:
+            - /url: /anime/boyevoi-master-3875#player
+            - img "Боевой мастер" [ref=e234]
+            - generic [ref=e235]:
+              - generic [ref=e236]: Боевой мастер
+              - generic [ref=e237]: Серии 703 · ПВА ШОУ — Сегодня, 03:30
+          - 'link "Блич: Тысячелетняя кровавая война — Бедствие Блич: Тысячелетняя кровавая война — Бедствие Серии 10 · Манипулятор.Subtitles — Сегодня, 03:20" [ref=e238] [cursor=pointer]':
+            - /url: /anime/blich-tysyacheletnyaya-krovavaya-voina-bedstviye-3590#player
+            - 'img "Блич: Тысячелетняя кровавая война — Бедствие" [ref=e241]'
+            - generic [ref=e242]:
+              - generic [ref=e243]: "Блич: Тысячелетняя кровавая война — Бедствие"
+              - generic [ref=e244]: Серии 10 · Манипулятор.Subtitles — Сегодня, 03:20
+          - link "Я очнулся будучи пилотом сильнейшего космического корабля, а потому решил стать межгалактическим наёмником Я очнулся будучи пилотом сильнейшего космического корабля, а потому решил стать межгалактическим наёмником Серии 4 · AniLiberty — Сегодня, 03:20" [ref=e245] [cursor=pointer]:
+            - /url: /anime/ya-ochnulsya-buduchi-pilotom-sil-neishego-kosmicheskogo-korablya-a-potomu-reshil-stat-mezhgalakticheskim-nayemnikom-4036#player
+            - img "Я очнулся будучи пилотом сильнейшего космического корабля, а потому решил стать межгалактическим наёмником" [ref=e248]
+            - generic [ref=e249]:
+              - generic [ref=e250]: Я очнулся будучи пилотом сильнейшего космического корабля, а потому решил стать межгалактическим наёмником
+              - generic [ref=e251]: Серии 4 · AniLiberty — Сегодня, 03:20
+          - 'link "Прохождение параллельного мира вместе с богиней, у которой нет последователей: Слабейший маг среди одноклассников Прохождение параллельного мира вместе с богиней, у которой нет последователей: Слабейший маг среди одноклассников Серии 3 · AniLiberty — Сегодня, 03:20" [ref=e252] [cursor=pointer]':
+            - /url: /anime/prokhozhdeniye-parallel-nogo-mira-vmeste-s-boginei-u-kotoroi-net-posledovatelei-slabeishii-mag-sredi-odnoklassnikov-3899#player
+            - 'img "Прохождение параллельного мира вместе с богиней, у которой нет последователей: Слабейший маг среди одноклассников" [ref=e255]'
+            - generic [ref=e256]:
+              - generic [ref=e257]: "Прохождение параллельного мира вместе с богиней, у которой нет последователей: Слабейший маг среди одноклассников"
+              - generic [ref=e258]: Серии 3 · AniLiberty — Сегодня, 03:20
+          - link "Даже у студсовета есть косяки! Даже у студсовета есть косяки! Серии 4 · AniLiberty — Сегодня, 03:20" [ref=e259] [cursor=pointer]:
+            - /url: /anime/dazhe-u-studsoveta-yest-kosyaki-3821#player
+            - img "Даже у студсовета есть косяки!" [ref=e262]
+            - generic [ref=e263]:
+              - generic [ref=e264]: Даже у студсовета есть косяки!
+              - generic [ref=e265]: Серии 4 · AniLiberty — Сегодня, 03:20
+          - link "Маска вермильона Маска вермильона Серии 3 · Midori Noizu — Сегодня, 02:40" [ref=e266] [cursor=pointer]:
+            - /url: /anime/maska-vermil-ona-4032#player
+            - img "Маска вермильона" [ref=e269]
+            - generic [ref=e270]:
+              - generic [ref=e271]: Маска вермильона
+              - generic [ref=e272]: Серии 3 · Midori Noizu — Сегодня, 02:40
+          - link "Дядечка, которому нравятся милые вещи Дядечка, которому нравятся милые вещи Серии 4 · SHIZA Project — Сегодня, 02:40" [ref=e273] [cursor=pointer]:
+            - /url: /anime/dyadechka-kotoromu-nravyat-sya-milyye-veshchi-3843#player
+            - img "Дядечка, которому нравятся милые вещи" [ref=e276]
+            - generic [ref=e277]:
+              - generic [ref=e278]: Дядечка, которому нравятся милые вещи
+              - generic [ref=e279]: Серии 4 · SHIZA Project — Сегодня, 02:40
+          - link "Свадьба светлячков Свадьба светлячков Серии 3 · Amazing Dubbing — Сегодня, 02:40" [ref=e280] [cursor=pointer]:
+            - /url: /anime/svad-ba-svetlyachkov-3815#player
+            - img "Свадьба светлячков" [ref=e283]
+            - generic [ref=e284]:
+              - generic [ref=e285]: Свадьба светлячков
+              - generic [ref=e286]: Серии 3 · Amazing Dubbing — Сегодня, 02:40
+          - link "Я очнулся будучи пилотом сильнейшего космического корабля, а потому решил стать межгалактическим наёмником Я очнулся будучи пилотом сильнейшего космического корабля, а потому решил стать межгалактическим наёмником Серии 4 · Dream Cast — Сегодня, 02:00" [ref=e287] [cursor=pointer]:
+            - /url: /anime/ya-ochnulsya-buduchi-pilotom-sil-neishego-kosmicheskogo-korablya-a-potomu-reshil-stat-mezhgalakticheskim-nayemnikom-4036#player
+            - img "Я очнулся будучи пилотом сильнейшего космического корабля, а потому решил стать межгалактическим наёмником" [ref=e290]
+            - generic [ref=e291]:
+              - generic [ref=e292]: Я очнулся будучи пилотом сильнейшего космического корабля, а потому решил стать межгалактическим наёмником
+              - generic [ref=e293]: Серии 4 · Dream Cast — Сегодня, 02:00
+          - link "Я перевоплотился в гоблина, вопросы есть? Я перевоплотился в гоблина, вопросы есть? Серии 5 · Dream Cast — Сегодня, 02:00" [ref=e294] [cursor=pointer]:
+            - /url: /anime/ya-perevoplotilsya-v-goblina-voprosy-yest-4007#player
+            - img "Я перевоплотился в гоблина, вопросы есть?" [ref=e297]
+            - generic [ref=e298]:
+              - generic [ref=e299]: Я перевоплотился в гоблина, вопросы есть?
+              - generic [ref=e300]: Серии 5 · Dream Cast — Сегодня, 02:00
+          - link "Я очнулся будучи пилотом сильнейшего космического корабля, а потому решил стать межгалактическим наёмником Я очнулся будучи пилотом сильнейшего космического корабля, а потому решил стать межгалактическим наёмником Серии 2-3 · Amazing Dubbing — Сегодня, 01:30" [ref=e301] [cursor=pointer]:
+            - /url: /anime/ya-ochnulsya-buduchi-pilotom-sil-neishego-kosmicheskogo-korablya-a-potomu-reshil-stat-mezhgalakticheskim-nayemnikom-4036#player
+            - img "Я очнулся будучи пилотом сильнейшего космического корабля, а потому решил стать межгалактическим наёмником" [ref=e304]
+            - generic [ref=e305]:
+              - generic [ref=e306]: Я очнулся будучи пилотом сильнейшего космического корабля, а потому решил стать межгалактическим наёмником
+              - generic [ref=e307]: Серии 2-3 · Amazing Dubbing — Сегодня, 01:30
+          - 'link "Блич: Тысячелетняя кровавая война — Бедствие Блич: Тысячелетняя кровавая война — Бедствие Серии 10 · AniStar — Сегодня, 00:50" [ref=e308] [cursor=pointer]':
+            - /url: /anime/blich-tysyacheletnyaya-krovavaya-voina-bedstviye-3590#player
+            - 'img "Блич: Тысячелетняя кровавая война — Бедствие" [ref=e311]'
+            - generic [ref=e312]:
+              - generic [ref=e313]: "Блич: Тысячелетняя кровавая война — Бедствие"
+              - generic [ref=e314]: Серии 10 · AniStar — Сегодня, 00:50
+          - 'link "Блич: Тысячелетняя кровавая война — Бедствие Блич: Тысячелетняя кровавая война — Бедствие Серии 10 · КОМНАТА ДИДИ — Сегодня, 00:50" [ref=e315] [cursor=pointer]':
+            - /url: /anime/blich-tysyacheletnyaya-krovavaya-voina-bedstviye-3590#player
+            - 'img "Блич: Тысячелетняя кровавая война — Бедствие" [ref=e318]'
+            - generic [ref=e319]:
+              - generic [ref=e320]: "Блич: Тысячелетняя кровавая война — Бедствие"
+              - generic [ref=e321]: Серии 10 · КОМНАТА ДИДИ — Сегодня, 00:50
+          - link "Псайрен Псайрен Серии 4 · AnimeVost — Сегодня, 00:00" [ref=e322] [cursor=pointer]:
+            - /url: /anime/psairen-4029#player
+            - img "Псайрен" [ref=e325]
+            - generic [ref=e326]:
+              - generic [ref=e327]: Псайрен
+              - generic [ref=e328]: Серии 4 · AnimeVost — Сегодня, 00:00
+          - 'link "Блич: Тысячелетняя кровавая война — Бедствие Блич: Тысячелетняя кровавая война — Бедствие Серии 10 · AnimeVost — Сегодня, 00:00" [ref=e329] [cursor=pointer]':
+            - /url: /anime/blich-tysyacheletnyaya-krovavaya-voina-bedstviye-3590#player
+            - 'img "Блич: Тысячелетняя кровавая война — Бедствие" [ref=e332]'
+            - generic [ref=e333]:
+              - generic [ref=e334]: "Блич: Тысячелетняя кровавая война — Бедствие"
+              - generic [ref=e335]: Серии 10 · AnimeVost — Сегодня, 00:00
+          - link "Я ведьма, которую возлюбленный попросил создать любовное зелье Я ведьма, которую возлюбленный попросил создать любовное зелье Серии 4 · AniMaunt — Вчера, 23:10" [ref=e336] [cursor=pointer]:
+            - /url: /anime/ya-ved-ma-kotoruyu-vozlyublennyi-poprosil-sozdat-lyubovnoye-zel-ye-4054#player
+            - img "Я ведьма, которую возлюбленный попросил создать любовное зелье" [ref=e339]
+            - generic [ref=e340]:
+              - generic [ref=e341]: Я ведьма, которую возлюбленный попросил создать любовное зелье
+              - generic [ref=e342]: Серии 4 · AniMaunt — Вчера, 23:10
+          - link "Псайрен Псайрен Серии 4 · AniStar — Вчера, 22:40" [ref=e343] [cursor=pointer]:
+            - /url: /anime/psairen-4029#player
+            - img "Псайрен" [ref=e346]
+            - generic [ref=e347]:
+              - generic [ref=e348]: Псайрен
+              - generic [ref=e349]: Серии 4 · AniStar — Вчера, 22:40
+          - link "Я перевоплотился в гоблина, вопросы есть? Я перевоплотился в гоблина, вопросы есть? Серии 5 · AnimeVost — Вчера, 22:40" [ref=e350] [cursor=pointer]:
+            - /url: /anime/ya-perevoplotilsya-v-goblina-voprosy-yest-4007#player
+            - img "Я перевоплотился в гоблина, вопросы есть?" [ref=e353]
+            - generic [ref=e354]:
+              - generic [ref=e355]: Я перевоплотился в гоблина, вопросы есть?
+              - generic [ref=e356]: Серии 5 · AnimeVost — Вчера, 22:40
+          - link "Рассекая небосвод Рассекая небосвод Серии 15 · FumoDub — Вчера, 22:30" [ref=e357] [cursor=pointer]:
+            - /url: /anime/rassekaya-nebosvod-3754#player
+            - img "Рассекая небосвод" [ref=e360]
+            - generic [ref=e361]:
+              - generic [ref=e362]: Рассекая небосвод
+              - generic [ref=e363]: Серии 15 · FumoDub — Вчера, 22:30
+    - generic [ref=e366]:
+      - heading "Новое на сайте" [level=3] [ref=e367]
+      - generic [ref=e368]:
+        - generic [ref=e369]:
+          - link [ref=e370] [cursor=pointer]:
+            - /url: /anime/kotoura-san-4369
+            - img "Котоура-сан" [ref=e371]
+          - generic [ref=e372]:
+            - generic [ref=e373]: Kotoura-san
+            - link "Котоура-сан" [ref=e375] [cursor=pointer]:
+              - /url: /anime/kotoura-san-4369
+            - generic [ref=e376]:
+              - generic [ref=e377]: Сериал
+              - generic [aria-hidden] [ref=e378]: /
+              - generic [ref=e379]: "2013"
+        - generic [ref=e380]:
+          - link [ref=e381] [cursor=pointer]:
+            - /url: /anime/strelok-s-chernoi-skaly-ova-4367
+            - img "Стрелок с чёрной скалы OVA" [ref=e382]
+          - generic [ref=e383]:
+            - generic [ref=e384]: Black★Rock Shooter (OVA)
+            - link "Стрелок с чёрной скалы OVA" [ref=e386] [cursor=pointer]:
+              - /url: /anime/strelok-s-chernoi-skaly-ova-4367
+            - generic [ref=e387]:
+              - generic [ref=e388]: OVA
+              - generic [aria-hidden] [ref=e389]: /
+              - generic [ref=e390]: "2010"
+        - generic [ref=e391]:
+          - link [ref=e392] [cursor=pointer]:
+            - /url: /anime/strelok-s-chernoi-skaly-4366
+            - img "Стрелок с чёрной скалы" [ref=e393]
+          - generic [ref=e394]:
+            - generic [ref=e395]: Black★Rock Shooter (TV)
+            - link "Стрелок с чёрной скалы" [ref=e397] [cursor=pointer]:
+              - /url: /anime/strelok-s-chernoi-skaly-4366
+            - generic [ref=e398]:
+              - generic [ref=e399]: Сериал
+              - generic [aria-hidden] [ref=e400]: /
+              - generic [ref=e401]: "2012"
+        - generic [ref=e402]:
+          - link [ref=e403] [cursor=pointer]:
+            - /url: /anime/mononoke-bog-zmei-4365
+            - 'img "Мононокэ: Бог-змей" [ref=e404]'
+          - generic [ref=e405]:
+            - generic [ref=e406]: "Mononoke Movie 3: Hebigami"
+            - 'link "Мононокэ: Бог-змей" [ref=e408] [cursor=pointer]':
+              - /url: /anime/mononoke-bog-zmei-4365
+            - generic [ref=e409]:
+              - generic [ref=e410]: Фильм
+              - generic [aria-hidden] [ref=e411]: /
+              - generic [ref=e412]: "2026"
+        - generic [ref=e413]:
+          - link [ref=e414] [cursor=pointer]:
+            - /url: /anime/mononoke-ognennaya-krysa-4364
+            - 'img "Мононокэ: Огненная крыса" [ref=e415]'
+          - generic [ref=e416]:
+            - generic [ref=e417]: "Mononoke Movie 2: Hinezumi"
+            - 'link "Мононокэ: Огненная крыса" [ref=e419] [cursor=pointer]':
+              - /url: /anime/mononoke-ognennaya-krysa-4364
+            - generic [ref=e420]:
+              - generic [ref=e421]: Фильм
+              - generic [aria-hidden] [ref=e422]: /
+              - generic [ref=e423]: "2025"
+        - generic [ref=e424]:
+          - link [ref=e425] [cursor=pointer]:
+            - /url: /anime/mononoke-zontik-4363
+            - 'img "Мононокэ: Зонтик" [ref=e426]'
+          - generic [ref=e427]:
+            - generic [ref=e428]: "Mononoke Movie 1: Karakasa"
+            - 'link "Мононокэ: Зонтик" [ref=e430] [cursor=pointer]':
+              - /url: /anime/mononoke-zontik-4363
+            - generic [ref=e431]:
+              - generic [ref=e432]: Фильм
+              - generic [aria-hidden] [ref=e433]: /
+              - generic [ref=e434]: "2024"
+        - generic [ref=e435]:
+          - link [ref=e436] [cursor=pointer]:
+            - /url: /anime/ayakasi-klassika-yaponskikh-uzhasov-4362
+            - 'img "Аякаси: Классика японских ужасов" [ref=e437]'
+          - generic [ref=e438]:
+            - generic [ref=e439]: "Ayakashi: Japanese Classic Horror"
+            - 'link "Аякаси: Классика японских ужасов" [ref=e441] [cursor=pointer]':
+              - /url: /anime/ayakasi-klassika-yaponskikh-uzhasov-4362
+            - generic [ref=e442]:
+              - generic [ref=e443]: Сериал
+              - generic [aria-hidden] [ref=e444]: /
+              - generic [ref=e445]: "2006"
+        - generic [ref=e446]:
+          - link [ref=e447] [cursor=pointer]:
+            - /url: /anime/mononoke-4361
+            - img "Мононокэ" [ref=e448]
+          - generic [ref=e449]:
+            - generic [ref=e450]: Mononoke
+            - link "Мононокэ" [ref=e452] [cursor=pointer]:
+              - /url: /anime/mononoke-4361
+            - generic [ref=e453]:
+              - generic [ref=e454]: Сериал
+              - generic [aria-hidden] [ref=e455]: /
+              - generic [ref=e456]: "2007"
+        - generic [ref=e457]:
+          - link [ref=e458] [cursor=pointer]:
+            - /url: /anime/yeir-gir-spetsial-nyi-yepizod-4358
+            - 'img "Эйр Гир: Специальный эпизод" [ref=e459]'
+          - generic [ref=e460]:
+            - generic [ref=e461]: Air Gear Special
+            - 'link "Эйр Гир: Специальный эпизод" [ref=e463] [cursor=pointer]':
+              - /url: /anime/yeir-gir-spetsial-nyi-yepizod-4358
+            - generic [ref=e464]:
+              - generic [ref=e465]: Спешл
+              - generic [aria-hidden] [ref=e466]: /
+              - generic [ref=e467]: "2007"
+        - generic [ref=e468]:
+          - link [ref=e469] [cursor=pointer]:
+            - /url: /anime/yeir-gir-chernyye-kryl-ya-spyashchego-lesa-raskol-nebes-4357
+            - 'img "Эйр Гир: Чёрные крылья «Спящего леса» — Раскол небес" [ref=e470]'
+          - generic [ref=e471]:
+            - generic [ref=e472]: "Air Gear: Kuro no Hane to Nemuri no Mori - Break on the Sky"
+            - 'link "Эйр Гир: Чёрные крылья «Спящего леса» — Раскол небес" [ref=e474] [cursor=pointer]':
+              - /url: /anime/yeir-gir-chernyye-kryl-ya-spyashchego-lesa-raskol-nebes-4357
+            - generic [ref=e475]:
+              - generic [ref=e476]: OVA
+              - generic [aria-hidden] [ref=e477]: /
+              - generic [ref=e478]: "2010"
+        - generic [ref=e479]:
+          - link [ref=e480] [cursor=pointer]:
+            - /url: /anime/yeir-gir-4356
+            - img "Эйр Гир" [ref=e481]
+          - generic [ref=e482]:
+            - generic [ref=e483]: Air Gear
+            - link "Эйр Гир" [ref=e485] [cursor=pointer]:
+              - /url: /anime/yeir-gir-4356
+            - generic [ref=e486]:
+              - generic [ref=e487]: Сериал
+              - generic [aria-hidden] [ref=e488]: /
+              - generic [ref=e489]: "2006"
+        - generic [ref=e490]:
+          - link [ref=e491] [cursor=pointer]:
+            - /url: /anime/pod-mostom-nad-arakavoi-2-4355
+            - img "Под мостом над Аракавой 2" [ref=e492]
+          - generic [ref=e493]:
+            - generic [ref=e494]: Arakawa Under the Bridge x Bridge
+            - link "Под мостом над Аракавой 2" [ref=e496] [cursor=pointer]:
+              - /url: /anime/pod-mostom-nad-arakavoi-2-4355
+            - generic [ref=e497]:
+              - generic [ref=e498]: Сериал
+              - generic [aria-hidden] [ref=e499]: /
+              - generic [ref=e500]: "2010"
+    - generic [ref=e501]:
+      - heading "AnimeGO — смотреть аниме онлайн бесплатно" [level=1] [ref=e502]
+      - generic [ref=e503]:
+        - paragraph [ref=e504]: Вот уже много лет японская анимация пользуется огромным успехом по всему миру, включая Россию. Эти ленты любят за яркий сюжет, оригинальную рисовку и неизменный накал эмоций.
+        - paragraph [ref=e505]:
+          - text: Многие поклонники любят
+          - strong [ref=e506]: смотреть аниме онлайн
+          - text: ", однако для этого часто приходится пользоваться несколькими источниками, поскольку ни один из них нельзя назвать универсальным. Но у нас есть отличная новость для любителей аниме! Мы запустили новый проект AnimeGO, посвящённый онлайн-просмотру аниме. Теперь Вам не придётся бороздить просторы интернета в поисках любимого тайтла – все лучшие аниме в хорошем качестве уже есть на нашем портале. Мы сами очень любим этот жанр и поэтому постарались сделать наш сайт как можно более удобным и захватывающим."
+      - generic [ref=e507]: Наши преимущества
+      - paragraph [ref=e508]: "Мы подготовили для Вас следующие бонусы:"
+      - list [ref=e509]:
+        - listitem [ref=e510]:
+          - text: Огромный выбор
+          - link "аниме онлайн" [ref=e511] [cursor=pointer]:
+            - /url: https://animego.me/anime
+          - text: . У нас загружены все популярные и качественные аниме прошлых лет, и наша коллекция регулярно пополняется самыми последними новинками. В каталоге есть как
+          - link "полнометражные" [ref=e512] [cursor=pointer]:
+            - /url: https://animego.me/anime/type/movie
+          - text: ", так и"
+          - link "аниме сериалы" [ref=e513] [cursor=pointer]:
+            - /url: https://animego.me/anime/type/tv
+          - text: ", а жанровое разнообразие во многом превосходит другие аналогичные порталы. У нас Вы сможете посмотреть красивые произведения о любви и дружбе, вере и предательстве, доброте и корысти, и многое другое."
+        - listitem [ref=e514]: Превосходное качество. Все файлы предоставляются в HD-формате, что позволяет смотреть аниме онлайн в хорошем качестве не только на персональном компьютере, но и на телевизоре. Благодаря грамотному использованию IT-технологий мы гарантируем Вам комфортный бесперебойный просмотр любого аниме, максимально имитирующий поход в настоящий кинотеатр. При этом Вы сможете в любой момент поставить на паузу или перемотать его до нужного момента.
+        - listitem [ref=e515]: Удобная навигация. Сайт AnimeGO – это не просто хранилище аниме онлайн, а структурированная фильмотека, в которой очень легко ориентироваться. Все файлы отсортированы по жанру, длительности, компании-создателю и другим параметрам. Вы всегда сможете в считанные минуты найти именно ту ленту, которую ищете.
+        - listitem [ref=e516]: Минимум рекламы. Как и большинство других сайтов, мы пользуемся рекламой, но в то же время мы позаботились о том, чтобы рекламные объявления не мешали вашему просмотру. Ненавязчивая и дозированная реклама – это одно из преимуществ портала AnimeGO, которое уже оценили тысячи зрителей.
+      - paragraph [ref=e517]: А ещё мы рады предложить Вам приятный дизайн сайта, быструю работу всех разделов и удобный доступ с различных устройств. Смотреть аниме онлайн теперь стало ещё приятнее и комфортнее!
+      - heading "На AnimeGO – только бесплатные аниме без регистрации" [level=4] [ref=e518]
+      - generic [ref=e519]:
+        - paragraph [ref=e520]: Самый главный плюс нашего портала – это возможность смотреть все аниме абсолютно бесплатно. Мы считаем, что искусство японской мультипликации должно быть доступно каждому, тем более что большинство наших зрителей – представители молодёжи. Плата не взимается ни на каком этапе пользования сайтом, что делает наш проект по-настоящему удобным для каждого.
+        - paragraph [ref=e521]:
+          - text: Кроме того, пользование сайтом не требует регистрации. Пользователи могут
+          - strong [ref=e522]: смотреть аниме онлайн бесплатно
+          - text: сразу же после захода на сайт.
+        - paragraph [ref=e523]: Если Вы любите японскую мультипликацию, заходите на AnimeGO. Мы обещаем Вам настоящее удовольствие от просмотра лучших аниме!
+  - contentinfo [ref=e524]:
+    - generic [ref=e525]:
+      - generic [ref=e526]:
+        - text: В случае нарушения авторских прав или других уведомлений - обращайтесь на почту
+        - link "info@animego.me" [ref=e527] [cursor=pointer]:
+          - /url: mailto:info@animego.me
+      - generic [ref=e528]:
+        - list [ref=e529]:
+          - listitem [ref=e530]:
+            - link "Соглашение" [ref=e531] [cursor=pointer]:
+              - /url: /terms
+          - listitem [ref=e532]:
+            - link "Конфиденциальность" [ref=e533] [cursor=pointer]:
+              - /url: /privacy
+          - listitem [ref=e534]:
+            - link "Для правообладателей" [ref=e535] [cursor=pointer]:
+              - /url: /for-right-holders
+        - generic [ref=e536]:
+          - generic [ref=e537]: ©
+          - generic [ref=e538]: 2017-2026
+          - generic [ref=e539]: AnimeGO
+  - button "Наверх" [ref=e540] [cursor=pointer]

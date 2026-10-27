@@ -1,0 +1,542 @@
+- generic [active] [ref=e1]:
+  - link "Перейти к содержимому" [ref=e2] [cursor=pointer]:
+    - /url: "#main"
+  - banner [ref=e4]:
+    - generic [ref=e5]:
+      - link "AniGalaxy" [ref=e6] [cursor=pointer]:
+        - /url: /
+        - generic [ref=e8]:
+          - text: Ani
+          - emphasis [ref=e9]: Galaxy
+      - navigation [ref=e10]:
+        - link "Главная" [ref=e11] [cursor=pointer]:
+          - /url: /
+        - button "Каталог" [ref=e13]
+        - link "AniSwipe" [ref=e14] [cursor=pointer]:
+          - /url: /aniswipe
+        - link "Расписание" [ref=e15] [cursor=pointer]:
+          - /url: /schedule
+        - link "Манга" [ref=e16] [cursor=pointer]:
+          - /url: /manga
+      - menu "Каталог"
+      - button "Поиск аниме" [ref=e17]
+      - generic [ref=e22]:
+        - link "Боевой пропуск" [ref=e23] [cursor=pointer]:
+          - /url: /battlepass
+        - link "Совместный просмотр" [ref=e27] [cursor=pointer]:
+          - /url: /watch-together
+        - button "Бонусы" [ref=e32]
+        - separator
+        - button "Уведомления" [ref=e42]
+      - button "Войти" [ref=e45]
+      - link "Premium" [ref=e46] [cursor=pointer]:
+        - /url: /premium
+  - main [ref=e50]:
+    - generic [ref=e56]:
+      - complementary [ref=e57]:
+        - img "Провожающая в последний путь Фрирен" [ref=e59]
+        - link "Смотреть онлайн" [ref=e60] [cursor=pointer]:
+          - /url: "#watch"
+        - generic [ref=e63]:
+          - generic [ref=e64]:
+            - button "Избранное" [ref=e65]
+            - button "Подборки" [ref=e69]
+          - generic [ref=e73]:
+            - generic [ref=e74]:
+              - paragraph [ref=e75]: Статус
+              - group "Статус тайтла" [ref=e76]:
+                - button "Буду смотреть" [ref=e77]
+                - button "Смотрю" [ref=e78]
+                - button "Просмотрено" [ref=e79]
+                - button "Брошено" [ref=e80]
+            - generic [ref=e81]:
+              - paragraph [ref=e82]:
+                - generic [ref=e83]: Моя оценка
+              - group "Оценка от 1 до 10" [ref=e84]:
+                - button "Оценка 1" [ref=e85]: "1"
+                - button "Оценка 2" [ref=e86]: "2"
+                - button "Оценка 3" [ref=e87]: "3"
+                - button "Оценка 4" [ref=e88]: "4"
+                - button "Оценка 5" [ref=e89]: "5"
+                - button "Оценка 6" [ref=e90]: "6"
+                - button "Оценка 7" [ref=e91]: "7"
+                - button "Оценка 8" [ref=e92]: "8"
+                - button "Оценка 9" [ref=e93]: "9"
+                - button "Оценка 10" [ref=e94]: "10"
+        - generic [ref=e95]:
+          - generic [ref=e96]:
+            - term [ref=e97]: Тип
+            - definition [ref=e98]: ТВ Сериал
+          - generic [ref=e99]:
+            - term [ref=e100]: Студия
+            - definition [ref=e101]: Madhouse
+          - generic [ref=e102]:
+            - term [ref=e103]: Озвучка
+            - definition [ref=e104]: Crunchyroll.Subtitles
+      - generic [ref=e105]:
+        - generic [ref=e106]:
+          - generic [ref=e107]: Завершён
+          - generic [ref=e109]: ТВ Сериал
+        - heading "Провожающая в последний путь Фрирен" [level=1] [ref=e110]
+        - paragraph [ref=e111]: Sousou no Frieren
+        - paragraph [ref=e112]: "Фрирен, провожающая в последний путь / Frieren at the Funeral / Frieren: Beyond Journey's End"
+        - generic [ref=e113]:
+          - generic [ref=e114]:
+            - generic [ref=e117]: "9.25"
+            - generic [ref=e118]: 71 674
+          - generic [ref=e119]: "2023"
+          - generic [ref=e120]: 24 мин.
+          - generic [ref=e121]: 27 / 28 эп.
+        - generic [ref=e122]:
+          - link "Драма" [ref=e123] [cursor=pointer]:
+            - /url: /catalog?genre=%D0%94%D1%80%D0%B0%D0%BC%D0%B0
+          - link "Приключения" [ref=e124] [cursor=pointer]:
+            - /url: /catalog?genre=%D0%9F%D1%80%D0%B8%D0%BA%D0%BB%D1%8E%D1%87%D0%B5%D0%BD%D0%B8%D1%8F
+          - link "Сёнен" [ref=e125] [cursor=pointer]:
+            - /url: /catalog?genre=%D0%A1%D1%91%D0%BD%D0%B5%D0%BD
+          - link "Удостоено наград" [ref=e126] [cursor=pointer]:
+            - /url: /catalog?genre=%D0%A3%D0%B4%D0%BE%D1%81%D1%82%D0%BE%D0%B5%D0%BD%D0%BE%20%D0%BD%D0%B0%D0%B3%D1%80%D0%B0%D0%B4
+          - link "Фэнтези" [ref=e127] [cursor=pointer]:
+            - /url: /catalog?genre=%D0%A4%D1%8D%D0%BD%D1%82%D0%B5%D0%B7%D0%B8
+        - generic [ref=e129]:
+          - paragraph [ref=e131]: Одержав победу над Королём демонов, отряд героя Химмеля вернулся домой. Приключение, растянувшееся на десятилетие, подошло к завершению. Волшебница-эльф Фрирен и её отважные товарищи принесли людям мир и разошлись в разные стороны, чтобы спокойно прожить остаток жизни. Однако не всех членов отряда ждёт одинаковая участь. Для эльфов время течёт иначе, поэтому Фрирен вынуждена стать свидетелем того, как её спутники один за другим постепенно уходят из жизни. Девушка осознала, что годы, проведённые в отряде героя, пронеслись в один миг, как падающая звезда в бескрайнем космосе её жизни, и столкнулась с сожалениями об упущенных возможностях. Сможет ли она смириться со смертью друзей и понять, что значит жизнь для окружающих её людей? Фрирен начинает новое путешествие, чтобы найти ответ.
+          - button "Читать далее" [ref=e132]
+        - region [ref=e135]:
+          - heading "Особенности" [level=2] [ref=e136]
+          - list [ref=e138]:
+            - listitem [ref=e139]: "Завершено: 28 серий"
+            - listitem [ref=e141]: Длительность серии — около 24 мин.
+            - listitem [ref=e143]: "Студия: Madhouse"
+            - listitem [ref=e145]: "Доступно озвучек: 31 — выбирайте в плеере ниже"
+            - listitem [ref=e147]: Оценка зрителей 9.25 из 10 (71 674 оценок)
+            - listitem [ref=e149]: Часть франшизы из 3 тайтлов
+            - listitem [ref=e151]: "Жанры: Драма, Приключения, Сёнен, Удостоено наград"
+        - region [ref=e153]:
+          - heading "Частые вопросы" [level=2] [ref=e154]
+          - generic [ref=e156]:
+            - group [ref=e157]:
+              - generic "Сколько серий в аниме «Провожающая в последний путь Фрирен»?" [ref=e158] [cursor=pointer]
+            - group [ref=e161]:
+              - generic "Завершено ли аниме?" [ref=e162] [cursor=pointer]
+            - group [ref=e165]:
+              - generic "Какие озвучки доступны?" [ref=e166] [cursor=pointer]
+            - group [ref=e169]:
+              - generic "Где смотреть «Провожающая в последний путь Фрирен» онлайн?" [ref=e170] [cursor=pointer]
+            - group [ref=e173]:
+              - generic "Что посмотреть после этого аниме?" [ref=e174] [cursor=pointer]
+    - generic [ref=e177]:
+      - heading "Смотреть онлайн" [level=2] [ref=e180]
+      - generic [ref=e182]:
+        - generic [ref=e183]:
+          - paragraph [ref=e184]: 720p · Crunchyroll.Subtitles
+          - generic [ref=e185]: Загружаем AniGalaxy…
+          - generic [ref=e192]:
+            - generic [ref=e193]:
+              - paragraph [ref=e194]: Провожающая в последний путь Фрирен
+              - paragraph [ref=e195]: Сезон 1 · Серия 1 из 28 · Crunchyroll.Subtitles · AniGalaxy
+            - generic [ref=e196]:
+              - generic [ref=e197]: ТВ Сериал
+              - generic [ref=e198]: Завершён
+        - complementary [ref=e199]:
+          - generic [ref=e200]:
+            - generic [ref=e201]:
+              - generic [ref=e202]: Студия озвучки
+              - generic [ref=e203]: "32"
+            - button "Crunchyroll.Subtitles" [ref=e205]
+          - generic [ref=e211]:
+            - generic [ref=e212]:
+              - generic [ref=e213]: Серии
+              - generic [ref=e214]: "28"
+            - generic [ref=e216]:
+              - button "1" [pressed] [ref=e217]
+              - button "2" [ref=e218]
+              - button "3" [ref=e219]
+              - button "4" [ref=e220]
+              - button "5" [ref=e221]
+              - button "6" [ref=e222]
+              - button "7" [ref=e223]
+              - button "8" [ref=e224]
+              - button "9" [ref=e225]
+              - button "10" [ref=e226]
+              - button "11" [ref=e227]
+              - button "12" [ref=e228]
+              - button "13" [ref=e229]
+              - button "14" [ref=e230]
+              - button "15" [ref=e231]
+              - button "16" [ref=e232]
+              - button "17" [ref=e233]
+              - button "18" [ref=e234]
+              - button "19" [ref=e235]
+              - button "20" [ref=e236]
+              - button "21" [ref=e237]
+              - button "22" [ref=e238]
+              - button "23" [ref=e239]
+              - button "24" [ref=e240]
+              - button "25" [ref=e241]
+              - button "26" [ref=e242]
+              - button "27" [ref=e243]
+              - button "28" [ref=e244]
+    - region [ref=e245]:
+      - generic [ref=e246]:
+        - heading "Хронология франшизы" [level=2] [ref=e252]
+        - generic [ref=e253]: 3 тайтла
+      - generic [ref=e254]:
+        - list [ref=e256]:
+          - listitem [ref=e257]:
+            - link "Провожающая в последний путь Фрирен Сейчас 2023 Провожающая в последний путь Фрирен ТВ Сериал" [ref=e258] [cursor=pointer]:
+              - /url: /title/serial-53972
+              - generic [ref=e259]:
+                - img "Провожающая в последний путь Фрирен" [ref=e260]
+                - generic [ref=e261]: Сейчас
+                - generic [ref=e262]: "2023"
+              - generic [ref=e263]:
+                - paragraph [ref=e264]: Провожающая в последний путь Фрирен
+                - generic [ref=e265]: ТВ Сериал
+          - listitem [ref=e266]:
+            - 'link "Провожающая в последний путь Фрирен: Магия ●● 2023 Провожающая в последний путь Фрирен: Магия ●● ONA" [ref=e267] [cursor=pointer]':
+              - /url: /title/serial-55895
+              - generic [ref=e268]:
+                - 'img "Провожающая в последний путь Фрирен: Магия ●●" [ref=e269]'
+                - generic [ref=e270]: "2023"
+              - generic [ref=e271]:
+                - paragraph [ref=e272]: "Провожающая в последний путь Фрирен: Магия ●●"
+                - generic [ref=e273]: ONA
+          - listitem [ref=e274]:
+            - link "Провожающая в последний путь Фрирен 2 2026 Провожающая в последний путь Фрирен 2 ТВ Сериал" [ref=e275] [cursor=pointer]:
+              - /url: /title/serial-72930
+              - generic [ref=e276]:
+                - img "Провожающая в последний путь Фрирен 2" [ref=e277]
+                - generic [ref=e278]: "2026"
+              - generic [ref=e279]:
+                - paragraph [ref=e280]: Провожающая в последний путь Фрирен 2
+                - generic [ref=e281]: ТВ Сериал
+        - button "Листать хронологию назад" [disabled]
+        - button "Листать хронологию вперёд" [ref=e282]
+    - region [ref=e285]:
+      - generic [ref=e286]:
+        - heading "Кадры из аниме" [level=2] [ref=e288]
+        - generic [ref=e289]: "36"
+      - generic [ref=e290]:
+        - 'button "Открыть: Трейлер: Провожающая в последний путь Фрирен" [ref=e291]':
+          - 'img "Трейлер: Провожающая в последний путь Фрирен" [ref=e292]'
+          - generic [ref=e293]: Трейлер
+        - 'button "Открыть: Провожающая в последний путь Фрирен — кадр 2" [ref=e298]':
+          - img "Провожающая в последний путь Фрирен — кадр 2" [ref=e299]
+        - 'button "Открыть: Провожающая в последний путь Фрирен — кадр 3" [ref=e300]':
+          - img "Провожающая в последний путь Фрирен — кадр 3" [ref=e301]
+        - 'button "Открыть: Провожающая в последний путь Фрирен — кадр 4" [ref=e302]':
+          - img "Провожающая в последний путь Фрирен — кадр 4" [ref=e303]
+      - button "Показать все кадры 36" [ref=e305]:
+        - text: Показать все кадры
+        - generic [ref=e306]: "36"
+    - generic [ref=e310]:
+      - generic [ref=e311]:
+        - heading "Похожие тайтлы" [level=2] [ref=e317]
+        - generic [ref=e318]:
+          - generic [ref=e319]:
+            - button "Прокрутить назад" [ref=e320]
+            - button "Прокрутить вперёд" [ref=e323]
+          - link "Смотреть все" [ref=e326] [cursor=pointer]:
+            - /url: /catalog?genre=%D0%94%D1%80%D0%B0%D0%BC%D0%B0
+      - generic [ref=e329]:
+        - 'link "Стальной алхимик: Братство, ТВ Сериал" [ref=e331] [cursor=pointer]':
+          - /url: /title/serial-7884
+          - generic [ref=e332]:
+            - 'img "Стальной алхимик: Братство" [ref=e333]'
+            - generic [ref=e339]: "9.11"
+            - generic [ref=e342]: 64 эп.
+            - generic [ref=e343]: Завершён
+          - generic [ref=e344]:
+            - 'heading "Стальной алхимик: Братство" [level=3] [ref=e345]'
+            - paragraph [ref=e346]:
+              - generic [ref=e347]: "2009"
+              - generic [ref=e348]: ТВ Сериал
+              - generic [ref=e350]: 95 213 оценок
+        - link "Врата Штейна, ТВ Сериал" [ref=e354] [cursor=pointer]:
+          - /url: /title/serial-9804
+          - generic [ref=e355]:
+            - img "Врата Штейна" [ref=e356]
+            - generic [ref=e362]: "9.07"
+            - generic [ref=e365]: 24 эп.
+            - generic [ref=e366]: Завершён
+          - generic [ref=e367]:
+            - heading "Врата Штейна" [level=3] [ref=e368]
+            - paragraph [ref=e369]:
+              - generic [ref=e370]: "2011"
+              - generic [ref=e371]: ТВ Сериал
+              - generic [ref=e373]: 111 317 оценок
+        - link "Re:Zero. Жизнь с нуля в альтернативном мире 4, ТВ Сериал" [ref=e377] [cursor=pointer]:
+          - /url: /title/serial-74504
+          - generic [ref=e378]:
+            - img "Re:Zero. Жизнь с нуля в альтернативном мире 4" [ref=e379]
+            - generic [ref=e385]: "9.07"
+            - generic [ref=e388]: 19 эп.
+            - generic [ref=e389]: Завершён
+          - generic [ref=e390]:
+            - heading "Re:Zero. Жизнь с нуля в альтернативном мире 4" [level=3] [ref=e391]
+            - paragraph [ref=e392]:
+              - generic [ref=e393]: "2026"
+              - generic [ref=e394]: ТВ Сериал
+              - generic [ref=e396]: 10 505 оценок
+        - link "Атака титанов 3. Часть 2, ТВ Сериал" [ref=e400] [cursor=pointer]:
+          - /url: /title/serial-41699
+          - generic [ref=e401]:
+            - img "Атака титанов 3. Часть 2" [ref=e402]
+            - generic [ref=e408]: "9.05"
+            - generic [ref=e411]: 10 эп.
+            - generic [ref=e412]: Завершён
+          - generic [ref=e413]:
+            - heading "Атака титанов 3. Часть 2" [level=3] [ref=e414]
+            - paragraph [ref=e415]:
+              - generic [ref=e416]: "2019"
+              - generic [ref=e417]: ТВ Сериал
+              - generic [ref=e419]: 94 944 оценок
+        - 'link "Гинтама: Финал, Фильм" [ref=e423] [cursor=pointer]':
+          - /url: /title/movie-75946
+          - generic [ref=e424]:
+            - 'img "Гинтама: Финал" [ref=e425]'
+            - generic [ref=e431]: "9.05"
+            - generic [ref=e434]: Завершён
+            - text: "0"
+          - generic [ref=e435]:
+            - 'heading "Гинтама: Финал" [level=3] [ref=e436]'
+            - paragraph [ref=e437]:
+              - generic [ref=e438]: "2021"
+              - generic [ref=e439]: Фильм
+              - generic [ref=e441]: 4 435 оценок
+        - link "Легенда о героях Галактики, OVA" [ref=e445] [cursor=pointer]:
+          - /url: /title/serial-8077
+          - generic [ref=e446]:
+            - img "Легенда о героях Галактики" [ref=e447]
+            - generic [ref=e453]: "9.02"
+            - generic [ref=e456]: 110 эп.
+            - generic [ref=e457]: Завершён
+          - generic [ref=e458]:
+            - heading "Легенда о героях Галактики" [level=3] [ref=e459]
+            - paragraph [ref=e460]:
+              - generic [ref=e461]: "1988"
+              - generic [ref=e462]: OVA
+              - generic [ref=e464]: 6 703 оценок
+        - 'link "Ван-Пис: Письмо от поклонника, Спешл" [ref=e468] [cursor=pointer]':
+          - /url: /title/movie-114980
+          - generic [ref=e469]:
+            - 'img "Ван-Пис: Письмо от поклонника" [ref=e470]'
+            - generic [ref=e476]: "8.99"
+            - generic [ref=e479]: Завершён
+            - text: "0"
+          - generic [ref=e480]:
+            - 'heading "Ван-Пис: Письмо от поклонника" [level=3] [ref=e481]'
+            - paragraph [ref=e482]:
+              - generic [ref=e483]: "2024"
+              - generic [ref=e484]: Спешл
+              - generic [ref=e486]: 5 274 оценок
+        - 'link "Кланнад: Продолжение истории, ТВ Сериал" [ref=e490] [cursor=pointer]':
+          - /url: /title/serial-3848
+          - generic [ref=e491]:
+            - 'img "Кланнад: Продолжение истории" [ref=e492]'
+            - generic [ref=e498]: "8.93"
+            - generic [ref=e501]: 25 эп.
+            - generic [ref=e502]: Завершён
+          - generic [ref=e503]:
+            - 'heading "Кланнад: Продолжение истории" [level=3] [ref=e504]'
+            - paragraph [ref=e505]:
+              - generic [ref=e506]: "2008"
+              - generic [ref=e507]: ТВ Сериал
+              - generic [ref=e509]: 24 556 оценок
+        - 'link "Корзинка фруктов: Финал, ТВ Сериал" [ref=e513] [cursor=pointer]':
+          - /url: /title/serial-34465
+          - generic [ref=e514]:
+            - 'img "Корзинка фруктов: Финал" [ref=e515]'
+            - generic [ref=e521]: "8.93"
+            - generic [ref=e524]: 12 эп.
+            - generic [ref=e525]: Завершён
+          - generic [ref=e526]:
+            - 'heading "Корзинка фруктов: Финал" [level=3] [ref=e527]'
+            - paragraph [ref=e528]:
+              - generic [ref=e529]: "2021"
+              - generic [ref=e530]: ТВ Сериал
+              - generic [ref=e532]: 9 578 оценок
+        - link "Форма голоса, Фильм" [ref=e536] [cursor=pointer]:
+          - /url: /title/movie-86022
+          - generic [ref=e537]:
+            - img "Форма голоса" [ref=e538]
+            - generic [ref=e544]: "8.93"
+            - generic [ref=e547]: Завершён
+            - text: "0"
+          - generic [ref=e548]:
+            - heading "Форма голоса" [level=3] [ref=e549]
+            - paragraph [ref=e550]:
+              - generic [ref=e551]: "2016"
+              - generic [ref=e552]: Фильм
+              - generic [ref=e554]: 133 270 оценок
+        - 'link "Код Гиас: Восставший Лелуш 2, ТВ Сериал" [ref=e558] [cursor=pointer]':
+          - /url: /title/serial-73375
+          - generic [ref=e559]:
+            - 'img "Код Гиас: Восставший Лелуш 2" [ref=e560]'
+            - generic [ref=e566]: "8.92"
+            - generic [ref=e569]: 14 эп.
+            - generic [ref=e570]: Завершён
+          - generic [ref=e571]:
+            - 'heading "Код Гиас: Восставший Лелуш 2" [level=3] [ref=e572]'
+            - paragraph [ref=e573]:
+              - generic [ref=e574]: "2008"
+              - generic [ref=e575]: ТВ Сериал
+              - generic [ref=e577]: 81 814 оценок
+        - link "Монолог фармацевта 2, ТВ Сериал" [ref=e581] [cursor=pointer]:
+          - /url: /title/serial-67225
+          - generic [ref=e582]:
+            - img "Монолог фармацевта 2" [ref=e583]
+            - generic [ref=e589]: "8.9"
+            - generic [ref=e592]: 24 эп.
+            - generic [ref=e593]: Завершён
+          - generic [ref=e594]:
+            - heading "Монолог фармацевта 2" [level=3] [ref=e595]
+            - paragraph [ref=e596]:
+              - generic [ref=e597]: "2025"
+              - generic [ref=e598]: ТВ Сериал
+              - generic [ref=e600]: 30 441 оценок
+    - region "Комментарии" [ref=e604]:
+      - generic [ref=e605]:
+        - heading "Комментарии 0" [level=2] [ref=e606]:
+          - text: Комментарии
+          - generic [ref=e609]: "0"
+        - generic [ref=e610]:
+          - generic [ref=e611]: Порядок
+          - combobox "Сортировка комментариев" [ref=e612]:
+            - option "Сначала новые" [selected]
+            - option "Сначала старые"
+            - option "Сначала популярные"
+      - generic [ref=e613]:
+        - textbox "Поделитесь мнением об аниме..." [ref=e614]
+        - generic [ref=e615]:
+          - generic [ref=e616]:
+            - button "Спойлер" [ref=e617]
+            - generic [ref=e621]: 0/300
+          - button "Отправить" [disabled] [ref=e622]
+        - paragraph [ref=e626]: Ctrl+Enter — быстрая отправка
+      - paragraph [ref=e627]: Комментарии видны всем игрокам сайта. Несколько строк в начале — демо-посев, а не живые зрители.
+      - generic [ref=e628]:
+        - paragraph [ref=e629]: Пока нет комментариев
+        - paragraph [ref=e630]: Будьте первым — поделитесь мнением об аниме.
+  - contentinfo [ref=e631]:
+    - generic [ref=e632]:
+      - generic [ref=e633]:
+        - generic [ref=e634]:
+          - link "AniGalaxy — на главную" [ref=e635] [cursor=pointer]:
+            - /url: /
+            - generic [ref=e637]: AniGalaxy
+          - paragraph [ref=e638]: "Твой проводник в мире аниме: свежие релизы, онгоинги и классика. Удобный выбор серий и озвучек, быстрый поиск и фильтры — на любом устройстве."
+          - generic [ref=e639]:
+            - generic [ref=e640]: Онлайн
+            - generic [ref=e642]: HD-качество
+            - generic [ref=e643]: Озвучки и субтитры
+          - link "Telegram @anigalaxy" [ref=e644] [cursor=pointer]:
+            - /url: https://t.me/anigalaxy
+            - generic [ref=e648]:
+              - generic [ref=e649]: Telegram
+              - generic [ref=e650]: "@anigalaxy"
+        - navigation "Смотреть" [ref=e654]:
+          - heading [level=3] [ref=e655]
+          - list [ref=e660]:
+            - listitem [ref=e661]:
+              - link "Главная" [ref=e662] [cursor=pointer]:
+                - /url: /
+            - listitem [ref=e663]:
+              - link "Каталог аниме" [ref=e664] [cursor=pointer]:
+                - /url: /catalog
+            - listitem [ref=e665]:
+              - link "Онгоинги" [ref=e666] [cursor=pointer]:
+                - /url: /catalog?status=ongoing
+            - listitem [ref=e667]:
+              - link "Расписание выхода" [ref=e668] [cursor=pointer]:
+                - /url: /schedule
+            - listitem [ref=e669]:
+              - link "Топ рейтинга" [ref=e670] [cursor=pointer]:
+                - /url: /catalog?sort=rating
+            - listitem [ref=e671]:
+              - link "Аниме-фильмы" [ref=e672] [cursor=pointer]:
+                - /url: /catalog?type=movie
+            - listitem [ref=e673]:
+              - link "Подборки" [ref=e674] [cursor=pointer]:
+                - /url: /collections
+            - listitem [ref=e675]:
+              - link "Каталог манги" [ref=e676] [cursor=pointer]:
+                - /url: /manga
+        - navigation "Сообщество" [ref=e677]:
+          - heading [level=3] [ref=e678]
+          - list [ref=e683]:
+            - listitem [ref=e684]:
+              - link "Кланы" [ref=e685] [cursor=pointer]:
+                - /url: /clans
+            - listitem [ref=e686]:
+              - link "Ивенты" [ref=e687] [cursor=pointer]:
+                - /url: /events
+            - listitem [ref=e688]:
+              - link "Квесты дня" [ref=e689] [cursor=pointer]:
+                - /url: /quests
+            - listitem [ref=e690]:
+              - link "Рейтинг игроков" [ref=e691] [cursor=pointer]:
+                - /url: /leaderboard
+            - listitem [ref=e692]:
+              - link "Карта аниме" [ref=e693] [cursor=pointer]:
+                - /url: /map
+            - listitem [ref=e694]:
+              - link "Подарки" [ref=e695] [cursor=pointer]:
+                - /url: /gifts
+            - listitem [ref=e696]:
+              - link "Обновления сайта" [ref=e697] [cursor=pointer]:
+                - /url: /updates
+            - listitem [ref=e698]:
+              - link "Premium-подписка" [ref=e699] [cursor=pointer]:
+                - /url: /premium
+        - generic [ref=e700]:
+          - heading [level=3] [ref=e701]
+          - generic [ref=e706]:
+            - link "Фэнтези" [ref=e707] [cursor=pointer]:
+              - /url: /catalog?genre=%D0%A4%D1%8D%D0%BD%D1%82%D0%B5%D0%B7%D0%B8
+            - link "Экшен" [ref=e708] [cursor=pointer]:
+              - /url: /catalog?genre=%D0%AD%D0%BA%D1%88%D0%B5%D0%BD
+            - link "Романтика" [ref=e709] [cursor=pointer]:
+              - /url: /catalog?genre=%D0%A0%D0%BE%D0%BC%D0%B0%D0%BD%D1%82%D0%B8%D0%BA%D0%B0
+            - link "Комедия" [ref=e710] [cursor=pointer]:
+              - /url: /catalog?genre=%D0%9A%D0%BE%D0%BC%D0%B5%D0%B4%D0%B8%D1%8F
+            - link "Драма" [ref=e711] [cursor=pointer]:
+              - /url: /catalog?genre=%D0%94%D1%80%D0%B0%D0%BC%D0%B0
+            - link "Приключения" [ref=e712] [cursor=pointer]:
+              - /url: /catalog?genre=%D0%9F%D1%80%D0%B8%D0%BA%D0%BB%D1%8E%D1%87%D0%B5%D0%BD%D0%B8%D1%8F
+            - link "Фантастика" [ref=e713] [cursor=pointer]:
+              - /url: /catalog?genre=%D0%A4%D0%B0%D0%BD%D1%82%D0%B0%D1%81%D1%82%D0%B8%D0%BA%D0%B0
+            - link "Детектив" [ref=e714] [cursor=pointer]:
+              - /url: /catalog?genre=%D0%94%D0%B5%D1%82%D0%B5%D0%BA%D1%82%D0%B8%D0%B2
+          - heading [level=3] [ref=e715]
+          - paragraph [ref=e722]: Вопросы по аккаунту, оплате и работе сайта — напишите нам в Telegram, отвечаем в течение 30 дней.
+      - generic [ref=e723]:
+        - paragraph [ref=e724]: © 2026 AniGalaxy. Все права на контент принадлежат правообладателям.
+        - list [ref=e725]:
+          - listitem [ref=e726]:
+            - link "Публичная оферта" [ref=e727] [cursor=pointer]:
+              - /url: /offer
+          - listitem [ref=e728]:
+            - link "Политика конфиденциальности" [ref=e729] [cursor=pointer]:
+              - /url: /privacy
+          - listitem [ref=e730]:
+            - link "Пользовательское соглашение" [ref=e731] [cursor=pointer]:
+              - /url: /terms
+        - link "Наверх" [ref=e732] [cursor=pointer]:
+          - /url: "#top"
+  - status "Уведомления о наградах"
+  - link "Кланы" [ref=e735] [cursor=pointer]:
+    - /url: /clans
+    - generic [aria-hidden] [ref=e736]: 🛡
+  - button "Открыть общий чат" [ref=e737]
+  - complementary [aria-hidden]:
+    - generic:
+      - generic:
+        - generic:
+          - paragraph: Общий чат
+      - button
+    - generic:
+      - paragraph: Тихо… напишите первым
+    - generic:
+      - paragraph: Читать могут все, писать — после входа в аккаунт
+  - alert [ref=e740]

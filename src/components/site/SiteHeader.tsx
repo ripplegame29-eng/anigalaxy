@@ -267,7 +267,9 @@ export function SiteHeader({ onOpenSearch }: SiteHeaderProps) {
     setOpenId("mega");
   };
 
-  const showHoverMega = (index: number) => () => {
+  const showHoverMega = (index: number) => (event: React.PointerEvent) => {
+    // На сенсорных экранах меню открывает тап (click), а не «наведение»
+    if (event.pointerType === "touch" || event.pointerType === "pen") return;
     place(hlRef.current, itemsRef.current[index], 1);
     openMega();
   };
@@ -276,9 +278,15 @@ export function SiteHeader({ onOpenSearch }: SiteHeaderProps) {
    * Закрытие с задержкой: между кнопкой и панелью есть разрыв, и без
    * таймера меню мигает, пока курсор идёт к панели.
    */
-  const scheduleMegaClose = () => {
+  const scheduleMegaClose = (event?: React.PointerEvent) => {
+    // На iPhone pointerleave приходит сразу после тапа и закрывал бонусы и
+    // уведомления через 160 мс — закрываем по уходу курсора только мега-меню
+    if (event && event.pointerType !== "mouse") return;
     window.clearTimeout(megaCloseTimer.current);
-    megaCloseTimer.current = window.setTimeout(() => setOpenId(null), 160);
+    megaCloseTimer.current = window.setTimeout(
+      () => setOpenId((prev) => (prev === "mega" ? null : prev)),
+      160,
+    );
   };
 
   /** Курсор над панелью — отменяем закрытие (`panel.mouseenter`) */

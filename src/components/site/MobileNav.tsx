@@ -82,6 +82,7 @@ const GROUPS: Group[] = [
       { label: "Рейтинг", hint: "Лидеры сайта", href: "/leaderboard", icon: "trophy" },
       { label: "Подборки", hint: "Коллекции", href: "/collections", icon: "layers" },
       { label: "Карта", hint: "Маршруты и награды", href: "/map", icon: "compass" },
+      { label: "Обновления", hint: "Что нового на сайте", href: "/updates", icon: "spark" },
     ],
   },
 ];
@@ -134,7 +135,7 @@ export function MobileNav() {
     <>
       <div className={`mnv-sheet${open ? " on" : ""}`} aria-hidden={!open} onClick={() => setOpen(false)}>
         <div className="mnv-panel" role="dialog" aria-label="Меню" onClick={(e) => e.stopPropagation()}>
-          <span className="mnv-grab" />
+          <button type="button" className="mnv-grab" aria-label="Закрыть меню" onClick={() => setOpen(false)} />
           <div className="mnv-top">
             <b>Меню</b>
             <button type="button" className="mnv-x" aria-label="Закрыть" onClick={() => setOpen(false)}>
