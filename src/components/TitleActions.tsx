@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useState, useSyncExternalStore } from "react";
 import {
   COLLECTIONS_KEY,
   FAVORITES_KEY,
@@ -42,6 +42,8 @@ interface Props {
  * Оба состояния живут в localStorage и читаются через `useSyncExternalStore`,
  * поэтому серверный HTML и первый клиентский рендер совпадают.
  */
+const noopSubscribe = () => () => {};
+
 export function TitleActions({ anime }: Props) {
   const [, setRevision] = useState(0);
   /** Перерисовка после записи в хранилище (снимок читается заново на рендере) */
@@ -62,8 +64,15 @@ export function TitleActions({ anime }: Props) {
   const [open, setOpen] = useState(false);
   const close = useCallback(() => setOpen(false), []);
 
-  const status = getStatus(anime.id);
-  const rating = getRating(anime.id);
+  /* Статус и оценка живут в localStorage: на сервере и при гидратации их нет,
+     читаем только после монтирования — иначе HTML сервера и клиента расходятся */
+  const hydrated = useSyncExternalStore(
+    noopSubscribe,
+    () => true,
+    () => false,
+  );
+  const status = hydrated ? getStatus(anime.id) : null;
+  const rating = hydrated ? getRating(anime.id) : null;
   const avgRating = useTitleAvgRating(anime.id);
 
   /**
