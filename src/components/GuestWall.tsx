@@ -43,20 +43,20 @@ export function GuestWall() {
         <svg viewBox="0 0 80 80" fill="none">
           <defs>
             <linearGradient id="gw-rim" x1="12" y1="6" x2="68" y2="74" gradientUnits="userSpaceOnUse">
-              <stop offset="0" stopColor="#fff3c4" />
-              <stop offset=".35" stopColor="#ffc23a" />
-              <stop offset=".7" stopColor="#c47a14" />
-              <stop offset="1" stopColor="#ffd98a" />
+              <stop offset="0" stopColor="#eafaff" />
+              <stop offset=".35" stopColor="#63d9ff" />
+              <stop offset=".7" stopColor="#1f7bff" />
+              <stop offset="1" stopColor="#a6ecff" />
             </linearGradient>
             <radialGradient id="gw-face" cx=".32" cy=".24" r=".95">
-              <stop offset="0" stopColor="#fff0b0" />
-              <stop offset=".5" stopColor="#f7b93f" />
-              <stop offset="1" stopColor="#c9801a" />
+              <stop offset="0" stopColor="#c9f4ff" />
+              <stop offset=".5" stopColor="#3da8ff" />
+              <stop offset="1" stopColor="#1650d0" />
             </radialGradient>
           </defs>
           <circle cx="40" cy="40" r="38" fill="url(#gw-rim)" />
-          <circle cx="40" cy="40" r="33" fill="url(#gw-face)" stroke="rgba(120,60,0,.35)" strokeWidth="1" />
-          <circle cx="40" cy="40" r="29.5" stroke="rgba(110,55,0,.38)" strokeWidth="1.2" strokeDasharray="1.2 3.1" strokeLinecap="round" />
+          <circle cx="40" cy="40" r="33" fill="url(#gw-face)" stroke="rgba(4,36,110,.4)" strokeWidth="1" />
+          <circle cx="40" cy="40" r="29.5" stroke="rgba(4,30,100,.5)" strokeWidth="1.2" strokeDasharray="1.2 3.1" strokeLinecap="round" />
           <path d="M40 9.5l1.5 3.6 3.6 1.5-3.6 1.5L40 19.7l-1.5-3.6-3.6-1.5 3.6-1.5z" fill="#fff" fillOpacity=".9" />
           {/* Надпись выбита на монете: светлая тень снизу, тёмная заливка сверху */}
           <text x="40" y="47.8" textAnchor="middle" className="gw-t1 gw-t-hi">+{SIGNUP_BONUS_AC}</text>
