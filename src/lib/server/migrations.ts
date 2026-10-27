@@ -581,4 +581,13 @@ export const MIGRATIONS: Migration[] = [
       CREATE INDEX idx_tg_logins_ip ON tg_logins(ip, created_at);
     `,
   },
+  {
+    version: 17,
+    name: "tg_link",
+    sql: `
+      -- Привязка Telegram к существующему аккаунту: запрос хранит id пользователя.
+      ALTER TABLE tg_logins ADD COLUMN user_id INTEGER NOT NULL DEFAULT 0;
+      ALTER TABLE users ADD COLUMN telegram_username TEXT NOT NULL DEFAULT '';
+    `,
+  },
 ];

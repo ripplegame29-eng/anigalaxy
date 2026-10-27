@@ -93,6 +93,7 @@ import {
   PARTICLE_EFFECTS,
   STYLE_EFFECTS,
 } from "@/lib/profile-effects";
+import { TelegramLink } from "@/components/TelegramLink";
 
 /* --------------------------- Каркас модалки ----------------------------- */
 
@@ -1840,7 +1841,7 @@ export function SettingsPanel({
   const [pw, setPw] = useState({ current: "", next: "", confirm: "" });
   const [pwError, setPwError] = useState<string | null>(null);
   const [linkDraft, setLinkDraft] = useState<{ provider: LinkProvider; handle: string }>({
-    provider: "telegram",
+    provider: "google",
     handle: "",
   });
   const [linkError, setLinkError] = useState<string | null>(null);
@@ -2151,9 +2152,10 @@ function useStorageStats(): { count: number; bytes: number } {
               }
               title="Привязанные аккаунты"
               hint="Управляйте способами входа в аккаунт"
-              aside={<span className="ag-set-st ok">{OK_ICON} {links.length} из 2</span>}
+              aside={<span className="ag-set-st ok">{OK_ICON} Google: {links.filter((l) => l.provider === "google").length} из 1</span>}
             >
-              {links.map((link) => (
+              <TelegramLink />
+              {links.filter((link) => link.provider === "google").map((link) => (
                 <SetRow
                   key={link.provider}
                   icon={LINK_ICONS[link.provider]}
@@ -2180,7 +2182,6 @@ function useStorageStats(): { count: number; bytes: number } {
                   aria-label="Сервис"
                 >
                   <option value="google">Google</option>
-                  <option value="telegram">Telegram</option>
                 </select>
                 <input
                   value={linkDraft.handle}
@@ -2202,9 +2203,8 @@ function useStorageStats(): { count: number; bytes: number } {
               </div>
               {linkError && <p className="ag-set-warn">{linkError}</p>}
               <p className="ag-set-hint">
-                OAuth у Google и Telegram требует сервера и секретов приложения, поэтому вход
-                по кнопке здесь невозможен. Привязка сохраняется локально и никуда не передаётся:
-                подтверждения от сервиса не было.
+                Привязка Google пока сохраняется только в этом браузере: подтверждения от
+                сервиса нет. Telegram привязывается по-настоящему, через бота.
               </p>
             </SetBlock>
 

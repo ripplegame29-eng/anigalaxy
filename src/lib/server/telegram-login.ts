@@ -95,6 +95,29 @@ export function startLogin(db: Database, meta: { ip: string; ua: string; now?: n
   return { ok: true, value: { token, code, link: `https://t.me/${bot}?start=login_${token}`, expiresAt } };
 }
 
+/** Начать привязку Telegram к аккаунту `userId`: тот же поток, но ссылка `link_…` */
+export function startLink(db: Database, userId: number, meta: { ip: string; ua: string; now?: number }): { ok: true; value: StartResult } | { ok: false; error: string } {
+  const now = meta.now ?? Date.now();
+  const bot = botUsername();
+  if (!bot || !process.env.TELEGRAM_BOT_TOKEN) return { ok: false, error: "Telegram не настроен" };
+  const recent = num(db.prepare("SELECT COUNT(*) AS n FROM tg_logins WHERE ip = ? AND created_at > ?").get(meta.ip, now - 60_000)?.n);
+  if (recent >= 8) return { ok: false, error: "Слишком много попыток. Подождите минуту" };
+  const token = randomBytes(18).toString("base64url");
+  const code = String(randomInt(1000, 10000));
+  const expiresAt = now + LOGIN_TTL_MS;
+  db.prepare("INSERT INTO tg_logins (token, code, status, created_at, expires_at, ip, ua, user_id) VALUES (?, ?, 'pending', ?, ?, ?, ?, ?)").run(
+    token,
+    code,
+    now,
+    expiresAt,
+    meta.ip.slice(0, 64),
+    meta.ua.slice(0, 200),
+    userId,
+  );
+  ensurePoller();
+  return { ok: true, value: { token, code, link: `https://t.me/${bot}?start=link_${token}`, expiresAt } };
+}
+
 /* ------------------------------ Обновления бота ------------------------- */
 
 interface TgFrom {
@@ -121,7 +144,7 @@ export async function handleUpdate(db: Database, update: TgUpdate, now = Date.no
   const m = update.message;
   if (m?.text && m.from && m.chat.type === "private") {
     const text = m.text.trim();
-    const hit = /^\/start(?:@\w+)?\s+login_([A-Za-z0-9_-]{16,64})$/.exec(text);
+    const hit = /^\/start(?:@\w+)?\s+(?:login|link)_([A-Za-z0-9_-]{16,64})$/.exec(text);
     if (hit) return askConfirm(db, hit[1], m.from, m.chat.id, now);
     if (text.startsWith("/start") || text === "/help") {
       await say(
@@ -141,9 +164,12 @@ async function askConfirm(db: Database, token: string, from: TgFrom, chatId: num
     await say(chatId, "Эта ссылка устарела или уже использована. Вернитесь на сайт и нажмите «Войти через Telegram» ещё раз.");
     return;
   }
+  const linking = num(row.user_id) > 0;
   const reply = await say(
     chatId,
-    `<b>Вход в AniGalaxy</b>\n\nКод на сайте: <b>${esc(str(row.code))}</b>\nУстройство: ${esc(deviceLabel(str(row.ua)))}\n\nЕсли код совпадает с тем, что на экране, подтвердите вход. Если вы ничего не открывали, нажмите «Это не я».`,
+    linking
+      ? `<b>Привязка Telegram к AniGalaxy</b>\n\nКод на сайте: <b>${esc(str(row.code))}</b>\nУстройство: ${esc(deviceLabel(str(row.ua)))}\n\nЕсли код совпадает с тем, что на экране, подтвердите привязку. Если вы ничего не открывали, нажмите «Это не я».`
+      : `<b>Вход в AniGalaxy</b>\n\nКод на сайте: <b>${esc(str(row.code))}</b>\nУстройство: ${esc(deviceLabel(str(row.ua)))}\n\nЕсли код совпадает с тем, что на экране, подтвердите вход. Если вы ничего не открывали, нажмите «Это не я».`,
     {
       reply_markup: {
         inline_keyboard: [[
@@ -175,8 +201,8 @@ async function answerCallback(db: Database, cb: NonNullable<TgUpdate["callback_q
     cb.message ? tg("editMessageText", { chat_id: cb.message.chat.id, message_id: cb.message.message_id, text, parse_mode: "HTML" }) : Promise.resolve();
   if (action === "no") {
     db.prepare("UPDATE tg_logins SET status = 'cancelled' WHERE token = ? AND status = 'pending'").run(token);
-    await edit("Вход отменён. Если это были не вы, просто проигнорируйте запрос.");
-    await reply("Вход отменён", false);
+    await edit(num(row.user_id) > 0 ? "Привязка отменена." : "Вход отменён. Если это были не вы, просто проигнорируйте запрос.");
+    await reply("Отменено", false);
     return;
   }
   db.prepare("UPDATE tg_logins SET status = 'confirmed', tg_id = ?, tg_name = ?, tg_username = ? WHERE token = ? AND status = 'pending'").run(
@@ -185,7 +211,7 @@ async function answerCallback(db: Database, cb: NonNullable<TgUpdate["callback_q
     cb.from.username ?? "",
     token,
   );
-  await edit("✅ <b>Вход подтверждён.</b>\nМожно вернуться на сайт.");
+  await edit(num(row.user_id) > 0 ? "✅ <b>Привязка подтверждена.</b>\nМожно вернуться на сайт." : "✅ <b>Вход подтверждён.</b>\nМожно вернуться на сайт.");
   await reply("Готово", false);
 }
 
@@ -203,7 +229,7 @@ export type LoginStatus =
 export function loginStatus(db: Database, token: string, meta: { ip: string; ua: string; now?: number }): LoginStatus {
   const now = meta.now ?? Date.now();
   const row = db.prepare("SELECT * FROM tg_logins WHERE token = ?").get(token);
-  if (!row) return { status: "unknown" };
+  if (!row || num(row.user_id) > 0) return { status: "unknown" };
   const status = str(row.status);
   if (status === "cancelled") return { status: "cancelled" };
   if (status === "consumed") return { status: "unknown" };
@@ -224,6 +250,32 @@ export function loginStatus(db: Database, token: string, meta: { ip: string; ua:
       telegram: { id: Number(id), username: username || null, firstName: name || null, lastName: null, photoUrl: null },
       session,
     };
+  }
+  return num(row.expires_at) < now ? { status: "expired" } : { status: "pending" };
+}
+
+/* ------------------------------ Статус привязки ------------------------ */
+
+export type LinkStatus =
+  | { status: "pending" | "expired" | "cancelled" | "unknown" }
+  | { status: "taken" }
+  | { status: "ok"; username: string; name: string };
+
+/** Опрос привязки: подтверждённый запрос записывает telegram_id в аккаунт ровно один раз */
+export function linkStatus(db: Database, token: string, userId: number, now = Date.now()): LinkStatus {
+  const row = db.prepare("SELECT * FROM tg_logins WHERE token = ?").get(token);
+  if (!row || num(row.user_id) !== userId) return { status: "unknown" };
+  const status = str(row.status);
+  if (status === "cancelled") return { status: "cancelled" };
+  if (status === "consumed") return { status: "unknown" };
+  if (status === "confirmed") {
+    const claimed = db.prepare("UPDATE tg_logins SET status = 'consumed' WHERE token = ? AND status = 'confirmed'").run(token);
+    if (!num((claimed as { changes?: number }).changes)) return { status: "unknown" };
+    const id = str(row.tg_id);
+    const other = db.prepare("SELECT id FROM users WHERE telegram_id = ? AND id <> ?").get(id, userId);
+    if (other) return { status: "taken" };
+    db.prepare("UPDATE users SET telegram_id = ?, telegram_username = ? WHERE id = ?").run(id, str(row.tg_username), userId);
+    return { status: "ok", username: str(row.tg_username), name: str(row.tg_name) };
   }
   return num(row.expires_at) < now ? { status: "expired" } : { status: "pending" };
 }
