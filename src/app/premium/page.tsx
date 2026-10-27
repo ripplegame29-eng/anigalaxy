@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { PremiumEntry } from "@/components/PremiumEntry";
 import { PerkIcon } from "@/components/PerkIcon";
+import { HeroChipIcon } from "@/components/HeroChipIcon";
 import { PREMIUM_PERKS } from "@/lib/premium-perks";
 import { PremiumLoginNote, PremiumPlans, PromoCode } from "@/components/PremiumPlans";
 import { PremiumTrial } from "@/components/PremiumLive";
@@ -130,10 +131,10 @@ export default function PremiumPage() {
           </p>
 
           <div className="pp-hero-chips">
-            <span>⚡ ×2 XP и AC</span>
-            <span>🛡️ +50% клану</span>
-            <span>💠 Эксклюзивы</span>
-            <span>🎟️ Ленты пропуска</span>
+            <span><HeroChipIcon name="bolt" />×2 XP и AC</span>
+            <span><HeroChipIcon name="shield" />+50% клану</span>
+            <span><HeroChipIcon name="gem" />Эксклюзивы</span>
+            <span><HeroChipIcon name="ticket" />Ленты пропуска</span>
           </div>
 
           <PremiumTrial />
