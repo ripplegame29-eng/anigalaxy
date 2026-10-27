@@ -2,6 +2,9 @@
 @property --sd-a { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
 
 .sd {
+  position: fixed;
+  inset: 0;
+  margin: auto;
   width: min(960px, calc(100vw - 24px));
   height: min(640px, calc(100dvh - 24px));
   max-width: none;
@@ -217,7 +220,7 @@
 
 /* ---------- мобильные ---------- */
 @media (max-width: 760px) {
-  .sd { width: 100vw; height: 100dvh; }
+  .sd { width: 100vw; height: 100dvh; margin: 0; }
   .sd-shell { grid-template-columns: 1fr; border-radius: 0; }
   .sd-shell::before { border-radius: 0; }
   .sd-side, .sd-main { grid-area: 1 / 1; }
