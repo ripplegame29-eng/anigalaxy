@@ -33,6 +33,8 @@ import { analytics } from "@/lib/server/analytics";
 import { clearErrors, listErrors, resolveError } from "@/lib/server/errors";
 import { json, readJson, route } from "@/lib/server/http";
 import { listReports, resolveReport } from "@/lib/server/social";
+import { addMessage, getTicket, listAllTickets, setTicketStatus, staffUnreadCount } from "@/lib/server/tickets";
+import { tg } from "@/lib/server/telegram-login";
 
 export const runtime = "nodejs";
 
@@ -67,6 +69,15 @@ export const GET = route(
       }
       case "reports":
         return json({ reports: listReports(db, params.get("status") === "resolved" ? "resolved" : "open") });
+      case "tickets": {
+        const st = params.get("status");
+        const filter = st === "answered" || st === "closed" || st === "all" ? st : "open";
+        return json({ tickets: listAllTickets(db, filter), unread: staffUnreadCount(db) });
+      }
+      case "ticket": {
+        const r = getTicket(db, int("id"), { id: user!.id, staff: true });
+        return r.ok ? json(r.value) : json({ error: r.error }, 404);
+      }
       case "chat":
         return json({ messages: recentChat(db) });
       case "comments":
@@ -120,6 +131,21 @@ export const POST = route(
       case "resolve": {
         const result = resolveReport(db, user.id, user.role, id);
         return fromResult(result.ok ? { ok: true } : { ok: false, error: result.error }, `жалоба #${id} закрыта`);
+      }
+      case "ticketReply": {
+        const r = addMessage(db, id, { id: user.id, staff: true }, s(body.text, 2000));
+        if (!r.ok) return fail(r.error);
+        notifyUser(db, r.value.ownerId, `Поддержка ответила на обращение «${r.value.subject.slice(0, 60)}»`);
+        const tgRow = db.prepare("SELECT telegram_id FROM users WHERE id = ?").get(r.value.ownerId);
+        if (tgRow?.telegram_id) {
+          void tg("sendMessage", { chat_id: Number(tgRow.telegram_id), text: `💬 Поддержка AniGalaxy ответила на обращение «${r.value.subject.slice(0, 60)}». Откройте сайт, чтобы прочитать.` });
+        }
+        return okWith(`ответ в обращении #${id}`);
+      }
+      case "ticketStatus": {
+        const status = body.status === "closed" ? "closed" : "open";
+        const r = setTicketStatus(db, id, { id: user.id, staff: true }, status);
+        return r.ok ? okWith(`обращение #${id}: ${status === "closed" ? "закрыто" : "открыто заново"}`) : fail(r.error);
       }
       case "deleteChat":
         return fromResult(deleteChatMessage(db, id), `сообщение чата #${id} удалено`);

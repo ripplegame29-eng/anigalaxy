@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Logo } from "./Logo";
 import { LEGAL } from "@/lib/legal";
+import { SupportButton } from "./support/SupportDesk";
 import "./footer.css";
 
 const GENRES = ["Фэнтези", "Экшен", "Романтика", "Комедия", "Драма", "Приключения", "Фантастика", "Детектив"];
@@ -213,6 +214,10 @@ export function Footer() {
               Вопросы по аккаунту, оплате и работе сайта — напишите нам в Telegram, отвечаем в течение {LEGAL.replyDays}{" "}
               дней.
             </p>
+            <SupportButton className="ft-ticket">
+              <IcHeadset />
+              Создать обращение
+            </SupportButton>
           </div>
         </div>
 

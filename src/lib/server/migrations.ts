@@ -607,4 +607,33 @@ export const MIGRATIONS: Migration[] = [
       );
     `,
   },
+  {
+    version: 19,
+    name: "tickets",
+    sql: `
+      -- Обращения в поддержку: тикет и переписка по нему.
+      CREATE TABLE tickets (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        subject TEXT NOT NULL,
+        category TEXT NOT NULL DEFAULT 'other',
+        status TEXT NOT NULL DEFAULT 'open',
+        created_at INTEGER NOT NULL,
+        updated_at INTEGER NOT NULL,
+        user_unread INTEGER NOT NULL DEFAULT 0,
+        staff_unread INTEGER NOT NULL DEFAULT 1
+      );
+      CREATE INDEX idx_tickets_user ON tickets(user_id, updated_at DESC);
+      CREATE INDEX idx_tickets_status ON tickets(status, updated_at DESC);
+      CREATE TABLE ticket_messages (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        ticket_id INTEGER NOT NULL REFERENCES tickets(id) ON DELETE CASCADE,
+        author_id INTEGER NOT NULL,
+        is_staff INTEGER NOT NULL DEFAULT 0,
+        body TEXT NOT NULL,
+        created_at INTEGER NOT NULL
+      );
+      CREATE INDEX idx_ticket_messages ON ticket_messages(ticket_id, id);
+    `,
+  },
 ];
