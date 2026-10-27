@@ -837,7 +837,7 @@ export function UpdatesView() {
             </button>
           </div>
           <div className="rm-row rm-fb-links">
-            <a className="rm-btn rm-gh" href="https://t.me/anialaxyspace" target="_blank" rel="noopener">
+            <a className="rm-btn rm-gh" href="https://t.me/anigalaxyspace" target="_blank" rel="noopener">
               <span className="rm-bi">
                 <Icon name="send" />
               </span>

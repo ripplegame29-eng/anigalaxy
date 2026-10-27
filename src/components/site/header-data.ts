@@ -167,7 +167,7 @@ export const BONUS_TASKS: BonusTask[] = [
     id: "ch",
     title: "Подпишись на наш канал",
     hint: "Новости, релизы и розыгрыши первыми.",
-    href: "https://t.me/anialaxyspace",
+    href: "https://t.me/anigalaxyspace",
     cta: "Перейти в канал",
     external: true,
   },

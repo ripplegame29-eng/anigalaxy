@@ -12,9 +12,9 @@ export const LEGAL = {
   /** Почта для обращений; пустая строка — не показывать */
   email: "",
   /** Служба поддержки в Telegram */
-  telegram: "https://t.me/anialaxyspace",
+  telegram: "https://t.me/anigalaxyspace",
   /** Ник поддержки без @ — для показа в тексте */
-  telegramHandle: "anigalaxy",
+  telegramHandle: "anigalaxyspace",
   /** Дата последней редакции документов */
   updated: "22 октября 2026 г.",
   /** Срок ответа на обращения, дней */

@@ -24,7 +24,7 @@ const MENU = {
   inline_keyboard: [
     [
       { text: "🌐 Открыть сайт", url: SITE },
-      { text: "📣 Канал", url: "https://t.me/anialaxyspace" },
+      { text: "📣 Канал", url: "https://t.me/anigalaxyspace" },
     ],
     [
       { text: "👤 Мой профиль", callback_data: "m:me" },
