@@ -124,7 +124,7 @@
 .pk-tilt{animation:pk-tilt 4s ease-in-out infinite}
 @keyframes pk-tilt{50%{transform:rotate(-6deg) translateY(-1px)}}
 .pk-sheen{animation:pk-sheen 3.2s ease-in-out infinite}
-@keyframes pk-sheen{0%{transform:translateX(0) skewX(-20deg)}60%,100%{transform:translateX(70px) skewX(-20deg)}}
+@keyframes pk-sheen{0%,15%{transform:translateX(0) skewX(-20deg)}70%,100%{transform:translateX(66px) skewX(-20deg)}}
 .pk-spin{animation:pp-rot 14s linear infinite}
 .pk-tw{animation:pk-tw 2.2s ease-in-out infinite}
 .pk-tw2{animation-delay:-1.1s}

@@ -40,7 +40,18 @@ export function PerkIcon({ id }: { id: string }) {
           <path d="M5 14a3 3 0 0 1 3-3h32a3 3 0 0 1 3 3v4a4 4 0 0 0 0 8v4a3 3 0 0 1-3 3H8a3 3 0 0 1-3-3v-4a4 4 0 0 0 0-8z" fill="url(#pk-gd)" fillOpacity=".22" stroke="url(#pk-gd)" strokeWidth="2.2" strokeLinejoin="round" />
           <path d="M17 12v24" stroke="url(#pk-gd)" strokeWidth="1.8" strokeDasharray="2.5 3" />
           <path d="m30 18 2 4 4.5.6-3.3 3.1.8 4.5L30 28l-4 2.2.8-4.5-3.3-3.1L28 22z" fill="#fff" />
-          <rect className="pk-sheen" x="-14" y="8" width="9" height="34" fill="#fff" opacity=".5" transform="skewX(-20)" />
+          {/* Блик ходит только внутри билета: обрезаем по его контуру */}
+          <clipPath id="pk-tk">
+            <path d="M5 14a3 3 0 0 1 3-3h32a3 3 0 0 1 3 3v4a4 4 0 0 0 0 8v4a3 3 0 0 1-3 3H8a3 3 0 0 1-3-3v-4a4 4 0 0 0 0-8z" />
+          </clipPath>
+          <linearGradient id="pk-sh" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stopColor="#fff" stopOpacity="0" />
+            <stop offset=".5" stopColor="#fff" stopOpacity=".55" />
+            <stop offset="1" stopColor="#fff" stopOpacity="0" />
+          </linearGradient>
+          <g clipPath="url(#pk-tk)">
+            <rect className="pk-sheen" x="-16" y="6" width="12" height="36" fill="url(#pk-sh)" />
+          </g>
         </g>
       );
       break;
