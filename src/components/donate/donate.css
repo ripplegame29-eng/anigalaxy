@@ -994,3 +994,11 @@
     font-size: 14px;
   }
 }
+
+/* Телефон: плашка «Поддержать проект» не прячется у подвала, поэтому под
+   подвалом оставляем место, чтобы его ссылки не оказывались под ней */
+@media (max-width: 900px) {
+  body:has(.don-page) {
+    padding-bottom: calc(150px + env(safe-area-inset-bottom));
+  }
+}

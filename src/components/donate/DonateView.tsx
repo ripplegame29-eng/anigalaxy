@@ -212,6 +212,8 @@ export function DonateView() {
 useEffect(() => {
     const footer = document.querySelector("footer");
     if (!footer || typeof IntersectionObserver === "undefined") return;
+    // На телефоне кнопка остаётся всегда: страница получает запас снизу (donate.css)
+    if (window.matchMedia("(max-width: 900px)").matches) return;
     const observer = new IntersectionObserver(
       ([entry]) => setCtaHidden(Boolean(entry?.isIntersecting)),
       // чуть заранее, чтобы полоса ушла до того, как подвал дойдёт до низа
