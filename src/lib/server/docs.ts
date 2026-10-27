@@ -9,6 +9,7 @@
 
 import { MAX_DOCS_PER_USER, PROGRESS_DOC_KEY, isSyncKey, maxDocBytes } from "../sync-keys";
 import { weekKey } from "../leaderboard-prizes";
+import { PROGRESSION_CONFIG } from "../progression/progression.config";
 import { num, str, transaction, type Database } from "./sqlite";
 
 export interface DocRecord {
@@ -59,6 +60,25 @@ interface ProgressSummary {
   xpTotal: number;
   level: number;
   acBalance: number;
+}
+
+/** Опыт за достижения, открытые в `next`, но не открытые в `prev`: он законно превышает обычный лимит роста */
+function newAchievementXp(prevValue: string, nextValue: string): number {
+  try {
+    const unlocked = (raw: string): Set<string> => {
+      const doc = JSON.parse(raw) as { achievements?: Record<string, { unlockedAt?: number }> };
+      return new Set(Object.entries(doc.achievements ?? {}).filter(([, a]) => (a?.unlockedAt ?? 0) > 0).map(([id]) => id));
+    };
+    const before = unlocked(prevValue);
+    let sum = 0;
+    for (const id of unlocked(nextValue)) {
+      if (before.has(id)) continue;
+      sum += PROGRESSION_CONFIG.achievements.find((a) => a.id === id)?.reward.xp ?? 0;
+    }
+    return sum;
+  } catch {
+    return 0;
+  }
 }
 
 /** Достать из документа прогресса числа для рейтингов (или null, если формат не тот) */
@@ -136,7 +156,7 @@ export function putDoc(
       if (!prev && next.xpTotal > MAX_FIRST_XP) return { ok: false, reason: "invalid" };
       if (prev && existing) {
         const minutes = Math.max(0, (now - existing.updatedAt) / 60_000);
-        const allowed = prev.xpTotal + XP_SLACK + Math.floor(minutes * XP_PER_MINUTE);
+        const allowed = prev.xpTotal + XP_SLACK + Math.floor(minutes * XP_PER_MINUTE) + newAchievementXp(existing.value, value);
         if (next.xpTotal > allowed) return { ok: false, reason: "implausible", server: existing };
       }
       updatePlayerStats(db, userId, next, now);

@@ -116,6 +116,8 @@ export interface ProfileState {
   notices: ProfileNotice[];
   /** Когда уведомления очищали в последний раз: старше этой метки не возвращаются при синхронизации */
   noticesClearedAt?: number;
+  /** «Прочитать все» нажато в этот момент: всё, что старше, считается прочитанным на любом устройстве */
+  noticesReadAt?: number;
   /** Удалённые по одному уведомления — чтобы синхронизация не вернула их */
   removedNotices?: string[];
   /** Косметика, купленная за монеты */
@@ -190,7 +192,9 @@ function parse(raw: string): ProfileState | null {
       gifts: list<ProfileGift>(parsed.gifts),
       comments: list<ProfileComment>(parsed.comments),
       blacklist: list<string>(parsed.blacklist),
-      notices: list<ProfileNotice>(parsed.notices),
+      notices: list<ProfileNotice>(parsed.notices).map((notice) =>
+        !notice.read && notice.at <= (Number(parsed.noticesReadAt) || 0) ? { ...notice, read: true } : notice,
+      ),
       purchased: list<string>(parsed.purchased),
       privacy: {
         profilePublic: privacy.profilePublic ?? true,
@@ -438,7 +442,7 @@ export function removeBlocked(nickname: string): void {
 export function markNoticesRead(): void {
   profileStore.update((state) =>
     state.notices.some((notice) => !notice.read)
-      ? { ...state, notices: state.notices.map((notice) => ({ ...notice, read: true })) }
+      ? { ...state, noticesReadAt: Date.now(), notices: state.notices.map((notice) => ({ ...notice, read: true })) }
       : state,
   );
 }
