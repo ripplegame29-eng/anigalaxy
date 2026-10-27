@@ -241,6 +241,7 @@ export function WatchBox({
   const compactUi = useCompactUi();
   const [epView, setEpView] = useState<"auto" | "list" | "grid">("auto");
   const [epQuery, setEpQuery] = useState("");
+  const [voiceQ, setVoiceQ] = useState("");
   /** Пропускаем первую запись URL, пока не применены глубокие ссылки */
   const skipUrlSync = useRef(true);
   /**
@@ -920,9 +921,9 @@ export function WatchBox({
 
   return (
     <section id="watch" className="scroll-mt-24">
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_330px]">
+      <div className="wb-card grid gap-4 lg:grid-cols-[minmax(0,1fr)_340px]">
         {/* ------------------------- Плеер ------------------------- */}
-        <div className="min-w-0">
+        <div className="wb-main min-w-0">
           {/* Телефон: шапка просмотра — назад, название, серия */}
           <div className="wb-mhead">
             <button type="button" aria-label="Назад" onClick={() => router.back()}>
@@ -1131,7 +1132,7 @@ export function WatchBox({
         {/* ------------------- Боковая панель ------------------- */}
         <aside className="wb-aside flex min-w-0 flex-col overflow-hidden rounded-2xl border border-line bg-surface/75 backdrop-blur-sm">
           {/* Озвучка */}
-          <div className="border-b border-line p-3">
+          <div className="wb-voices border-b border-line p-3">
             <div className="mb-2 flex items-center justify-between">
               <span className="text-[11px] font-bold uppercase tracking-wider text-muted">
                 Студия озвучки
@@ -1164,7 +1165,16 @@ export function WatchBox({
                 </svg>
               </button>
 
-              {menuOpen && (
+              {!compactUi && voiceList.length > 6 && (
+                <label className="wb-vsearch">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden>
+                    <circle cx="11" cy="11" r="7" />
+                    <path d="m20 20-4-4" />
+                  </svg>
+                  <input type="search" value={voiceQ} onChange={(e) => setVoiceQ(e.target.value)} placeholder="Поиск студии…" aria-label="Поиск студии озвучки" />
+                </label>
+              )}
+              {(menuOpen || !compactUi) && (
                 <PortalIf on={compactUi}>
                 <button type="button" aria-label="Закрыть список озвучек" className="wb-vback" onClick={() => setMenuOpen(false)} />
                 <ul
@@ -1175,7 +1185,7 @@ export function WatchBox({
                     <span>Студия озвучки</span>
                     <button type="button" tabIndex={-1} onClick={() => setMenuOpen(false)}>Готово</button>
                   </li>
-                  {voiceList.map((t) => (
+                  {voiceList.filter((t) => compactUi || !voiceQ.trim() || t.title.toLowerCase().includes(voiceQ.trim().toLowerCase())).map((t) => (
                     <li key={t.id}>
                       <button
                         type="button"
