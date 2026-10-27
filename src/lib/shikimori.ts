@@ -341,3 +341,58 @@ export async function calendar(): Promise<CalendarEntry[]> {
     return out;
   });
 }
+
+
+/* --------------------- Публичный список пользователя ----------------- */
+
+export interface UserRate {
+  sid: number;
+  title: string;
+  status: string;
+  score: number;
+}
+
+interface RateDto {
+  score?: number;
+  status?: string;
+  target_type?: string;
+  anime?: { id?: number; name?: string; russian?: string };
+}
+
+interface FavouritesDto {
+  animes?: { id?: number; name?: string; russian?: string }[];
+}
+
+/** Список аниме и избранное с публичного профиля Shikimori по нику */
+export async function userLists(nick: string): Promise<{ rates: UserRate[]; favourites: UserRate[] }> {
+  const id = encodeURIComponent(nick);
+  const rows: RateDto[] = [];
+  for (let page = 1; page <= 4; page += 1) {
+    const chunk = await api<RateDto[]>(
+      `/api/users/${id}/anime_rates?is_nickname=1&limit=1000&page=${page}`,
+    );
+    rows.push(...chunk);
+    if (chunk.length < 1000) break;
+  }
+  const rates: UserRate[] = [];
+  for (const row of rows) {
+    const sid = Number(row.anime?.id);
+    if (!Number.isFinite(sid) || sid <= 0) continue;
+    rates.push({
+      sid,
+      title: row.anime?.russian || row.anime?.name || "",
+      status: row.status ?? "planned",
+      score: Number(row.score) || 0,
+    });
+  }
+  let favourites: UserRate[] = [];
+  try {
+    const fav = await api<FavouritesDto>(`/api/users/${id}/favourites?is_nickname=1`);
+    favourites = (fav.animes ?? [])
+      .filter((a) => Number(a.id) > 0)
+      .map((a) => ({ sid: Number(a.id), title: a.russian || a.name || "", status: "planned", score: 0 }));
+  } catch {
+    /* избранное необязательно */
+  }
+  return { rates, favourites };
+}

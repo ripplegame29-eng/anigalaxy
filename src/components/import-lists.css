@@ -1,0 +1,32 @@
+.il{max-width:720px;margin:0 auto;padding:36px 16px 72px}
+.il-head h1{font-family:var(--font-display),system-ui,sans-serif;font-weight:800;font-size:clamp(26px,4vw,36px);letter-spacing:-.02em;color:#fff}
+.il-head h1 em{font-style:normal;background:linear-gradient(95deg,#00c8ff,#1f7bff);-webkit-background-clip:text;background-clip:text;color:transparent}
+.il-head p{margin-top:8px;color:rgba(255,255,255,.62);font-size:14px;line-height:1.55;max-width:56ch}
+.il-card{margin-top:22px;border-radius:22px;border:1px solid rgba(255,255,255,.09);background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.01)),rgba(10,12,22,.85);box-shadow:0 24px 60px -40px rgba(0,200,255,.45);overflow:hidden}
+.il-tabs{display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid rgba(255,255,255,.08)}
+.il-tabs button{padding:14px;font-weight:800;font-size:14px;color:rgba(255,255,255,.55);transition:color .2s,background .2s}
+.il-tabs button[aria-selected="true"]{color:#fff;background:linear-gradient(180deg,rgba(0,200,255,.14),transparent);box-shadow:inset 0 -2px 0 #00c8ff}
+.il-body{padding:22px;display:flex;flex-direction:column;gap:12px}
+.il-body h2{font-size:19px;font-weight:900;color:#fff}
+.il-body label{font-size:13px;font-weight:800;color:rgba(255,255,255,.8)}
+.il-body input[type="text"],.il-body input:not([type]),.il-body input[id="il-nick"]{height:46px;padding:0 14px;border-radius:14px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.05);color:#fff;font-size:15px;outline:none;transition:border-color .2s,box-shadow .2s}
+.il-body input[id="il-nick"]:focus{border-color:#00c8ff;box-shadow:0 0 0 3px rgba(0,200,255,.18)}
+.il-body input[type="file"]{padding:12px;border-radius:14px;border:1px dashed rgba(0,200,255,.4);background:rgba(0,200,255,.05);color:rgba(255,255,255,.8);font-size:13px}
+.il-hint{font-size:12.5px;line-height:1.55;color:rgba(255,255,255,.52)}
+.il-list{padding-left:18px;list-style:disc;display:grid;gap:6px}
+.il-err{margin:0 22px 20px;padding:10px 14px;border-radius:12px;background:rgba(255,80,100,.12);border:1px solid rgba(255,80,100,.35);color:#ffb3bd;font-size:13px}
+.il-btn{display:inline-flex;align-items:center;justify-content:center;height:46px;padding:0 22px;border-radius:14px;font-weight:800;font-size:14px;color:#fff;background:linear-gradient(135deg,#1f7bff,#00c8ff);box-shadow:0 12px 28px -14px rgba(0,200,255,.9);transition:transform .2s,filter .2s}
+.il-btn:hover{transform:translateY(-2px);filter:brightness(1.08)}
+.il-btn:disabled{opacity:.5;pointer-events:none}
+.il-btn.il-ghost{background:rgba(255,255,255,.07);box-shadow:none;border:1px solid rgba(255,255,255,.14)}
+.il-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:6px}
+.il-bar{height:10px;border-radius:99px;background:rgba(255,255,255,.08);overflow:hidden}
+.il-bar i{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#1f7bff,#00c8ff);transition:width .3s}
+.il-stat{display:flex;flex-wrap:wrap;gap:10px;list-style:none;padding:0}
+.il-stat li{min-width:104px;padding:12px 14px;border-radius:16px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);display:grid;gap:2px}
+.il-stat b{font-size:22px;font-weight:900;color:#9cd4ff}
+.il-stat span{font-size:12px;color:rgba(255,255,255,.6)}
+.il-opts{display:grid;gap:10px;margin-top:4px}
+.il-opts label{display:flex;gap:10px;align-items:flex-start;font-weight:600;font-size:13.5px;color:rgba(255,255,255,.82);cursor:pointer}
+.il-opts input{margin-top:3px;accent-color:#00c8ff}
+@media (prefers-reduced-motion:reduce){.il-btn,.il-bar i{transition:none}}

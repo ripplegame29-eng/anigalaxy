@@ -145,6 +145,10 @@ export function MyListView() {
               <WidgetIcon name="dl" />
               Экспорт / Импорт
             </Link>
+            <Link href="/import" className="btn g">
+              <WidgetIcon name="dl" />
+              Перенос с других сайтов
+            </Link>
             <button type="button" onClick={() => openProfileDialog("share")} className="btn g">
               <WidgetIcon name="share" />
               Поделиться
