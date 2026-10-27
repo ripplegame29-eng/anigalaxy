@@ -55,19 +55,8 @@ export function PremiumTrial() {
   return (
     <div className="pl-trial">
       <button type="button" className="pl-trial-btn" onClick={() => void start()} disabled={busy}>
-        <span className="pl-trial-ic" aria-hidden>
-          <svg viewBox="0 0 24 24" fill="none">
-            <path d="M3.5 17.5 2.2 7.6l5.1 4 4.7-6.6 4.7 6.6 5.1-4-1.3 9.9z" fill="currentColor" />
-            <rect x="4.2" y="19" width="15.6" height="2.2" rx="1.1" fill="currentColor" />
-          </svg>
-        </span>
-        <span className="pl-trial-tx">
-          <b>Попробовать {PREMIUM_TRIAL_DAYS} дня бесплатно</b>
-          <small>{account ? "Без оплаты, один раз на аккаунт" : "Создай аккаунт — и подписка включится сразу"}</small>
-        </span>
-        <svg className="pl-trial-ar" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-          <path d="M5 12h14M13 6l6 6-6 6" />
-        </svg>
+        <b>Попробовать {PREMIUM_TRIAL_DAYS} дня бесплатно</b>
+        <small>{account ? "Без оплаты, один раз на аккаунт" : "Создай аккаунт — и подписка включится сразу"}</small>
       </button>
       {error && <p className="pl-err">{error}</p>}
     </div>
