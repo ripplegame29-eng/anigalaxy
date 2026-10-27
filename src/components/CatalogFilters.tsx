@@ -100,7 +100,9 @@ function Dropdown({
   onChange,
   className = "",
   set,
+  caption,
 }: {
+  caption?: string;
   label: string;
   value: string;
   options: { value: string; label: string }[];
@@ -114,6 +116,7 @@ function Dropdown({
 
   return (
     <div className={`cat-dd${open ? " open" : ""}${set ? " set" : ""} ${className}`} ref={ref}>
+      {caption && <span className="cat-cap">{caption}</span>}
       <button
         type="button"
         className="cat-dt"
@@ -331,6 +334,7 @@ export function CatalogFilters({ value, meta }: { value: CatalogState; meta: Cat
         </span>
       </div>
 
+      <div className="cat-panel">
       <div className="cat-row1">
         <div className="cat-grp">
           <span className="cat-lab">Тип</span>
@@ -370,6 +374,7 @@ export function CatalogFilters({ value, meta }: { value: CatalogState; meta: Cat
       <div className="cat-row2">
         {/* Жанры — мультивыбор */}
         <div className={`cat-dd cat-dd-genres${genresOpen ? " open" : ""}${selectedGenres.length ? " set" : ""}`} ref={genresRef}>
+          <span className="cat-cap">Жанр</span>
           <button
             type="button"
             className="cat-dt"
@@ -419,6 +424,7 @@ export function CatalogFilters({ value, meta }: { value: CatalogState; meta: Cat
         </div>
 
         <Dropdown
+          caption="Тип"
           label="Формат"
           value={value.kind ?? ""}
           onChange={(next) => update({ kind: next || undefined })}
@@ -426,6 +432,7 @@ export function CatalogFilters({ value, meta }: { value: CatalogState; meta: Cat
         />
 
         <Dropdown
+          caption="Год от"
           label="Год от"
           value={value.yearFrom ? String(value.yearFrom) : ""}
           onChange={(next) => update({ yearFrom: next ? Number(next) : undefined })}
@@ -440,6 +447,7 @@ export function CatalogFilters({ value, meta }: { value: CatalogState; meta: Cat
         />
 
         <Dropdown
+          caption="Год до"
           label="Год до"
           value={value.yearTo ? String(value.yearTo) : ""}
           onChange={(next) => update({ yearTo: next ? Number(next) : undefined })}
@@ -454,6 +462,7 @@ export function CatalogFilters({ value, meta }: { value: CatalogState; meta: Cat
         />
 
         <Dropdown
+          caption="Сортировка"
           label="Сортировка"
           value={value.sort}
           onChange={(next) => update({ sort: next })}
@@ -514,6 +523,8 @@ export function CatalogFilters({ value, meta }: { value: CatalogState; meta: Cat
             </svg>
           </button>
         </div>
+      </div>
+
       </div>
 
       {activeChips.length > 0 && (
