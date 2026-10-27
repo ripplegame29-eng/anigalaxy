@@ -1,0 +1,23 @@
+[Unit]
+Description=AniGalaxy (Next.js)
+After=network.target
+
+[Service]
+Type=simple
+User=anigalaxy
+WorkingDirectory=/opt/anigalaxy
+EnvironmentFile=/opt/anigalaxy/.env.production
+Environment=NODE_ENV=production
+Environment=PORT=3000
+Environment=HOSTNAME=127.0.0.1
+ExecStart=/usr/bin/npm run start
+Restart=always
+RestartSec=3
+# Лимит памяти: лучше перезапуск службы, чем зависший сервер
+MemoryMax=2800M
+NoNewPrivileges=true
+ProtectSystem=full
+ReadWritePaths=/opt/anigalaxy /var/lib/anigalaxy
+
+[Install]
+WantedBy=multi-user.target
