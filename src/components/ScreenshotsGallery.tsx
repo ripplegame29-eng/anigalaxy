@@ -110,6 +110,12 @@ export function ScreenshotsGallery({ shots, trailer, title }: Props) {
               width={480}
               height={270}
               loading="lazy"
+              // Превью трейлера грузим из браузера напрямую: серверу YouTube-картинки часто недоступны
+              unoptimized={slide.type === "trailer"}
+              referrerPolicy="no-referrer"
+              onError={(e) => {
+                e.currentTarget.style.visibility = "hidden";
+              }}
               sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
               className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
             />
