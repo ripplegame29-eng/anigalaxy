@@ -16,7 +16,7 @@
 .pm-scrim.pm-on{opacity:1;pointer-events:auto}
 
 /* панель */
-.pm-menu{position:fixed;z-index:9991;top:64px;right:16px;width:352px;max-width:calc(100vw - 20px);max-height:calc(100vh - 84px);overflow-y:auto;overscroll-behavior:contain;
+.pm-menu{position:fixed;z-index:9991;top:64px;right:16px;width:352px;max-width:calc(100vw - 20px);max-height:calc(100vh - 84px); max-height:calc(100dvh - 84px);overflow-y:auto;overscroll-behavior:contain;
   scrollbar-width:thin;scrollbar-color:#ffffff22 transparent;
   background:var(--ag-glass);backdrop-filter:blur(22px);border:1px solid var(--ag-line-strong);border-radius:22px;
   box-shadow:0 30px 80px rgba(0,0,0,.85),inset 0 1px 0 rgba(255,255,255,.06);
@@ -145,7 +145,7 @@
   --pm-ink:var(--ag-text,#eef2fb); --pm-mut:var(--ag-muted,#8d98b4);
 }
 
-.pm-menu{position:fixed;top:66px;right:16px;z-index:9991;width:min(360px,calc(100vw - 24px));max-height:calc(100vh - 80px);overflow:auto;scrollbar-width:none;padding:18px 14px 12px;border-radius:26px;isolation:isolate;border:1px solid transparent;
+.pm-menu{position:fixed;top:66px;right:16px;z-index:9991;width:min(360px,calc(100vw - 24px));max-height:calc(100vh - 80px); max-height:calc(100dvh - 80px);overflow:auto;scrollbar-width:none;padding:18px 14px 12px;border-radius:26px;isolation:isolate;border:1px solid transparent;
   background:linear-gradient(180deg,rgba(14,22,44,.94),rgba(7,11,24,.97)) padding-box,conic-gradient(from var(--pm-ang),rgba(43,127,255,.75),rgba(96,150,255,.12) 25%,rgba(34,211,238,.6) 50%,rgba(96,150,255,.12) 75%,rgba(43,127,255,.75)) border-box;
   box-shadow:0 30px 80px rgba(0,0,0,.6),0 0 60px rgba(43,127,255,.14);backdrop-filter:blur(24px);
   opacity:0;visibility:hidden;transform:translateY(-8px) scale(.97);transform-origin:top right;transition:opacity .25s,transform .3s cubic-bezier(.2,.9,.3,1),visibility .3s;animation:pm-spin 14s linear infinite}

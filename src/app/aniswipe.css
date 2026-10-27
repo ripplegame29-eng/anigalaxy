@@ -16,7 +16,7 @@ body.as-modal-open {
   --skip: #ff5d73;
   --later: #f5b94a;
   position: relative;
-  min-height: 100vh;
+  min-height: 100vh; min-height: 100dvh;
   overflow: clip;
   color: var(--ag-text, #eef2fb);
   font-family: var(--font-body), system-ui, sans-serif;

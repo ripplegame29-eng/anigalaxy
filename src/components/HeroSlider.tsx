@@ -238,7 +238,7 @@ export function HeroSlider({ items }: { items: AnimeCard[] }) {
             type="button"
             onClick={() => go(index - 1)}
             aria-label="Предыдущий слайд"
-            className="absolute left-2 top-1/2 z-20 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-black/40 text-white ring-1 ring-white/15 backdrop-blur transition hover:bg-black/60 hover:ring-white/30 focus-visible:outline-2 focus-visible:outline-accent-2 sm:left-5 sm:h-12 sm:w-12"
+            className="absolute left-2 top-1/2 z-20 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-black/40 text-white ring-1 ring-white/15 backdrop-blur transition hover:bg-black/60 hover:ring-white/30 focus-visible:outline-2 focus-visible:outline-accent-2 sm:left-5 sm:flex sm:h-12 sm:w-12"
           >
             <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
               <path d="m15 5-7 7 7 7" />
@@ -248,7 +248,7 @@ export function HeroSlider({ items }: { items: AnimeCard[] }) {
             type="button"
             onClick={() => go(index + 1)}
             aria-label="Следующий слайд"
-            className="absolute right-2 top-1/2 z-20 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-black/40 text-white ring-1 ring-white/15 backdrop-blur transition hover:bg-black/60 hover:ring-white/30 focus-visible:outline-2 focus-visible:outline-accent-2 sm:right-5 sm:h-12 sm:w-12"
+            className="absolute right-2 top-1/2 z-20 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-black/40 text-white ring-1 ring-white/15 backdrop-blur transition hover:bg-black/60 hover:ring-white/30 focus-visible:outline-2 focus-visible:outline-accent-2 sm:right-5 sm:flex sm:h-12 sm:w-12"
           >
             <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
               <path d="m9 5 7 7-7 7" />

@@ -28,7 +28,7 @@
   color: var(--tx);
   width: min(1040px, calc(100vw - 24px));
   max-width: none;
-  max-height: calc(100vh - 24px);
+  max-height: calc(100vh - 24px); max-height: calc(100dvh - 24px);
   margin: auto;
   overflow: visible;
   font-family: var(--font-body);
@@ -75,7 +75,7 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  max-height: calc(100vh - 24px);
+  max-height: calc(100vh - 24px); max-height: calc(100dvh - 24px);
   border-radius: 28px;
   overflow: hidden;
   background:

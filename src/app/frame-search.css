@@ -1,5 +1,5 @@
 /* Поиск по кадру: префикс fs- */
-.fs-page { position: relative; min-height: 100vh; overflow: clip; isolation: isolate;
+.fs-page { position: relative; min-height: 100vh; min-height: 100dvh; overflow: clip; isolation: isolate;
   background: radial-gradient(900px 520px at 50% -10%, rgb(43 127 255 / 0.16), transparent 62%), radial-gradient(600px 400px at 100% 40%, rgb(34 211 238 / 0.07), transparent 60%); }
 .fs-wrap { max-width: 880px; margin: 0 auto; padding: 44px 16px 80px; display: grid; gap: 22px; }
 @keyframes fs-rise { from { opacity: 0; transform: translateY(18px); } }
