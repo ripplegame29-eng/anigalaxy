@@ -45,7 +45,7 @@ const MENU = {
       { text: "🎁 Пригласить друга", callback_data: "m:invite" },
       { text: "👑 Premium", callback_data: "m:premium" },
     ],
-    [{ text: "🪐 Открыть AniGalaxy", web_app: { url: SITE } }],
+    [{ text: "🪐 Открыть AniGalaxy", web_app: { url: `${SITE}/tg` } }],
     [
       { text: "💬 Поддержка", callback_data: "s:menu" },
       { text: "📣 Наш канал", url: CHANNEL },
@@ -430,7 +430,7 @@ async function broadcastSend(db: Database, from: From, chatId: number, key: stri
   await send(chatId, `🚀 Отправляю ${nf(rows.length)} получателям…`);
   let ok = 0;
   for (const row of rows) {
-    const r = await send(Number(str(row.telegram_id)), job.text, { reply_markup: { inline_keyboard: [[{ text: "🪐 Открыть AniGalaxy", web_app: { url: SITE } }]] } });
+    const r = await send(Number(str(row.telegram_id)), job.text, { reply_markup: { inline_keyboard: [[{ text: "🪐 Открыть AniGalaxy", web_app: { url: `${SITE}/tg` } }]] } });
     if (r.ok) ok += 1;
     await new Promise((res) => setTimeout(res, 45)); // ~22 сообщений в секунду, ниже лимита Telegram
   }
@@ -694,7 +694,7 @@ export async function configureBot(): Promise<void> {
       description: "Бот AniGalaxy: вход на сайт, поиск аниме, профиль и уведомления о новых сериях.",
     }),
     tg("setMyShortDescription", { short_description: "Поиск аниме, профиль и новые серии на AniGalaxy" }),
-    tg("setChatMenuButton", { menu_button: { type: "web_app", text: "AniGalaxy", web_app: { url: SITE } } }),
+    tg("setChatMenuButton", { menu_button: { type: "web_app", text: "AniGalaxy", web_app: { url: `${SITE}/tg` } } }),
   ]);
   const bad = results.find((r) => !r.ok);
   if (bad) console.error("[tgbot] настройка бота:", bad.description);
