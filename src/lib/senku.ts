@@ -131,7 +131,7 @@ function toCard(item: SenkuManga): AnimeCard {
 
 async function fetchJson<T>(url: string): Promise<T | null> {
   try {
-    const response = await fetch(url, { next: { revalidate: 600 } });
+    const response = await fetch(url, { next: { revalidate: 600 }, signal: AbortSignal.timeout(8000) });
     if (!response.ok) return null;
     return (await response.json()) as T;
   } catch {
