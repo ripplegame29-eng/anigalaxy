@@ -247,7 +247,7 @@ export function AppsView() {
         {APP_FAQ.map((item) => (
           <details key={item.q}><summary>{item.q}</summary><p>{item.a}</p></details>
         ))}
-        <p className="ap-foot">Не получилось установить? Напишите в <Link href="https://t.me/anigalaxy" rel="noopener">Telegram</Link> — поможем.</p>
+        <p className="ap-foot">Не получилось установить? Напишите в <Link href="https://t.me/anialaxyspace" rel="noopener">Telegram</Link> — поможем.</p>
       </section>
     </div>
   );

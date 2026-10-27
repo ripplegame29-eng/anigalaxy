@@ -12,7 +12,7 @@ export const LEGAL = {
   /** Почта для обращений; пустая строка — не показывать */
   email: "",
   /** Служба поддержки в Telegram */
-  telegram: "https://t.me/anigalaxy",
+  telegram: "https://t.me/anialaxyspace",
   /** Ник поддержки без @ — для показа в тексте */
   telegramHandle: "anigalaxy",
   /** Дата последней редакции документов */
