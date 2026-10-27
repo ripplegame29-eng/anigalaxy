@@ -293,12 +293,12 @@ export function GiftPremiumDialog({ className, label, recipient }: GiftPremiumDi
   const q = S.to.trim().toLowerCase();
   const hit = Boolean(recipient) || FR.some((x) => x[0].toLowerCase() === q);
   const rsText = recipient
-    ? `Получатель — ${recipient} · в демо подарок не отправляется`
+    ? `Получатель — ${recipient}`
     : hit
-    ? "Профиль найден · в демо подарок не отправляется"
+    ? "Профиль найден"
     : q.length < 3
       ? "Введи минимум 3 символа"
-      : "Профиль не проверяется в демо";
+      : "Профиль не найден";
 
   /* Итог: строка расшифровки скидок */
   const brkParts = [S.m === "f" ? TF[S.t].t : `${TF[S.t].t} × ${S.n}`];
@@ -379,8 +379,7 @@ export function GiftPremiumDialog({ className, label, recipient }: GiftPremiumDi
               Подари Premium
             </h2>
             <p className="gd-lead">
-              Демо-оформление подарка: выбери тариф и получателя. Оплата не подключена,
-              Premium никому не активируется.
+              Выбери тариф и получателя.
             </p>
 
             <div className="gd-seg" role="tablist">
@@ -505,8 +504,7 @@ export function GiftPremiumDialog({ className, label, recipient }: GiftPremiumDi
 
                 {/* ---------------------------- Тариф --------------------------- */}
                 <div className="gd-lb">
-                  {S.m === "r" ? "Тариф для каждого" : "Тариф"}{" "}
-                  <span>в демо активации нет</span>
+                  {S.m === "r" ? "Тариф для каждого" : "Тариф"}
                 </div>
                 <div className="gd-tfs" role="radiogroup">
                   {TF.map((t, i) => (
@@ -577,7 +575,7 @@ export function GiftPremiumDialog({ className, label, recipient }: GiftPremiumDi
                 <div data-m="f">
                   <div className="gd-lb">
                     Когда доставить{" "}
-                    <span>{S.when === "now" ? "в демо без доставки" : sched ? fmt(sched) : "укажи дату"}</span>
+                    <span>{S.when === "now" ? "сразу" : sched ? fmt(sched) : "укажи дату"}</span>
                   </div>
                   <div className="gd-when" role="radiogroup">
                     {WH.map(([id, label]) => (
@@ -752,12 +750,12 @@ export function GiftPremiumDialog({ className, label, recipient }: GiftPremiumDi
 
                 <div className="gd-path">
                   <h4>
-                    {reached < 0 ? "Демо-путь щедрости" : `В демо звание «${RK[reached]}» не начисляется`}
+                    {reached < 0 ? "Путь щедрости" : `Звание «${RK[reached]}»`}
                   </h4>
                   <p>
                     {nextIdx < MS.length
-                      ? `Следующая ступень — «${RK[nextIdx]}», но в демо она недоступна.`
-                      : "Выше только легенда. В демо звания не начисляются."}
+                      ? `Следующая ступень — «${RK[nextIdx]}».`
+                      : "Выше только легенда."}
                   </p>
                   <svg viewBox="0 0 320 60" aria-hidden="true">
                     <line x1="14" y1="24" x2="306" y2="24" stroke="rgba(255,255,255,.1)" strokeWidth="3" strokeLinecap="round" />
@@ -802,7 +800,7 @@ export function GiftPremiumDialog({ className, label, recipient }: GiftPremiumDi
           {!fin ? (
             <div className="gd-foot">
               <div className="gd-tot">
-                <small>Демо-сумма</small>
+                <small>Сумма</small>
                 <b>
                   {rub(tot ?? cur)}
                   {tp > 0 ? (
@@ -843,10 +841,6 @@ export function GiftPremiumDialog({ className, label, recipient }: GiftPremiumDi
                     : "Оплатить подарок"}
                 </span>
               </button>
-              <p className="gd-legal">
-                Демо: платёжный шлюз не подключён. Деньги не списываются, Premium
-                получателю не активируется и подарок не отправляется.
-              </p>
             </div>
           ) : (
             <div className="gd-done">
@@ -860,10 +854,10 @@ export function GiftPremiumDialog({ className, label, recipient }: GiftPremiumDi
               </div>
               <h3>
                 {sched
-                  ? `Демо: подарок для ${S.to} не отправлен`
+                  ? `Заявка на подарок для ${S.to} принята`
                   : S.m === "f"
-                    ? `Демо: подарок для ${S.to} не отправлен`
-                    : `Демо: ${S.n} ${pl(S.n, ["подарок", "подарка", "подарков"])} не отправлено`}
+                    ? `Заявка на подарок для ${S.to} принята`
+                    : `Заявка принята: ${S.n} ${pl(S.n, ["подарок", "подарка", "подарков"])}`}
               </h3>
               <p>
                 {sched

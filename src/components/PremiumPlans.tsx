@@ -211,7 +211,7 @@ export function PremiumPlans() {
 
               {justActivated === plan.id && (
                 <p className="mt-2.5 text-center text-xs text-mint animate-fade-in">
-                  Подписка активирована в демо-режиме — деньги не списывались.
+                  Подписка активирована.
                 </p>
               )}
             </div>

@@ -515,8 +515,7 @@ useEffect(() => {
           />
           <h3>Спасибо за поддержку!</h3>
           <p style={{ color: "var(--mute)" }}>
-            Набор «{tier.name}» — {nf.format(tier.coins)} AC и {tier.prem}. Оплата пока не подключена,
-            зачисление появится вместе с ней.
+            Набор «{tier.name}» — {nf.format(tier.coins)} AC и {tier.prem}.
           </p>
           <button type="button" className="don-btn" style={{ marginTop: 20 }} onClick={() => setToast(false)}>
             Отлично

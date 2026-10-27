@@ -472,10 +472,6 @@ export function EventsView() {
         {/* ───────────────────────── Лидеры ночи ─────────────────────────── */}
         <section className="ev-section" data-k="頂">
           <h2>Лидеры ночи</h2>
-          <p className="ev-d">
-            Демо-рейтинг: сравнивать фонарики не с кем, сервера у проекта нет, поэтому соперников
-            придумал браузер. Реальный результат — ваши фонарики.
-          </p>
           <div className="ev-lbt" role="group" aria-label="Фильтр рейтинга">
             <button
               type="button"
