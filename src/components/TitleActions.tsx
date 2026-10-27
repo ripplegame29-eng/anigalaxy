@@ -17,7 +17,17 @@ import { STATUS_LABEL, STATUS_ORDER, getStatus, setStatus, type WatchStatus } fr
 import { MAX_SCORE, MIN_SCORE, getRating, setRating } from "@/lib/ratings";
 import { syncTitleRating, useTitleAvgRating } from "@/lib/ratings-cloud";
 
+/** Подписи статусов для манги: «читать потом» вместо «смотреть» */
+const MANGA_STATUS_LABEL: Record<WatchStatus, string> = {
+  planned: "Читать потом",
+  watching: "Читаю",
+  completed: "Прочитано",
+  dropped: "Брошено",
+};
+
 interface Props {
+  /** Манга: меняет подписи статусов и добавляет «читать потом» */
+  manga?: boolean;
   /**
    * Ровно те поля карточки, которые уходят в кэш тайтлов. Необязательные
    * нужны потому, что жанры и студии Kodik отдаёт не для каждого тайгла
@@ -44,7 +54,7 @@ interface Props {
  */
 const noopSubscribe = () => () => {};
 
-export function TitleActions({ anime }: Props) {
+export function TitleActions({ anime, manga = false }: Props) {
   const [, setRevision] = useState(0);
   /** Перерисовка после записи в хранилище (снимок читается заново на рендере) */
   const bump = useCallback(() => setRevision((value) => value + 1), []);
@@ -91,6 +101,7 @@ export function TitleActions({ anime }: Props) {
       year: anime.year,
       rating: anime.rating,
       episodesTotal: anime.episodesTotal,
+      manga: manga || undefined,
     }),
     [
       anime.id,
@@ -101,6 +112,7 @@ export function TitleActions({ anime }: Props) {
       anime.year,
       anime.rating,
       anime.episodesTotal,
+      manga,
     ],
   );
 
@@ -202,7 +214,7 @@ export function TitleActions({ anime }: Props) {
       <div className="space-y-4 rounded-2xl bg-[#0d0d14] p-4 ring-1 ring-white/[0.07]">
         <div>
           <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.14em] text-muted">Статус</p>
-          <div className="grid grid-cols-2 gap-1.5" role="group" aria-label="Статус тайтла">
+          <div className="grid grid-cols-2 gap-1.5" role="group" aria-label={manga ? "Статус манги" : "Статус тайтла"}>
             {STATUS_ORDER.map((item) => {
               const active = status === item;
               return (
@@ -217,7 +229,7 @@ export function TitleActions({ anime }: Props) {
                       : "bg-white/[0.04] text-white/65 ring-white/[0.08] hover:bg-white/[0.09] hover:text-white"
                   }`}
                 >
-                  {STATUS_LABEL[item]}
+                  {(manga ? MANGA_STATUS_LABEL : STATUS_LABEL)[item]}
                 </button>
               );
             })}

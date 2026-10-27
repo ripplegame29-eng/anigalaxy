@@ -28,6 +28,8 @@ export interface TitleMeta {
   rating?: number;
   /** Сколько серий вышло всего — знаменатель для «12 / 24 серий» */
   episodesTotal?: number;
+  /** Манга: ссылка ведёт на /manga/<id>, а не на /title/<id> */
+  manga?: boolean;
 }
 
 const EMPTY: Record<string, TitleMeta> = {};
@@ -60,6 +62,7 @@ function parse(raw: string): Record<string, TitleMeta> | null {
           year: num(item.year),
           rating: num(item.rating),
           episodesTotal: num(item.episodesTotal),
+          manga: item.manga === true ? true : undefined,
         };
       }
     }
@@ -94,6 +97,7 @@ export function rememberTitle(meta: Partial<TitleMeta> & { id: string; title: st
       year: meta.year ?? prev?.year,
       rating: meta.rating ?? prev?.rating,
       episodesTotal: meta.episodesTotal ?? prev?.episodesTotal,
+      manga: meta.manga ?? prev?.manga,
     };
     const same =
       prev &&
@@ -102,6 +106,7 @@ export function rememberTitle(meta: Partial<TitleMeta> & { id: string; title: st
       prev.year === next.year &&
       prev.rating === next.rating &&
       prev.episodesTotal === next.episodesTotal &&
+      prev.manga === next.manga &&
       (prev.genres ?? []).join("|") === (next.genres ?? []).join("|") &&
       (prev.studios ?? []).join("|") === (next.studios ?? []).join("|");
     if (same) return state;

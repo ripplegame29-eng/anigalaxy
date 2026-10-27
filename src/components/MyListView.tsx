@@ -312,7 +312,7 @@ export function MyListView() {
                   </div>
                   <div className="ag-list-info">
                     {meta?.title ? (
-                      <Link href={`/title/${id}`} className="ag-list-title">
+                      <Link href={meta.manga ? `/manga/${id}` : `/title/${id}`} className="ag-list-title">
                         {meta.title}
                       </Link>
                     ) : (

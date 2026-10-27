@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { Poster } from "@/components/Poster";
 import { Reveal } from "@/components/Reveal";
+import { TitleActions } from "@/components/TitleActions";
 import { mangaDetail } from "@/lib/senku";
 
 /** Данные тайтла кэшируются на 15 минут */
@@ -61,7 +62,7 @@ export default async function MangaTitlePage({ params }: PageProps) {
           </div>
 
           {/* Чтение — только на сайте, без переходов на сторонние ресурсы */}
-          <div className="mt-4 flex flex-col gap-2">
+          <div className="mt-4 flex flex-col gap-2 max-sm:w-[calc(100vw-2rem)]">
             {last && (
               <Link
                 href={`/manga/${detail.id}/read/${last.id}`}
@@ -81,6 +82,21 @@ export default async function MangaTitlePage({ params }: PageProps) {
                 С первой главы
               </Link>
             )}
+          </div>
+
+          {/* Избранное, подборки, «читать потом» и оценка — как у аниме */}
+          <div className="mt-3 max-sm:w-[calc(100vw-2rem)]">
+            <TitleActions
+              manga
+              anime={{
+                id: detail.id,
+                title: detail.title,
+                poster: detail.poster,
+                genres: detail.genres,
+                year: detail.year,
+                rating: detail.rating,
+              }}
+            />
           </div>
         </div>
 

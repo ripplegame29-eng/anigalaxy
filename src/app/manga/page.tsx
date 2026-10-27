@@ -3,7 +3,8 @@ import Link from "next/link";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { AnimeGrid } from "@/components/AnimeRow";
 import { Reveal } from "@/components/Reveal";
-import { mangaCatalogPage, type MangaSort } from "@/lib/senku";
+import "./manga-catalog.css";
+import { mangaFilteredPage, mangaGenres, type MangaSort } from "@/lib/senku";
 
 export const metadata: Metadata = {
   title: "Каталог манги",
@@ -15,12 +16,20 @@ export const metadata: Metadata = {
 export const revalidate = 600;
 
 interface PageProps {
-  searchParams: Promise<{ sort?: string; page?: string; q?: string }>;
+  searchParams: Promise<{ sort?: string; page?: string; q?: string; genre?: string; status?: string }>;
 }
 
 const SORTS: { value: MangaSort; label: string }[] = [
-  { value: "hot", label: "Горячие новинки" },
+  { value: "hot", label: "Популярное" },
   { value: "best", label: "Лучшее" },
+  { value: "new", label: "Сначала новые" },
+  { value: "title", label: "А–Я" },
+];
+
+const STATUSES: { value: "" | "ongoing" | "released"; label: string }[] = [
+  { value: "", label: "Любой статус" },
+  { value: "ongoing", label: "Выходит" },
+  { value: "released", label: "Завершена" },
 ];
 
 /** Сколько тайтлов на страницу каталога */
@@ -38,7 +47,9 @@ function plural(n: number, one: string, few: string, many: string): string {
 
 export default async function MangaCatalogPage({ searchParams }: PageProps) {
   const sp = await searchParams;
-  const sort: MangaSort = sp.sort === "best" ? "best" : "hot";
+  const sort: MangaSort = sp.sort === "best" || sp.sort === "new" || sp.sort === "title" ? sp.sort : "hot";
+  const genre = (sp.genre ?? "").slice(0, 40);
+  const status = sp.status === "ongoing" || sp.status === "released" ? sp.status : "";
   // Запрос держим в URL: ссылку с поиском можно переслать, кнопка «назад»
   // возвращает к прежнему запросу, а страницы не теряют фильтр
   const query = (sp.q ?? "").slice(0, 80);
@@ -49,11 +60,14 @@ export default async function MangaCatalogPage({ searchParams }: PageProps) {
   const page = Number.isFinite(rawPage) && rawPage > 1 ? Math.floor(rawPage) : 1;
   const offset = (page - 1) * PER_PAGE;
 
-  const { cards, hasMore, total } = await mangaCatalogPage(sort, offset, PER_PAGE, query).catch(() => ({
-    cards: [],
-    hasMore: false,
-    total: 0,
-  }));
+  const [{ cards, hasMore, total }, genres] = await Promise.all([
+    mangaFilteredPage(sort, offset, PER_PAGE, query, { genre: genre || undefined, status: status || undefined }).catch(() => ({
+      cards: [],
+      hasMore: false,
+      total: 0,
+    })),
+    mangaGenres().catch(() => [] as { name: string; count: number }[]),
+  ]);
 
   const shownFrom = offset + 1;
   const shownTo = offset + cards.length;
@@ -63,6 +77,8 @@ export default async function MangaCatalogPage({ searchParams }: PageProps) {
     const params = new URLSearchParams();
     params.set("sort", sort);
     if (query) params.set("q", query);
+    if (genre) params.set("genre", genre);
+    if (status) params.set("status", status);
     for (const [key, value] of Object.entries(patch)) {
       // Страница 1 в URL не нужна: без неё адрес канонический и его не
       // отличает поиск от обычного обхода каталога
@@ -106,6 +122,8 @@ export default async function MangaCatalogPage({ searchParams }: PageProps) {
       {/* Поиск: обычная форма без JS, поэтому работает и с отключённым скриптом */}
       <form action="/manga" method="get" role="search" className="mb-6">
         <input type="hidden" name="sort" value={sort} />
+        {genre && <input type="hidden" name="genre" value={genre} />}
+        {status && <input type="hidden" name="status" value={status} />}
         <div className="flex flex-wrap items-center gap-2">
           <div className="relative min-w-0 flex-1 basis-52">
             <svg
@@ -149,25 +167,53 @@ export default async function MangaCatalogPage({ searchParams }: PageProps) {
         </div>
       </form>
 
-      {/* Сортировка */}
-      <div className="mb-8 flex flex-wrap items-center gap-2">
-        {SORTS.map((option) => {
-          const active = sort === option.value;
-          return (
+      {/* Фильтры: сортировка, статус и жанры — в стиле каталога аниме */}
+      <div className="mg-filters mb-8">
+        <div className="mg-row">
+          <span className="mg-lab">Сортировка</span>
+          {SORTS.map((option) => (
             <Link
               key={option.value}
               href={qs({ sort: option.value, page: 1 })}
-              aria-current={active ? "page" : undefined}
-              className={`rounded-xl px-4 py-2 text-sm font-semibold ring-1 transition-colors ${
-                active
-                  ? "bg-accent/20 text-white ring-accent/50"
-                  : "bg-white/6 text-muted ring-white/10 hover:bg-white/12 hover:text-white"
-              }`}
+              aria-current={sort === option.value ? "page" : undefined}
+              className={sort === option.value ? "on" : undefined}
             >
               {option.label}
             </Link>
-          );
-        })}
+          ))}
+        </div>
+        <div className="mg-row">
+          <span className="mg-lab">Статус</span>
+          {STATUSES.map((option) => (
+            <Link
+              key={option.value || "any"}
+              href={qs({ status: option.value, page: 1 })}
+              aria-current={status === option.value ? "page" : undefined}
+              className={status === option.value ? "on" : undefined}
+            >
+              {option.label}
+            </Link>
+          ))}
+        </div>
+        {genres.length > 0 && (
+          <div className="mg-row mg-genres">
+            <span className="mg-lab">Жанр</span>
+            <Link href={qs({ genre: "", page: 1 })} className={!genre ? "on" : undefined}>
+              Все
+            </Link>
+            {genres.slice(0, 40).map((item) => (
+              <Link
+                key={item.name}
+                href={qs({ genre: item.name, page: 1 })}
+                aria-current={genre === item.name ? "page" : undefined}
+                className={genre === item.name ? "on" : undefined}
+              >
+                {item.name}
+                <small>{item.count}</small>
+              </Link>
+            ))}
+          </div>
+        )}
       </div>
 
       {cards.length > 0 ? (

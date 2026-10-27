@@ -62,7 +62,7 @@ interface SenkuCatalogResponse {
   pageNavParams?: { page: number; limit: number; hasMore: boolean };
 }
 
-export type MangaSort = "hot" | "best";
+export type MangaSort = "hot" | "best" | "new" | "title";
 
 export interface MangaChapter {
   id: string;
@@ -157,6 +157,89 @@ export async function mangaRow(sort: MangaSort, limit = 30): Promise<AnimeCard[]
       ? items.sort((a, b) => (b.average_rating ?? b.score ?? 0) - (a.average_rating ?? a.score ?? 0))
       : items.sort((a, b) => (b.views_count ?? 0) - (a.views_count ?? 0));
   return sorted.slice(0, limit).map(toCard);
+}
+
+/* ------------------------------------------------------------------ */
+/* Пул каталога и фильтры                                              */
+/* ------------------------------------------------------------------ */
+
+const POOL_PAGES = 8;
+
+/** Весь доступный каталог (до POOL_PAGES страниц): фильтры и сортировка считаются по нему */
+async function mangaPool(): Promise<SenkuManga[]> {
+  const results = await Promise.all(
+    Array.from({ length: POOL_PAGES }, (_, index) =>
+      fetchJson<SenkuCatalogResponse>(mangaUrl({ page: index + 1, limit: PAGE_SIZE })),
+    ),
+  );
+  const seen = new Set<string>();
+  const items: SenkuManga[] = [];
+  for (const result of results) {
+    for (const item of Object.values(result?.response ?? {})) {
+      const key = item.slug || item.id;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      items.push(item);
+    }
+  }
+  return items;
+}
+
+export interface MangaFilters {
+  genre?: string;
+  status?: "ongoing" | "released";
+}
+
+/** Жанры пула с количеством тайтлов — для чипов в каталоге и витрины подборок */
+export async function mangaGenres(): Promise<{ name: string; count: number }[]> {
+  const pool = await mangaPool();
+  const counts = new Map<string, number>();
+  for (const item of pool) for (const genre of toCard(item).genres) counts.set(genre, (counts.get(genre) ?? 0) + 1);
+  return [...counts.entries()]
+    .map(([name, count]) => ({ name, count }))
+    .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name, "ru"));
+}
+
+function sortPool(items: SenkuManga[], sort: MangaSort): SenkuManga[] {
+  const copy = [...items];
+  const rating = (m: SenkuManga) => m.average_rating ?? m.score ?? 0;
+  if (sort === "best") return copy.sort((a, b) => rating(b) - rating(a));
+  if (sort === "new") return copy.sort((a, b) => (b.year ?? 0) - (a.year ?? 0) || rating(b) - rating(a));
+  if (sort === "title") return copy.sort((a, b) => (a.russian || a.name || "").localeCompare(b.russian || b.name || "", "ru"));
+  return copy.sort((a, b) => (b.views_count ?? 0) - (a.views_count ?? 0));
+}
+
+/** Подборка по жанру: лучшие тайтлы жанра по оценке читателей */
+export async function mangaByGenre(genre: string, limit = 12): Promise<AnimeCard[]> {
+  const pool = await mangaPool();
+  const needle = genre.toLowerCase();
+  const matches = pool.filter((item) => toCard(item).genres.some((g) => g.toLowerCase() === needle));
+  return sortPool(matches, "best").slice(0, limit).map(toCard);
+}
+
+/** Каталог с фильтрами: фильтруем и сортируем весь пул, режем на страницы уже потом */
+export async function mangaFilteredPage(
+  sort: MangaSort,
+  offset: number,
+  perPage: number,
+  query: string,
+  filters: MangaFilters,
+): Promise<{ cards: AnimeCard[]; hasMore: boolean; total: number }> {
+  const needle = query.trim().toLowerCase();
+  let items = await mangaPool();
+  if (needle) {
+    items = items.filter((item) =>
+      [item.russian, item.name, item.english, ...(item.aliases ?? [])].filter(Boolean).join(" ").toLowerCase().includes(needle),
+    );
+  }
+  if (filters.genre) {
+    const g = filters.genre.toLowerCase();
+    items = items.filter((item) => toCard(item).genres.some((x) => x.toLowerCase() === g));
+  }
+  if (filters.status) items = items.filter((item) => statusOf(item.status) === filters.status);
+  const sorted = sortPool(items, sort);
+  const cards = sorted.slice(offset, offset + perPage).map(toCard);
+  return { cards, hasMore: offset + perPage < sorted.length, total: sorted.length };
 }
 
 export async function mangaCatalogPage(

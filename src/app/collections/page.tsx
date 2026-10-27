@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { CollectionsView } from "@/components/collections/CollectionsView";
 import { collectionPosters } from "@/lib/collections-posters";
 
@@ -31,5 +32,17 @@ export default async function CollectionsPage({ searchParams }: PageProps) {
   const initialId = Number.isFinite(raw) && raw > 0 ? raw : null;
 
   const posters = await collectionPosters().catch(() => ({}) as Record<string, string>);
-  return <CollectionsView posters={posters} initialId={initialId} />;
+  return (
+    <>
+      <nav className="mx-auto flex max-w-7xl gap-2 px-4 pt-6 sm:px-6" aria-label="Тип подборок">
+        <Link href="/collections" aria-current="page" className="rounded-xl bg-accent px-4 py-2 text-sm font-bold text-white">
+          Аниме
+        </Link>
+        <Link href="/collections/manga" className="rounded-xl bg-white/6 px-4 py-2 text-sm font-bold text-white/75 ring-1 ring-white/10 transition hover:bg-white/12 hover:text-white">
+          Манга
+        </Link>
+      </nav>
+      <CollectionsView posters={posters} initialId={initialId} />
+    </>
+  );
 }
