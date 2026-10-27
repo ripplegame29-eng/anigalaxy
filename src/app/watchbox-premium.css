@@ -241,3 +241,47 @@
 @media (prefers-reduced-motion: reduce) {
   .ag-pop.ag-pop { animation: none; }
 }
+
+/* ------------------------------------------------------------------ *
+ * Выбор озвучки и серий
+ * ------------------------------------------------------------------ */
+.wb-vback, .wb-vhead { display: none; }
+
+/* Переключатель «‹ 5 из 12 ›» над сеткой серий */
+.wb-epnav { display: inline-flex; align-items: center; gap: 4px; }
+.wb-epnav button {
+  width: 34px; height: 34px; border-radius: 10px; font-size: 20px; line-height: 1;
+  color: #fff; background: rgba(255, 255, 255, .08); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .1);
+  touch-action: manipulation; transition: background .2s, opacity .2s;
+}
+.wb-epnav button:active:not(:disabled) { background: rgba(var(--accent-rgb, 43 127 255), .35); }
+.wb-epnav button:disabled { opacity: .3; }
+.wb-epnav > span { min-width: 64px; text-align: center; font-size: 13px; font-weight: 800; color: #fff; }
+.wb-epnav small { font-size: 11px; font-weight: 600; color: rgba(255, 255, 255, .5); }
+
+@media (max-width: 900px) {
+  /* Список озвучек: раньше открывался внутри колонки с overflow-hidden и
+     обрезался. Теперь — шторка снизу с крупными строками. */
+  .wb-vback {
+    display: block; position: fixed; inset: 0; z-index: 128; border: 0;
+    background: rgba(2, 4, 10, .72);
+  }
+  .wb-vmenu.wb-vmenu {
+    position: fixed !important; left: 10px !important; right: 10px !important;
+    top: auto !important; bottom: calc(10px + env(safe-area-inset-bottom)) !important;
+    z-index: 129; max-height: 72dvh; border-radius: 22px; padding: 6px 8px 10px;
+    animation: ag-sheet-up .28s cubic-bezier(.2, .9, .3, 1) both;
+  }
+  .wb-vhead {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 8px 8px; font-size: 15px; font-weight: 900; color: #fff;
+    position: sticky; top: -6px; background: #0d0d15; z-index: 1;
+  }
+  .wb-vhead button { font-size: 13px; font-weight: 800; color: rgb(var(--accent-rgb, 43 127 255)); padding: 6px 8px; }
+  .wb-vmenu li > button { min-height: 48px; font-size: 15px !important; padding: 10px 12px !important; }
+
+  /* Серии: крупнее цели касания, шесть в ряд не нужны */
+  .wb-eps { max-height: 260px !important; }
+  .wb-eps .wb-ep { height: 46px; font-size: 15px; }
+  .wb-epnav button { width: 42px; height: 42px; }
+}

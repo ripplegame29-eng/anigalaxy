@@ -1846,7 +1846,7 @@ export function AltPlayer({
       )}
 
       {/* -------------------------- Настройки -------------------------- */}
-      {settingsOpen && mediaReady && (
+      {settingsOpen && (
         <div
           data-alt-settings
           role="dialog"
@@ -1998,7 +1998,7 @@ export function AltPlayer({
       )}
 
       {/* --------------- Выбор качества (список, как в референсе) ------- */}
-      {qualityOpen && mediaReady && (
+      {qualityOpen && (
         <div
           data-alt-quality
           role="dialog"

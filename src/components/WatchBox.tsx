@@ -218,6 +218,7 @@ export function WatchBox({
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
   const menuRef = useRef<HTMLDivElement>(null);
+  const epsRef = useRef<HTMLDivElement>(null);
   /** Пропускаем первую запись URL, пока не применены глубокие ссылки */
   const skipUrlSync = useRef(true);
   /**
@@ -835,6 +836,18 @@ export function WatchBox({
   const activeOption = voiceList.find((t) => t.id === transId);
   const activeSeason = detail.seasons.find((s) => s.number === season) ?? detail.seasons[0];
   const episodeCount = activeSeason?.episodes.length ?? 0;
+  const epList = activeSeason?.episodes ?? [];
+  const epIdx = epList.findIndex((e) => e.number === episode);
+  const prevEp = epIdx > 0 ? epList[epIdx - 1] : undefined;
+  const nextEp = epIdx >= 0 && epIdx < epList.length - 1 ? epList[epIdx + 1] : undefined;
+
+  /** Текущая серия всегда в кадре сетки: у длинных тайтлов она уходила за прокрутку */
+  useEffect(() => {
+    const box = epsRef.current;
+    const cur = box?.querySelector<HTMLElement>('[aria-pressed="true"]');
+    if (!box || !cur) return;
+    box.scrollTop = Math.max(0, cur.offsetTop - box.clientHeight / 2 + cur.offsetHeight / 2);
+  }, [episode, season, switching]);
 
   /**
    * Горячие клавиши и подсветка кинозала из настроек.
@@ -1093,10 +1106,17 @@ export function WatchBox({
               </button>
 
               {menuOpen && (
+                <button type="button" aria-label="Закрыть список озвучек" className="wb-vback" onClick={() => setMenuOpen(false)} />
+              )}
+              {menuOpen && (
                 <ul
                   role="listbox"
-                  className="absolute left-0 right-0 top-[calc(100%+6px)] z-30 max-h-64 overflow-y-auto rounded-xl border border-line bg-[#0d0d15]/98 p-1.5 shadow-[0_28px_60px_-24px_rgba(0,0,0,1)] backdrop-blur-xl animate-fade-in"
+                  className="wb-vmenu absolute left-0 right-0 top-[calc(100%+6px)] z-30 max-h-64 overflow-y-auto rounded-xl border border-line bg-[#0d0d15]/98 p-1.5 shadow-[0_28px_60px_-24px_rgba(0,0,0,1)] backdrop-blur-xl animate-fade-in"
                 >
+                  <li className="wb-vhead" aria-hidden>
+                    <span>Студия озвучки</span>
+                    <button type="button" tabIndex={-1} onClick={() => setMenuOpen(false)}>Готово</button>
+                  </li>
                   {voiceList.map((t) => (
                     <li key={t.id}>
                       <button
@@ -1153,15 +1173,35 @@ export function WatchBox({
                 </div>
               )}
 
-              <div className="flex items-center justify-between px-3 pt-3">
+              <div className="flex items-center justify-between gap-2 px-3 pt-3">
                 <span className="text-[11px] font-bold uppercase tracking-wider text-muted">
                   Серии
                 </span>
-                <span className="text-[11px] text-muted">{episodeCount}</span>
+                <div className="wb-epnav">
+                  <button
+                    type="button"
+                    aria-label="Предыдущая серия"
+                    disabled={!prevEp}
+                    onClick={() => prevEp && setEpisode(prevEp.number)}
+                  >
+                    ‹
+                  </button>
+                  <span>
+                    {episode} <small>из {episodeCount}</small>
+                  </span>
+                  <button
+                    type="button"
+                    aria-label="Следующая серия"
+                    disabled={!nextEp}
+                    onClick={() => nextEp && setEpisode(nextEp.number)}
+                  >
+                    ›
+                  </button>
+                </div>
               </div>
 
               {/* Сетка серий */}
-              <div className="wb-eps max-h-[300px] overflow-y-auto p-3 lg:max-h-[460px]">
+              <div ref={epsRef} className="wb-eps max-h-[300px] overflow-y-auto p-3 lg:max-h-[460px]">
                 {switching ? (
                   <div className="grid grid-cols-5 gap-2">
                     {Array.from({ length: 15 }).map((_, i) => (
