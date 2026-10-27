@@ -591,6 +591,8 @@
 }
 
 .rbox {
+  box-sizing: border-box;
+  overflow: hidden;
   border-radius: 22px;
   padding: 22px;
   background: linear-gradient(180deg, #141a33, #0a0f1f);
@@ -682,6 +684,7 @@
 
 .rbtn {
   all: unset;
+  box-sizing: border-box;
   cursor: pointer;
   height: 42px;
   padding: 0 18px;
@@ -723,10 +726,44 @@
 }
 
 .rdone svg {
-  width: 44px;
-  height: 44px;
+  display: block;
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 12px;
   color: #34d399;
-  margin-bottom: 10px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 14px rgba(52, 211, 153, 0.55));
+}
+
+.rdone svg circle {
+  stroke-dasharray: 57;
+  stroke-dashoffset: 57;
+  animation: rd-draw 0.6s ease-out 0.05s forwards;
+}
+
+.rdone svg path {
+  stroke-dasharray: 14;
+  stroke-dashoffset: 14;
+  animation: rd-draw 0.35s ease-out 0.55s forwards;
+}
+
+@keyframes rd-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.rdone h3 {
+  justify-content: center;
+}
+
+.rdone p {
+  max-width: 34ch;
+  margin-inline: auto;
 }
 
 @media (prefers-reduced-motion: reduce) {
