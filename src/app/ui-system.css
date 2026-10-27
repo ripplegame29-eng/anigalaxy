@@ -207,24 +207,16 @@
   margin-top: 14px;
 }
 
-/* Картинка проявляется после загрузки; если событие потерялось — через 2.5 с показываем всё равно.
-   Элементы со своей анимацией (Ken Burns в hero) не трогаем: им плавность не нужна. */
-.ui-img:not([class*="animate-"]) {
-  opacity: 0;
-  animation: ui-img-safe 0s 2.5s forwards;
-}
+/* Картинка мягко проявляется после загрузки. Прозрачность и фильтры не задаём сами:
+   анимация идёт «от нуля к собственному значению» элемента, поэтому приглушённые
+   картинки (фон тайтла с opacity-25 и т. п.) сохраняют свой вид.
+   Элементы со своей анимацией (Ken Burns в hero) не трогаем. */
 .ui-img.is-loaded:not([class*="animate-"]) {
-  opacity: 1;
   animation: ui-img-in 0.5s var(--ease) backwards;
-}
-@keyframes ui-img-safe {
-  to {
-    opacity: 1;
-  }
 }
 @keyframes ui-img-in {
   from {
     opacity: 0;
-    filter: blur(6px);
   }
 }
+
