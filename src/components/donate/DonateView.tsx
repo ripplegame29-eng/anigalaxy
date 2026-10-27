@@ -506,7 +506,7 @@ useEffect(() => {
         <div>
           <Image unoptimized
             className="don-ci"
-            style={{ width: 90, height: 90, animation: "don-flip 3s infinite" }}
+            style={{ width: 90, height: 90, display: "block", margin: "0 auto 6px", animation: "none" }}
             src="/coin.png"
             alt=""
             aria-hidden
