@@ -142,12 +142,18 @@ export default function PremiumPage() {
         </div>
       </section>
 
+      {/* ------------------------------ Тарифы ------------------------------- */}
+      <section className="relative mx-auto max-w-6xl px-4 pb-12 pt-10 sm:pt-14" aria-label="Тарифы">
+        <PremiumPlans />
+      </section>
+
       {/* ---------------------------- Привилегии ----------------------------- */}
       <section className="relative mx-auto max-w-6xl px-4 pb-6 pt-6" aria-label="Привилегии Premium">
         <h2 className="pp-h2">Что ты получаешь</h2>
+        <p className="pp-sub">Всё, что открывает Premium — от первого дня подписки</p>
         <div className="pp-perks">
           {PREMIUM_PERKS.map((perk, i) => (
-            <article key={perk.id} className="pp-perk" style={{ "--i": i } as React.CSSProperties}>
+            <article key={perk.id} className={`pp-perk pp-perk--${perk.id}`} style={{ "--i": i } as React.CSSProperties}>
               <PerkIcon id={perk.id} />
               <h3>{perk.title}</h3>
               <p>{perk.text}</p>
@@ -155,11 +161,6 @@ export default function PremiumPage() {
             </article>
           ))}
         </div>
-      </section>
-
-      {/* ------------------------------ Тарифы ------------------------------- */}
-      <section className="relative mx-auto max-w-6xl px-4 pb-12 pt-10 sm:pt-14" aria-label="Тарифы">
-        <PremiumPlans />
       </section>
 
       {/* ----------------------------- Сравнение ----------------------------- */}

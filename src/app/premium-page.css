@@ -135,3 +135,23 @@
   .pk-ic::after,.pk-swing,.pk-draw,.pk-flash,.pk-pulse,.pk-tilt,.pk-sheen,.pk-spin,.pk-tw,.pk-lid{animation:none}
   .pk-pulse{opacity:.4}
 }
+
+/* ===== Премиум-полировка (v2) ===== */
+.pp-sub{margin:-14px auto 28px;text-align:center;font-size:14px;color:rgba(255,255,255,.55)}
+.pp-h2{position:relative;padding-bottom:16px}
+.pp-h2::after{content:"";position:absolute;left:50%;bottom:0;width:64px;height:3px;border-radius:3px;transform:translateX(-50%);background:linear-gradient(90deg,transparent,#00c8ff,#1f7bff,transparent);box-shadow:0 0 16px rgba(0,200,255,.7)}
+.pp-perk{--pc:0,200,255;padding:26px 24px 22px;border-radius:24px;background:radial-gradient(120% 90% at 0% 0%,rgba(var(--pc),.14),transparent 55%),linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.01)),rgba(10,12,22,.88);border-color:rgba(var(--pc),.2);box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 18px 40px -30px rgba(var(--pc),.5)}
+.pp-perk--boost,.pp-perk--daily{--pc:255,176,40}
+.pp-perk--cosmetics,.pp-perk--drop{--pc:139,92,246}
+.pp-perk--pass,.pp-perk--gifts{--pc:255,122,184}
+.pp-perk--backgrounds,.pp-perk--tag{--pc:31,123,255}
+.pp-perk::before{content:"";position:absolute;right:-40px;top:-40px;width:130px;height:130px;border-radius:50%;background:radial-gradient(circle,rgba(var(--pc),.28),transparent 70%);filter:blur(6px);pointer-events:none;transition:transform .5s}
+.pp-perk:hover::before{transform:scale(1.35)}
+.pp-perk:hover{border-color:rgba(var(--pc),.65);box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 30px 60px -30px rgba(var(--pc),.7)}
+.pp-perk .pk-ic{width:66px;height:66px;border-radius:21px;background:radial-gradient(circle at 30% 18%,rgba(255,255,255,.22),transparent 55%),linear-gradient(145deg,rgba(var(--pc),.38),rgba(10,12,30,.7));box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 10px 26px -10px rgba(var(--pc),.85)}
+.pp-perk .pk-ic svg{width:44px;height:44px;filter:drop-shadow(0 2px 6px rgba(var(--pc),.6))}
+.pp-perk h3{margin:16px 0 6px;font-size:17px;letter-spacing:-.01em}
+.pp-perk small{padding:4px 10px;border-radius:99px;background:rgba(var(--pc),.14);border:1px solid rgba(var(--pc),.3);color:#fff;font-weight:800}
+.pp-cmp{border-color:rgba(0,200,255,.18);box-shadow:0 30px 70px -40px rgba(0,200,255,.45)}
+.pp-cmp-h .pr{text-shadow:0 0 14px rgba(0,200,255,.6)}
+@media(min-width:901px){.pp-perk--gifts{grid-column:span 2}}
