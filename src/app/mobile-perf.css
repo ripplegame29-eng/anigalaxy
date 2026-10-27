@@ -38,3 +38,8 @@
 @media (prefers-reduced-motion: reduce) {
   .animate-kenburns { animation: none !important; }
 }
+
+/* Тач: юридические ссылки подвала — область нажатия не меньше 40px */
+@media (max-width: 900px) {
+  .ft-bot ul li a { display: inline-flex; align-items: center; min-height: 40px; }
+}
