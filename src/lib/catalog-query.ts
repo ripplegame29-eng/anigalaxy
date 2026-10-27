@@ -45,7 +45,7 @@ export const SORT_OPTIONS = [
   { value: "rating", label: "По рейтингу" },
   { value: "fresh", label: "Сначала новые" },
   { value: "updated", label: "Недавно обновлённые" },
-  { value: "year", label: "По году" },
+  { value: "year", label: "Сначала старые" },
   { value: "kinopoisk", label: "Топ Кинопоиска" },
   { value: "title", label: "А–Я" },
 ] as const;

@@ -170,8 +170,9 @@ const SORT_MAP: Record<string, { sort?: string; order?: "asc" | "desc" }> = {
   rating: { sort: "shikimori_rating", order: "desc" },
   kinopoisk: { sort: "kinopoisk_rating", order: "desc" },
   updated: { sort: "updated_at", order: "desc" },
-  fresh: { sort: "created_at", order: "desc" },
-  year: { sort: "year", order: "desc" },
+  /* «Сначала новые» — по году выхода, а не по дате добавления в базу плеера */
+  fresh: { sort: "year", order: "desc" },
+  year: { sort: "year", order: "asc" },
   title: { sort: "title", order: "asc" },
 };
 
