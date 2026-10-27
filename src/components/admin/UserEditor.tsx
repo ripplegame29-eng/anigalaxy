@@ -560,16 +560,23 @@ function Access({ d, now, me, run, onClose }: { d: Detail; now: number; me: stri
         </section>
       ) : null}
 
-      {!isAdmin && !self ? (
+      {!self ? (
         <section className="adm-block">
           <h4 className="adm-h4">Роль</h4>
           <Segmented
             label="Роль"
-            value={u.role === "moderator" ? "moderator" : "user"}
-            onChange={(role) => void run({ action: "role", role }, role === "moderator" ? "Назначен модератором" : "Роль снята")}
+            value={u.role === "admin" || u.role === "moderator" ? u.role : "user"}
+            onChange={(role) => {
+              if (role === "admin" && !window.confirm(`Назначить ${u.nickname ?? "пользователя"} администратором? Администратор получает полный доступ к админ-панели.`)) return;
+              void run(
+                { action: "role", role },
+                role === "admin" ? "Назначен администратором" : role === "moderator" ? "Назначен модератором" : "Роль снята",
+              );
+            }}
             options={[
               { id: "user", label: "Игрок" },
               { id: "moderator", label: "Модератор" },
+              { id: "admin", label: "Администратор" },
             ]}
           />
         </section>

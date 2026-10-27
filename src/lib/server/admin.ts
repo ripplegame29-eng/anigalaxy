@@ -9,7 +9,7 @@ import { errorCounts } from "./errors";
 import { PROFILE_DOC_KEY } from "./admin-edit";
 import { getDoc } from "./docs";
 import { PROGRESS_DOC_KEY } from "../sync-keys";
-import type { UserRow } from "./users";
+import { OWNER_EMAIL, type UserRow } from "./users";
 
 export const isAdmin = (user: UserRow | null): user is UserRow => user?.role === "admin";
 
@@ -100,11 +100,13 @@ export function setPremiumDays(db: Database, userId: number, days: number, now =
 }
 
 export function setRole(db: Database, admin: UserRow, userId: number, role: string): AdminResult {
-  if (!["user", "moderator"].includes(role)) return { ok: false, error: "Допустимы роли user и moderator" };
+  if (!["user", "moderator", "admin"].includes(role)) return { ok: false, error: "Допустимы роли user, moderator и admin" };
   if (userId === admin.id) return { ok: false, error: "Свою роль менять нельзя" };
-  const target = db.prepare("SELECT role FROM users WHERE id = ?").get(userId);
+  const target = db.prepare("SELECT role, email FROM users WHERE id = ?").get(userId);
   if (!target) return { ok: false, error: "Пользователь не найден" };
-  if (str(target.role) === "admin") return { ok: false, error: "Роль администратора менять нельзя" };
+  // Владельца сайта не может разжаловать никто: иначе его можно лишить доступа
+  if (str(target.email).toLowerCase() === OWNER_EMAIL) return { ok: false, error: "Роль владельца сайта менять нельзя" };
+  if (str(target.role) === role) return { ok: true };
   db.prepare("UPDATE users SET role = ? WHERE id = ?").run(role, userId);
   return { ok: true };
 }
