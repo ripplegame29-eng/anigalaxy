@@ -124,11 +124,10 @@ export default async function MangaCatalogPage({ searchParams }: PageProps) {
         <input type="hidden" name="sort" value={sort} />
         {genre && <input type="hidden" name="genre" value={genre} />}
         {status && <input type="hidden" name="status" value={status} />}
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="relative min-w-0 flex-1 basis-52">
+        <div className="mg-search">
+          <div className="mg-sb">
             <svg
               viewBox="0 0 24 24"
-              className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted"
               fill="none"
               stroke="currentColor"
               strokeWidth="2"
@@ -145,30 +144,35 @@ export default async function MangaCatalogPage({ searchParams }: PageProps) {
               maxLength={80}
               placeholder="Поиск по названию или оригиналу…"
               aria-label="Поиск по каталогу манги"
-              className="w-full rounded-xl bg-white/6 py-3 pl-10 pr-3 text-sm font-semibold text-white ring-1 ring-white/10 transition placeholder:text-muted/70 focus:outline-none focus:ring-accent/60"
             />
           </div>
-          <div className="flex w-full gap-2 sm:w-auto">
-            <button
-              type="submit"
-              className="btn-primary flex-1 rounded-xl px-5 py-3 text-sm font-bold text-white sm:flex-none"
-            >
-              Найти
-            </button>
-            {query && (
-              <Link
-                href={qs({ page: 1, q: "" })}
-                className="btn-ghost flex-1 rounded-xl bg-white/6 px-4 py-3 text-sm font-semibold text-white/80 ring-1 ring-white/10 transition-colors hover:bg-white/12 hover:text-white sm:flex-none"
-              >
-                Сбросить
-              </Link>
-            )}
-          </div>
+          <button type="submit" className="mg-go">
+            Найти
+          </button>
+          {query && (
+            <Link href={qs({ page: 1, q: "" })} className="mg-reset">
+              Сбросить
+            </Link>
+          )}
         </div>
       </form>
 
       {/* Фильтры: сортировка, статус и жанры — в стиле каталога аниме */}
       <div className="mg-filters mb-8">
+        <div className="mg-top">
+        <div className="mg-row">
+          <span className="mg-lab">Статус</span>
+          {STATUSES.map((option) => (
+            <Link
+              key={option.value || "any"}
+              href={qs({ status: option.value, page: 1 })}
+              aria-current={status === option.value ? "page" : undefined}
+              className={status === option.value ? "on" : undefined}
+            >
+              {option.label}
+            </Link>
+          ))}
+        </div>
         <div className="mg-row">
           <span className="mg-lab">Сортировка</span>
           {SORTS.map((option) => (
@@ -182,18 +186,6 @@ export default async function MangaCatalogPage({ searchParams }: PageProps) {
             </Link>
           ))}
         </div>
-        <div className="mg-row">
-          <span className="mg-lab">Статус</span>
-          {STATUSES.map((option) => (
-            <Link
-              key={option.value || "any"}
-              href={qs({ status: option.value, page: 1 })}
-              aria-current={status === option.value ? "page" : undefined}
-              className={status === option.value ? "on" : undefined}
-            >
-              {option.label}
-            </Link>
-          ))}
         </div>
         {genres.length > 0 && (
           <div className="mg-row mg-genres">

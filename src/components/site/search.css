@@ -482,3 +482,20 @@
     transition-duration: 0.01ms !important;
   }
 }
+/* ═══ Тёмная плоская кожа: нейтральный чёрный фон, синие акценты остаются ═══
+   Меняем только токены внутри оверлея — вёрстка и логика не тронуты. */
+.sx {
+  --ag-glass: #0d0d0f;
+  --ag-card: #0f0f11;
+  --ag-scrim: rgba(0, 0, 0, 0.82);
+  --ag-line: rgba(255, 255, 255, 0.08);
+  --ag-line-strong: rgba(255, 255, 255, 0.14);
+  --ag-ctl: rgba(255, 255, 255, 0.05);
+  --ag-ctl-hover: rgba(255, 255, 255, 0.1);
+  --ag-text-2: #cfcfd6;
+  --ag-muted: #8a8a92;
+}
+.sx__box {
+  background: #0d0d0f;
+  box-shadow: 0 40px 120px rgba(0, 0, 0, 0.85);
+}
