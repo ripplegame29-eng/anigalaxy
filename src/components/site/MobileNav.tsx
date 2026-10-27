@@ -47,17 +47,7 @@ interface Row {
 /** Разделы боковой панели «Ещё» — списком строк, как в приложении */
 const SECTIONS: { title: string; rows: Row[] }[] = [
   {
-    title: "Социальное",
-    rows: [
-      { label: "Мой профиль", href: "/profile", icon: "user" },
-      { label: "Достижения", href: "/profile?tab=achievements", icon: "trophy" },
-      { label: "Друзья и рефералы", href: "/referrals", icon: "users" },
-      { label: "Кланы", href: "/clans", icon: "users" },
-      { label: "Рейтинг", href: "/leaderboard", icon: "trophy" },
-    ],
-  },
-  {
-    title: "Контент",
+    title: "Смотреть",
     rows: [
       { label: "Каталог аниме", href: "/catalog", icon: "book" },
       { label: "Расписание", href: "/schedule", icon: "cal" },
@@ -65,16 +55,14 @@ const SECTIONS: { title: string; rows: Row[] }[] = [
       { label: "AniSwipe", href: "/aniswipe", icon: "spark" },
       { label: "Смотреть вместе", href: "/watch-together", icon: "together" },
       { label: "Подборки", href: "/collections", icon: "layers" },
-      { label: "Карта", href: "/map", icon: "compass" },
     ],
   },
   {
-    title: "Прогресс",
+    title: "Сообщество",
     rows: [
-      { label: "Боевой пропуск", href: "/battlepass", icon: "pass" },
-      { label: "Квесты", href: "/quests", icon: "target" },
-      { label: "События", href: "/events", icon: "flame" },
-      { label: "Магазин", href: "/store", icon: "store" },
+      { label: "Рейтинг", href: "/leaderboard", icon: "trophy" },
+      { label: "Кланы", href: "/clans", icon: "users" },
+      { label: "Карта", href: "/map", icon: "compass" },
     ],
   },
   {
@@ -82,7 +70,6 @@ const SECTIONS: { title: string; rows: Row[] }[] = [
     rows: [
       { label: "Обновления", href: "/updates", icon: "refresh" },
       { label: "Приложения", href: "/apps", icon: "tv" },
-      { label: "Настройки", href: "/settings", icon: "gear" },
     ],
   },
 ];
@@ -145,20 +132,16 @@ export function MobileNav() {
         </div>
         <div className="mdk-scroll">
           <Link className="mdk-prem" href="/premium" tabIndex={open ? 0 : -1}>
-            <b className="mdk-ic"><Icon name="crown" /></b>
-            <span>
-              <strong>Premium</strong>
-              <small>Без рекламы, эффекты и бонусы</small>
-            </span>
-            <i aria-hidden>{svg(<path d="m9 6 6 6-6 6" />)}</i>
+            <Icon name="crown" />
+            <span>Premium</span>
+            <small>Без рекламы</small>
           </Link>
           <button type="button" className={`mdk-row${busy ? " busy" : ""}`} tabIndex={open ? 0 : -1} onClick={random}>
-            <b className="mdk-ic"><Icon name="dice" /></b>
+            <Icon name="dice" />
             <span>Случайное аниме</span>
-            <i aria-hidden>{svg(<path d="m9 6 6 6-6 6" />)}</i>
           </button>
-          {SECTIONS.map((sec, si) => (
-            <section key={sec.title} data-g={si % 2 ? "b" : "a"}>
+          {SECTIONS.map((sec) => (
+            <section key={sec.title}>
               <h3 className="mdk-sh">{sec.title}</h3>
               {sec.rows.map((r) => (
                 <Link
@@ -167,9 +150,8 @@ export function MobileNav() {
                   tabIndex={open ? 0 : -1}
                   className={`mdk-row${on(r.href) ? " cur" : ""}`}
                 >
-                  <b className="mdk-ic"><Icon name={r.icon} /></b>
+                  <Icon name={r.icon} />
                   <span>{r.label}</span>
-                  <i aria-hidden>{svg(<path d="m9 6 6 6-6 6" />)}</i>
                 </Link>
               ))}
             </section>
