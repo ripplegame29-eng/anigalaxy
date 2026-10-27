@@ -374,16 +374,32 @@ function localFromServer(server: ServerAccount, passHash: string): Account {
 }
 
 /** Общий хвост входа: сохранить аккаунт, подтянуть данные, при изменениях обновить страницу */
-async function adopt(server: ServerAccount, passHash: string, keepLocalData: boolean): Promise<void> {
+async function adopt(
+  server: ServerAccount,
+  passHash: string,
+  keepLocalData: boolean,
+  /** Новый аккаунт: гостевой прогресс не переносим, страница перезагружается начисто */
+  freshStart = false,
+): Promise<void> {
   const meta = readMeta();
+  let wiped = false;
   if (meta.userId !== server.id) {
     /* Данные другого игрока на этом устройстве в новый аккаунт не попадают */
-    if (meta.userId !== null || !keepLocalData) wipeSyncedKeys();
+    if (meta.userId !== null || !keepLocalData) {
+      wipeSyncedKeys();
+      wiped = true;
+    }
     writeMeta({ userId: server.id, versions: {}, dirty: [], profile: "" });
   }
   active = true;
   const next = localFromServer(server, passHash);
   if (JSON.stringify(readAccount()) !== JSON.stringify(next)) saveAccount(next);
+  if (freshStart && wiped) {
+    /* Сразу перезагружаем страницу: хранилища в памяти ещё держат гостевой прогресс
+       и могли бы записать его обратно уже под новым аккаунтом */
+    window.location.reload();
+    return;
+  }
   const changed = await pull();
   void pushProfile();
   if (changed) reloadOnce();
@@ -450,8 +466,8 @@ export async function signUp(
   if (reply.unavailable) return registerAccount(nickname, email, password, confirm);
 
   if (reply.data?.ok && reply.data.account) {
-    await adopt(reply.data.account, hashPassword(password), true);
     clearReferralLanding();
+    await adopt(reply.data.account, hashPassword(password), false, true);
     return { ok: true };
   }
   return { ok: false, error: reply.data?.error ?? "Не удалось зарегистрироваться" };

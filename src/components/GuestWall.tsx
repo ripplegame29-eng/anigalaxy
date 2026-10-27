@@ -2,7 +2,7 @@
 
 /**
  * Мягкая регистрационная стена: после двух серий гость видит карточку
- * «Сохрани прогресс — получи 100 монет». Закрывается кнопкой «Позже».
+ * «Создай аккаунт — получи 100 монет». Закрывается кнопкой «Позже».
  */
 
 import { useEffect, useState } from "react";
@@ -34,7 +34,7 @@ export function GuestWall() {
   if (!open || account) return null;
 
   return (
-    <aside className="gw" role="dialog" aria-label="Сохрани прогресс">
+    <aside className="gw" role="dialog" aria-label="Создай аккаунт">
       <button type="button" className="gw-x" aria-label="Закрыть" onClick={() => setOpen(false)}>
         ×
       </button>
@@ -68,10 +68,10 @@ export function GuestWall() {
         <u className="gw-sp gw-sp3" />
       </div>
       <div className="gw-body">
-        <h3>Сохрани прогресс — получи {SIGNUP_BONUS_AC} монет</h3>
+        <h3>Создай аккаунт — получи {SIGNUP_BONUS_AC} монет</h3>
         <p>
-          Уровни, история просмотра и достижения останутся с тобой на любом устройстве. Регистрация
-          занимает минуту.
+          С аккаунтом уровни, история просмотра и достижения сохраняются на любом устройстве.
+          Регистрация занимает минуту.
         </p>
         <div className="gw-act">
           <button
