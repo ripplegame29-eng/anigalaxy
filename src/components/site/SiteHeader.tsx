@@ -58,7 +58,7 @@ import { AnimeOfTheDay } from "./AnimeOfTheDay";
 import { useAccount } from "@/lib/use-account";
 import { activatePremium } from "@/lib/auth";
 import { useLinks } from "@/lib/accounts";
-import { unreadCount, useProfile } from "@/lib/profile";
+import { markNoticesRead, setNoticeRead, unreadCount, useProfile } from "@/lib/profile";
 import { timeAgo } from "@/lib/history";
 import { useLevelInfo } from "@/lib/progression/events";
 
@@ -849,7 +849,9 @@ export function SiteHeader({ onOpenSearch }: SiteHeaderProps) {
               <div className={`dd pn${openId === "nt" ? " o" : ""}`} id="nt">
                 <h5 className="it" style={{ "--i": 0 } as CSSProperties}>
                   УВЕДОМЛЕНИЯ
-                  <Link href={NOTICES_HREF}>Прочитать все</Link>
+                  <Link href={NOTICES_HREF} onClick={markNoticesRead}>
+                    Прочитать все
+                  </Link>
                 </h5>
                 {profile.notices.length === 0 ? (
                   <div className="ntf-empty it" style={{ "--i": 1 } as CSSProperties}>
@@ -866,6 +868,9 @@ export function SiteHeader({ onOpenSearch }: SiteHeaderProps) {
                       className={`ntf it${item.read ? "" : " un"}`}
                       style={{ "--i": i + 1, "--c": "#4ac5f5" } as CSSProperties}
                       href={NOTICES_HREF}
+                      onClick={() => {
+                        if (!item.read) setNoticeRead(item.id, true);
+                      }}
                     >
                       <div className="ic">
                         <Icon name="bell" />
