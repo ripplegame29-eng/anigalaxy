@@ -219,10 +219,6 @@ export function PremiumPlans() {
         );
       })}
     </div>
-    <p className="mt-5 text-center text-xs leading-relaxed text-accent-2/80">
-      Демо: платёжный шлюз не подключён. Кнопка активирует подписку на выбранный
-      срок без оплаты — это единственный способ проверить привилегии Premium.
-    </p>
     </>
   );
 }
