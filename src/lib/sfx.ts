@@ -21,9 +21,9 @@ let lastAt = 0;
 function read(): boolean {
   if (enabled !== null) return enabled;
   try {
-    enabled = window.localStorage.getItem(KEY) !== "0";
+    enabled = window.localStorage.getItem(KEY) === "1";
   } catch {
-    enabled = true;
+    enabled = false;
   }
   return enabled;
 }
