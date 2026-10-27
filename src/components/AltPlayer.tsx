@@ -1,7 +1,8 @@
 "use client";
 
 import { FS_EVENT, isFullscreen, toggleFullscreen as toggleFs } from "@/lib/fullscreen";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { PlayerSkinPicker } from "./PlayerSkinPicker";
 import { usePlayerSkin } from "@/lib/player-skins";
@@ -310,6 +311,25 @@ function DragBar({
   );
 }
 
+/** Узкий экран: шторки плеера выносим из кадра — он их обрезает (overflow, transform) */
+const COMPACT_MQ = "(max-width: 900px)";
+function subscribeCompact(cb: () => void) {
+  const mq = window.matchMedia(COMPACT_MQ);
+  mq.addEventListener("change", cb);
+  return () => mq.removeEventListener("change", cb);
+}
+function useCompactUi(): boolean {
+  return useSyncExternalStore(
+    subscribeCompact,
+    () => window.matchMedia(COMPACT_MQ).matches,
+    () => false,
+  );
+}
+/** Рисует детей в <body>, если `on`: так fixed-шторки не зависят от предков плеера */
+function Lift({ on, children }: { on: boolean; children: ReactNode }) {
+  return on && typeof document !== "undefined" ? createPortal(children, document.body) : <>{children}</>;
+}
+
 export function AltPlayer({
   query,
   altQuery,
@@ -509,6 +529,7 @@ export function AltPlayer({
   const epKey = `${titleId}:${season}:${episode}`;
   const [flash, setFlash] = useState<{ side: "l" | "r"; sec: number; n: number } | null>(null);
   const [isFs, setIsFs] = useState(false);
+  const compactUi = useCompactUi();
   /** Anime4K не запустился (нет WebGL / canvas заблокирован CORS) */
   const [a4kFailed, setA4kFailed] = useState(false);
 
@@ -1761,6 +1782,7 @@ export function AltPlayer({
 
       {skinsOpen && <PlayerSkinPicker onClose={() => setSkinsOpen(false)} />}
 
+      <Lift on={compactUi && !isFs}>
       {/* Затемнение под мобильными шторками качества/настроек: тап мимо
           закрывает их, а фон не перехватывает нажатия у кнопок плеера. */}
       {(settingsOpen || qualityOpen) && (
@@ -1868,6 +1890,50 @@ export function AltPlayer({
             </button>
           </div>
 
+          {/* Телефон: настройки строками «название — значение ›», как в приложении */}
+          <div className="ag-set-rows">
+            <button type="button" onClick={cycleSpeed}>
+              <Icon d={PATHS.list} className="h-[18px] w-[18px]" />
+              <span>Скорость</span>
+              <em>{rate === 1 ? "Обычная" : `${rate}x`}</em>
+              <i aria-hidden>›</i>
+            </button>
+            <button type="button" onClick={() => { setSettingsOpen(false); setQualityOpen(true); }}>
+              <Icon d={PATHS.expand} className="h-[18px] w-[18px]" />
+              <span>Качество</span>
+              <em>{qualityLabel}</em>
+              <i aria-hidden>›</i>
+            </button>
+            {nav && nav.voices.length > 1 && (
+              <button type="button" onClick={() => { setSettingsOpen(false); setPanel("voices"); }}>
+                <Icon d={PATHS.voices} className="h-[18px] w-[18px]" />
+                <span>Озвучка</span>
+                <em>{nav?.voices.find((v) => v.id === nav.voiceId)?.title ?? ""}</em>
+                <i aria-hidden>›</i>
+              </button>
+            )}
+            {skips?.op && (
+              <button type="button" role="switch" aria-checked={autoSkip} onClick={toggleAutoSkip}>
+                <Icon d={PATHS.next} className="h-[18px] w-[18px]" />
+                <span>Автопропуск</span>
+                <em>{autoSkip ? "Вкл" : "Выкл"}</em>
+                <i aria-hidden>›</i>
+              </button>
+            )}
+            <button type="button" role="switch" aria-checked={autoNext} onClick={() => setAutoNext((v) => !v)}>
+              <Icon d={PATHS.next} className="h-[18px] w-[18px]" />
+              <span>Автопереход</span>
+              <em>{autoNext ? "Вкл" : "Выкл"}</em>
+              <i aria-hidden>›</i>
+            </button>
+            <button type="button" role="switch" aria-checked={glow} onClick={toggleGlow}>
+              <Icon d={PATHS.expand} className="h-[18px] w-[18px]" />
+              <span>Подсветка</span>
+              <em>{glow ? "Вкл" : "Выкл"}</em>
+              <i aria-hidden>›</i>
+            </button>
+          </div>
+          <div className="ag-set-classic">
           <p className="mb-1.5 text-[11px] font-bold uppercase tracking-wider text-muted">
             Скорость
           </p>
@@ -1994,6 +2060,7 @@ export function AltPlayer({
               )}
             </div>
           )}
+          </div>
         </div>
       )}
 
@@ -2116,6 +2183,7 @@ export function AltPlayer({
           </div>
         </div>
       )}
+      </Lift>
 
       {/* ------------- Окно «2K/4K по подписке» -------------------------
           Всплывает вместо переключения качества, когда серия не входит

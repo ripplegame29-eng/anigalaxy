@@ -1,0 +1,105 @@
+/* ═══ Мобильная навигация v4: плоская нижняя панель и боковая панель «Ещё» ═══
+   Заменяет плавающий док и шторку: пять пунктов в ряд, активный — заливка
+   акцентом, «Ещё» выезжает справа списком строк. */
+.mdk-bar, .mdk-drawer, .mdk-shade { display: none; }
+
+@media (max-width: 900px) {
+  :root { --mdk-h: 62px; }
+  /* старые плавающие элементы больше не нужны */
+  .mnv-bar, .mnv-sheet { display: none !important; }
+  body { padding-bottom: calc(var(--mdk-h) + 18px + env(safe-area-inset-bottom)); }
+  .ag-fab { bottom: calc(var(--mdk-h) + 18px + env(safe-area-inset-bottom)) !important; --dock-right: 12px !important; }
+
+  .mdk-bar {
+    display: flex; position: fixed; z-index: 70; left: 0; right: 0; bottom: 0;
+    height: calc(var(--mdk-h) + env(safe-area-inset-bottom));
+    padding: 6px 6px env(safe-area-inset-bottom);
+    background: #0a0b10; border-top: 1px solid rgba(255, 255, 255, .07);
+    box-sizing: border-box;
+  }
+  .mdk-i {
+    flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+    border: 0; background: none; padding: 0; color: #7d8499; cursor: pointer;
+    font: 800 10px/1 var(--font-body, inherit); -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+    transition: color .2s;
+  }
+  .mdk-i b {
+    display: grid; place-items: center; width: 44px; height: 32px; border-radius: 12px;
+    transition: background .25s, transform .2s, box-shadow .25s;
+  }
+  .mdk-i b svg { width: 22px; height: 22px; }
+  .mdk-i b svg .f { fill: currentColor; fill-opacity: .14; }
+  .mdk-i:active b { transform: scale(.92); }
+  .mdk-i.cur { color: rgb(var(--accent-rgb, 43 127 255)); }
+  .mdk-i.cur b {
+    color: #fff; width: 48px; height: 34px; border-radius: 13px;
+    background: linear-gradient(135deg, rgb(var(--accent-rgb, 43 127 255)), rgb(var(--accent-2-rgb, 34 184 240)));
+    box-shadow: 0 6px 18px -6px rgba(var(--accent-rgb, 43 127 255), .9);
+  }
+  .mdk-i.cur b svg .f { fill-opacity: .3; }
+
+  .mdk-shade {
+    display: block; position: fixed; inset: 0; z-index: 89; background: rgba(2, 3, 8, .74);
+    opacity: 0; visibility: hidden; transition: opacity .25s, visibility .25s;
+  }
+  .mdk-shade.on { opacity: 1; visibility: visible; }
+
+  .mdk-drawer {
+    display: flex; flex-direction: column; position: fixed; z-index: 90; top: 0; right: 0; bottom: 0;
+    width: min(88vw, 380px); background: #0c0d12; border-left: 1px solid rgba(255, 255, 255, .08);
+    box-shadow: -30px 0 80px rgba(0, 0, 0, .7);
+    transform: translateX(104%); transition: transform .32s cubic-bezier(.2, .9, .3, 1); visibility: hidden;
+  }
+  .mdk-drawer.on { transform: none; visibility: visible; }
+  .mdk-head {
+    display: flex; align-items: center; justify-content: space-between; flex: none;
+    padding: calc(14px + env(safe-area-inset-top)) 14px 12px 18px;
+  }
+  .mdk-head h2 {
+    margin: 0; font: 900 20px/1.1 var(--font-display, inherit); color: #fff; letter-spacing: -.01em;
+    padding-left: 12px; border-left: 3px solid rgb(var(--accent-rgb, 43 127 255));
+  }
+  .mdk-x {
+    width: 40px; height: 40px; display: grid; place-items: center; border: 0; background: none;
+    color: #8a91a6; border-radius: 12px; touch-action: manipulation;
+  }
+  .mdk-x svg { width: 22px; height: 22px; }
+  .mdk-scroll { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 0 14px 14px; scrollbar-width: none; }
+  .mdk-scroll::-webkit-scrollbar { display: none; }
+  .mdk-sh {
+    margin: 18px 4px 8px; font: 800 11px/1 var(--font-body, inherit); letter-spacing: .08em;
+    text-transform: uppercase; color: #6f768b;
+  }
+  .mdk-row {
+    display: flex; align-items: center; gap: 12px; width: 100%; box-sizing: border-box; min-height: 50px;
+    margin-bottom: 8px; padding: 0 14px; border-radius: 14px; text-align: left;
+    color: #fff; background: rgba(255, 255, 255, .04); border: 1px solid rgba(255, 255, 255, .06);
+    font: 800 14px/1.2 var(--font-body, inherit); text-decoration: none; cursor: pointer;
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation; transition: background .2s;
+  }
+  .mdk-row > svg { width: 19px; height: 19px; flex: none; color: #9aa2b8; }
+  .mdk-row > span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .mdk-row > i { display: grid; flex: none; color: #5d647a; }
+  .mdk-row > i svg { width: 16px; height: 16px; }
+  .mdk-row:active { background: rgba(var(--accent-rgb, 43 127 255), .22); }
+  .mdk-row.cur { border-color: rgba(var(--accent-rgb, 43 127 255), .5); background: rgba(var(--accent-rgb, 43 127 255), .12); }
+  .mdk-row--prem > svg { color: #ffc94d; }
+  .mdk-row.busy > svg { animation: mdk-spin .7s linear infinite; }
+  @keyframes mdk-spin { to { transform: rotate(360deg); } }
+
+  .mdk-foot {
+    flex: none; display: grid; gap: 10px; padding: 12px 14px calc(14px + env(safe-area-inset-bottom));
+    border-top: 1px solid rgba(255, 255, 255, .07); background: #0a0b10;
+  }
+  .mdk-out {
+    display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 46px; border-radius: 14px;
+    color: #ff6b6b; font: 800 14px/1 var(--font-body, inherit); background: rgba(255, 70, 70, .1);
+    border: 1px solid rgba(255, 90, 90, .28); touch-action: manipulation;
+  }
+  .mdk-out svg { width: 18px; height: 18px; }
+  html.mnv-lock { overflow: hidden; }
+  html.mnv-lock .mdk-bar { z-index: 60; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mdk-drawer, .mdk-shade { transition-duration: .01ms; }
+}

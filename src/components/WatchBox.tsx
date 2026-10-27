@@ -3,7 +3,8 @@
 import { SHIELD_SANDBOX, setShield, useShield } from "@/lib/shield";
 import { mergeVoices, pickDefaultVoice } from "@/lib/voice-merge";
 import { toggleFullscreen as toggleFs } from "@/lib/fullscreen";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import { useRouter } from "next/navigation";
 import { kindLabel, statusLabel, truncate } from "@/lib/anime";
 import { readAccount } from "@/lib/auth";
 import { noteGuestEpisode } from "@/lib/guest-wall";
@@ -20,6 +21,17 @@ import type {
   TranslationOption,
 } from "@/lib/types";
 import { AltPlayer } from "./AltPlayer";
+
+const COMPACT_MQ = "(max-width: 900px)";
+function subscribeCompact(cb: () => void) {
+  const mq = window.matchMedia(COMPACT_MQ);
+  mq.addEventListener("change", cb);
+  return () => mq.removeEventListener("change", cb);
+}
+/** Телефон или узкий планшет: другой порядок блоков и список серий вместо сетки */
+function useCompactUi(): boolean {
+  return useSyncExternalStore(subscribeCompact, () => window.matchMedia(COMPACT_MQ).matches, () => false);
+}
 
 /**
  * Источник видео в блоке просмотра:
@@ -219,6 +231,10 @@ export function WatchBox({
 
   const menuRef = useRef<HTMLDivElement>(null);
   const epsRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
+  const compactUi = useCompactUi();
+  const [epView, setEpView] = useState<"auto" | "list" | "grid">("auto");
+  const [epQuery, setEpQuery] = useState("");
   /** Пропускаем первую запись URL, пока не применены глубокие ссылки */
   const skipUrlSync = useRef(true);
   /**
@@ -837,6 +853,11 @@ export function WatchBox({
   const activeSeason = detail.seasons.find((s) => s.number === season) ?? detail.seasons[0];
   const episodeCount = activeSeason?.episodes.length ?? 0;
   const epList = activeSeason?.episodes ?? [];
+  const listView = epView === "auto" ? compactUi : epView === "list";
+  const epFiltered = epQuery.trim()
+    ? epList.filter((e) => `${e.number} ${e.title ?? ""}`.toLowerCase().includes(epQuery.trim().toLowerCase()))
+    : epList;
+  const epCover = detail.card.screenshots?.[0];
   const epIdx = epList.findIndex((e) => e.number === episode);
   const prevEp = epIdx > 0 ? epList[epIdx - 1] : undefined;
   const nextEp = epIdx >= 0 && epIdx < epList.length - 1 ? epList[epIdx + 1] : undefined;
@@ -893,6 +914,19 @@ export function WatchBox({
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_330px]">
         {/* ------------------------- Плеер ------------------------- */}
         <div className="min-w-0">
+          {/* Телефон: шапка просмотра — назад, название, серия */}
+          <div className="wb-mhead">
+            <button type="button" aria-label="Назад" onClick={() => router.back()}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                <path d="m15 5-7 7 7 7" />
+              </svg>
+            </button>
+            <div>
+              <b>{detail.card.title}</b>
+              <small>{isSerial ? `Серия ${episode}` : "Полная версия"}</small>
+            </div>
+          </div>
+
           {/* Выбор плеера: авто (лучшее качество) или конкретный источник */}
           <div className="wb-src relative mb-2.5 flex flex-wrap items-center gap-2">
             <button
@@ -940,6 +974,13 @@ export function WatchBox({
               </>
             )}
           </div>
+
+          <button type="button" className="wb-mvoice" aria-haspopup="listbox" onClick={() => setMenuOpen(true)}>
+            <span className="truncate">{activeOption?.title ?? "Озвучка"}</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+              <path d="m6 9 6 6 6-6" />
+            </svg>
+          </button>
 
             {/* Сцена: на телефоне плеер во всю ширину и липнет под шапкой,
               чтобы список серий листался, пока серия идёт */}
@@ -1040,6 +1081,15 @@ export function WatchBox({
           </div>
           </div>
 
+          {isSerial && nextEp && (
+            <button type="button" className="wb-mnext" onClick={() => setEpisode(nextEp.number)}>
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+                <path d="M7 5v14l9-7zM18 5h-2v14h2z" />
+              </svg>
+              Следующий эпизод
+            </button>
+          )}
+
           {/* Подпись под плеером */}
           <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
             <div className="min-w-0">
@@ -1088,7 +1138,7 @@ export function WatchBox({
                 onClick={() => setMenuOpen((v) => !v)}
                 aria-haspopup="listbox"
                 aria-expanded={menuOpen}
-                className="btn-ghost flex w-full items-center justify-between gap-2 rounded-xl bg-white/7 px-3 py-2.5 text-left text-sm font-semibold text-white ring-1 ring-white/12 hover:bg-white/12"
+                className="wb-vtrig btn-ghost flex w-full items-center justify-between gap-2 rounded-xl bg-white/7 px-3 py-2.5 text-left text-sm font-semibold text-white ring-1 ring-white/12 hover:bg-white/12"
               >
                 <span className="flex min-w-0 items-center gap-2">
                   <span className="h-2 w-2 shrink-0 rounded-full bg-mint shadow-[0_0_10px_rgba(61,220,151,.9)]" />
@@ -1200,6 +1250,38 @@ export function WatchBox({
                 </div>
               </div>
 
+              <div className="wb-eptools">
+                <label className="wb-epsearch">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden>
+                    <circle cx="11" cy="11" r="7" />
+                    <path d="m20 20-4-4" />
+                  </svg>
+                  <input
+                    type="search"
+                    inputMode="search"
+                    value={epQuery}
+                    onChange={(e) => setEpQuery(e.target.value)}
+                    placeholder="Поиск эпизодов"
+                    aria-label="Поиск эпизодов"
+                  />
+                </label>
+                <div className="wb-epview" role="group" aria-label="Вид списка серий">
+                  <button type="button" aria-pressed={listView} aria-label="Списком" onClick={() => setEpView("list")}>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden>
+                      <path d="M5 7h14M5 12h14M5 17h14" />
+                    </svg>
+                  </button>
+                  <button type="button" aria-pressed={!listView} aria-label="Сеткой" onClick={() => setEpView("grid")}>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden>
+                      <rect x="4" y="4" width="6.5" height="6.5" rx="1.5" />
+                      <rect x="13.500" y="4" width="6.5" height="6.5" rx="1.5" />
+                      <rect x="4" y="13.500" width="6.5" height="6.5" rx="1.5" />
+                      <rect x="13.500" y="13.500" width="6.5" height="6.5" rx="1.5" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
               {/* Сетка серий */}
               <div ref={epsRef} className="wb-eps max-h-[300px] overflow-y-auto p-3 lg:max-h-[460px]">
                 {switching ? (
@@ -1209,8 +1291,29 @@ export function WatchBox({
                     ))}
                   </div>
                 ) : (
+                  listView ? (
+                    <div className="wb-eplist">
+                      {epFiltered.length === 0 ? <p className="wb-epnone">Ничего не найдено</p> : null}
+                      {epFiltered.map((ep) => {
+                        const active = ep.number === episode;
+                        return (
+                          <button
+                            key={ep.number}
+                            type="button"
+                            aria-pressed={active}
+                            onClick={() => setEpisode(ep.number)}
+                            className={`wb-epcard${active ? " on" : ""}`}
+                            style={epCover ? ({ "--cover": `url("${epCover}")` } as React.CSSProperties) : undefined}
+                          >
+                            <b>Эпизод #{ep.number}</b>
+                            <small>{truncate(ep.title, 60) ?? `Серия ${ep.number}`}</small>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  ) : (
                   <div className="grid grid-cols-5 gap-2 sm:grid-cols-6 lg:grid-cols-5">
-                    {activeSeason?.episodes.map((ep) => {
+                    {epFiltered.map((ep) => {
                       const active = ep.number === episode;
                       return (
                         <button
@@ -1231,6 +1334,7 @@ export function WatchBox({
                       );
                     })}
                   </div>
+                  )
                 )}
               </div>
             </div>

@@ -4,6 +4,10 @@ import { useCallback, useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Icon, type IconName } from "./icons";
+import "./mobile-dock.css";
+import { AccountCard } from "@/components/AccountMenu";
+import { useAccount } from "@/lib/use-account";
+import { clearAccount } from "@/lib/auth";
 
 /**
  * Мобильная навигация: плавающая нижняя панель (Главная, Каталог, Меню,
@@ -23,66 +27,62 @@ const I_HOME = svg(
     <path d="M9.5 20v-5.2a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1V20" />
   </>,
 );
-const I_GRID = svg(
-  <>
-    <rect className="f" x="4" y="4" width="6.5" height="6.5" rx="2" />
-    <rect x="13.5" y="4" width="6.5" height="6.5" rx="2" />
-    <rect x="4" y="13.5" width="6.5" height="6.5" rx="2" />
-    <rect className="f" x="13.5" y="13.5" width="6.5" height="6.5" rx="2" />
-  </>,
-);
-const I_HEART = svg(<path className="f" d="M12 19.6c-.3 0-.6-.1-.8-.3C7.6 16.6 4 13.5 4 9.9 4 7.7 5.7 6 7.8 6c1.6 0 3.2.9 4.2 2.4C13 6.9 14.600 6 16.200 6 18.300 6 20 7.700 20 9.900c0 3.600-3.600 6.700-7.200 9.400-.2.200-.5.300-.8.300z" />);
-const I_DICE = svg(
-  <>
-    <rect className="f" x="4" y="4" width="16" height="16" rx="4.5" />
-    <path strokeWidth="2.6" d="M8.800 8.800h.01M15.200 8.800h.01M12 12h.01M8.800 15.200h.01M15.200 15.200h.01" />
-  </>,
-);
 
-interface Tile {
+const I_COMPASS = svg(
+  <>
+    <circle cx="12" cy="12" r="8.5" />
+    <path className="f" d="m15.4 8.6-2 4.8-4.8 2 2-4.8z" />
+  </>,
+);
+const I_BOOKMARK = svg(<path className="f" d="M7 4h10a1 1 0 0 1 1 1v15l-6-4-6 4V5a1 1 0 0 1 1-1z" />);
+const I_BELL = svg(<path d="M6 16v-5a6 6 0 0 1 12 0v5l1.5 2h-15zM10 21h4" />);
+const I_MORE = svg(<path d="M4.5 7h15M4.5 12h15M4.5 17h15" />);
+
+interface Row {
   label: string;
-  hint: string;
   href: string;
   icon: IconName;
 }
 
-/**
- * Разделы меню сгруппированы по смыслу: двенадцать одинаковых плиток
- * подряд читались как список без начала и конца. Заголовок группы задаёт
- * и порядок чтения, и оттенок иконок (`data-g` в разметке).
- */
-interface Group {
-  title: string;
-  tiles: Tile[];
-}
-
-const GROUPS: Group[] = [
+/** Разделы боковой панели «Ещё» — списком строк, как в приложении */
+const SECTIONS: { title: string; rows: Row[] }[] = [
   {
-    title: "Смотреть",
-    tiles: [
-      { label: "AniSwipe", hint: "Свайп-подбор", href: "/aniswipe", icon: "spark" },
-      { label: "Расписание", hint: "Выходы серий", href: "/schedule", icon: "cal" },
-      { label: "Манга", hint: "Читалка", href: "/manga", icon: "book" },
-      { label: "Вместе", hint: "Совместный просмотр", href: "/watch-together", icon: "together" },
+    title: "Социальное",
+    rows: [
+      { label: "Мой профиль", href: "/profile", icon: "user" },
+      { label: "Достижения", href: "/profile?tab=achievements", icon: "trophy" },
+      { label: "Друзья и рефералы", href: "/referrals", icon: "users" },
+      { label: "Кланы", href: "/clans", icon: "users" },
+      { label: "Рейтинг", href: "/leaderboard", icon: "trophy" },
+    ],
+  },
+  {
+    title: "Контент",
+    rows: [
+      { label: "Каталог аниме", href: "/catalog", icon: "book" },
+      { label: "Расписание", href: "/schedule", icon: "cal" },
+      { label: "Манга", href: "/manga", icon: "book" },
+      { label: "AniSwipe", href: "/aniswipe", icon: "spark" },
+      { label: "Смотреть вместе", href: "/watch-together", icon: "together" },
+      { label: "Подборки", href: "/collections", icon: "layers" },
+      { label: "Карта", href: "/map", icon: "compass" },
     ],
   },
   {
     title: "Прогресс",
-    tiles: [
-      { label: "Боевой пропуск", hint: "Награды сезона", href: "/battlepass", icon: "pass" },
-      { label: "Квесты", hint: "Задания дня", href: "/quests", icon: "target" },
-      { label: "События", hint: "Ивенты", href: "/events", icon: "flame" },
-      { label: "Магазин", hint: "Рамки и эффекты", href: "/store", icon: "store" },
+    rows: [
+      { label: "Боевой пропуск", href: "/battlepass", icon: "pass" },
+      { label: "Квесты", href: "/quests", icon: "target" },
+      { label: "События", href: "/events", icon: "flame" },
+      { label: "Магазин", href: "/store", icon: "store" },
     ],
   },
   {
-    title: "Сообщество",
-    tiles: [
-      { label: "Кланы", hint: "Играйте вместе", href: "/clans", icon: "users" },
-      { label: "Рейтинг", hint: "Лидеры сайта", href: "/leaderboard", icon: "trophy" },
-      { label: "Подборки", hint: "Коллекции", href: "/collections", icon: "layers" },
-      { label: "Карта", hint: "Маршруты и награды", href: "/map", icon: "compass" },
-      { label: "Обновления", hint: "Что нового на сайте", href: "/updates", icon: "spark" },
+    title: "Сайт",
+    rows: [
+      { label: "Обновления", href: "/updates", icon: "refresh" },
+      { label: "Приложения", href: "/apps", icon: "tv" },
+      { label: "Настройки", href: "/settings", icon: "gear" },
     ],
   },
 ];
@@ -90,6 +90,7 @@ const GROUPS: Group[] = [
 export function MobileNav() {
   const pathname = usePathname();
   const router = useRouter();
+  const account = useAccount();
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [route, setRoute] = useState(pathname);
@@ -121,6 +122,7 @@ export function MobileNav() {
       const cards = data.cards ?? [];
       if (!cards.length) throw new Error("empty");
       const pick = cards[Math.floor(Math.random() * cards.length)];
+      setOpen(false);
       router.push(`/title/${pick.id}`);
     } catch {
       router.push("/aniswipe");
@@ -129,72 +131,86 @@ export function MobileNav() {
     }
   }, [busy, router]);
 
-  const on = (p: string) => (p === "/" ? pathname === "/" : pathname.startsWith(p));
+  const on = (p: string) => (p === "/" ? pathname === "/" : pathname.startsWith(p.split("?")[0]));
 
   return (
     <>
-      <div className={`mnv-sheet${open ? " on" : ""}`} aria-hidden={!open} onClick={() => setOpen(false)}>
-        <div className="mnv-panel" role="dialog" aria-label="Меню" onClick={(e) => e.stopPropagation()}>
-          <button type="button" className="mnv-grab" aria-label="Закрыть меню" onClick={() => setOpen(false)} />
-          <div className="mnv-top">
-            <b>Меню</b>
-            <button type="button" className="mnv-x" aria-label="Закрыть" onClick={() => setOpen(false)}>
-              {svg(<path d="M6 6l12 12M18 6L6 18" />)}
-            </button>
-          </div>
-          <Link className="mnv-prem" href="/premium" tabIndex={open ? 0 : -1}>
-            <span className="mnv-pi"><Icon name="crown" /></span>
-            <span className="mnv-pt">
-              <b>Premium</b>
-              <small>Без рекламы, эффекты и бонусы</small>
-            </span>
-            <span className="mnv-go"><Icon name="arrow" /></span>
+      <div className={`mdk-shade${open ? " on" : ""}`} aria-hidden={!open} onClick={() => setOpen(false)} />
+      <aside className={`mdk-drawer${open ? " on" : ""}`} role="dialog" aria-label="Меню" aria-hidden={!open}>
+        <div className="mdk-head">
+          <h2>AniGalaxy</h2>
+          <button type="button" className="mdk-x" aria-label="Закрыть меню" onClick={() => setOpen(false)}>
+            {svg(<path d="M6 6l12 12M18 6L6 18" />)}
+          </button>
+        </div>
+        <div className="mdk-scroll">
+          <Link className="mdk-row mdk-row--prem" href="/premium" tabIndex={open ? 0 : -1}>
+            <Icon name="crown" />
+            <span>Premium — подписка</span>
+            <i aria-hidden>{svg(<path d="m9 6 6 6-6 6" />)}</i>
           </Link>
-          {GROUPS.map((g, gi) => (
-            <section key={g.title} className="mnv-sec" data-g={gi + 1}>
-              <h3 className="mnv-sh">{g.title}</h3>
-              <div className="mnv-grid">
-                {g.tiles.map((t, i) => (
-                  <Link
-                    key={t.href}
-                    href={t.href}
-                    tabIndex={open ? 0 : -1}
-                    className={`mnv-tile${on(t.href) ? " cur" : ""}`}
-                    style={{ "--i": gi * 4 + i } as React.CSSProperties}
-                  >
-                    <span className="mnv-ti"><Icon name={t.icon} /></span>
-                    <span className="mnv-tt">
-                      <b>{t.label}</b>
-                      <small>{t.hint}</small>
-                    </span>
-                  </Link>
-                ))}
-              </div>
+          <button type="button" className={`mdk-row${busy ? " busy" : ""}`} tabIndex={open ? 0 : -1} onClick={random}>
+            <Icon name="dice" />
+            <span>Случайное аниме</span>
+            <i aria-hidden>{svg(<path d="m9 6 6 6-6 6" />)}</i>
+          </button>
+          {SECTIONS.map((sec) => (
+            <section key={sec.title}>
+              <h3 className="mdk-sh">{sec.title}</h3>
+              {sec.rows.map((r) => (
+                <Link
+                  key={r.href}
+                  href={r.href}
+                  tabIndex={open ? 0 : -1}
+                  className={`mdk-row${on(r.href) ? " cur" : ""}`}
+                >
+                  <Icon name={r.icon} />
+                  <span>{r.label}</span>
+                  <i aria-hidden>{svg(<path d="m9 6 6 6-6 6" />)}</i>
+                </Link>
+              ))}
             </section>
           ))}
         </div>
-      </div>
+        <div className="mdk-foot">
+          <AccountCard onNavigate={() => setOpen(false)} />
+          {account ? (
+            <button
+              type="button"
+              className="mdk-out"
+              onClick={() => {
+                clearAccount();
+                setOpen(false);
+              }}
+            >
+              <Icon name="out" />
+              Выйти
+            </button>
+          ) : null}
+        </div>
+      </aside>
 
-      <nav className="mnv-bar" aria-label="Основная навигация">
-        <Link href="/" className={`mnv-i${pathname === "/" ? " cur" : ""}`}>
-          {I_HOME}
+      <nav className="mdk-bar" aria-label="Основная навигация">
+        <Link href="/" className={`mdk-i${pathname === "/" ? " cur" : ""}`}>
+          <b>{I_HOME}</b>
           <span>Главная</span>
         </Link>
-        <Link href="/catalog" className={`mnv-i${on("/catalog") ? " cur" : ""}`}>
-          {I_GRID}
+        <Link href="/catalog" className={`mdk-i${on("/catalog") ? " cur" : ""}`}>
+          <b>{I_COMPASS}</b>
           <span>Каталог</span>
         </Link>
-        <button type="button" className={`mnv-i mnv-c${open ? " cur" : ""}`} aria-expanded={open} onClick={() => setOpen((v) => !v)}>
-          <span className="mnv-orb">{open ? svg(<path d="M6 6l12 12M18 6L6 18" />) : svg(<path d="M5 8h14M5 16h9" />)}</span>
-          <span>Меню</span>
-        </button>
-        <Link href="/list" className={`mnv-i${on("/list") ? " cur" : ""}`}>
-          {I_HEART}
-          <span>Избранное</span>
+        <Link href="/list" className={`mdk-i${on("/list") ? " cur" : ""}`}>
+          <b>{I_BOOKMARK}</b>
+          <span>Моё</span>
         </Link>
-        <button type="button" className={`mnv-i${busy ? " busy" : ""}`} onClick={random}>
-          {I_DICE}
-          <span>Рандом</span>
+        {/* data-dd: окно уведомлений в шапке открывается её же делегированием */}
+        <button type="button" className="mdk-i" data-dd="nt" aria-label="Уведомления">
+          <b>{I_BELL}</b>
+          <span>Увед.</span>
+        </button>
+        <button type="button" className={`mdk-i${open ? " cur" : ""}`} aria-expanded={open} onClick={() => setOpen((v) => !v)}>
+          <b>{I_MORE}</b>
+          <span>Ещё</span>
         </button>
       </nav>
     </>
