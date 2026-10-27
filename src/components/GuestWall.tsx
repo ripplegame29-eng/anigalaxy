@@ -57,12 +57,13 @@ export function GuestWall() {
           <circle cx="40" cy="40" r="38" fill="url(#gw-rim)" />
           <circle cx="40" cy="40" r="33" fill="url(#gw-face)" stroke="rgba(120,60,0,.35)" strokeWidth="1" />
           <circle cx="40" cy="40" r="29.5" stroke="rgba(110,55,0,.38)" strokeWidth="1.2" strokeDasharray="1.2 3.1" strokeLinecap="round" />
-          <path d="M40 8.5l1.7 4.1 4.1 1.7-4.1 1.7L40 20l-1.7-4-4.1-1.7 4.1-1.7z" fill="#fff" fillOpacity=".85" />
+          <path d="M40 9.5l1.5 3.6 3.6 1.5-3.6 1.5L40 19.7l-1.5-3.6-3.6-1.5 3.6-1.5z" fill="#fff" fillOpacity=".9" />
+          {/* Надпись выбита на монете: светлая тень снизу, тёмная заливка сверху */}
+          <text x="40" y="47.8" textAnchor="middle" className="gw-t1 gw-t-hi">+{SIGNUP_BONUS_AC}</text>
+          <text x="40" y="47" textAnchor="middle" className="gw-t1">+{SIGNUP_BONUS_AC}</text>
+          <text x="40" y="59.6" textAnchor="middle" className="gw-t2 gw-t-hi">AC</text>
+          <text x="40" y="58.8" textAnchor="middle" className="gw-t2">AC</text>
         </svg>
-        <span className="gw-amt">
-          <b>+{SIGNUP_BONUS_AC}</b>
-          <small>AC</small>
-        </span>
         <u className="gw-sp gw-sp1" />
         <u className="gw-sp gw-sp2" />
         <u className="gw-sp gw-sp3" />

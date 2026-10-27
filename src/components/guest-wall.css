@@ -11,9 +11,10 @@
 .gw-halo{position:absolute;inset:-9px;border-radius:50%;border:1px dashed rgba(255,214,120,.4);animation:gw-spin 22s linear infinite}
 .gw-halo::after{content:"";position:absolute;inset:7px;border-radius:50%;border:1px solid rgba(255,214,120,.14)}
 @keyframes gw-spin{to{transform:rotate(360deg)}}
-.gw-amt{position:relative;display:flex;flex-direction:column;align-items:center;gap:1px;margin-top:5px;color:#4a2900;text-shadow:0 1px 0 rgba(255,240,190,.6)}
-.gw-amt b{font:900 21px/1 var(--font-display,inherit);letter-spacing:-.02em}
-.gw-amt small{font:800 9.5px/1 var(--font-display,inherit);letter-spacing:.2em;opacity:.75}
+.gw-coin text{font-family:var(--font-display),"Montserrat",system-ui,sans-serif;font-weight:800;fill:#4a2600}
+.gw-t1{font-size:19px;letter-spacing:-.01em}
+.gw-t2{font-size:9px;letter-spacing:.14em}
+.gw-coin text.gw-t-hi{fill:rgba(255,240,190,.75)}
 .gw-coin::after{content:"";position:absolute;inset:4px;border-radius:50%;pointer-events:none;overflow:hidden;
   background:linear-gradient(115deg,transparent 40%,rgba(255,255,255,.55) 50%,transparent 60%) -120% 0/250% 100% no-repeat;animation:gw-glint 5.5s ease-in-out 1.2s infinite}
 @keyframes gw-glint{0%,70%{background-position:-120% 0}100%{background-position:120% 0}}
@@ -33,5 +34,5 @@
 .gw-later{cursor:pointer;padding:10px 14px;border-radius:12px;font-weight:700;font-size:14px;color:#a9b6d8;background:none;border:1px solid rgba(255,255,255,.14)}
 .gw-x{position:absolute;top:8px;right:10px;width:30px;height:30px;border-radius:50%;border:0;cursor:pointer;color:#a9b6d8;background:rgba(255,255,255,.06);font-size:20px;line-height:1}
 .gw :focus-visible{outline:2px solid #22d3ee;outline-offset:2px}
-@media(max-width:520px){.gw{flex-direction:column;align-items:flex-start;bottom:calc(76px + env(safe-area-inset-bottom))}.gw-coin{width:64px;height:64px}.gw-amt b{font-size:16px}.gw-amt small{font-size:8px}}
+@media(max-width:520px){.gw{flex-direction:column;align-items:flex-start;bottom:calc(76px + env(safe-area-inset-bottom))}.gw-coin{width:64px;height:64px}}
 @media(prefers-reduced-motion:reduce){.gw,.gw-coin,.gw-halo,.gw-coin::after,.gw-sp{animation:none}.gw-sp{display:none}}
