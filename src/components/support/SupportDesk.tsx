@@ -219,7 +219,7 @@ function Desk({ onClose }: { onClose: () => void }) {
           </span>
           <div>
             <h2>Поддержка</h2>
-            <p>Отвечаем в течение 30 дней, обычно быстрее</p>
+            <p>Отвечаем в течение дня</p>
           </div>
         </header>
 
@@ -332,7 +332,7 @@ function Desk({ onClose }: { onClose: () => void }) {
               <path d="m15 27 8 8 15-17" />
             </svg>
             <h3>Обращение №{sent} отправлено</h3>
-            <p>Ответ появится здесь, а если Telegram привязан, мы напишем и в нём.</p>
+            <p>Ответ появится здесь, в этом окне. Обычно мы отвечаем в течение дня.</p>
             <button type="button" className="sd-cta" onClick={() => openTicket(sent)}>
               Открыть обращение
             </button>

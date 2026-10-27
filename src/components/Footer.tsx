@@ -211,8 +211,7 @@ export function Footer() {
               Поддержка
             </h3>
             <p className="ft-sup">
-              Вопросы по аккаунту, оплате и работе сайта — напишите нам в Telegram, отвечаем в течение {LEGAL.replyDays}{" "}
-              дней.
+              Вопросы по аккаунту, оплате и работе сайта — создайте обращение, отвечаем в течение дня.
             </p>
             <SupportButton className="ft-ticket">
               <IcHeadset />
