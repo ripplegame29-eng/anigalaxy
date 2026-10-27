@@ -1,17 +1,20 @@
 /**
- * Возможности бота кроме входа: меню, поиск аниме, профиль и уведомления
- * о новых сериях. Вход и привязка живут в telegram-login.ts.
+ * Возможности бота кроме входа: красивые карточки аниме с постерами, поиск,
+ * топ, случайное, профиль и уведомления о новых сериях.
+ * Вход и привязка живут в telegram-login.ts.
  */
 
 import { getDoc } from "./docs";
 import { getDb } from "./db";
 import { tg } from "./telegram-login";
 import { num, str, type Database } from "./sqlite";
-import { getTitleDetail, quickSearch } from "../kodik";
-const COLLECTIONS_KEY = "animehub:collections:v1";
-const FAVORITES_KEY = "animehub:favorites:v1";
+import { catalog, getTitleDetail, quickSearch } from "../kodik";
+import type { AnimeCard } from "../types";
 
 const SITE = (process.env.NEXT_PUBLIC_SITE_URL || "https://anigalaxy.space").replace(/\/$/, "");
+const CHANNEL = "https://t.me/anigalaxyspace";
+const COLLECTIONS_KEY = "animehub:collections:v1";
+const FAVORITES_KEY = "animehub:favorites:v1";
 
 const esc = (s: string): string => s.replace(/[&<>]/g, (c) => (c === "&" ? "&amp;" : c === "<" ? "&lt;" : "&gt;"));
 
@@ -23,29 +26,176 @@ interface From {
 const MENU = {
   inline_keyboard: [
     [
-      { text: "🌐 Открыть сайт", url: SITE },
-      { text: "📣 Канал", url: "https://t.me/anigalaxyspace" },
+      { text: "🔎 Найти аниме", callback_data: "m:search" },
+      { text: "🎲 Случайное", callback_data: "f:rnd" },
+    ],
+    [
+      { text: "🏆 Топ рейтинга", callback_data: "f:top" },
+      { text: "🔥 Сейчас выходит", callback_data: "f:ong" },
     ],
     [
       { text: "👤 Мой профиль", callback_data: "m:me" },
-      { text: "🔍 Поиск аниме", callback_data: "m:search" },
+      { text: "🔔 Новые серии", callback_data: "m:notify" },
     ],
-    [{ text: "🔔 Уведомления о сериях", callback_data: "m:notify" }],
+    [{ text: "🌐 Открыть AniGalaxy", url: SITE }],
+    [
+      { text: "💬 Поддержка", url: `${SITE}/#support` },
+      { text: "📣 Наш канал", url: CHANNEL },
+    ],
   ],
 };
 
+const WELCOME =
+  "✨ <b>Добро пожаловать в AniGalaxy!</b>\n\nСмотрите аниме в отличном качестве, собирайте награды и растите уровень. Здесь в Telegram я помогу быстро найти тайтл, покажу ваш профиль и напишу, когда выйдет новая серия.\n\n<i>Выберите, с чего начать 👇</i>";
+
+const HELP =
+  "<b>🪐 Что умеет бот</b>\n\n/menu — главное меню\n/search <i>название</i> — найти аниме\n/random — случайное аниме\n/top — топ по рейтингу\n/new — что выходит сейчас\n/me — профиль, уровень и баланс\n/notify — уведомления о новых сериях\n\n💡 Можно просто написать название аниме — я его найду.";
+
 function send(chatId: number, text: string, extra: Record<string, unknown> = {}) {
   return tg("sendMessage", { chat_id: chatId, text, parse_mode: "HTML", disable_web_page_preview: true, ...extra });
+}
+
+/** Фото с подписью; если Telegram не смог загрузить картинку, отправляем обычным текстом */
+async function sendCard(chatId: number, photo: string | undefined, caption: string, markup: unknown): Promise<void> {
+  if (photo) {
+    const r = await tg("sendPhoto", { chat_id: chatId, photo, caption, parse_mode: "HTML", reply_markup: markup });
+    if (r.ok) return;
+  }
+  await send(chatId, caption, { reply_markup: markup });
 }
 
 function userByTg(db: Database, tgId: number) {
   return db.prepare("SELECT * FROM users WHERE telegram_id = ?").get(String(tgId));
 }
 
-const HELP =
-  "<b>Бот AniGalaxy</b>\n\n/menu — меню\n/search название — найти аниме\n/me — профиль, уровень и баланс\n/notify — уведомления о новых сериях\n\nМожно просто написать название аниме — я его найду.";
+/* -------------------------------- Карточки ------------------------------ */
 
-/** Сообщение в личке: команда или текст для поиска */
+interface CardList {
+  cards: AnimeCard[];
+  label: string;
+  at: number;
+}
+const lists = new Map<string, CardList>();
+
+function keepList(cards: AnimeCard[], label: string): string {
+  const now = Date.now();
+  for (const [k, v] of lists) if (now - v.at > 60 * 60_000) lists.delete(k);
+  if (lists.size > 300) lists.delete(lists.keys().next().value as string);
+  const key = Math.random().toString(36).slice(2, 8);
+  lists.set(key, { cards, label, at: now });
+  return key;
+}
+
+const stars = (rating: number): string => {
+  const n = Math.round(rating / 2);
+  return "★".repeat(n) + "☆".repeat(5 - n);
+};
+
+function caption(card: AnimeCard, i: number, total: number, label: string): string {
+  const meta: string[] = [];
+  if (card.rating) meta.push(`⭐ <b>${card.rating.toFixed(1)}</b>`);
+  if (card.year) meta.push(`📅 ${card.year}`);
+  if (card.kind === "movie") meta.push("🎞 Фильм");
+  else if (card.lastEpisode) meta.push(`🎞 ${card.lastEpisode}${card.episodesTotal ? ` из ${card.episodesTotal}` : ""} эп.`);
+  const lines = [`🎬 <b>${esc(card.title)}</b>`];
+  if (card.titleOrig && card.titleOrig !== card.title) lines.push(`<i>${esc(card.titleOrig)}</i>`);
+  if (meta.length) lines.push("", meta.join("  ·  "));
+  if (card.rating) lines.push(`<code>${stars(card.rating)}</code>`);
+  if (card.genres?.length) lines.push("", `🏷 ${card.genres.slice(0, 4).map(esc).join(" · ")}`);
+  if (card.description) {
+    const d = card.description.replace(/\s+/g, " ").trim();
+    lines.push("", `<blockquote>${esc(d.length > 280 ? `${d.slice(0, 277)}…` : d)}</blockquote>`);
+  }
+  lines.push("", `<i>${esc(label)} · ${i + 1} из ${total}</i>`);
+  const out = lines.join("\n");
+  return out.length > 1000 ? out.slice(0, 997) + "…" : out;
+}
+
+function cardKeyboard(key: string, i: number, total: number, card: AnimeCard) {
+  const prev = (i - 1 + total) % total;
+  const next = (i + 1) % total;
+  return {
+    inline_keyboard: [
+      [{ text: "▶️ Смотреть на сайте", url: `${SITE}/title/${card.id}` }],
+      ...(total > 1
+        ? [[
+            { text: "◀️", callback_data: `v:${key}:${prev}` },
+            { text: `${i + 1} / ${total}`, callback_data: "noop" },
+            { text: "▶️", callback_data: `v:${key}:${next}` },
+          ]]
+        : []),
+      [
+        { text: "🎲 Случайное", callback_data: "f:rnd" },
+        { text: "🏠 Меню", callback_data: "m:menu" },
+      ],
+    ],
+  };
+}
+
+/** Показать карточку: новым сообщением или правкой существующего */
+async function showCard(chatId: number, key: string, i: number, messageId?: number): Promise<void> {
+  const list = lists.get(key);
+  if (!list || !list.cards[i]) {
+    await send(chatId, "Этот список уже устарел. Начните поиск заново: /menu");
+    return;
+  }
+  const card = list.cards[i];
+  const text = caption(card, i, list.cards.length, list.label);
+  const markup = cardKeyboard(key, i, list.cards.length, card);
+  if (!messageId) return sendCard(chatId, card.poster, text, markup);
+  if (card.poster) {
+    const r = await tg("editMessageMedia", {
+      chat_id: chatId,
+      message_id: messageId,
+      media: { type: "photo", media: card.poster, caption: text, parse_mode: "HTML" },
+      reply_markup: markup,
+    });
+    if (r.ok) return;
+  }
+  const r2 = await tg("editMessageText", { chat_id: chatId, message_id: messageId, text, parse_mode: "HTML", disable_web_page_preview: true, reply_markup: markup });
+  if (!r2.ok) await sendCard(chatId, card.poster, text, markup);
+}
+
+async function showList(chatId: number, cards: AnimeCard[], label: string): Promise<void> {
+  if (!cards.length) return void (await send(chatId, "Ничего не нашлось. Попробуйте другой запрос."));
+  await showCard(chatId, keepList(cards, label), 0);
+}
+
+const GENRES = ["Фэнтези", "Экшен", "Романтика", "Комедия", "Драма", "Приключения", "Фантастика", "Детектив", "Повседневность", "Триллер"];
+
+async function feed(chatId: number, kind: "top" | "ong" | "rnd"): Promise<void> {
+  try {
+    if (kind === "top") {
+      const r = await catalog({ sort: "rating", type: "serial" });
+      return showList(chatId, r.cards.slice(0, 12), "🏆 Топ рейтинга");
+    }
+    if (kind === "ong") {
+      const r = await catalog({ status: "ongoing", sort: "updated" });
+      return showList(chatId, r.cards.slice(0, 12), "🔥 Сейчас выходит");
+    }
+    const genre = GENRES[Math.floor(Math.random() * GENRES.length)];
+    const r = await catalog({ genre, sort: "rating" });
+    const pool = [...r.cards].sort(() => Math.random() - 0.5).slice(0, 8);
+    return showList(chatId, pool, `🎲 Случайное · ${genre}`);
+  } catch {
+    await send(chatId, "Каталог сейчас не отвечает. Попробуйте чуть позже.");
+  }
+}
+
+async function search(chatId: number, q: string): Promise<void> {
+  const query = q.trim().slice(0, 80);
+  if (query.length < 2) return void (await send(chatId, "Напишите хотя бы две буквы названия."));
+  try {
+    const cards = await quickSearch(query, 10);
+    if (!cards.length) return void (await send(chatId, `По запросу «${esc(query)}» ничего не нашлось 🙈\nПроверьте написание или попробуйте оригинальное название.`));
+    await showList(chatId, cards, `🔎 «${query}»`);
+  } catch {
+    await send(chatId, "Каталог сейчас не отвечает. Попробуйте чуть позже.");
+  }
+}
+
+/* --------------------------- Команды и кнопки --------------------------- */
+
 export async function handleBotMessage(db: Database, text: string, from: From, chatId: number): Promise<void> {
   const cmd = /^\/(\w+)(?:@\w+)?\s*([\s\S]*)$/.exec(text);
   if (!cmd) return search(chatId, text);
@@ -53,13 +203,19 @@ export async function handleBotMessage(db: Database, text: string, from: From, c
   const arg = cmd[2].trim();
   switch (name) {
     case "start":
-      return void (await send(chatId, "Привет! Это бот AniGalaxy. Ищите аниме, смотрите профиль и получайте уведомления о новых сериях.", { reply_markup: MENU }));
+      return sendCard(chatId, `${SITE}/cat.png`, WELCOME, MENU);
     case "menu":
-      return void (await send(chatId, "Что открыть?", { reply_markup: MENU }));
+      return void (await send(chatId, "🪐 <b>Главное меню</b>", { reply_markup: MENU }));
     case "help":
-      return void (await send(chatId, HELP));
+      return void (await send(chatId, HELP, { reply_markup: MENU }));
     case "search":
       return arg ? search(chatId, arg) : void (await send(chatId, "Напишите название после команды, например: <code>/search Наруто</code>"));
+    case "random":
+      return feed(chatId, "rnd");
+    case "top":
+      return feed(chatId, "top");
+    case "new":
+      return feed(chatId, "ong");
     case "me":
       return profile(db, from.id, chatId);
     case "notify":
@@ -69,46 +225,48 @@ export async function handleBotMessage(db: Database, text: string, from: From, c
   }
 }
 
-export async function handleBotCallback(db: Database, cb: { id: string; from: From; data?: string; message?: { chat: { id: number } } }): Promise<void> {
+export async function handleBotCallback(db: Database, cb: { id: string; from: From; data?: string; message?: { message_id: number; chat: { id: number } } }): Promise<void> {
   const chatId = cb.message?.chat.id;
   await tg("answerCallbackQuery", { callback_query_id: cb.id });
-  if (!chatId) return;
-  if (cb.data === "m:me") return profile(db, cb.from.id, chatId);
-  if (cb.data === "m:search") return void (await send(chatId, "Напишите название аниме одним сообщением."));
-  if (cb.data === "m:notify") return notifyToggle(db, cb.from.id, chatId, true);
-}
-
-async function search(chatId: number, q: string): Promise<void> {
-  const query = q.trim().slice(0, 80);
-  if (query.length < 2) return void (await send(chatId, "Напишите хотя бы две буквы названия."));
-  let cards;
-  try {
-    cards = await quickSearch(query, 6);
-  } catch {
-    return void (await send(chatId, "Каталог сейчас не отвечает. Попробуйте чуть позже."));
-  }
-  if (!cards.length) return void (await send(chatId, `По запросу «${esc(query)}» ничего не нашлось. Проверьте написание.`));
-  const lines = cards.map((c, i) => `${i + 1}. <b>${esc(c.title)}</b>${c.year ? ` · ${c.year}` : ""}${c.rating ? ` · ★ ${c.rating.toFixed(1)}` : ""}`);
-  await send(chatId, `Нашёл по запросу «${esc(query)}»:\n\n${lines.join("\n")}`, {
-    reply_markup: { inline_keyboard: cards.map((c, i) => [{ text: `${i + 1}. ${c.title.slice(0, 40)} — смотреть`, url: `${SITE}/title/${c.id}` }]) },
-  });
+  const data = cb.data ?? "";
+  if (!chatId || data === "noop") return;
+  if (data === "m:me") return profile(db, cb.from.id, chatId);
+  if (data === "m:menu") return void (await send(chatId, "🪐 <b>Главное меню</b>", { reply_markup: MENU }));
+  if (data === "m:search") return void (await send(chatId, "🔎 Напишите название аниме одним сообщением, например «Атака титанов»."));
+  if (data === "m:notify") return notifyToggle(db, cb.from.id, chatId, true);
+  if (data === "f:top" || data === "f:ong" || data === "f:rnd") return feed(chatId, data.slice(2) as "top" | "ong" | "rnd");
+  const v = /^v:(\w+):(\d+)$/.exec(data);
+  if (v) return showCard(chatId, v[1], Number(v[2]), cb.message?.message_id);
 }
 
 async function profile(db: Database, tgId: number, chatId: number): Promise<void> {
   const u = userByTg(db, tgId);
   if (!u) {
-    return void (await send(chatId, "Этот Telegram пока не привязан к аккаунту. Откройте «Настройки → Профиль» на сайте и нажмите «Привязать Telegram».", {
-      reply_markup: { inline_keyboard: [[{ text: "Открыть настройки", url: `${SITE}/settings` }]] },
+    return void (await send(chatId, "🔗 Этот Telegram пока не привязан к аккаунту.\n\nОткройте на сайте <b>Настройки → Профиль</b> и нажмите «Привязать Telegram». После этого здесь появятся ваш уровень, баланс и уведомления о сериях.", {
+      reply_markup: { inline_keyboard: [[{ text: "⚙️ Открыть настройки", url: `${SITE}/settings` }], [{ text: "🏠 Меню", callback_data: "m:menu" }]] },
     }));
   }
   const st = db.prepare("SELECT level, xp_total, ac_balance FROM player_stats WHERE user_id = ?").get(num(u.id));
   const until = num(u.premium_until);
-  const premium = until > Date.now() ? `до ${new Date(until).toLocaleDateString("ru-RU")}` : "нет";
-  await send(
-    chatId,
-    `<b>${esc(str(u.display_name) || str(u.nickname))}</b>\n\nУровень: <b>${num(st?.level, 1)}</b>\nОпыт: ${num(st?.xp_total).toLocaleString("ru-RU")} XP\nБаланс: ${num(st?.ac_balance).toLocaleString("ru-RU")} AC\nPremium: ${premium}`,
-    { reply_markup: { inline_keyboard: [[{ text: "Открыть профиль", url: `${SITE}/profile` }]] } },
-  );
+  const hasPremium = until > Date.now();
+  const nf = (n: number) => n.toLocaleString("ru-RU");
+  const lines = [
+    `${hasPremium ? "👑" : "👤"} <b>${esc(str(u.display_name) || str(u.nickname))}</b>`,
+    hasPremium ? "<i>Premium-участник</i>" : "<i>Участник AniGalaxy</i>",
+    "",
+    `🏅 Уровень  <b>${num(st?.level, 1)}</b>`,
+    `✨ Опыт  <b>${nf(num(st?.xp_total))}</b> XP`,
+    `🪙 Баланс  <b>${nf(num(st?.ac_balance))}</b> AC`,
+    hasPremium ? `👑 Premium до  <b>${new Date(until).toLocaleDateString("ru-RU")}</b>` : "👑 Premium  не подключён",
+  ];
+  await send(chatId, lines.join("\n"), {
+    reply_markup: {
+      inline_keyboard: [
+        [{ text: "🪐 Открыть профиль", url: `${SITE}/profile` }],
+        hasPremium ? [{ text: "🏠 Меню", callback_data: "m:menu" }] : [{ text: "👑 Подключить Premium", url: `${SITE}/premium` }, { text: "🏠 Меню", callback_data: "m:menu" }],
+      ],
+    },
+  });
 }
 
 async function notifyToggle(db: Database, tgId: number, chatId: number, flip: boolean): Promise<void> {
@@ -124,9 +282,9 @@ async function notifyToggle(db: Database, tgId: number, chatId: number, flip: bo
   await send(
     chatId,
     on
-      ? "🔔 Уведомления <b>включены</b>: напишу, когда выйдет новая серия аниме из вашего избранного и списка «Смотрю»."
-      : "🔕 Уведомления <b>выключены</b>.",
-    { reply_markup: { inline_keyboard: [[{ text: on ? "Выключить" : "Включить", callback_data: "m:notify" }]] } },
+      ? "🔔 <b>Уведомления включены</b>\n\nНапишу, когда выйдет новая серия аниме из вашего избранного и списка «Смотрю»."
+      : "🔕 <b>Уведомления выключены</b>\n\nНовые серии больше не будут приходить в Telegram.",
+    { reply_markup: { inline_keyboard: [[{ text: on ? "🔕 Выключить" : "🔔 Включить", callback_data: "m:notify" }], [{ text: "🏠 Меню", callback_data: "m:menu" }]] } },
   );
 }
 
@@ -164,11 +322,11 @@ export async function checkNewEpisodes(db: Database = getDb()): Promise<number> 
     perUser.set(num(u.id), { tg: str(u.telegram_id), ids });
     ids.forEach((id) => unique.add(id));
   }
-  const latest = new Map<string, { title: string; ep: number }>();
+  const latest = new Map<string, { title: string; ep: number; poster?: string }>();
   for (const id of [...unique].slice(0, 150)) {
     try {
       const d = await getTitleDetail(id);
-      if (d && d.card.lastEpisode) latest.set(id, { title: d.card.title, ep: d.card.lastEpisode });
+      if (d && d.card.lastEpisode) latest.set(id, { title: d.card.title, ep: d.card.lastEpisode, poster: d.card.poster });
     } catch {
       /* Kodik может не ответить, повторим в следующий проход */
     }
@@ -184,9 +342,12 @@ export async function checkNewEpisodes(db: Database = getDb()): Promise<number> 
         continue;
       }
       if (now.ep <= num(row.last_ep)) continue;
-      const res = await send(Number(chat), `🆕 <b>${esc(now.title)}</b>: вышла ${now.ep} серия`, {
-        reply_markup: { inline_keyboard: [[{ text: "Смотреть", url: `${SITE}/title/${id}` }]] },
-      });
+      const markup = { inline_keyboard: [[{ text: "▶️ Смотреть серию", url: `${SITE}/title/${id}` }], [{ text: "🔕 Отключить уведомления", callback_data: "m:notify" }]] };
+      const text = `🆕 <b>Вышла ${now.ep} серия!</b>\n\n🎬 ${esc(now.title)}\n\n<i>Уже доступна на AniGalaxy</i>`;
+      let ok = false;
+      if (now.poster) ok = (await tg("sendPhoto", { chat_id: Number(chat), photo: now.poster, caption: text, parse_mode: "HTML", reply_markup: markup })).ok;
+      if (!ok) ok = (await send(Number(chat), text, { reply_markup: markup })).ok;
+      const res = { ok };
       db.prepare("UPDATE tg_episodes SET last_ep = ? WHERE user_id = ? AND title_id = ?").run(now.ep, uid, id);
       if (res.ok) sent += 1;
     }
@@ -211,11 +372,14 @@ export async function configureBot(): Promise<void> {
   const results = await Promise.all([
     tg("setMyCommands", {
       commands: [
-        { command: "menu", description: "Меню" },
-        { command: "search", description: "Найти аниме по названию" },
-        { command: "me", description: "Профиль, уровень и баланс" },
-        { command: "notify", description: "Уведомления о новых сериях" },
-        { command: "help", description: "Что умеет бот" },
+        { command: "menu", description: "🪐 Главное меню" },
+        { command: "search", description: "🔎 Найти аниме по названию" },
+        { command: "random", description: "🎲 Случайное аниме" },
+        { command: "top", description: "🏆 Топ по рейтингу" },
+        { command: "new", description: "🔥 Что выходит сейчас" },
+        { command: "me", description: "👤 Профиль, уровень и баланс" },
+        { command: "notify", description: "🔔 Уведомления о новых сериях" },
+        { command: "help", description: "❓ Что умеет бот" },
       ],
     }),
     tg("setMyDescription", {

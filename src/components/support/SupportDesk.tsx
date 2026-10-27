@@ -66,6 +66,13 @@ export function SupportButton({ className, children }: { className?: string; chi
     requestAnimationFrame(() => ref.current?.showModal());
   }, []);
 
+  // Ссылка /#support (например, из бота) открывает окно сразу
+  useEffect(() => {
+    if (window.location.hash !== "#support") return;
+    const t = window.setTimeout(show, 400);
+    return () => window.clearTimeout(t);
+  }, [show]);
+
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
