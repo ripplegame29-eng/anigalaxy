@@ -965,3 +965,19 @@ body:has(.ag-root.has-hueco){background:linear-gradient(180deg,rgba(10,3,7,.55),
 .ag-root.has-hueco .ag-pf-av{filter:drop-shadow(0 0 22px rgba(255,61,98,.5))}
 .ag-root.has-hueco .ag-pf-nav .act,.ag-root.has-hueco .ag-nav .act{background:linear-gradient(135deg,rgba(255,61,98,.28),rgba(176,18,60,.2))!important}
 @media(prefers-reduced-motion:reduce){.ag-root.has-hueco::before,.ag-root.has-hueco::after{animation:none}}
+
+/* Окно «Эффекты»: вкладки «Теги» и «Рамки» — только доступное игроку */
+.fxm-chips{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px;align-content:flex-start;min-height:300px;max-height:52vh;overflow-y:auto;padding:4px 4px 4px 0}
+.fxm-chip{display:flex;flex-direction:column;align-items:center;gap:8px;padding:12px 16px;border-radius:16px;background:rgba(255,255,255,.04);box-shadow:inset 0 0 0 1px rgba(255,255,255,.08);transition:.2s;min-width:124px}
+.fxm-chip small{font-size:11px;font-weight:700;color:#8d97aa}
+.fxm-chip:hover{background:rgba(255,255,255,.07)}
+.fxm-chip.is-on{box-shadow:inset 0 0 0 2px rgba(61,220,151,.6)}
+.fxm-chip.is-main{box-shadow:inset 0 0 0 2px var(--ac,#38bdf8);background:rgba(255,255,255,.07)}
+.fxm-clear{flex-basis:100%;align-self:flex-start;width:max-content;padding:7px 14px;border-radius:11px;font-size:12px;font-weight:800;color:#fff;background:rgba(255,255,255,.08);box-shadow:inset 0 0 0 1px rgba(255,255,255,.14)}
+.fxm-empty{flex-basis:100%;padding:28px 12px;text-align:center;font-size:13px;color:#8d97aa;border:1px dashed rgba(255,255,255,.14);border-radius:16px}
+.fxm-frames{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:12px;margin-top:16px;align-content:start;min-height:300px;max-height:52vh;overflow-y:auto;padding:4px 4px 4px 0}
+.fxm-frame{display:flex;flex-direction:column;align-items:center;gap:8px;padding:12px 6px;border-radius:16px;background:rgba(255,255,255,.04);box-shadow:inset 0 0 0 1px rgba(255,255,255,.08);transition:.2s}
+.fxm-frame span{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11.5px;font-weight:800;color:#d6dcea}
+.fxm-frame:hover{background:rgba(255,255,255,.07)}
+.fxm-frame.is-on{box-shadow:inset 0 0 0 2px var(--ac,#38bdf8);background:rgba(255,255,255,.08)}
+@media (max-width:640px){.fxm-tabs{overflow-x:auto;max-width:100%}.fxm-tabs button{white-space:nowrap;padding:9px 12px}}

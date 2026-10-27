@@ -246,7 +246,7 @@ function pushAvatarHistory(list: string[], data: string): string[] {
 /** Цвет редкости для карточек эффектов */
 const FXM_RARITY: Record<string, string> = { COMMON: "#9aa4b2", RARE: "#38bdf8", EPIC: "#a78bfa", LEGENDARY: "#fbbf24" };
 
-type FxTab = "decor" | "particle" | "style";
+type FxTab = "decor" | "particle" | "style" | "tag" | "frame";
 
 /** Окно «Эффекты»: сцена с предпросмотром слева, вкладки с карточками справа */
 function EffectsDialog() {
@@ -255,7 +255,13 @@ function EffectsDialog() {
   const account = useAccount();
   const panelRef = useModalBehaviour(true, closeProfileDialog);
   const [tab, setTab] = useState<FxTab>("decor");
+  const ctx = useUnlockContext();
+  const tagSel = useTagSelection();
   const owned = new Set([...doc.purchases.map((item) => item.itemId), ...profile.purchased]);
+  /* Теги и рамки — только доступные игроку: закрытые здесь не показываем */
+  const ownedTags = PROGRESSION_CONFIG.tags.filter((tag) => Boolean(doc.tags[tag.id]));
+  const ownedFrames = FRAMES.filter((item) => isUnlocked(item.unlock, ctx));
+  const tagCount = (tagSel.primary ? 1 : 0) + tagSel.extras.length;
   const claimed = new Set(doc.battlepass.claimed);
   const frame = FRAMES.find((item) => item.id === profile.frameId);
   const nickname = account?.nickname ?? "Гость";
@@ -288,6 +294,8 @@ function EffectsDialog() {
     { id: "decor", label: "Оформление", count: activeDecor ? "1" : "0" },
     { id: "particle", label: "Частицы", count: activeParticle ? "1" : "0" },
     { id: "style", label: "Стили", count: `${activeStyles.length}/4` },
+    { id: "tag", label: "Теги", count: String(tagCount) },
+    { id: "frame", label: "Рамки", count: String(ownedFrames.length) },
   ];
 
   const Card = ({ id, name, desc, rarity, has, on, meta, onClick }: { id: string; name: string; desc: string; rarity: string; has: boolean; on: boolean; meta: string; onClick: () => void }) => (
@@ -345,6 +353,8 @@ function EffectsDialog() {
               <li><span>Оформление</span><b>{activeDecor?.item.name ?? "—"}</b></li>
               <li><span>Частица</span><b>{activeParticle?.name ?? "—"}</b></li>
               <li><span>Стили</span><b>{activeStyles.length ? activeStyles.map((x) => x.name).join(", ") : "—"}</b></li>
+              <li><span>Теги</span><b>{tagCount ? `Выбрано: ${tagCount}` : "—"}</b></li>
+              <li><span>Рамка</span><b>{frame && frame.id !== "f-none" ? frame.name : "—"}</b></li>
             </ul>
             <div className="fxm-lvl">
               <p>Сила эффектов</p>
@@ -369,7 +379,7 @@ function EffectsDialog() {
               ))}
             </nav>
 
-            <div className="fxm-grid">
+            <div className="fxm-grid" hidden={tab === "tag" || tab === "frame"}>
               {tab === "decor" &&
                 decors.map(({ item, bp, has, on }) =>
                   Card({
@@ -418,6 +428,66 @@ function EffectsDialog() {
                   });
                 })}
             </div>
+
+            {tab === "tag" && (
+              <div className="fxm-chips" role="group" aria-label="Теги">
+                {ownedTags.length === 0 ? (
+                  <p className="fxm-empty">Открытых тегов пока нет — они выдаются за достижения, уровни и в магазине.</p>
+                ) : (
+                  <>
+                    {tagCount > 0 && (
+                      <button
+                        type="button"
+                        className="fxm-clear"
+                        onClick={() => {
+                          progressEmit({ type: "UNEQUIP_TAG" });
+                          updateProfile({ extraTagIds: [] });
+                        }}
+                      >
+                        Снять все теги
+                      </button>
+                    )}
+                    {ownedTags.map((tag) => {
+                      const main = tagSel.primary === tag.id;
+                      const extra = tagSel.extras.includes(tag.id);
+                      return (
+                        <button
+                          key={tag.id}
+                          type="button"
+                          aria-pressed={main || extra}
+                          title={main ? "Основной тег" : extra ? "Дополнительный тег" : "Нажмите, чтобы надеть"}
+                          className={`fxm-chip${main ? " is-main" : extra ? " is-on" : ""}`}
+                          onClick={() => tagSel.toggle(tag)}
+                        >
+                          <AgTag tag={tag} size="sm" />
+                          <small>{main ? "Основной" : extra ? "Дополнительный" : "Надеть"}</small>
+                        </button>
+                      );
+                    })}
+                  </>
+                )}
+              </div>
+            )}
+
+            {tab === "frame" && (
+              <div className="fxm-frames" role="group" aria-label="Рамки">
+                {ownedFrames.map((item) => {
+                  const on = profile.frameId === item.id || (!profile.frameId && item.id === "f-none");
+                  return (
+                    <button
+                      key={item.id}
+                      type="button"
+                      aria-pressed={on}
+                      className={`fxm-frame${on ? " is-on" : ""}`}
+                      onClick={() => updateProfile({ frameId: item.id })}
+                    >
+                      <AvatarFrame nickname={nickname} avatar={profile.avatar || undefined} frame={item} size="md" />
+                      <span>{item.name}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
 
             <footer className="fxm-foot">
               <span>Закрытое открывается в магазине косметики</span>
