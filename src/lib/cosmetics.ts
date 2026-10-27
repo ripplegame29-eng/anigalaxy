@@ -71,6 +71,13 @@ export interface FrameItem {
    */
   scale?: number;
   /**
+   * Смещение картинки рамки в долях её размера: у многих рамок «дыра» под
+   * аватар нарисована не точно по центру файла, и без сдвига аватар
+   * вставал криво. Положительный dx — картинка уезжает вправо.
+   */
+  dx?: number;
+  dy?: number;
+  /**
    * Рисунок шире обычного холста (у серафимов крылья выходят за 240
    * единиц). Таким рамкам карточка в магазине нужна шире — см. ags-card-wide.
    */
@@ -596,26 +603,26 @@ export const FRAMES: FrameItem[] = [
   { id: "frame-art-gothic-castle", name: "Готический замок", rarity: "legendary", img: "/frames/art-gothic-castle.webp", scale: 2.41, unlock: { price: 7000 } },
   /* Рамки сезона «Хуэко Мундо» (Bleach): растровые вырезки + живые эффекты (frame-fx.css).
      Только за боевой пропуск: unlock с ценой, которой нет в магазине. */
-  { id: "frame-bleach-hollow-mask", name: "Маска Пустого", rarity: "legendary", img: "/frames/bleach-hollow-mask.webp?v=2", scale: 2.25, fx: "crimson", unlock: { price: 9000 } },
-  { id: "frame-bleach-espada-blade", name: "Клинок Эспады", rarity: "legendary", img: "/frames/bleach-espada-blade.webp?v=2", scale: 2.0, fx: "teal", unlock: { price: 9000 } },
-  { id: "frame-bleach-blood-moon", name: "Кровавая луна", rarity: "legendary", img: "/frames/bleach-blood-moon.webp?v=2", scale: 2.06, fx: "crimson", unlock: { price: 9000 } },
-  { id: "frame-bleach-gotei-13", name: "Готей-13", rarity: "legendary", img: "/frames/bleach-gotei-13.webp?v=2", scale: 2.09, fx: "gold", unlock: { price: 9000 } },
-  { id: "frame-bleach-captain-smoke", name: "Дым капитана", rarity: "epic", img: "/frames/bleach-captain-smoke.webp?v=2", scale: 2.19, fx: "smoke", unlock: { price: 9000 } },
-  { id: "frame-bleach-espada-four", name: "Четвёртая Эспада", rarity: "legendary", img: "/frames/bleach-espada-four.webp?v=2", scale: 1.87, fx: "violet", unlock: { price: 9000 } },
+  { id: "frame-bleach-hollow-mask", name: "Маска Пустого", rarity: "legendary", img: "/frames/bleach-hollow-mask.webp?v=2", scale: 2.06, dx: 0.011, dy: -0.029, fx: "crimson", unlock: { price: 9000 } },
+  { id: "frame-bleach-espada-blade", name: "Клинок Эспады", rarity: "legendary", img: "/frames/bleach-espada-blade.webp?v=2", scale: 1.81, dx: 0.008, dy: 0.013, fx: "teal", unlock: { price: 9000 } },
+  { id: "frame-bleach-blood-moon", name: "Кровавая луна", rarity: "legendary", img: "/frames/bleach-blood-moon.webp?v=2", scale: 1.97, dx: 0.003, dy: -0.01, fx: "crimson", unlock: { price: 9000 } },
+  { id: "frame-bleach-gotei-13", name: "Готей-13", rarity: "legendary", img: "/frames/bleach-gotei-13.webp?v=2", scale: 1.99, dx: -0.004, dy: 0.012, fx: "gold", unlock: { price: 9000 } },
+  { id: "frame-bleach-captain-smoke", name: "Дым капитана", rarity: "epic", img: "/frames/bleach-captain-smoke.webp?v=2", scale: 2.12, dx: 0.01, dy: -0.017, fx: "smoke", unlock: { price: 9000 } },
+  { id: "frame-bleach-espada-four", name: "Четвёртая Эспада", rarity: "legendary", img: "/frames/bleach-espada-four.webp?v=2", scale: 1.73, dx: 0.024, dy: -0.04, fx: "violet", unlock: { price: 9000 } },
   { id: "frame-bleach-crimson-blades", name: "Алые клинки", rarity: "epic", img: "/frames/bleach-crimson-blades.webp?v=2", scale: 1.95, fx: "crimson", unlock: { price: 9000 } },
-  { id: "frame-bleach-void-seal", name: "Печать Пустоты", rarity: "epic", img: "/frames/bleach-void-seal.webp?v=2", scale: 2.14, fx: "ice", unlock: { price: 9000 } },
-  { id: "frame-bleach-gold-haori", name: "Золотое хаори", rarity: "legendary", img: "/frames/bleach-gold-haori.webp?v=3", scale: 2.25, fx: "gold", unlock: { price: 9000 } },
-  { id: "frame-bleach-las-noches", name: "Ледяной Лас-Ночес", rarity: "epic", img: "/frames/bleach-las-noches.webp?v=2", scale: 2.17, fx: "ice", unlock: { price: 9000 } },
-  { id: "frame-bleach-hollow-chains", name: "Цепи Пустого", rarity: "epic", img: "/frames/bleach-hollow-chains.webp?v=2", scale: 2.07, fx: "crimson", unlock: { price: 9000 } },
-  { id: "frame-bleach-blue-flame", name: "Синий огонь Пустого", rarity: "epic", img: "/frames/bleach-blue-flame.webp?v=2", scale: 2.38, fx: "ice", unlock: { price: 9000 } },
-  { id: "frame-bleach-red-thorns", name: "Алые шипы", rarity: "epic", img: "/frames/bleach-red-thorns.webp?v=2", scale: 2.34, fx: "crimson", unlock: { price: 9000 } },
-  { id: "frame-bleach-sakura-blade", name: "Лепестки сакуры", rarity: "rare", img: "/frames/bleach-sakura-blade.webp?v=2", scale: 2.24, fx: "sakura", unlock: { price: 9000 } },
-  { id: "frame-bleach-violet-crystal", name: "Фиолетовый кристалл", rarity: "epic", img: "/frames/bleach-violet-crystal.webp?v=2", scale: 2.41, fx: "violet", unlock: { price: 9000 } },
-  { id: "frame-bleach-wings-of-light", name: "Крылья света", rarity: "epic", img: "/frames/bleach-wings-of-light.webp?v=2", scale: 2.27, fx: "gold", unlock: { price: 9000 } },
-  { id: "frame-bleach-black-moon", name: "Чёрная луна", rarity: "epic", img: "/frames/bleach-black-moon.webp?v=2", scale: 2.38, fx: "teal", unlock: { price: 9000 } },
-  { id: "frame-bleach-bankai", name: "Банкай", rarity: "legendary", img: "/frames/bleach-bankai.webp?v=3", scale: 2.27, fx: "crimson", unlock: { price: 9000 } },
-  { id: "frame-bleach-twilight-reaper", name: "Шинигами в сумерках", rarity: "legendary", img: "/frames/bleach-twilight-reaper.webp?v=3", scale: 1.95, fx: "violet", unlock: { price: 9000 } },
-  { id: "frame-bleach-black-flag", name: "Чёрный флаг Пустого", rarity: "legendary", img: "/frames/bleach-black-flag.webp?v=2", scale: 1.88, fx: "crimson", unlock: { price: 9000 } },
+  { id: "frame-bleach-void-seal", name: "Печать Пустоты", rarity: "epic", img: "/frames/bleach-void-seal.webp?v=2", scale: 2.0, dx: 0.018, dy: -0.011, fx: "ice", unlock: { price: 9000 } },
+  { id: "frame-bleach-gold-haori", name: "Золотое хаори", rarity: "legendary", img: "/frames/bleach-gold-haori.webp?v=3", scale: 2.23, dx: -0.013, dy: 0.01, fx: "gold", unlock: { price: 9000 } },
+  { id: "frame-bleach-las-noches", name: "Ледяной Лас-Ночес", rarity: "epic", img: "/frames/bleach-las-noches.webp?v=2", scale: 2.0, dx: -0.042, dy: -0.016, fx: "ice", unlock: { price: 9000 } },
+  { id: "frame-bleach-hollow-chains", name: "Цепи Пустого", rarity: "epic", img: "/frames/bleach-hollow-chains.webp?v=2", scale: 1.91, dx: -0.015, dy: -0.029, fx: "crimson", unlock: { price: 9000 } },
+  { id: "frame-bleach-blue-flame", name: "Синий огонь Пустого", rarity: "epic", img: "/frames/bleach-blue-flame.webp?v=2", scale: 2.26, dx: 0.037, dy: 0.006, fx: "ice", unlock: { price: 9000 } },
+  { id: "frame-bleach-red-thorns", name: "Алые шипы", rarity: "epic", img: "/frames/bleach-red-thorns.webp?v=2", scale: 2.06, dx: -0.052, dy: -0.006, fx: "crimson", unlock: { price: 9000 } },
+  { id: "frame-bleach-sakura-blade", name: "Лепестки сакуры", rarity: "rare", img: "/frames/bleach-sakura-blade.webp?v=2", scale: 1.99, dx: -0.004, dy: -0.01, fx: "sakura", unlock: { price: 9000 } },
+  { id: "frame-bleach-violet-crystal", name: "Фиолетовый кристалл", rarity: "epic", img: "/frames/bleach-violet-crystal.webp?v=2", scale: 2.2, dx: 0.044, dy: 0.008, fx: "violet", unlock: { price: 9000 } },
+  { id: "frame-bleach-wings-of-light", name: "Крылья света", rarity: "epic", img: "/frames/bleach-wings-of-light.webp?v=2", scale: 2.26, dx: -0.022, dy: -0.004, fx: "gold", unlock: { price: 9000 } },
+  { id: "frame-bleach-black-moon", name: "Чёрная луна", rarity: "epic", img: "/frames/bleach-black-moon.webp?v=2", scale: 2.2, dx: 0.049, dy: -0.011, fx: "teal", unlock: { price: 9000 } },
+  { id: "frame-bleach-bankai", name: "Банкай", rarity: "legendary", img: "/frames/bleach-bankai.webp?v=3", scale: 2.16, dx: 0.019, dy: -0.014, fx: "crimson", unlock: { price: 9000 } },
+  { id: "frame-bleach-twilight-reaper", name: "Шинигами в сумерках", rarity: "legendary", img: "/frames/bleach-twilight-reaper.webp?v=3", scale: 1.97, dx: -0.003, dy: -0.005, fx: "violet", unlock: { price: 9000 } },
+  { id: "frame-bleach-black-flag", name: "Чёрный флаг Пустого", rarity: "legendary", img: "/frames/bleach-black-flag.webp?v=2", scale: 1.84, dx: 0.019, dy: -0.013, fx: "crimson", unlock: { price: 9000 } },
   /* — legendary — */
   { id: "frame-37", name: "Безграничные глаза", rarity: "epic", img: "/frames/frame-37.svg?v=2", unlock: { level: 35 } },
   { id: "frame-26", name: "Пират-соломенная шляпа", rarity: "epic", img: "/frames/frame-26.svg?v=2", unlock: { level: 40 } },

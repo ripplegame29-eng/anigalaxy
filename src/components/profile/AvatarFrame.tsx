@@ -74,7 +74,11 @@ export function AvatarFrame({
       className={`ag-frame ag-frame--${size}${hasImage ? "" : " ag-frame--none"} ${className}`}
       data-fx={frame?.fx}
       /* --scale приходит из данных рамки, в CSS не зашит */
-      style={{ ["--scale" as string]: String(frame?.scale ?? 1.3) }}
+      style={{
+        ["--scale" as string]: String(frame?.scale ?? 1.3),
+        ["--fx" as string]: String(frame?.dx ?? 0),
+        ["--fy" as string]: String(frame?.dy ?? 0),
+      }}
     >
       <AvatarCircle nickname={nickname} avatar={avatar} className="ag-frame__avatar" textClass="" />
       {hasImage && (
