@@ -17,7 +17,7 @@ import { randomBytes, randomInt } from "node:crypto";
 import { getDb } from "./db";
 import { createSession, upsertTelegramUser, type UserRow } from "./users";
 import { num, str, type Database } from "./sqlite";
-import { handleBotMessage, handleBotCallback } from "./telegram-bot";
+import { handleBotMessage, handleBotCallback, handleBotInline } from "./telegram-bot";
 
 export const LOGIN_TTL_MS = 5 * 60 * 1000;
 const POLLER_IDLE_MS = 10 * 60 * 1000;
@@ -131,6 +131,7 @@ export interface TgUpdate {
   update_id: number;
   message?: { message_id: number; text?: string; from?: TgFrom; chat: { id: number; type: string } };
   callback_query?: { id: string; from: TgFrom; data?: string; message?: { message_id: number; chat: { id: number } } };
+  inline_query?: { id: string; from: TgFrom; query: string };
 }
 
 const nameOf = (u: TgFrom): string => (u.username || [u.first_name, u.last_name].filter(Boolean).join(" ") || `tg_${u.id}`).trim();
@@ -150,6 +151,7 @@ export async function handleUpdate(db: Database, update: TgUpdate, now = Date.no
     await handleBotMessage(db, text, m.from, m.chat.id);
     return;
   }
+  if (update.inline_query) return handleBotInline(update.inline_query);
   const cb = update.callback_query;
   if (cb?.data) {
     if (/^(ok|no):/.test(cb.data)) return answerCallback(db, cb, now);
@@ -301,7 +303,7 @@ export function ensurePoller(): void {
 async function loop(state: PollerState): Promise<void> {
   try {
     while (Date.now() < state.idleUntil) {
-      const res = await tg("getUpdates", { offset: state.offset, timeout: 20, allowed_updates: ["message", "callback_query"] }, 30_000);
+      const res = await tg("getUpdates", { offset: state.offset, timeout: 20, allowed_updates: ["message", "callback_query", "inline_query"] }, 30_000);
       if (!res.ok) {
         if (res.error_code === 409) {
           console.error("[tglogin] у бота включён вебхук. Поставьте TELEGRAM_LOGIN_MODE=webhook и настройте /api/tglogin/webhook");
