@@ -179,7 +179,7 @@ export function FrameSearchView({ aiEnabled = false }: { aiEnabled?: boolean }) 
   const sure = Boolean(best && best.similarity >= SURE);
   const aiResult = ai.kind === "done" ? ai.result : null;
   /** ИИ идёт первым, если база сцен не уверена: именно он «узнаёт» тайтл */
-  const aiFirst = Boolean(aiResult) && !sure;
+  const aiFirst = Boolean(aiResult) && (aiEnabled || !sure);
   const finished = state.kind === "done" || state.kind === "error";
 
   /* ------------------------------ Карточка ИИ ------------------------------ */
@@ -470,7 +470,7 @@ export function FrameSearchView({ aiEnabled = false }: { aiEnabled?: boolean }) 
         )}
 
         {aiFirst && aiCard}
-        {traceSection}
+        {!aiEnabled && traceSection}
         {!aiFirst && aiCard}
         {state.kind === "error" && !aiResult && askPanel}
         {state.kind === "done" && !aiResult && askPanel}
@@ -478,7 +478,7 @@ export function FrameSearchView({ aiEnabled = false }: { aiEnabled?: boolean }) 
         <FrameGuide />
 
         <p className="fs-credit">
-          База сцен — открытый trace.moe, иногда он ошибается на редких кадрах.{aiEnabled ? " ИИ-разбор: NVIDIA Nemotron, он тоже может ошибаться." : ""}
+          {aiEnabled ? "Разбор кадра выполняет NVIDIA Nemotron, он может ошибаться на редких сценах." : "База сцен — открытый trace.moe, иногда он ошибается на редких кадрах."}
         </p>
       </div>
     </div>
