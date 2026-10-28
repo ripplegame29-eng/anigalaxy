@@ -193,7 +193,8 @@ async function askModel(turns: AssistantTurn[]): Promise<{ reply: string; titles
         temperature: 0.8,
         max_tokens: 3000,
         // У рассуждающих моделей лишние «мысли» съедают лимит ответа: просим их коротко
-        reasoning: { effort: "low" },
+        // Параметр reasoning понимает только OpenRouter; другие совместимые API (Cloudflare Workers AI) его не ждут
+        ...(OPENROUTER_URL.includes("openrouter.ai") || OPENROUTER_URL.includes("workers.dev") ? { reasoning: { effort: "low" } } : {}),
         messages: [{ role: "system", content: SYSTEM_PROMPT }, ...turns.map((t) => ({ role: t.role, content: t.content }))],
       },
     )) as { choices?: { message?: { content?: string } }[] } | null;
