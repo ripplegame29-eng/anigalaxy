@@ -1,5 +1,5 @@
 /*
- * ИИ-ассистент «Нова» — тот же язык, что у поиска по каталогу: почти чёрные
+ * ИИ-ассистент «Лумина» — тот же язык, что у поиска по каталогу: почти чёрные
  * нейтральные поверхности, тонкие линии, один синий акцент для главного
  * действия и выбранного. Без цветных свечений и градиентных рамок: глаз
  * отдыхает, а акцент остаётся заметным. Префикс ast- не задевает другие
@@ -343,7 +343,7 @@
   max-width: min(660px, 100%);
 }
 
-/* Ответ Новы: спокойный тёмный «пузырь» без рамки */
+/* Ответ Лумины: спокойный тёмный «пузырь» без рамки */
 .ast-bub {
   margin: 0;
   padding: 12px 17px;
@@ -632,5 +632,37 @@
   .ast-send,
   .ast-pick-poster img {
     transition: none;
+  }
+}
+
+/* Приветственная картинка вместо текстового блока */
+.ast-banner {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--ast-line-2);
+  border-radius: 26px;
+  box-shadow: 0 30px 80px -30px rgba(43, 127, 255, 0.45);
+}
+
+.ast-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.ast-hero .ast-login {
+  margin-top: 22px;
+}
+
+@media (max-width: 640px) {
+  .ast-banner {
+    border-radius: 18px;
   }
 }

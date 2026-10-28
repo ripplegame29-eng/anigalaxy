@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Страница ИИ-ассистента «Нова»: чат с подбором аниме и поиском по сюжету.
+ * Страница ИИ-ассистента «Лумина»: чат с подбором аниме и поиском по сюжету.
  *
  * Состояние чата хранится в localStorage (последние реплики), на сервер
  * уходит только текст запроса. Ответ приходит вместе с карточками тайтлов,
@@ -225,23 +225,17 @@ function Chat({ enabled }: { enabled: boolean }) {
     <div className="ast-wrap">
       {empty ? (
         <header className="ast-hero">
-          <span className="ast-orb" aria-hidden>
-            <i className="ast-ring r1" />
-            <i className="ast-ring r2" />
-            <i className="ast-ring r3" />
-            <Spark id="ast-g1" />
-          </span>
-          <span className="ast-badge">
-            <i />
-            ИИ-помощник · бета
-          </span>
-          <h1 className="ast-h1">Нова — ваш ИИ-гид по аниме</h1>
-          <p className="ast-lead">
-            Расскажите, какое у вас настроение, опишите сюжет или сцену, которую запомнили, — и Нова подскажет, что
-            посмотреть. Всё, что она советует, можно сразу открыть на AniGalaxy.
-          </p>
+          <img
+            className="ast-banner"
+            src="/assistant-hero.webp"
+            width={1536}
+            height={1024}
+            alt="Лумина — ИИ-ассистент AniGalaxy"
+            fetchPriority="high"
+          />
+          <h1 className="ast-sr">Лумина — ИИ-ассистент AniGalaxy: подбор аниме и поиск по сюжету</h1>
           {!enabled ? (
-            <p className="ast-soon">Нова пока настраивается и скоро будет доступна.</p>
+            <p className="ast-soon">Лумина пока настраивается и скоро будет доступна.</p>
           ) : !account ? (
             <button type="button" className="ast-login" onClick={() => openAuthDialog("login")}>
               Войти, чтобы начать
@@ -271,7 +265,7 @@ function Chat({ enabled }: { enabled: boolean }) {
         <div className="ast-bar">
           <span className="ast-bar-name">
             <Spark id="ast-g2" className="ast-bar-ic" />
-            Нова
+            Лумина
           </span>
           <button type="button" className="ast-new" onClick={reset} disabled={busy}>
             Новый чат
@@ -306,7 +300,7 @@ function Chat({ enabled }: { enabled: boolean }) {
                 <Spark id="ast-typing" />
               </span>
               <div className="ast-col">
-                <p className="ast-bub ast-typing" aria-label="Нова печатает">
+                <p className="ast-bub ast-typing" aria-label="Лумина печатает">
                   <i />
                   <i />
                   <i />
@@ -331,7 +325,7 @@ function Chat({ enabled }: { enabled: boolean }) {
           value={input}
           maxLength={1000}
           disabled={!enabled}
-          placeholder={enabled ? "Опишите сюжет или спросите, что посмотреть…" : "Нова скоро будет доступна"}
+          placeholder={enabled ? "Опишите сюжет или спросите, что посмотреть…" : "Лумина скоро будет доступна"}
           onChange={(e) => {
             setInput(e.target.value);
             e.target.style.height = "auto";
@@ -350,7 +344,7 @@ function Chat({ enabled }: { enabled: boolean }) {
           </svg>
         </button>
       </form>
-      <p className="ast-note">Нова — ИИ и может ошибаться. Описание и серии проверяйте на странице тайтла.</p>
+      <p className="ast-note">Лумина — ИИ и может ошибаться. Описание и серии проверяйте на странице тайтла.</p>
     </div>
   );
 }
