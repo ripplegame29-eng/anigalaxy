@@ -194,7 +194,6 @@ export function FrameSearchView({ aiEnabled = false }: { aiEnabled?: boolean }) 
           <Spark id="fs-air-g" />
         </span>
         <b>{aiFirst ? "ИИ узнал аниме" : "Мнение ИИ"}</b>
-        <small>NVIDIA Nemotron</small>
       </div>
       <p className="fs-ai-desc">{aiResult.description}</p>
 
@@ -478,7 +477,7 @@ export function FrameSearchView({ aiEnabled = false }: { aiEnabled?: boolean }) 
         <FrameGuide />
 
         <p className="fs-credit">
-          {aiEnabled ? "Разбор кадра выполняет NVIDIA Nemotron, он может ошибаться на редких сценах." : "База сцен — открытый trace.moe, иногда он ошибается на редких кадрах."}
+          {aiEnabled ? "Разбор кадра выполняет Люмина, она может ошибаться на редких сценах." : "База сцен — открытый trace.moe, иногда он ошибается на редких кадрах."}
         </p>
       </div>
     </div>
