@@ -14,6 +14,7 @@ export function Poster({
   sizes = "(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw",
   className = "",
   priority = false,
+  fallback,
 }: {
   src?: string;
   alt: string;
@@ -21,11 +22,15 @@ export function Poster({
   sizes?: string;
   className?: string;
   priority?: boolean;
+  /** Вторая попытка, если основная картинка не загрузилась */
+  fallback?: string;
 }) {
+  const [useFallback, setUseFallback] = useState(false);
   const [failed, setFailed] = useState(false);
+  const current = useFallback && fallback ? fallback : src;
   const [loaded, setLoaded] = useState(false);
 
-  if (!src || failed) {
+  if (!current || failed) {
     return (
       <div
         className={`flex items-center justify-center bg-[linear-gradient(140deg,#171726,#101018_60%,#1d1526)] ${className}`}
@@ -40,7 +45,8 @@ export function Poster({
 
   return (
     <Image
-      src={src}
+      src={current}
+      key={current}
       alt={alt}
       fill
       sizes={sizes}
@@ -52,7 +58,7 @@ export function Poster({
         if (el && el.complete && el.naturalWidth > 0) setLoaded(true);
       }}
       onLoad={() => setLoaded(true)}
-      onError={() => setFailed(true)}
+      onError={() => (fallback && !useFallback && fallback !== src ? setUseFallback(true) : setFailed(true))}
     />
   );
 }

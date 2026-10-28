@@ -18,11 +18,19 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { slug } = await params;
   const detail = await mangaDetail(slug).catch(() => null);
   if (!detail) return { title: "Манга не найдена" };
+  const description =
+    detail.description?.slice(0, 160) ?? `${detail.title}: описание, жанры и ${detail.chapters.length} глав с русским переводом.`;
   return {
     title: `${detail.title} — читать мангу онлайн`,
-    description:
-      detail.description?.slice(0, 160) ??
-      `${detail.title}: описание, жанры и ${detail.chapters.length} глав с русским переводом.`,
+    description,
+    alternates: { canonical: `/manga/${slug}` },
+    openGraph: {
+      title: detail.title,
+      description,
+      type: "book",
+      images: detail.poster ? [{ url: detail.poster, alt: detail.title }] : undefined,
+    },
+    twitter: { card: "summary_large_image", title: detail.title, description, images: detail.poster ? [detail.poster] : undefined },
   };
 }
 
@@ -42,8 +50,20 @@ export default async function MangaTitlePage({ params }: PageProps) {
   const first = chapters[0];
   const last = chapters[chapters.length - 1];
 
+  const ld = {
+    "@context": "https://schema.org",
+    "@type": "ComicSeries",
+    name: detail.title,
+    inLanguage: "ru",
+    description: detail.description?.slice(0, 300),
+    image: detail.poster,
+    genre: detail.genres,
+    numberOfEpisodes: detail.chaptersTotal || undefined,
+  };
+
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ld).replace(/</g, "\\u003c") }} />
       <Breadcrumbs items={[{ label: "Манга", href: "/manga" }, { label: detail.title }]} />
 
       <div className="grid gap-6 md:grid-cols-[280px_minmax(0,1fr)] md:gap-8 lg:grid-cols-[330px_minmax(0,1fr)]">

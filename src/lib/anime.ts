@@ -46,7 +46,12 @@ export function toCard(r: KodikResult): AnimeCard {
     titleOrig: m?.title_en || r.title_orig,
     otherTitles: [...(m?.other_titles ?? []), ...(m?.other_titles_en ?? [])],
     year: r.year ?? m?.year,
-    poster: m?.anime_poster_url || m?.poster_url,
+    // Нет постера у Kodik — берём обложку Shikimori по id, а если и её нет — первый кадр
+    poster:
+      m?.anime_poster_url ||
+      m?.poster_url ||
+      (Number.isFinite(shikimoriId) && shikimoriId > 0 ? shikimoriPoster(shikimoriId) : undefined) ||
+      screenshots[0],
     rating,
     ratingVotes,
     ratingSource,
@@ -65,6 +70,11 @@ export function toCard(r: KodikResult): AnimeCard {
     // Ссылка плеера этого же тайтла — фоновое видео hero привязывается к ней
     playerLink: absoluteUrl(r.link),
   };
+}
+
+/** Обложка Shikimori по id: запасной источник, когда у Kodik нет картинки */
+export function shikimoriPoster(id: number | string): string {
+  return `https://shikimori.one/system/animes/original/${id}.jpg`;
 }
 
 /** Несколько карточек разом */

@@ -43,3 +43,23 @@
 @media (max-width: 900px) {
   .ft-bot ul li a { display: inline-flex; align-items: center; min-height: 40px; }
 }
+
+/* iOS Safari увеличивает страницу при фокусе на поле с шрифтом меньше 16px —
+   диалоги входа, поиска и настроек «подпрыгивали». На сенсорных экранах
+   держим 16px у всех текстовых полей (флажки, ползунки и цвет не трогаем). */
+@media (max-width: 900px) and (pointer: coarse) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="file"]),
+  textarea,
+  select {
+    font-size: max(16px, 1em);
+  }
+}
+
+/* Высота диалогов от видимой области: панель Safari не обрезает низ */
+@supports (height: 100dvh) {
+  .cp-dlg { max-height: min(740px, calc(100dvh - 32px)); }
+  @media (max-width: 640px) {
+    .cp-dlg { max-height: 92dvh; }
+    .pm-menu { max-height: 88dvh; }
+  }
+}

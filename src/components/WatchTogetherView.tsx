@@ -1003,6 +1003,14 @@ export function WatchTogetherView() {
             <button type="button" onClick={() => copyLink(created.path)} className="wtv-btn">
               {copiedAt ? "Скопировано ✓" : "Скопировать ссылку"}
             </button>
+            <a
+              href={`https://t.me/share/url?url=${encodeURIComponent(`${typeof window !== "undefined" ? window.location.origin : ""}${created.path}`)}&text=${encodeURIComponent("Смотрим аниме вместе на AniGalaxy — заходи в комнату 🍿")}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn-ghost rounded-xl border border-line bg-white/6 px-5 py-2.5 text-sm font-bold text-white hover:border-accent/40"
+            >
+              Отправить в Telegram
+            </a>
             <button
               type="button"
               onClick={() => onJoin(created.room.code)}

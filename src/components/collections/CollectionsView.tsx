@@ -1187,9 +1187,20 @@ function CreateDialog({ open, onClose, onCreate, posters }: CreateProps) {
     }
     setSearching(true);
     try {
-      const res = await fetch(`/api/kodik/search?limit=8&q=${encodeURIComponent(q)}`);
-      const data = res.ok ? ((await res.json()) as { results?: AnimeCard[] }) : {};
-      setFound((data.results ?? []).slice(0, 8));
+      const get = async (url: string): Promise<AnimeCard[]> => {
+        try {
+          const res = await fetch(url);
+          return res.ok ? (((await res.json()) as { results?: AnimeCard[] }).results ?? []) : [];
+        } catch {
+          return [];
+        }
+      };
+      // Аниме и манга ищутся параллельно: упавший источник не должен прятать второй
+      const [anime, manga] = await Promise.all([
+        get(`/api/kodik/search?limit=8&q=${encodeURIComponent(q)}`),
+        get(`/api/manga/search?limit=4&q=${encodeURIComponent(q)}`),
+      ]);
+      setFound([...anime.slice(0, 6), ...manga.map((m) => ({ ...m, manga: true }))].slice(0, 10));
     } catch {
       setFound([]);
     } finally {
@@ -1355,7 +1366,7 @@ function CreateDialog({ open, onClose, onCreate, posters }: CreateProps) {
                       >
                         <i style={card.poster ? { backgroundImage: `url(${card.poster})` } : undefined} />
                         <b>{card.title}</b>
-                        <small>{card.year ?? ""}{card.rating ? ` ★ ${card.rating.toFixed(2)}` : ""}</small>
+                        <small>{card.manga ? "Манга" : ""}{card.year ?? ""}{card.rating ? ` ★ ${card.rating.toFixed(2)}` : ""}</small>
                       </button>
                     </li>
                   ))}

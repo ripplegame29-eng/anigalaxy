@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { formatRating, kindLabel, statusLabel, statusTone } from "@/lib/anime";
+import { formatRating, kindLabel, shikimoriPoster, statusLabel, statusTone } from "@/lib/anime";
 import type { AnimeCard as Card } from "@/lib/types";
 import { Poster } from "./Poster";
 
@@ -34,6 +34,7 @@ export function AnimeCard({
       <div className="relative aspect-[2/3] overflow-hidden rounded-2xl bg-card ring-1 ring-white/10 transition-all duration-300 ease-[cubic-bezier(.22,1,.36,1)] group-hover:-translate-y-1 group-hover:ring-accent/60 group-hover:shadow-[0_24px_50px_-24px_rgba(31,123,255,.85)] group-focus-visible:ring-accent/70">
         <Poster
           src={card.poster}
+          fallback={card.shikimoriId ? shikimoriPoster(card.shikimoriId) : card.screenshots?.[0]}
           alt={card.title}
           title={card.title}
           priority={priority}

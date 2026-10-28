@@ -83,7 +83,7 @@ const WELCOME =
   "✨ <b>AniGalaxy</b> — аниме без рекламы и лишних шагов\n\nИщите тайтлы, листайте подборки с постерами, читайте о новых сериях в день выхода и следите за уровнем — всё прямо в Telegram.\n\n<i>Выберите, с чего начать 👇</i>";
 
 const HELP =
-  "<b>🪐 Что умеет бот</b>\n\n<b>Каталог</b>\n/search <i>название</i> — найти аниме\n/random — случайное аниме\n/top — топ по рейтингу\n/new — что выходит сейчас\n/genres — подборки по жанрам\n\n<b>Ваш аккаунт</b>\n/me — профиль, уровень и баланс\n/fav — избранное\n/invite — ссылка для друзей и награды\n/premium — подписка\n/notify — уведомления о новых сериях\n\n<b>Помощь</b>\n/support — поддержка и быстрые ответы\n\n💡 Можно просто написать название — я найду. А в любом чате наберите <code>@anigalaxy_bot название</code>, чтобы отправить аниме другу.";
+  "<b>🪐 Что умеет бот</b>\n\n<b>Каталог</b>\n/search <i>название</i> — найти аниме\n/random — случайное аниме\n/top — топ по рейтингу\n/new — что выходит сейчас\n/genres — подборки по жанрам\n\n<b>Вместе</b>\n/together — смотреть с друзьями в одной комнате\n\n<b>Ваш аккаунт</b>\n/me — профиль, уровень и баланс\n/fav — избранное\n/invite — ссылка для друзей и награды\n/premium — подписка\n/notify — уведомления о новых сериях\n\n<b>Помощь</b>\n/support — поддержка и быстрые ответы\n\n💡 Можно просто написать название — я найду. А в любом чате наберите <code>@anigalaxy_bot название</code>, чтобы отправить аниме другу.";
 
 function send(chatId: number, text: string, extra: Record<string, unknown> = {}) {
   return tg("sendMessage", { chat_id: chatId, text, parse_mode: "HTML", disable_web_page_preview: true, ...extra });
@@ -346,6 +346,23 @@ async function premiumInfo(db: Database, tgId: number, chatId: number): Promise<
   });
 }
 
+/* ----------------------------- Смотреть вместе -------------------------- */
+
+async function together(chatId: number): Promise<void> {
+  await send(
+    chatId,
+    "🍿 <b>Смотреть вместе</b>\n\nСоздайте комнату — плеер синхронизируется у всех: пауза, перемотка и серия общие, есть чат.\n\n1. Откройте раздел и выберите аниме\n2. Нажмите «Отправить в Telegram» и выберите друга\n3. Друг нажмёт на ссылку и окажется в вашей комнате",
+    { reply_markup: { inline_keyboard: [[{ text: "🍿 Создать комнату", web_app: { url: `${SITE}/watch-together` } }], [{ text: "🏠 Меню", callback_data: "m:menu" }]] } },
+  );
+}
+
+/** Приглашение в комнату по ссылке t.me/бот?start=room_КОД */
+async function roomInvite(chatId: number, code: string): Promise<void> {
+  await send(chatId, `🍿 <b>Вас зовут смотреть аниме вместе</b>\n\nКомната <code>${code}</code>. Нажмите кнопку — плеер подстроится под друзей.`, {
+    reply_markup: { inline_keyboard: [[{ text: "▶️ Войти в комнату", web_app: { url: `${SITE}/watch-together?room=${code}` } }]] },
+  });
+}
+
 /* ------------------------------- Поддержка ------------------------------ */
 
 const FAQ: { q: string; a: string }[] = [
@@ -449,8 +466,12 @@ export async function handleBotMessage(db: Database, text: string, from: From, c
   const name = cmd[1].toLowerCase();
   const arg = cmd[2].trim();
   switch (name) {
-    case "start":
-      return welcome(db, from, chatId);
+    case "start": {
+      const room = /^room_([A-Z2-9]{6})$/.exec(arg);
+      return room ? roomInvite(chatId, room[1]) : welcome(db, from, chatId);
+    }
+    case "together":
+      return together(chatId);
     case "menu":
       return void (await send(chatId, "🪐 <b>Главное меню</b>", { reply_markup: MENU }));
     case "help":
@@ -682,6 +703,7 @@ export async function configureBot(): Promise<void> {
         { command: "new", description: "🔥 Что выходит сейчас" },
         { command: "genres", description: "🎭 Подборки по жанрам" },
         { command: "fav", description: "⭐ Моё избранное" },
+        { command: "together", description: "🍿 Смотреть вместе с другом" },
         { command: "me", description: "👤 Профиль, уровень и баланс" },
         { command: "invite", description: "🎁 Пригласить друга" },
         { command: "premium", description: "👑 AniGalaxy Premium" },

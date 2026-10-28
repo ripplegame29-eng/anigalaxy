@@ -124,6 +124,8 @@ const cinzel = Cinzel({
   display: "swap",
 });
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
   title: {
@@ -162,6 +164,23 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${montserrat.variable} ${onest.variable} ${unbounded.variable} ${cinzel.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebSite",
+              name: "AniGalaxy",
+              url: SITE_URL,
+              inLanguage: "ru",
+              potentialAction: {
+                "@type": "SearchAction",
+                target: `${SITE_URL}/catalog?q={search_term_string}`,
+                "query-input": "required name=search_term_string",
+              },
+            }).replace(/</g, "\\u003c"),
+          }}
+        />
         {/*
           SVG-фильтр «живого» искажения для клановых эмблем.
 
