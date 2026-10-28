@@ -20,7 +20,9 @@ import type { AnimeCard } from "@/lib/types";
 
 const DEFAULT_MODEL = "gemini-2.5-flash";
 const DEFAULT_OR_MODEL = "nvidia/nemotron-3.5-super-vl:free";
-export const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
+// OPENROUTER_BASE_URL нужен, если сервер блокируется OpenRouter (403): тогда адрес прокси-воркера,
+// например https://имя.аккаунт.workers.dev/КЛЮЧ/api/v1 (см. deploy/openrouter-proxy-worker.js)
+export const OPENROUTER_URL = `${(process.env.OPENROUTER_BASE_URL || "https://openrouter.ai/api/v1").replace(/\/+$/, "")}/chat/completions`;
 const DEFAULT_BASE = "https://generativelanguage.googleapis.com";
 
 /** Сколько последних реплик уходит модели и какой длины каждая */
