@@ -11,6 +11,15 @@ import { synergyList } from "@/lib/cards/synergy";
 import { CollectorModal } from "./collector";
 import { InvPicker, Panel, RankFilter, fmt, fmtLeft, toast, useBusy, useNow } from "./common";
 import { Cur, ELEMENT_ICON, Ico } from "./icons";
+import { CampaignView, DuelPanel, RaidPanel } from "./PveTabs";
+
+const MODES = [
+  ["ladder", "Рейтинг", "trophy"],
+  ["campaign", "Кампания", "flag"],
+  ["raid", "Рейд", "skull"],
+  ["duel", "Дуэли и журнал", "swords"],
+] as const;
+type Mode = (typeof MODES)[number][0];
 
 export function BattleTab({ s }: { s: CardsState }) {
   const [busy, run] = useBusy();
@@ -19,6 +28,8 @@ export function BattleTab({ s }: { s: CardsState }) {
   const [report, setReport] = useState<Report | null>(null);
   const [editing, setEditing] = useState<number | null>(null);
   const [profile, setProfile] = useState<string | null>(null);
+  const [mode, setMode] = useState<Mode>("ladder");
+  const [duelNick, setDuelNick] = useState("");
   const [top, setTop] = useState<{ place: number; nick: string; rating: number; wins: number; losses: number }[]>([]);
   const now = useNow();
   const w = s.wallet;
@@ -70,8 +81,29 @@ export function BattleTab({ s }: { s: CardsState }) {
   return (
     <div style={{ display: "grid", gap: 16 }}>
       {report && <Arena report={report} onClose={() => setReport(null)} />}
-      {profile && <CollectorModal nick={profile} onClose={() => setProfile(null)} />}
+      {profile && (
+        <CollectorModal
+          nick={profile}
+          onClose={() => setProfile(null)}
+          onChallenge={(n) => {
+            setDuelNick(n);
+            setMode("duel");
+            setProfile(null);
+          }}
+        />
+      )}
       {editing !== null && deck.find((c) => c.id === editing) && <SkillEditor key={editing} card={deck.find((c) => c.id === editing)!} onClose={() => setEditing(null)} />}
+      <div className="bt-modes" role="tablist" aria-label="Режим боёв">
+        {MODES.map(([id, label, ico]) => (
+          <button key={id} type="button" role="tab" aria-selected={mode === id} className="bt-mode" onClick={() => setMode(id)}>
+            <Ico name={ico} size={16} /> {label}
+          </button>
+        ))}
+      </div>
+      {mode === "campaign" && <CampaignView s={s} onReport={setReport} />}
+      {mode === "raid" && <RaidPanel s={s} onReport={setReport} />}
+      {mode === "duel" && <DuelPanel s={s} onReport={setReport} onProfile={setProfile} nick={duelNick} setNick={setDuelNick} />}
+      {mode === "ladder" && (
       <div className="cg-grid2">
         <Panel
           title="Ваш отряд"
@@ -204,6 +236,7 @@ export function BattleTab({ s }: { s: CardsState }) {
           </Panel>
         </div>
       </div>
+      )}
     </div>
   );
 }

@@ -39,7 +39,9 @@ import {
   viewCollection,
   type Res,
 } from "./cards";
-import { buyEnergy, fight, ratingTop, setDeck, weekIndexOf } from "./cards-battle";
+import { battleLog, battleReplay, buyEnergy, challenge, fight, ratingTop, setDeck, weekIndexOf } from "./cards-battle";
+import { campaignClaim, campaignFight, campaignState } from "./cards-campaign";
+import { raidClaim, raidFight, raidView } from "./cards-raid";
 import { claimAchievement, claimSet, claimWeekly, collectorProfile, progressState, setShowcase } from "./cards-progress";
 import { artIds, missingIds, startArtSync } from "./cards-art";
 import type { Database } from "./sqlite";
@@ -110,6 +112,14 @@ export function cardsView(db: Database, userId: number, view: string, params: UR
       return { ok: true, value: ratingTop(db) };
     case "user":
       return viewCollection(db, params.get("nick") ?? "");
+    case "campaign":
+      return { ok: true, value: campaignState(db, userId) };
+    case "raid":
+      return { ok: true, value: raidView(db, userId, now) };
+    case "battlelog":
+      return { ok: true, value: battleLog(db, userId) };
+    case "replay":
+      return battleReplay(db, userId, Math.floor(Number(params.get("id"))) || 0);
     case "profile":
       return collectorProfile(db, params.get("nick") ?? "");
     default:
@@ -157,6 +167,16 @@ export function cardsAction(db: Database, userId: number, op: string, body: Reco
       return upgradeSkill(db, userId, Math.floor(Number(body.id)) || 0, String(body.skill ?? ""), now);
     case "fight":
       return fight(db, userId, { training: !!body.training }, now);
+    case "challenge":
+      return challenge(db, userId, String(body.nick ?? ""), now);
+    case "camp-fight":
+      return campaignFight(db, userId, Number(body.chapter), Number(body.stage), { training: !!body.training }, now);
+    case "camp-claim":
+      return campaignClaim(db, userId, Number(body.chapter), Number(body.tier), now);
+    case "raid-fight":
+      return raidFight(db, userId, now);
+    case "raid-claim":
+      return raidClaim(db, userId, now);
     case "energy":
       return buyEnergy(db, userId, now);
     case "ach-claim":

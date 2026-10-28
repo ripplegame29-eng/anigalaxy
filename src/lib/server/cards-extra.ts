@@ -21,7 +21,7 @@ export interface Extra {
   /** Кампания: звёзды по этапам, забранные награды глав */
   camp: { stars: Record<string, number>; chapters: Record<string, boolean> };
   /** Рейд: неделя, нанесённый урон, награды */
-  raid: { week: number; damage: number; hits: number; claimed: boolean };
+  raid: { week: number; damage: number; hits: number; claimed: number; defeat: boolean; day: string; dayHits: number };
   /** Сезонный пасс */
   pass: { season: number; xp: number; free: number[]; premium: number[] };
   /** Гарантии баннеров: id баннера → паки без главного приза */
@@ -40,7 +40,7 @@ const blank = (): Extra => ({
   stats: {},
   weekly: { week: 0, progress: {}, claimed: {} },
   camp: { stars: {}, chapters: {} },
-  raid: { week: 0, damage: 0, hits: 0, claimed: false },
+  raid: { week: 0, damage: 0, hits: 0, claimed: 0, defeat: false, day: "", dayHits: 0 },
   pass: { season: 0, xp: 0, free: [], premium: [] },
   banners: {},
 });
@@ -73,7 +73,7 @@ export function setExtra(db: Database, userId: number, x: Extra): void {
 export function rollWeek(x: Extra, now: number): Extra {
   const w = weekOf(now);
   if (x.weekly.week !== w) x.weekly = { week: w, progress: {}, claimed: {} };
-  if (x.raid.week !== w) x.raid = { week: w, damage: 0, hits: 0, claimed: false };
+  if (x.raid.week !== w) x.raid = { week: w, damage: 0, hits: 0, claimed: 0, defeat: false, day: "", dayHits: 0 };
   return x;
 }
 

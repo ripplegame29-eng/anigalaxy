@@ -22,6 +22,9 @@ export interface BattleReport {
   reward: { diamonds: number; dust: number; rating: number; scroll: number };
   rating: number;
   training: boolean;
+  title?: string;
+  campaign?: { chapter: number; stage: number; stars: number; best: number; newStars: number; firstClear: boolean; reward: { diamonds?: number; dust?: number; packs?: number; scroll?: number } };
+  raid?: { damage: number; maxPerFight: number; poolHp: number; poolMax: number; hitsLeft: number; defeated: boolean };
 }
 
 interface UV {
@@ -271,7 +274,7 @@ export function Arena({ report, onClose }: { report: BattleReport; onClose: () =
       <div className="ar-wrap">
         <div className="ar-top">
           <b className="ar-title">
-            Вы vs {report.foeName} <small>{report.pvp ? "игрок" : "бот"}</small>
+            {report.title ?? `Вы vs ${report.foeName}`} <small>{report.title ? report.foeName : report.pvp ? "игрок" : "бот"}</small>
           </b>
           <span className="cg-chip">Раунд {round}</span>
           {!done && (
@@ -321,10 +324,29 @@ export function Arena({ report, onClose }: { report: BattleReport; onClose: () =
 
         {done && (
           <div className={`ar-result ${report.win ? "win" : "lose"}`}>
-            <h2>{report.win ? "Победа" : "Поражение"}</h2>
+            <h2>{report.raid ? "Удар по боссу" : report.win ? "Победа" : "Поражение"}</h2>
+            {report.campaign && (
+              <div className="ar-stars" aria-label={`Звёзд: ${report.campaign.stars} из 3`}>
+                {[0, 1, 2].map((i) => (
+                  <Ico key={i} name="star" size={34} className={i < report.campaign!.stars ? "on" : ""} />
+                ))}
+              </div>
+            )}
+            {report.raid && (
+              <p className="ar-dmg">
+                <b>{report.raid.damage.toLocaleString("ru-RU")}</b> урона · запас босса {report.raid.poolHp.toLocaleString("ru-RU")} / {report.raid.poolMax.toLocaleString("ru-RU")}
+                {report.raid.defeated ? " · босс повержен!" : ""} · попыток сегодня: {report.raid.hitsLeft}
+              </p>
+            )}
             {report.training ? (
-              <p className="cg-hint">Тренировка: награды и рейтинг не меняются.</p>
-            ) : (
+              <p className="cg-hint">Тренировка: награды не меняются.</p>
+            ) : report.campaign ? (
+              <p className="cg-hint">
+                {report.campaign.newStars > 0 ? `Новых звёзд: ${report.campaign.newStars}` : "Новых звёзд нет"}
+                {report.campaign.reward.diamonds ? <> · {report.campaign.reward.diamonds} <Cur k="diamonds" /></> : null}
+                {report.campaign.reward.dust ? <> · {report.campaign.reward.dust} <Cur k="dust" /></> : null}
+              </p>
+            ) : report.raid ? null : (
               <p className="cg-hint">
                 {report.reward.diamonds} <Cur k="diamonds" /> · {report.reward.dust} <Cur k="dust" />
                 {report.reward.scroll ? " · свиток заточки" : ""} · рейтинг {report.reward.rating > 0 ? "+" : ""}

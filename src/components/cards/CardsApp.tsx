@@ -12,6 +12,7 @@ import "../../app/cards-stage.css";
 import "../../app/cards-tabs.css";
 import "../../app/cards-battle.css";
 import "../../app/cards-progress.css";
+import "../../app/cards-campaign.css";
 import { AuctionTab } from "./AuctionTab";
 import { BattleTab } from "./BattleTab";
 import { CollectionTab } from "./CollectionTab";

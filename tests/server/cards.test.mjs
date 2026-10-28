@@ -13,7 +13,11 @@ import {
 } from "../../.tsc-tests/lib/server/cards.js";
 import { fight, setDeck, unitOf } from "../../.tsc-tests/lib/server/cards-battle.js";
 import { claimAchievement, claimSet, claimWeekly, progressState, setShowcase, collectorProfile } from "../../.tsc-tests/lib/server/cards-progress.js";
-import { track } from "../../.tsc-tests/lib/server/cards-extra.js";
+import { track, getExtra, setExtra } from "../../.tsc-tests/lib/server/cards-extra.js";
+import { campaignFight, campaignState, campaignClaim } from "../../.tsc-tests/lib/server/cards-campaign.js";
+import { raidFight, raidView, raidClaim } from "../../.tsc-tests/lib/server/cards-raid.js";
+import { challenge, battleLog, battleReplay } from "../../.tsc-tests/lib/server/cards-battle.js";
+import { CHAPTERS, STAGES } from "../../.tsc-tests/lib/cards/campaign.js";
 import { cardsAction, cardsState } from "../../.tsc-tests/lib/server/cards-state.js";
 import { adjustBalance } from "../../.tsc-tests/lib/server/admin-edit.js";
 import { freshDb, makeUser } from "./helpers.mjs";
@@ -504,4 +508,103 @@ test("витрина: до 5 своих карт, профиль видят др
   const p = collectorProfile(db, u.nickname);
   assert.ok(p.ok);
   assert.equal(p.value.showcase.length, 2);
+});
+
+function strongDeck(db, uid, level = 15) {
+  const ids = [4, 4, 4, 4].map((r, i) => give(db, uid, cardsOfRank(r)[i * 2].id, 1, { level })[0]);
+  setDeck(db, uid, ids);
+  db.prepare("UPDATE card_wallet SET energy = 10 WHERE user_id = ?").run(uid);
+  return ids;
+}
+
+test("кампания: главы и этапы, закрытые этапы, звёзды и награды один раз, награда главы", () => {
+  assert.ok(CHAPTERS.length >= 8);
+  const db = freshDb();
+  const u = makeUser(db);
+  getWallet(db, u.id, NOW);
+  const st = campaignState(db, u.id);
+  assert.equal(st.length, CHAPTERS.length);
+  assert.equal(st[0].stages.length, STAGES);
+  assert.ok(st[0].unlocked && !st[1].unlocked);
+  assert.ok(st[0].stages[0].unlocked && !st[0].stages[1].unlocked);
+  assert.equal(campaignFight(db, u.id, 0, 1, {}, NOW).ok, false, "закрытый этап");
+  assert.equal(campaignFight(db, u.id, 0, 0, {}, NOW).ok, false, "нет колоды");
+  strongDeck(db, u.id);
+  const dBefore = getWallet(db, u.id, NOW).diamonds;
+  const r = campaignFight(db, u.id, 0, 0, {}, NOW, seeded(1));
+  assert.ok(r.ok);
+  assert.ok(r.value.win);
+  assert.equal(r.value.campaign.stars, 3);
+  assert.ok(r.value.campaign.firstClear);
+  assert.ok(getWallet(db, u.id, NOW).diamonds > dBefore);
+  assert.equal(getWallet(db, u.id, NOW).energy, 9);
+  const again = campaignFight(db, u.id, 0, 0, {}, NOW, seeded(2));
+  assert.equal(again.value.campaign.newStars, 0);
+  assert.equal(again.value.reward.diamonds, 0, "повторно награды нет");
+  const tr = campaignFight(db, u.id, 0, 1, { training: true }, NOW, seeded(3));
+  assert.ok(tr.ok);
+  assert.equal(getWallet(db, u.id, NOW).energy, 8, "тренировка энергию не тратит");
+  // награда главы
+  assert.equal(campaignClaim(db, u.id, 0, 0, NOW).ok, false, "глава не пройдена");
+  const x = getExtra(db, u.id);
+  for (let s2 = 0; s2 < STAGES; s2 += 1) x.camp.stars[`0:${s2}`] = 3;
+  setExtra(db, u.id, x);
+  assert.ok(campaignClaim(db, u.id, 0, 0, NOW).ok);
+  assert.ok(campaignClaim(db, u.id, 0, 1, NOW).ok);
+  assert.equal(campaignClaim(db, u.id, 0, 1, NOW).ok, false);
+  assert.ok(campaignState(db, u.id)[1].unlocked, "следующая глава открыта");
+});
+
+test("дуэли: вызов по нику, защита считается сервером, журнал и повтор, перерыв между боями", () => {
+  const db = freshDb();
+  const a = makeUser(db, "Attacker");
+  const d = makeUser(db, "Defender");
+  getWallet(db, a.id, NOW);
+  getWallet(db, d.id, NOW);
+  assert.equal(challenge(db, a.id, "Defender", NOW).ok, false, "нет колоды");
+  strongDeck(db, a.id);
+  assert.equal(challenge(db, a.id, "Attacker", NOW).ok, false, "себя нельзя");
+  assert.equal(challenge(db, a.id, "Nobody", NOW).ok, false);
+  assert.equal(challenge(db, a.id, "Defender", NOW).ok, false, "у соперника нет отряда");
+  strongDeck(db, d.id, 1);
+  const r = challenge(db, a.id, "Defender", NOW, seeded(4));
+  assert.ok(r.ok);
+  assert.ok(r.value.pvp);
+  assert.equal(challenge(db, a.id, "defender", NOW + 1000).ok, false, "перерыв");
+  const log = battleLog(db, a.id);
+  assert.equal(log[0].kind, "duel");
+  const def = battleLog(db, d.id);
+  assert.equal(def[0].kind, "defense");
+  assert.equal(def[0].win, !log[0].win);
+  const rep = battleReplay(db, a.id, log[0].id);
+  assert.ok(rep.ok);
+  assert.ok(rep.value.outcome.events.length > 0);
+  assert.equal(battleReplay(db, d.id, log[0].id).ok, false, "чужую запись не открыть");
+  assert.ok(challenge(db, a.id, "Defender", NOW + 31 * 60_000, seeded(5)).ok);
+});
+
+test("рейд: общий запас, 3 попытки в день, таблица урона и награды по ступеням", () => {
+  const db = freshDb();
+  const u = makeUser(db);
+  getWallet(db, u.id, NOW);
+  strongDeck(db, u.id);
+  const v0 = raidView(db, u.id, NOW);
+  assert.ok(v0.maxHp > 0 && v0.hp === v0.maxHp && v0.hitsLeft === 3);
+  const r1 = raidFight(db, u.id, NOW, seeded(1));
+  assert.ok(r1.ok);
+  assert.ok(r1.value.raid.damage > 0);
+  assert.ok(raidView(db, u.id, NOW).hp < v0.maxHp);
+  db.prepare("UPDATE card_wallet SET energy = 10 WHERE user_id = ?").run(u.id);
+  assert.ok(raidFight(db, u.id, NOW, seeded(2)).ok);
+  assert.ok(raidFight(db, u.id, NOW, seeded(3)).ok);
+  assert.equal(raidFight(db, u.id, NOW, seeded(4)).ok, false, "лимит на день");
+  assert.ok(raidFight(db, u.id, NOW + 86_400_000, seeded(5)).ok, "на следующий день снова можно");
+  const v = raidView(db, u.id, NOW + 86_400_000);
+  assert.equal(v.top[0].hits, 4);
+  assert.ok(v.mine.damage > 2000);
+  const before = getWallet(db, u.id, NOW).diamonds;
+  const c = raidClaim(db, u.id, NOW + 86_400_000);
+  assert.ok(c.ok);
+  assert.ok(getWallet(db, u.id, NOW).diamonds > before);
+  assert.equal(raidClaim(db, u.id, NOW + 86_400_000).ok, false, "уже забрано");
 });

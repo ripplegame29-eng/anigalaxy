@@ -60,7 +60,7 @@ export const ACHIEVEMENTS: AchDef[] = [
   { id: "auctioneer", name: "Аукционист", desc: "Продать или купить лотов на аукционе", icon: "tag", stat: "auctions", tiers: T([1, 5, 20], [20, 90, 280]) },
   { id: "loyal", name: "Верность галактике", desc: "Серия ежедневных входов (лучшая)", icon: "calendar", stat: "login", tiers: T([3, 7, 14, 30], [20, 60, 150, 400], (i) => (i >= 2 ? { packs: 1 } : {})) },
   { id: "stars", name: "Звёздный путь", desc: "Собрать звёзды в кампании", icon: "flag", stat: "stars", tiers: T([10, 40, 90, 150], [40, 140, 340, 700]) },
-  { id: "raid", name: "Бич гигантов", desc: "Нанести урона рейд-боссам", icon: "target", stat: "raid", tiers: T([20_000, 150_000, 800_000], [60, 220, 650]) },
+  { id: "raid", name: "Бич гигантов", desc: "Нанести урона рейд-боссам", icon: "target", stat: "raid", tiers: T([10_000, 60_000, 250_000], [60, 220, 650]) },
 ];
 
 /** Награды за сеты: по числу собранных героев аниме (половина и полный набор) */
@@ -98,7 +98,7 @@ export const WEEKLY: WeeklyDef[] = [
   { id: "wk-sharp", text: "Заточить карты 12 раз", stat: "sharpen", goal: 12, reward: { dust: 300, scroll: 1, scrollRank: 2 } },
   { id: "wk-skill", text: "Прокачать умения на 4 уровня", stat: "skillUps", goal: 4, reward: { diamonds: 70, dust: 120 } },
   { id: "wk-stars", text: "Собрать 12 звёзд в кампании", stat: "stars", goal: 12, reward: { diamonds: 120, packs: 1 } },
-  { id: "wk-raid", text: "Нанести 30 000 урона рейд-боссу", stat: "raid", goal: 30_000, reward: { diamonds: 100, scroll: 1, scrollRank: 3 } },
+  { id: "wk-raid", text: "Нанести 20 000 урона рейд-боссу", stat: "raid", goal: 20_000, reward: { diamonds: 100, scroll: 1, scrollRank: 3 } },
 ];
 
 /** Лимит витрины профиля */

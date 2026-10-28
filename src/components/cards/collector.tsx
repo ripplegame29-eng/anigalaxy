@@ -19,7 +19,7 @@ interface Profile {
 }
 
 /** Профиль коллекционера: витрина, рейтинг, число героев */
-export function CollectorModal({ nick, onClose }: { nick: string; onClose: () => void }) {
+export function CollectorModal({ nick, onClose, onChallenge }: { nick: string; onClose: () => void; onChallenge?: (nick: string) => void }) {
   const [p, setP] = useState<Profile | null>(null);
   const [err, setErr] = useState("");
   useEffect(() => {
@@ -76,6 +76,11 @@ export function CollectorModal({ nick, onClose }: { nick: string; onClose: () =>
             </>
           )}
           <div className="cg-row" style={{ justifyContent: "flex-end", marginTop: 16 }}>
+            {onChallenge && (
+              <button type="button" className="cg-btn gold" onClick={() => onChallenge(nick)}>
+                <Ico name="swords" size={14} /> Бросить вызов
+              </button>
+            )}
             <button type="button" className="cg-btn pri" onClick={onClose}>
               <Ico name="close" size={14} /> Закрыть
             </button>

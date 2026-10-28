@@ -2,6 +2,7 @@
 
 import { applyMods, applyPassives, applySynergies, seeded, simulate, type BattleOutcome, type Unit } from "../cards/battle";
 import type { Synergy } from "../cards/synergy";
+import type { Reward } from "../cards/progress";
 import { CATALOG, cardDef, cardsOfRank } from "../cards/catalog";
 import { defaultLoadout, defaultPassive } from "../cards/skills";
 import { BATTLE, DECK_SIZE, leagueOf, weeklyMods, type Rank } from "../cards/config";
@@ -19,8 +20,17 @@ import {
   type Res,
   type Rng,
 } from "./cards";
-import { trackFight } from "./cards-extra";
+import { getExtra, setExtra, track, trackFight } from "./cards-extra";
 import { num, str, transaction, type Database } from "./sqlite";
+
+/** Дуэли с игроками: награды, лимит и очки защитника */
+export const DUEL = {
+  win: { diamonds: 3, dust: 15, rating: 10 },
+  lose: { diamonds: 1, dust: 5, rating: -6 },
+  defWin: 5,
+  defLose: -5,
+  cooldownMs: 30 * 60 * 1000,
+} as const;
 
 export const weekIndexOf = (ms: number): number => Math.floor((ms - 4 * 86_400_000) / (7 * 86_400_000));
 
@@ -127,6 +137,28 @@ export interface BattleReport {
   rating: number;
   energy: number;
   training: boolean;
+  /** Заголовок арены, если нужен особый */
+  title?: string;
+  campaign?: CampaignResult;
+  raid?: RaidResult;
+}
+
+export interface CampaignResult {
+  chapter: number;
+  stage: number;
+  stars: number;
+  best: number;
+  newStars: number;
+  firstClear: boolean;
+  reward: Reward;
+}
+export interface RaidResult {
+  damage: number;
+  maxPerFight: number;
+  poolHp: number;
+  poolMax: number;
+  hitsLeft: number;
+  defeated: boolean;
 }
 
 function findOpponent(db: Database, userId: number, rating: number, rng: Rng): { id: number; nick: string; rating: number } | null {
@@ -158,11 +190,11 @@ export function fight(
 
     const opp = training ? null : findOpponent(db, userId, w.rating, rng);
     const foe = opp ? deckUnits(db, opp.id, "b")! : botSquad(w.rating, rng);
-    const mods = weeklyMods(weekIndexOf(now));
-    const youP = applySynergies(applyPassives(mine));
-    const foeP = applySynergies(applyPassives(foe));
-    const youU = applyMods(youP.units, mods);
-    const foeU = applyMods(foeP.units, mods);
+    const side = prepareSides(mine, foe, now);
+    const youP = { list: side.youSyn };
+    const foeP = { list: side.foeSyn };
+    const youU = side.you;
+    const foeU = side.foe;
     const outcome = simulate(youU, foeU, rng);
     const win = outcome.winner === "a";
 
@@ -196,9 +228,7 @@ export function fight(
       }
       logEvent(db, userId, "battle", `${win ? "Победа" : "Поражение"} над ${opp ? opp.nick : "ботом"} (${reward.rating > 0 ? "+" : ""}${reward.rating})`, "", 0, now);
     }
-    return {
-      ok: true,
-      value: {
+    const out: BattleReport = {
         outcome,
         you: youU,
         foe: foeU,
@@ -212,8 +242,140 @@ export function fight(
         rating,
         energy,
         training,
-      },
     };
+    if (!training) {
+      saveBattle(db, userId, { kind: "ladder", opp: out.foeName, win, delta: reward.rating, title: `Рейтинговый бой: ${out.foeName}`, report: out }, now);
+      if (opp) {
+        const me = db.prepare("SELECT nickname FROM users WHERE id = ?").get(userId);
+        const myNick = str(me?.nickname, "Игрок");
+        saveBattle(db, opp.id, { kind: "defense", opp: myNick, win: !win, delta: win ? -8 : 8, title: `${myNick} напал(а) на ваш отряд`, report: { ...out, win: !win, foeName: myNick, title: `${myNick} напал(а) на ваш отряд · слева нападающий` } }, now);
+      }
+    }
+    return { ok: true, value: out };
+  });
+}
+
+/** Усиления перед боем: пассивки, синергии, недельные правила */
+export function prepareSides(mine: Unit[], foe: Unit[], now: number, opts: { foeSynergy?: boolean } = {}) {
+  const mods = weeklyMods(weekIndexOf(now));
+  const youP = applySynergies(applyPassives(mine));
+  const foeP = opts.foeSynergy === false ? { units: applyPassives(foe), list: [] } : applySynergies(applyPassives(foe));
+  return { you: applyMods(youP.units, mods), foe: applyMods(foeP.units, mods), youSyn: youP.list, foeSyn: foeP.list };
+}
+
+/* -------------------------------- Журнал боёв ------------------------------- */
+
+export interface LogRow {
+  id: number;
+  kind: string;
+  opp: string;
+  win: boolean;
+  delta: number;
+  title: string;
+  at: number;
+}
+
+export function saveBattle(db: Database, userId: number, row: { kind: string; opp: string; win: boolean; delta: number; title: string; report: unknown }, now = Date.now()): void {
+  db.prepare("INSERT INTO card_battles (user_id, kind, opp, win, delta, title, report, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)").run(
+    userId,
+    row.kind,
+    row.opp,
+    row.win ? 1 : 0,
+    row.delta,
+    row.title,
+    JSON.stringify(row.report),
+    now,
+  );
+  // храним последние 40 записей игрока
+  db.prepare("DELETE FROM card_battles WHERE user_id = ? AND id NOT IN (SELECT id FROM card_battles WHERE user_id = ? ORDER BY id DESC LIMIT 40)").run(userId, userId);
+}
+
+export function battleLog(db: Database, userId: number, limit = 30): LogRow[] {
+  return db
+    .prepare("SELECT id, kind, opp, win, delta, title, created_at FROM card_battles WHERE user_id = ? ORDER BY id DESC LIMIT ?")
+    .all(userId, limit)
+    .map((r) => ({ id: num(r.id), kind: str(r.kind), opp: str(r.opp), win: num(r.win) === 1, delta: num(r.delta), title: str(r.title), at: num(r.created_at) }));
+}
+
+export function battleReplay(db: Database, userId: number, id: number): Res<unknown> {
+  const r = db.prepare("SELECT report FROM card_battles WHERE id = ? AND user_id = ?").get(id, userId);
+  if (!r) return fail("Запись не найдена");
+  try {
+    return { ok: true, value: JSON.parse(str(r.report)) };
+  } catch {
+    return fail("Запись повреждена");
+  }
+}
+
+/** Вызов игрока по нику: бой с его сохранённым отрядом («защитой») */
+export function challenge(db: Database, userId: number, nick: string, now = Date.now(), rng: Rng = Math.random): Res<BattleReport> {
+  return transaction(db, (): Res<BattleReport> => {
+    const w = getWallet(db, userId, now);
+    const mine = deckUnits(db, userId, "a");
+    if (!mine) return fail(`Соберите колоду из ${DECK_SIZE} карт`);
+    if (w.energy < BATTLE.energyCost) return fail("Нет энергии — подождите или восстановите её");
+    const target = db.prepare("SELECT id, nickname FROM users WHERE lower(nickname) = lower(?)").get(nick.trim());
+    if (!target) return fail("Игрок не найден");
+    const oppId = num(target.id);
+    if (oppId === userId) return fail("Нельзя вызвать самого себя");
+    const foeRaw = deckUnits(db, oppId, "b");
+    if (!foeRaw) return fail("У этого игрока не собран отряд");
+    const x = getExtra(db, userId);
+    const key = `duel:${oppId}`;
+    const last = x.stats[key] ?? 0;
+    if (now - last < DUEL.cooldownMs) return fail(`С этим игроком можно сражаться раз в ${Math.round(DUEL.cooldownMs / 60000)} мин. Подождите ${Math.ceil((DUEL.cooldownMs - (now - last)) / 60000)} мин.`);
+    x.stats[key] = now;
+    setExtra(db, userId, x);
+
+    const side = prepareSides(mine, foeRaw, now);
+    const outcome = simulate(side.you, side.foe, rng);
+    const win = outcome.winner === "a";
+    const reward: BattleReport["reward"] = { diamonds: win ? DUEL.win.diamonds : DUEL.lose.diamonds, dust: win ? DUEL.win.dust : DUEL.lose.dust, rating: win ? DUEL.win.rating : DUEL.lose.rating, scroll: 0 };
+    const mul = isPremium(db, userId, now) ? 1.25 : 1;
+    reward.diamonds = Math.round(reward.diamonds * mul);
+    reward.dust = Math.round(reward.dust * mul);
+    addMoney(db, userId, "diamonds", reward.diamonds);
+    addMoney(db, userId, "dust", reward.dust);
+    const rating = Math.max(0, w.rating + reward.rating);
+    const energy = w.energy - BATTLE.energyCost;
+    db.prepare("UPDATE card_wallet SET rating = ?, energy = ?, energy_at = CASE WHEN energy >= ? THEN ? ELSE energy_at END, wins = wins + ?, losses = losses + ? WHERE user_id = ?").run(
+      rating,
+      energy,
+      10,
+      now,
+      win ? 1 : 0,
+      win ? 0 : 1,
+      userId,
+    );
+    trackFight(db, userId, win);
+    if (win) track(db, userId, "wins", 1, now);
+    const oppRating = db.prepare("SELECT rating FROM card_wallet WHERE user_id = ?").get(oppId);
+    db.prepare("UPDATE card_wallet SET rating = MAX(0, rating + ?) WHERE user_id = ?").run(win ? DUEL.defLose : DUEL.defWin, oppId);
+    const oppNick = str(target.nickname);
+    const me = db.prepare("SELECT nickname FROM users WHERE id = ?").get(userId);
+    const myNick = str(me?.nickname, "Игрок");
+    const report: BattleReport = {
+      outcome,
+      you: side.you,
+      foe: side.foe,
+      youSyn: side.youSyn,
+      foeSyn: side.foeSyn,
+      foeName: oppNick,
+      foeRating: num(oppRating?.rating),
+      pvp: true,
+      win,
+      reward,
+      rating,
+      energy,
+      training: false,
+      title: `Вы vs ${oppNick} (дуэль)`,
+    };
+    saveBattle(db, userId, { kind: "duel", opp: oppNick, win, delta: reward.rating, title: `Дуэль с ${oppNick}`, report }, now);
+    // защитнику — запись «защита» с тем же боем
+    saveBattle(db, oppId, { kind: "defense", opp: myNick, win: !win, delta: win ? DUEL.defLose : DUEL.defWin, title: `${myNick} напал(а) на ваш отряд`, report: { ...report, win: !win, title: `${myNick} напал(а) на ваш отряд · слева нападающий`, foeName: myNick } }, now);
+    logEvent(db, oppId, "battle", win ? `${myNick} победил(а) ваш отряд (${DUEL.defLose} рейтинга)` : `Вы отбили вызов ${myNick} (+${DUEL.defWin} рейтинга)`, "", 0, now);
+    logEvent(db, userId, "battle", `Дуэль с ${oppNick}: ${win ? "победа" : "поражение"} (${reward.rating > 0 ? "+" : ""}${reward.rating})`, "", 0, now);
+    return { ok: true, value: report };
   });
 }
 

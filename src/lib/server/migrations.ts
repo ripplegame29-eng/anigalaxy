@@ -762,4 +762,39 @@ export const MIGRATIONS: Migration[] = [
       ALTER TABLE card_wallet ADD COLUMN extra TEXT NOT NULL DEFAULT '{}';
     `,
   },
+  {
+    version: 24,
+    name: "cards-battles-raid",
+    sql: `
+      -- Журнал боёв с записью для повтора (PvP-нападения, защита, кампания, рейд).
+      CREATE TABLE card_battles (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        kind TEXT NOT NULL,
+        opp TEXT NOT NULL DEFAULT '',
+        win INTEGER NOT NULL DEFAULT 0,
+        delta INTEGER NOT NULL DEFAULT 0,
+        title TEXT NOT NULL DEFAULT '',
+        report TEXT NOT NULL,
+        created_at INTEGER NOT NULL
+      );
+      CREATE INDEX idx_card_battles_user ON card_battles(user_id, id DESC);
+      -- Рейд-босс недели: общий запас здоровья и урон каждого игрока.
+      CREATE TABLE card_raid (
+        week INTEGER PRIMARY KEY,
+        boss TEXT NOT NULL,
+        max_hp INTEGER NOT NULL,
+        hp INTEGER NOT NULL,
+        defeated_at INTEGER NOT NULL DEFAULT 0
+      );
+      CREATE TABLE card_raid_dmg (
+        week INTEGER NOT NULL,
+        user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        damage INTEGER NOT NULL DEFAULT 0,
+        hits INTEGER NOT NULL DEFAULT 0,
+        PRIMARY KEY (week, user_id)
+      );
+      CREATE INDEX idx_card_raid_dmg ON card_raid_dmg(week, damage DESC);
+    `,
+  },
 ];

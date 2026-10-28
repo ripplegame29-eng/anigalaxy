@@ -128,7 +128,8 @@ interface State {
 
 const EFFECT_TURNS = 3;
 
-export function simulate(aIn: Unit[], bIn: Unit[], rng: () => number): BattleOutcome {
+export function simulate(aIn: Unit[], bIn: Unit[], rng: () => number, opts: { maxRounds?: number } = {}): BattleOutcome {
+  const maxRounds = opts.maxRounds ?? BATTLE.maxRounds;
   const a = aIn.map((u) => ({ ...u }));
   const b = bIn.map((u) => ({ ...u }));
   const all = [...a, ...b];
@@ -326,7 +327,7 @@ export function simulate(aIn: Unit[], bIn: Unit[], rng: () => number): BattleOut
     }
   };
 
-  while (round < BATTLE.maxRounds && alive(a).length && alive(b).length) {
+  while (round < maxRounds && alive(a).length && alive(b).length) {
     round += 1;
     const order = alive(all).sort((x, y) => {
       const sx = x.spd + (x.cls === "assassin" ? 20 : 0) + rng();
