@@ -985,3 +985,25 @@ export function historyOf(db: Database, userId: number, limit = 60) {
     .all(userId, limit)
     .map((r) => ({ id: num(r.id), kind: str(r.kind), text: str(r.text), cardId: str(r.card_id), rank: num(r.rank), at: num(r.created_at) }));
 }
+
+/** Стартовый отряд: новому игроку сразу есть с кем идти в бой */
+export function grantStarter(db: Database, userId: number, now = Date.now(), rng: Rng = Math.random): void {
+  if (db.prepare("SELECT 1 FROM card_log WHERE user_id = ? AND kind = 'starter'").get(userId)) return;
+  transaction(db, () => {
+    if (db.prepare("SELECT 1 FROM card_log WHERE user_id = ? AND kind = 'starter'").get(userId)) return;
+    getWallet(db, userId, now);
+    const empty = !db.prepare("SELECT 1 FROM card_inv WHERE user_id = ? LIMIT 1").get(userId);
+    if (empty) {
+      const ids: number[] = [];
+      const used = new Set<string>();
+      for (const rank of [2, 1, 0, 0] as Rank[]) {
+        const pool = cardsOfRank(rank).filter((c) => !used.has(c.id));
+        const def = pickRandom(pool, rng);
+        used.add(def.id);
+        ids.push(addCard(db, userId, def.id, now));
+      }
+      db.prepare("UPDATE card_wallet SET deck = ? WHERE user_id = ?").run(JSON.stringify(ids), userId);
+    }
+    logEvent(db, userId, "starter", empty ? "Стартовый отряд из 4 карт выдан" : "Стартовый набор уже получен", "", 0, now);
+  });
+}

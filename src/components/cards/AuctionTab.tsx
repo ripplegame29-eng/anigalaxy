@@ -6,6 +6,7 @@ import { AUCTION, RANKS } from "@/lib/cards/config";
 import { act, view, type CardsState } from "@/lib/cards/client";
 import { GameCard } from "./GameCard";
 import { InvPicker, Panel, RankFilter, fmt, fmtLeft, toast, useBusy, useNow } from "./common";
+import { Cur, Ico } from "./icons";
 
 interface Lot {
   id: number;
@@ -75,17 +76,17 @@ export function AuctionTab({ s, me }: { s: CardsState; me: string }) {
       <div key={l.id} className="cg-lot">
         <GameCard cardId={l.cardId} foil={l.foil} level={l.level} />
         <div className="cg-row" style={{ justifyContent: "space-between", fontSize: 13 }}>
-          <span className={`cg-timer ${left < 600_000 ? "hot" : ""}`}>⏱ {fmtLeft(left)}</span>
+          <span className={`cg-timer ${left < 600_000 ? "hot" : ""}`}><Ico name="clock" size={14} /> {fmtLeft(left)}</span>
           <span style={{ color: RANKS[l.rank].color, fontWeight: 800 }}>{RANKS[l.rank].short}</span>
         </div>
         <div style={{ fontSize: 13 }}>
           {l.bid > 0 ? (
             <>
-              Ставка: <b>{fmt(l.bid)} 💎</b> · {l.bidderNick} ({l.bids})
+              Ставка: <b>{fmt(l.bid)} <Cur k="diamonds" /></b> · {l.bidderNick} ({l.bids})
             </>
           ) : (
             <>
-              Старт: <b>{fmt(l.startPrice)} 💎</b>
+              Старт: <b>{fmt(l.startPrice)} <Cur k="diamonds" /></b>
             </>
           )}
           <br />
@@ -99,7 +100,7 @@ export function AuctionTab({ s, me }: { s: CardsState; me: string }) {
           ) : null
         ) : (
           <button type="button" className="cg-btn sm pri" disabled={left <= 0 || l.sellerNick === me || l.bidderNick === me} onClick={() => openBid(l)} title={d?.name}>
-            {l.bidderNick === me ? "Ваша ставка лидирует" : l.sellerNick === me ? "Ваш лот" : `Ставка от ${fmt(l.minNext)} 💎`}
+            {l.bidderNick === me ? "Ваша ставка лидирует" : l.sellerNick === me ? "Ваш лот" : <>Ставка от {fmt(l.minNext)} <Cur k="diamonds" /></>}
           </button>
         )}
       </div>
@@ -123,7 +124,7 @@ export function AuctionTab({ s, me }: { s: CardsState; me: string }) {
       </div>
 
       {sub === "market" && (
-        <Panel title="Аукцион" hint={`Ставки в алмазах 💎. Комиссия продавцу ${AUCTION.feePct}%. Ставка за последние 2 минуты продлевает торги. Перебитая ставка возвращается сразу.`}>
+        <Panel title="Аукцион" hint={`Ставки в алмазах. Комиссия продавцу ${AUCTION.feePct}%. Ставка за последние 2 минуты продлевает торги. Перебитая ставка возвращается сразу.`}>
           <div className="cg-row" style={{ marginBottom: 12 }}>
             <input className="cg-input" placeholder="Имя персонажа или аниме" value={q} onChange={(e) => setQ(e.target.value)} style={{ flex: "1 1 200px" }} />
             <select className="cg-input" value={sort} onChange={(e) => setSort(e.target.value)} aria-label="Сортировка">
@@ -153,7 +154,7 @@ export function AuctionTab({ s, me }: { s: CardsState; me: string }) {
                 {data.mine.closed.map((l) => (
                   <li key={l.id}>
                     <span>{cardDef(l.cardId)?.name}</span>
-                    <span>{l.status === "sold" ? `продано за ${fmt(l.bid)} 💎` : "не продано"}</span>
+                    <span>{l.status === "sold" ? <>продано за {fmt(l.bid)} <Cur k="diamonds" /></> : "не продано"}</span>
                   </li>
                 ))}
               </ul>
@@ -174,7 +175,7 @@ export function AuctionTab({ s, me }: { s: CardsState; me: string }) {
             </div>
             <b>{cardDef(bidFor.cardId)?.name}</b>
             <p className="cg-hint" style={{ margin: 0 }}>
-              Минимальная ставка {fmt(bidFor.minNext)} 💎. У вас {fmt(s.wallet.diamonds)} 💎.
+              Минимальная ставка {fmt(bidFor.minNext)} <Cur k="diamonds" />. У вас {fmt(s.wallet.diamonds)} <Cur k="diamonds" />.
             </p>
             <input className="cg-input" type="number" min={bidFor.minNext} value={amount} onChange={(e) => setAmount(Number(e.target.value))} style={{ width: 160, textAlign: "center" }} />
             <div className="cg-row">
@@ -210,11 +211,11 @@ function Sell({ s, onDone }: { s: CardsState; onDone: () => void }) {
     });
   return (
     <div className="cg-grid2">
-      <Panel title="Новый лот" hint={`Стартовая цена от ${AUCTION.minPrice} 💎, срок от ${AUCTION.minHours} до ${AUCTION.maxHours} часов. Пока лот активен, карта заморожена. Лот без ставок можно снять.`}>
+      <Panel title="Новый лот" hint={`Стартовая цена от ${AUCTION.minPrice} алмазов, срок от ${AUCTION.minHours} до ${AUCTION.maxHours} часов. Пока лот активен, карта заморожена. Лот без ставок можно снять.`}>
         <div style={{ display: "grid", gap: 12, justifyItems: "start" }}>
           <div style={{ width: 170 }}>{card ? <GameCard cardId={card.cardId} foil={card.foil} level={card.level} /> : <div className="cg-slot">Выберите карту</div>}</div>
           <label className="cg-row" style={{ fontSize: 13 }}>
-            Стартовая цена 💎
+            Стартовая цена (алмазы)
             <input className="cg-input" type="number" min={AUCTION.minPrice} value={price} onChange={(e) => setPrice(Number(e.target.value))} style={{ width: 120 }} />
           </label>
           <label className="cg-row" style={{ fontSize: 13 }}>

@@ -306,3 +306,19 @@ test("задания, пыль, обмен AC и действие через д�
   assert.ok(st.wallet.diamonds > 300);
   assert.equal(st.premium, false);
 });
+
+test("стартовый отряд: выдаётся один раз, сразу собирается колода", async () => {
+  const { grantStarter } = await import("../../.tsc-tests/lib/server/cards.js");
+  const db = freshDb();
+  const u = makeUser(db);
+  grantStarter(db, u.id, NOW);
+  grantStarter(db, u.id, NOW);
+  const inv = listInventory(db, u.id);
+  assert.equal(inv.length, 4);
+  assert.deepEqual(getWallet(db, u.id, NOW).deck.length, 4);
+  assert.ok(fight(db, u.id, { training: true }, NOW, seeded(4)).ok);
+  const v = makeUser(db);
+  give(db, v.id, byRank(0), 1);
+  grantStarter(db, v.id, NOW);
+  assert.equal(listInventory(db, v.id).length, 1);
+});

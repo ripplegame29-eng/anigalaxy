@@ -5,7 +5,7 @@
  *   node tools/cards-sync.mjs --force    — перекачать все
  *   node tools/cards-sync.mjs naruto-uzumaki  — только указанные id
  *
- * Файлы кладутся в public/cards/art/<id>.jpg. Пока файла нет, на карточке
+ * Файлы кладутся в data/cards-art/<id>.jpg (сервер делает то же самое сам в фоне). Пока файла нет, на карточке
  * рисуется стильная заглушка с инициалами. Скрипт можно запускать сколько
  * угодно раз: уже скачанное пропускается.
  */
@@ -15,7 +15,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const outDir = path.join(root, "public", "cards", "art");
+const outDir = path.join(root, "data", "cards-art");
 mkdirSync(outDir, { recursive: true });
 
 const src = readFileSync(path.join(root, "src", "lib", "cards", "catalog.ts"), "utf8");

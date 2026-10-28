@@ -13,6 +13,7 @@ import {
   disenchant,
   exchangeAc,
   getWallet,
+  grantStarter,
   historyOf,
   isPremium,
   listAuctions,
@@ -37,11 +38,13 @@ import {
   type Res,
 } from "./cards";
 import { buyEnergy, fight, ratingTop, setDeck, weekIndexOf } from "./cards-battle";
-import { artIds } from "./cards-art";
+import { artIds, startArtSync } from "./cards-art";
 import type { Database } from "./sqlite";
 
 export function cardsState(db: Database, userId: number, now = Date.now()) {
   settleAuctions(db, now);
+  startArtSync();
+  grantStarter(db, userId, now);
   const w = getWallet(db, userId, now);
   const mods = weeklyMods(weekIndexOf(now));
   return {

@@ -5,6 +5,7 @@ import { cardDef } from "@/lib/cards/catalog";
 import { RANKS } from "@/lib/cards/config";
 import type { InvCard } from "@/lib/cards/client";
 import { GameCard } from "./GameCard";
+import { Ico } from "./icons";
 
 /* ------------------------------- уведомления ------------------------------ */
 let toastState: { id: number; text: string; err: boolean } | null = null;
@@ -35,6 +36,7 @@ export function ToastHost() {
   if (!t) return null;
   return (
     <div className={`cg-toast ${t.err ? "err" : ""}`} role="status" aria-live="polite">
+      <Ico name={t.err ? "ban" : "check"} size={18} />
       {t.text}
     </div>
   );
@@ -131,34 +133,80 @@ export function InvPicker({
   );
 }
 
-/* ------------------------------ показ новой карты ------------------------- */
-export function Reveal({ cards, onClose, title }: { cards: { cardId: string; foil?: boolean; level?: number }[]; onClose: () => void; title: string }) {
+/* ------------------------------ показ новых карт -------------------------- */
+export function Reveal({
+  cards,
+  onClose,
+  title,
+  sub,
+  cta = "Отлично",
+}: {
+  cards: { cardId: string; foil?: boolean; level?: number }[];
+  onClose: () => void;
+  title: string;
+  sub?: ReactNode;
+  cta?: string;
+}) {
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
   if (!cards.length) return null;
+  const defs = cards.map((c) => cardDef(c.cardId)).filter((d): d is NonNullable<ReturnType<typeof cardDef>> => !!d);
+  const best = defs.reduce((m, d) => Math.max(m, d.rank), 0);
+  const bestIdx = cards.findIndex((c) => cardDef(c.cardId)?.rank === best);
+  const many = cards.length > 1;
+  const tally = RANKS.map((r) => ({ r, n: defs.filter((d) => d.rank === r.id).length })).filter((x) => x.n > 0);
   return (
-    <div className="cg-reveal" role="dialog" aria-modal="true" aria-label={title} onClick={onClose}>
-      <div style={{ width: cards.length > 1 ? "min(560px, 92vw)" : undefined }} onClick={(e) => e.stopPropagation()}>
-        <h2 style={{ margin: 0, fontFamily: "var(--font-display, inherit)", fontWeight: 800 }}>{title}</h2>
-        <div className="cg-cards lg" style={{ width: "100%", gridTemplateColumns: cards.length > 1 ? "repeat(2,1fr)" : "1fr" }}>
+    <div className={`cg-reveal rv-r${best}`} role="dialog" aria-modal="true" aria-label={title} onClick={onClose} style={{ ["--rc" as string]: RANKS[best].color }}>
+      <div className="burst" aria-hidden />
+      <div className="cg-reveal-in" onClick={(e) => e.stopPropagation()}>
+        <h2>{title}</h2>
+        {sub && <p className="sub">{sub}</p>}
+        {many && (
+          <div className="cg-tally">
+            {tally.reverse().map(({ r, n }) => (
+              <span key={r.id} style={{ ["--c" as string]: r.color }}>
+                <b>{n}</b> {r.name}
+              </span>
+            ))}
+          </div>
+        )}
+        <div className={`cg-deal ${many ? "many" : "one"}`}>
           {cards.map((c, i) => (
-            <div key={i} className="cg-result">
-              <GameCard cardId={c.cardId} foil={c.foil} level={c.level} />
+            <div key={i} style={{ ["--i" as string]: i }} className={i === bestIdx && many && best >= 2 ? "best" : ""}>
+              <GameCard cardId={c.cardId} foil={c.foil} level={c.level} stats={!many} />
             </div>
           ))}
         </div>
-        <button type="button" className="cg-btn pri" onClick={onClose}>
-          Отлично
+        <button type="button" className="cg-btn pri lg" onClick={onClose}>
+          {cta}
         </button>
       </div>
     </div>
   );
 }
 
+/** «5 мин назад» по времени события */
+export function ago(at: number, now: number): string {
+  const s = Math.max(0, Math.floor((now - at) / 1000));
+  if (s < 60) return "только что";
+  const m = Math.floor(s / 60);
+  if (m < 60) return `${m} мин назад`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h} ч назад`;
+  return `${Math.floor(h / 24)} дн назад`;
+}
+
 export function Panel({ title, hint, children, right }: { title?: string; hint?: ReactNode; children: ReactNode; right?: ReactNode }) {
   return (
     <section className="cg-panel">
       {(title || right) && (
-        <div className="cg-row" style={{ justifyContent: "space-between", marginBottom: 6 }}>
-          {title && <h2>{title}</h2>}
+        <div className="cg-panel-head">
+          {title && <h2 className="cg-h2">{title}</h2>}
           {right}
         </div>
       )}

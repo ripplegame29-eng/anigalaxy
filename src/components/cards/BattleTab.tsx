@@ -7,6 +7,7 @@ import { BATTLE, DECK_SIZE, ELEMENTS, LEAGUES, type Element } from "@/lib/cards/
 import { act, view, type CardsState } from "@/lib/cards/client";
 import { GameCard } from "./GameCard";
 import { InvPicker, Panel, RankFilter, fmt, fmtLeft, toast, useBusy, useNow } from "./common";
+import { Cur, ELEMENT_ICON, Ico } from "./icons";
 
 interface Report {
   outcome: BattleOutcome;
@@ -96,7 +97,7 @@ export function BattleTab({ s }: { s: CardsState }) {
           </div>
           <div className="cg-row">
             <button type="button" className="cg-btn pri" disabled={busy || deck.length < DECK_SIZE || w.energy < BATTLE.energyCost} onClick={() => void fight(false)}>
-              В бой · ⚡ {BATTLE.energyCost}
+              В бой · <Cur k="energy" /> {BATTLE.energyCost}
             </button>
             <button type="button" className="cg-btn" disabled={busy || deck.length < DECK_SIZE} onClick={() => void fight(true)}>
               Тренировка
@@ -110,15 +111,15 @@ export function BattleTab({ s }: { s: CardsState }) {
           </div>
           <div className="cg-row" style={{ marginTop: 12, fontSize: 13 }}>
             <span className="cg-chip">
-              ⚡ {w.energy}/{w.energyMax} {energyLeft > 0 && <small>+1 через {fmtLeft(energyLeft)}</small>}
+              <Cur k="energy" /> {w.energy}/{w.energyMax} {energyLeft > 0 && <small>+1 через {fmtLeft(energyLeft)}</small>}
             </span>
             {w.energy < w.energyMax && (
               <button type="button" className="cg-btn sm" onClick={() => void run(async () => { const r = await act("energy"); if (!r.ok) toast(r.error, true); })}>
-                Восстановить за 15 💎
+                Восстановить за 15 <Cur k="diamonds" />
               </button>
             )}
             <span className="cg-chip">
-              🏆 {w.wins} · 💀 {w.losses}
+              <Ico name="trophy" size={15} /> {w.wins} · <Ico name="skull" size={15} /> {w.losses}
             </span>
           </div>
           {next && (
@@ -138,10 +139,10 @@ export function BattleTab({ s }: { s: CardsState }) {
           <Panel title="Правила недели">
             <div className="cg-row">
               <div className="cg-mod">
-                📉 Штраф: {ELEMENTS[mods.ban].icon} {ELEMENTS[mods.ban].name} <b>−20% к атаке</b>
+                <Ico name="trend" size={15} style={{ transform: "scaleY(-1)" }} /> Штраф: <Ico name={ELEMENT_ICON[mods.ban]} size={15} /> {ELEMENTS[mods.ban].name} <b>−20% к атаке</b>
               </div>
               <div className="cg-mod">
-                📈 Усиление: {ELEMENTS[mods.buff].icon} {ELEMENTS[mods.buff].name} <b>+15% к атаке</b>
+                <Ico name="trend" size={15} /> Усиление: <Ico name={ELEMENT_ICON[mods.buff]} size={15} /> {ELEMENTS[mods.buff].name} <b>+15% к атаке</b>
               </div>
             </div>
           </Panel>
@@ -153,7 +154,7 @@ export function BattleTab({ s }: { s: CardsState }) {
                     {m.text} · {m.progress}/{m.goal}
                     <br />
                     <small style={{ color: "var(--cg-mut)" }}>
-                      {[m.reward.diamonds && `${m.reward.diamonds} 💎`, m.reward.dust && `${m.reward.dust} пыли`, m.reward.scroll && `${m.reward.scroll} свиток`].filter(Boolean).join(" · ")}
+                      {[m.reward.diamonds && `${m.reward.diamonds} алм.`, m.reward.dust && `${m.reward.dust} пыли`, m.reward.scroll && `${m.reward.scroll} свиток`].filter(Boolean).join(" · ")}
                     </small>
                   </span>
                   <button
@@ -265,7 +266,7 @@ function Arena({ report, onClose }: { report: Report; onClose: () => void }) {
               <p className="cg-hint">Тренировка: награды и рейтинг не меняются.</p>
             ) : (
               <p className="cg-hint">
-                {report.reward.diamonds} 💎 · {report.reward.dust} пыли{report.reward.scroll ? " · 📜 свиток заточки" : ""} · рейтинг {report.reward.rating > 0 ? "+" : ""}
+                {report.reward.diamonds} <Cur k="diamonds" /> · {report.reward.dust} пыли{report.reward.scroll ? " · свиток заточки" : ""} · рейтинг {report.reward.rating > 0 ? "+" : ""}
                 {report.reward.rating}
               </p>
             )}

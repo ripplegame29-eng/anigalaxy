@@ -13,13 +13,13 @@ export const RANKS: { id: Rank; key: string; name: string; short: string; color:
 ];
 export const MAX_RANK: Rank = 4;
 
-export const ELEMENTS: Record<Element, { name: string; icon: string; beats: Element }> = {
-  fire: { name: "Огонь", icon: "🔥", beats: "wind" },
-  wind: { name: "Ветер", icon: "🌪️", beats: "earth" },
-  earth: { name: "Земля", icon: "⛰️", beats: "water" },
-  water: { name: "Вода", icon: "💧", beats: "fire" },
-  light: { name: "Свет", icon: "✨", beats: "dark" },
-  dark: { name: "Тьма", icon: "🌑", beats: "light" },
+export const ELEMENTS: Record<Element, { name: string; beats: Element }> = {
+  fire: { name: "Огонь", beats: "wind" },
+  wind: { name: "Ветер", beats: "earth" },
+  earth: { name: "Земля", beats: "water" },
+  water: { name: "Вода", beats: "fire" },
+  light: { name: "Свет", beats: "dark" },
+  dark: { name: "Тьма", beats: "light" },
 };
 
 export const CLASSES: Record<CardClass, { name: string; hint: string }> = {

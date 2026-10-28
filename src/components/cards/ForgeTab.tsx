@@ -103,11 +103,11 @@ function Split({ s, show }: Props) {
       if (!r.ok) return toast(r.error, true);
       setSel([]);
       show("Раскол: две новые карты", r.result.cards);
-      if (r.result.paid) toast(`Списано ${r.result.paid} 💎`);
+      if (r.result.paid) toast(`Списано ${r.result.paid} алм.`);
     });
   return (
     <div className="cg-grid2">
-      <Panel title="Раскол" hint={`Одна карта распадается на 2 случайные карты рангом ниже. Бесплатно сегодня: ${u.free} раскол${s.premium ? "ов (Premium)" : "ов"}, дальше ${SPLIT.extraDiamonds} 💎 за раскол, максимум ${u.max} в день.`}>
+      <Panel title="Раскол" hint={`Одна карта распадается на 2 случайные карты рангом ниже. Бесплатно сегодня: ${u.free} раскол${s.premium ? "ов (Premium)" : "ов"}, дальше ${SPLIT.extraDiamonds} алмазов за раскол, максимум ${u.max} в день.`}>
         <div className="cg-prog" style={{ marginBottom: 14 }}>
           <div className="cg-row" style={{ justifyContent: "space-between", fontSize: 13 }}>
             <span>Сегодня</span>
@@ -137,7 +137,7 @@ function Split({ s, show }: Props) {
         </div>
         <div className="cg-row">
           <button type="button" className="cg-btn gold" disabled={busy || !sel[0] || left === 0} onClick={() => void go()}>
-            {paid ? `Расколоть за ${SPLIT.extraDiamonds} 💎` : "Расколоть бесплатно"}
+            {paid ? `Расколоть за ${SPLIT.extraDiamonds} алм.` : "Расколоть бесплатно"}
           </button>
           <span className="cg-hint" style={{ margin: 0 }}>
             Обычные карты раскалывать нельзя — их можно превратить в пыль в коллекции.
