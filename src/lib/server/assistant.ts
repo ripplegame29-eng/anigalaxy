@@ -4,7 +4,7 @@
  * Модель берётся через OpenRouter (OpenAI-совместимый API, работает и там,
  * где Google недоступен) либо напрямую из Gemini. Настройки из окружения:
  *   OPENROUTER_API_KEY  — ключ OpenRouter (приоритетный вариант)
- *   OPENROUTER_MODEL    — модель, по умолчанию google/gemini-2.5-flash
+ *   OPENROUTER_MODEL    — модель, по умолчанию google/gemma-4-31b-it
  *   GEMINI_API_KEY      — запасной вариант: прямой доступ к Gemini
  *   GEMINI_MODEL / GEMINI_BASE_URL — модель и адрес (свой прокси) для Gemini
  * Без ключей ассистент выключен.
@@ -19,7 +19,7 @@ import { quickSearch } from "@/lib/kodik";
 import type { AnimeCard } from "@/lib/types";
 
 const DEFAULT_MODEL = "gemini-2.5-flash";
-const DEFAULT_OR_MODEL = "google/gemini-2.5-flash";
+const DEFAULT_OR_MODEL = "google/gemma-4-31b-it";
 export const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 const DEFAULT_BASE = "https://generativelanguage.googleapis.com";
 
@@ -176,7 +176,6 @@ async function askModel(turns: AssistantTurn[]): Promise<{ reply: string; titles
         model: process.env.OPENROUTER_MODEL?.trim() || DEFAULT_OR_MODEL,
         temperature: 0.8,
         max_tokens: 1500,
-        response_format: { type: "json_object" },
         messages: [{ role: "system", content: SYSTEM_PROMPT }, ...turns.map((t) => ({ role: t.role, content: t.content }))],
       },
     )) as { choices?: { message?: { content?: string } }[] } | null;
