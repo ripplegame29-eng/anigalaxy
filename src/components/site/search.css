@@ -408,10 +408,18 @@
   gap: 8px;
   padding: 7px 12px;
   border-radius: 10px;
-  border: 1px dashed rgba(43, 127, 255, 0.5);
-  color: var(--ag-accent-ink);
+  border: 1px dashed rgba(255, 255, 255, 0.28);
+  background: rgba(255, 255, 255, 0.04);
+  color: #f4f5f8;
   font-weight: 600;
   min-width: 0;
+  transition:
+    border-color 0.18s,
+    background-color 0.18s;
+}
+.sx__foot .frame:hover {
+  border-color: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.07);
 }
 .sx__foot .frame span {
   overflow: hidden;
@@ -420,12 +428,15 @@
 }
 .sx__foot .framelink {
   flex: none;
-  color: var(--sx-accent);
-  font-weight: 700;
+  color: #f4f5f8;
+  font-weight: 600;
   text-decoration: none;
+  transition: color 0.18s;
 }
 .sx__foot .framelink:hover {
+  color: #fff;
   text-decoration: underline;
+  text-underline-offset: 3px;
 }
 .sx__foot .hints {
   margin-left: auto;
