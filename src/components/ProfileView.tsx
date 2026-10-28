@@ -232,7 +232,7 @@ export function ProfileView({ mode = "owner", basePath: basePathProp }: { mode?:
         { id: "share", label: "Поделиться", icon: "share", run: () => openProfileDialog("share") },
         { id: "preview", label: "Как видят другие", icon: "eye", run: () => openProfileDialog("preview") },
         { id: "theme", label: "Тема", icon: "pal", run: () => openProfileDialog("theme") },
-        { id: "effects", label: "Эффекты", icon: "bolt", run: () => openProfileDialog("effects"), primary: true },
+        { id: "effects", label: "Косметика", icon: "star", run: () => openProfileDialog("effects"), primary: true },
       ];
 
   const badge = (item: SectionMeta) =>

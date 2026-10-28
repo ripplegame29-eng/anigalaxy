@@ -45,7 +45,6 @@
     {id:'profile',label:'Мой профиль',icon:'user',group:'Профиль'},
     {id:'list',label:'Мой список',icon:'list',group:'Профиль'},
     {id:'achievements',label:'Достижения',icon:'trophy',group:'Профиль'},
-    {id:'cosmetics',label:'Косметика',icon:'palette',group:'Профиль'},
     {id:'levels',label:'Уровни',icon:'levels',group:'Прогресс'},
     {id:'quests',label:'Квесты',icon:'bulb',group:'Прогресс'},
     {id:'shop',label:'Магазин',icon:'store',group:'Прогресс'},

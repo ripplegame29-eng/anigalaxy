@@ -248,6 +248,8 @@ function pushAvatarHistory(list: string[], data: string): string[] {
 const FXM_RARITY: Record<string, string> = { COMMON: "#9aa4b2", RARE: "#38bdf8", EPIC: "#a78bfa", LEGENDARY: "#fbbf24" };
 
 type FxTab = "decor" | "particle" | "style" | "tag" | "frame";
+/** Рамок много и каждая анимирована: по 12 на странице, чтобы окно не тормозило */
+const FRAMES_PER_PAGE = 12;
 
 /** Окно «Эффекты»: сцена с предпросмотром слева, вкладки с карточками справа */
 function EffectsDialog() {
@@ -256,6 +258,7 @@ function EffectsDialog() {
   const account = useAccount();
   const panelRef = useModalBehaviour(true, closeProfileDialog);
   const [tab, setTab] = useState<FxTab>("decor");
+  const [framePage, setFramePage] = useState(0);
   const ctx = useUnlockContext();
   const tagSel = useTagSelection();
   const owned = new Set([...doc.purchases.map((item) => item.itemId), ...profile.purchased]);
@@ -290,6 +293,9 @@ function EffectsDialog() {
   const activeStyles = STYLE_EFFECTS.filter((item) => profile.styleFx.includes(item.id));
   const activeDecor = decors.find((d) => d.on);
   const accent = FXM_RARITY[activeParticle?.rarity ?? "RARE"];
+
+  const pageCount = Math.max(1, Math.ceil(ownedFrames.length / FRAMES_PER_PAGE));
+  const pageClamped = Math.min(framePage, pageCount - 1);
 
   const tabs: { id: FxTab; label: string; count: string }[] = [
     { id: "decor", label: "Оформление", count: activeDecor ? "1" : "0" },
@@ -327,11 +333,11 @@ function EffectsDialog() {
       onMouseDown={(event) => event.target === event.currentTarget && closeProfileDialog()}
     >
       <div className="fixed inset-0 bg-black/80 backdrop-blur-md" aria-hidden />
-      <div ref={panelRef} role="dialog" aria-modal="true" aria-label="Эффекты" tabIndex={-1} className="fxm" style={{ ["--ac" as string]: accent }}>
+      <div ref={panelRef} role="dialog" aria-modal="true" aria-label="Косметика" tabIndex={-1} className="fxm" style={{ ["--ac" as string]: accent }}>
         <i className="fxm-glow" aria-hidden />
         <header className="fxm-head">
           <div>
-            <h2>Эффекты</h2>
+            <h2>Косметика</h2>
             <p>Соберите атмосферу своего профиля</p>
           </div>
           <button type="button" onClick={closeProfileDialog} aria-label="Закрыть" className="fxm-x">
@@ -471,8 +477,9 @@ function EffectsDialog() {
             )}
 
             {tab === "frame" && (
+              <>
               <div className="fxm-frames" role="group" aria-label="Рамки">
-                {ownedFrames.map((item) => {
+                {ownedFrames.slice(pageClamped * FRAMES_PER_PAGE, (pageClamped + 1) * FRAMES_PER_PAGE).map((item) => {
                   const on = profile.frameId === item.id || (!profile.frameId && item.id === "f-none");
                   return (
                     <button
@@ -488,6 +495,18 @@ function EffectsDialog() {
                   );
                 })}
               </div>
+              {pageCount > 1 && (
+                <nav className="fxm-pager" aria-label="Страницы рамок">
+                  <button type="button" aria-label="Предыдущая страница" disabled={pageClamped === 0} onClick={() => setFramePage(pageClamped - 1)}>‹</button>
+                  {Array.from({ length: pageCount }, (_, n) => (
+                    <button key={n} type="button" className={n === pageClamped ? "on" : ""} aria-current={n === pageClamped ? "page" : undefined} onClick={() => setFramePage(n)}>
+                      {n + 1}
+                    </button>
+                  ))}
+                  <button type="button" aria-label="Следующая страница" disabled={pageClamped >= pageCount - 1} onClick={() => setFramePage(pageClamped + 1)}>›</button>
+                </nav>
+              )}
+              </>
             )}
 
             <footer className="fxm-foot">
