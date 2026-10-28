@@ -218,12 +218,10 @@
   overflow: hidden;
   border: 1px solid rgba(150, 190, 255, 0.3);
   border-radius: 22px;
-  /* Сверху вниз: сфера, синее свечение снизу, затемнение под цвет сайта и аниме-арт (/bgs/bg09.webp) */
+  /* Своя аниме-сцена: ночное небо, луна, сакура и силуэт города (/wt-anime-bg.svg) */
   background:
-    radial-gradient(circle at 72% 36%, rgba(255, 209, 232, 0.9) 0, rgba(255, 79, 147, 0.85) 9%, rgba(155, 47, 224, 0.75) 20%, transparent 21%),
-    radial-gradient(ellipse at 50% 120%, rgba(11, 58, 143, 0.85), transparent 60%),
-    linear-gradient(170deg, rgba(11, 16, 48, 0.55), rgba(36, 16, 88, 0.45) 55%, rgba(75, 22, 101, 0.6)),
-    #0b1030 url("/bgs/bg09.webp") center / cover no-repeat;
+    linear-gradient(180deg, rgba(7, 11, 43, 0.25), rgba(7, 11, 43, 0) 40%, rgba(7, 11, 43, 0.35)),
+    #0b1030 url("/wt-anime-bg.svg") center / cover no-repeat;
   box-shadow:
     0 50px 110px -34px rgba(45, 125, 255, 0.8),
     0 0 0 7px rgba(45, 125, 255, 0.06);
