@@ -743,5 +743,13 @@ export const MIGRATIONS: Migration[] = [
       CREATE INDEX idx_card_bids ON card_bids(auction_id, id DESC);
     `,
   },
+  {
+    version: 22,
+    name: "cards-skills",
+    sql: `
+      -- Умения героев: выбранный игроком набор (id через запятую), пусто = по умолчанию.
+      ALTER TABLE card_inv ADD COLUMN skills TEXT NOT NULL DEFAULT '';
+    `,
+  },
 ];
 

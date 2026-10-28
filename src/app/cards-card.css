@@ -405,3 +405,88 @@ html[data-eco="on"] .gc-mythic {
 .gc-mythic:hover .gc-deco {
   filter: brightness(1.25);
 }
+
+/* ---------- живой арт: эпические и выше (описание карты, раскрытие, выбор из трёх) ---------- */
+.gc-live .gc-art img,
+.gc-live .gc-ph {
+  transform-origin: 50% 28%;
+  animation: gc-breathe 9s ease-in-out infinite alternate;
+  will-change: transform;
+}
+.gc-live .gc-art::before,
+.gc-live .gc-art::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+.gc-live .gc-art::before {
+  background: linear-gradient(105deg, transparent 38%, rgba(255, 255, 255, 0.32) 50%, transparent 62%);
+  background-size: 260% 100%;
+  mix-blend-mode: overlay;
+  animation: gc-sweep 5.5s ease-in-out infinite;
+}
+.gc-live .gc-art::after {
+  background-image:
+    radial-gradient(circle at 18% 92%, var(--gc-c) 0 0.9cqw, transparent 1.3cqw),
+    radial-gradient(circle at 42% 96%, #fff 0 0.6cqw, transparent 1cqw),
+    radial-gradient(circle at 66% 90%, var(--gc-c) 0 1.1cqw, transparent 1.5cqw),
+    radial-gradient(circle at 84% 97%, #fff 0 0.7cqw, transparent 1.1cqw),
+    radial-gradient(circle at 30% 100%, var(--gc-c) 0 0.7cqw, transparent 1.1cqw);
+  background-size: 100% 130%;
+  background-repeat: no-repeat;
+  opacity: 0.85;
+  animation: gc-motes 5.5s linear infinite;
+}
+.gc-epic.gc-live .gc-art::after {
+  opacity: 0.5;
+  animation-duration: 8s;
+}
+.gc-legendary.gc-live .gc-art img,
+.gc-legendary.gc-live .gc-ph {
+  animation-name: gc-breathe-l;
+  animation-duration: 7s;
+}
+.gc-mythic.gc-live .gc-art img,
+.gc-mythic.gc-live .gc-ph {
+  animation: gc-breathe-l 6.5s ease-in-out infinite alternate, gc-hue 8s ease-in-out infinite;
+}
+.gc-mythic.gc-live .gc-art::after {
+  animation-duration: 3.6s;
+  opacity: 1;
+}
+@keyframes gc-breathe {
+  from { transform: scale(1.02) translate3d(0, 0, 0); }
+  to { transform: scale(1.1) translate3d(-1.2%, -1.6%, 0); }
+}
+@keyframes gc-breathe-l {
+  0% { transform: scale(1.03) translate3d(0.6%, 0.4%, 0) rotate(-0.4deg); }
+  100% { transform: scale(1.14) translate3d(-1.8%, -2.4%, 0) rotate(0.5deg); }
+}
+@keyframes gc-sweep {
+  0%, 25% { background-position: 150% 0; }
+  70%, 100% { background-position: -60% 0; }
+}
+@keyframes gc-motes {
+  0% { background-position: 0 30%; opacity: 0; }
+  15% { opacity: 0.9; }
+  100% { background-position: 0 -90%; opacity: 0; }
+}
+@keyframes gc-hue {
+  50% { filter: hue-rotate(-18deg) saturate(1.25) brightness(1.06); }
+}
+html[data-eco="on"] .gc-live .gc-art img,
+html[data-eco="on"] .gc-live .gc-ph,
+html[data-eco="on"] .gc-live .gc-art::before,
+html[data-eco="on"] .gc-live .gc-art::after {
+  animation: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .gc-live .gc-art img,
+  .gc-live .gc-ph,
+  .gc-live .gc-art::before,
+  .gc-live .gc-art::after {
+    animation: none;
+  }
+}

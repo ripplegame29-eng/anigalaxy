@@ -26,6 +26,8 @@ export interface GameCardProps {
   count?: number;
   /** Показать характеристики */
   stats?: boolean;
+  /** Оживить арт (эпические и выше): дыхание, блики, частицы */
+  live?: boolean;
   /** Закрыть арт (неоткрытая карта в альбоме) */
   unknown?: boolean;
   onClick?: () => void;
@@ -50,7 +52,7 @@ export function RankMark({ rank }: { rank: number }) {
 }
 
 /** Карточка персонажа: арт + рамка ранга + плашка имени. Размер задаёт родитель (ширина). */
-export function GameCard({ cardId, foil, level = 1, selected, dim, locked, count, stats = true, unknown, onClick, className = "", children }: GameCardProps) {
+export function GameCard({ cardId, foil, level = 1, selected, dim, locked, count, stats = true, unknown, live, onClick, className = "", children }: GameCardProps) {
   const def = cardDef(cardId);
   if (!def) return null;
   const rank = RANKS[def.rank];
@@ -66,7 +68,7 @@ export function GameCard({ cardId, foil, level = 1, selected, dim, locked, count
     <Tag
       type={onClick ? "button" : undefined}
       onClick={onClick}
-      className={`gc gc-${rank.key} ${foil ? "gc-foil-on" : ""} ${selected ? "gc-sel" : ""} ${dim ? "gc-dim" : ""} ${unknown ? "gc-unknown" : ""} ${className}`}
+      className={`gc gc-${rank.key} ${foil ? "gc-foil-on" : ""} ${selected ? "gc-sel" : ""} ${dim ? "gc-dim" : ""} ${unknown ? "gc-unknown" : ""} ${live && def.rank >= 2 ? "gc-live" : ""} ${className}`}
       style={style}
       aria-label={unknown ? "Неизвестная карта" : `${def.name}, ${rank.name}${foil ? ", анимированная" : ""}`}
     >

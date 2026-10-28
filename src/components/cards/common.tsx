@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState, useSyncExternalStore, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { cardDef } from "@/lib/cards/catalog";
 import { RANKS } from "@/lib/cards/config";
 import type { InvCard } from "@/lib/cards/client";
@@ -178,7 +179,7 @@ export function Reveal({
         <div className={`cg-deal ${many ? "many" : "one"}`}>
           {cards.map((c, i) => (
             <div key={i} style={{ ["--i" as string]: i }} className={i === bestIdx && many && best >= 2 ? "best" : ""}>
-              <GameCard cardId={c.cardId} foil={c.foil} level={c.level} stats={!many} />
+              <GameCard cardId={c.cardId} foil={c.foil} level={c.level} stats={!many} live={!many} />
             </div>
           ))}
         </div>
@@ -228,4 +229,10 @@ export function useBusy(): [boolean, <T>(fn: () => Promise<T>) => Promise<T | un
     }
   };
   return [busy, run];
+}
+
+/** Выносит модальные окна в <body>, чтобы их не ломали transform/overflow предков страницы */
+export function Portal({ children }: { children: ReactNode }) {
+  if (typeof document === "undefined") return null;
+  return createPortal(<div className="cg cg-portal">{children}</div>, document.body);
 }

@@ -28,6 +28,7 @@ import {
   recentPulls,
   respondTrade,
   sendTrade,
+  setSkills,
   settleAuctions,
   sharpen,
   split,
@@ -38,7 +39,7 @@ import {
   type Res,
 } from "./cards";
 import { buyEnergy, fight, ratingTop, setDeck, weekIndexOf } from "./cards-battle";
-import { artIds, startArtSync } from "./cards-art";
+import { artIds, missingIds, startArtSync } from "./cards-art";
 import type { Database } from "./sqlite";
 
 export function cardsState(db: Database, userId: number, now = Date.now()) {
@@ -73,6 +74,7 @@ export function cardsState(db: Database, userId: number, now = Date.now()) {
     mods,
     ac: acBalance(db, userId),
     art: artIds(),
+    hidden: missingIds(),
     pulls: recentPulls(db, now),
     now,
   };
@@ -114,6 +116,7 @@ const ints = (v: unknown): number[] => (Array.isArray(v) ? v.map((x) => Math.flo
 
 /** Выполнить действие `op`; результат уходит браузеру как есть */
 export function cardsAction(db: Database, userId: number, op: string, body: Record<string, unknown>, now = Date.now()): Res<unknown> {
+  missingIds();
   switch (op) {
     case "daily":
       return claimDaily(db, userId, now);
@@ -143,6 +146,8 @@ export function cardsAction(db: Database, userId: number, op: string, body: Reco
       return toggleLock(db, userId, Math.floor(Number(body.id)));
     case "deck":
       return setDeck(db, userId, ints(body.ids));
+    case "skills":
+      return setSkills(db, userId, Math.floor(Number(body.id)) || 0, Array.isArray(body.skills) ? body.skills.map(String) : []);
     case "fight":
       return fight(db, userId, { training: !!body.training }, now);
     case "energy":

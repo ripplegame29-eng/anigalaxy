@@ -4,9 +4,9 @@
  * (см. `startArtSync`), так что вручную ничего запускать не нужно.
  */
 
-import { existsSync, mkdirSync, readdirSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
-import { CATALOG } from "../cards/catalog";
+import { CATALOG, setHidden } from "../cards/catalog";
 
 export const ART_DIR = path.join(process.cwd(), "data", "cards-art");
 
@@ -24,10 +24,36 @@ export function artIds(): string[] {
   return ids;
 }
 
+const MISSING_FILE = path.join(ART_DIR, "_missing.json");
+
+/** Герои, для которых AniList подтвердил: фото нет. Они не выпадают из паков, пока не появится файл арта. */
+export function missingIds(): string[] {
+  let list: string[] = [];
+  try {
+    if (existsSync(MISSING_FILE)) list = JSON.parse(readFileSync(MISSING_FILE, "utf8")) as string[];
+  } catch {
+    list = [];
+  }
+  const have = new Set(artIds());
+  const hidden = list.filter((id) => !have.has(id));
+  setHidden(hidden);
+  return hidden;
+}
+
+function saveMissing(ids: string[]): void {
+  try {
+    mkdirSync(ART_DIR, { recursive: true });
+    writeFileSync(MISSING_FILE, JSON.stringify([...new Set(ids)]));
+  } catch {
+    /* не критично */
+  }
+}
+
 const QUERY = `query ($q: String) { Character(search: $q, sort: FAVOURITES_DESC) { image { large } } }`;
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
-async function findImage(search: string): Promise<string | null> {
+/** null — сеть/сервис недоступны, "none" — AniList ответил, но фото у героя нет */
+async function findImage(search: string): Promise<string | "none" | null> {
   for (let attempt = 0; attempt < 3; attempt += 1) {
     const res = await fetch("https://graphql.anilist.co", {
       method: "POST",
@@ -42,7 +68,7 @@ async function findImage(search: string): Promise<string | null> {
     if (!res.ok) return null;
     const data = (await res.json()) as { data?: { Character?: { image?: { large?: string } } } };
     const url = data.data?.Character?.image?.large;
-    return url && !url.includes("default") ? url : null;
+    return url && !url.includes("default") ? url : "none";
   }
   return null;
 }
@@ -52,7 +78,10 @@ export const artStatus = { running: false, done: 0, failed: [] as string[], last
 /** Фоновая докачка недостающих артов. Безопасно вызывать сколько угодно раз. */
 export function startArtSync(): void {
   if (artStatus.running || Date.now() < artStatus.nextTry) return;
-  const missing = () => CATALOG.filter((c) => !artIds().includes(c.id) && !artStatus.failed.includes(c.id));
+  const missing = () => {
+    const gone = new Set(missingIds());
+    return CATALOG.filter((c) => !artIds().includes(c.id) && !artStatus.failed.includes(c.id) && !gone.has(c.id));
+  };
   if (!missing().length) return;
   artStatus.running = true;
   void (async () => {
@@ -62,6 +91,11 @@ export function startArtSync(): void {
       for (const c of missing()) {
         try {
           const url = await findImage(c.search);
+          if (url === "none") {
+            artStatus.failed.push(c.id);
+            saveMissing([...missingIds(), c.id]);
+            continue;
+          }
           if (!url) {
             artStatus.failed.push(c.id);
             continue;

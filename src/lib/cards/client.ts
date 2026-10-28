@@ -4,7 +4,7 @@
 
 import { useSyncExternalStore } from "react";
 import { getProgressStore } from "../progression/store";
-import { cardDef } from "./catalog";
+import { cardDef, setHidden } from "./catalog";
 import type { Rank } from "./config";
 
 export interface InvCard {
@@ -15,6 +15,8 @@ export interface InvCard {
   pity: number;
   locked: boolean;
   listed: boolean;
+  /** Экипированные умения в порядке приоритета */
+  skills: string[];
 }
 
 export interface CardsState {
@@ -43,6 +45,8 @@ export interface CardsState {
   mods: { ban: string; buff: string };
   ac: number;
   art: string[];
+  /** Герои без фото на AniList: не выпадают, в альбоме скрыты, если их нет у игрока */
+  hidden: string[];
   pulls: { today: Pull[]; yesterday: Pull[] };
   now: number;
 }
@@ -62,7 +66,10 @@ let fetched = false;
 
 function emit(next: Partial<Snapshot>): void {
   snap = { ...snap, ...next };
-  if (snap.state) artSet = new Set(snap.state.art);
+  if (snap.state) {
+    artSet = new Set(snap.state.art);
+    setHidden(snap.state.hidden ?? []);
+  }
   listeners.forEach((l) => l());
 }
 

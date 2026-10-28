@@ -30,6 +30,7 @@ import {
   type Rank,
 } from "../cards/config";
 import { cardDef, cardsOfRank } from "../cards/catalog";
+import { defaultLoadout, validateLoadout } from "../cards/skills";
 import { PROGRESS_DOC_KEY } from "../sync-keys";
 import { adjustBalance } from "./admin-edit";
 import { dayKey } from "./day";
@@ -158,6 +159,15 @@ export interface InvCard {
   pity: number;
   locked: boolean;
   listed: boolean;
+  /** Экипированные умения в порядке приоритета */
+  skills: string[];
+}
+
+function loadoutFromRow(cardId: string, raw: string): string[] {
+  const def = cardDef(cardId);
+  if (!def) return [];
+  const saved = raw.split(",").filter(Boolean);
+  return saved.length && !validateLoadout(saved, def.cls, def.element, def.rank) ? saved : defaultLoadout(def.cls, def.element, def.rank);
 }
 
 const rowToInv = (r: Record<string, unknown>): InvCard => ({
@@ -168,6 +178,7 @@ const rowToInv = (r: Record<string, unknown>): InvCard => ({
   pity: num(r.pity),
   locked: num(r.locked) === 1,
   listed: num(r.listed) === 1,
+  skills: loadoutFromRow(str(r.card_id), str(r.skills)),
 });
 
 export function listInventory(db: Database, userId: number): InvCard[] {
@@ -1006,4 +1017,18 @@ export function grantStarter(db: Database, userId: number, now = Date.now(), rng
     }
     logEvent(db, userId, "starter", empty ? "Стартовый отряд из 4 карт выдан" : "Стартовый набор уже получен", "", 0, now);
   });
+}
+
+
+/** Сохранить набор умений героя (порядок = приоритет в бою) */
+export function setSkills(db: Database, userId: number, invId: number, ids: string[]): Res<string[]> {
+  const row = db.prepare("SELECT * FROM card_inv WHERE id = ? AND user_id = ?").get(invId, userId);
+  if (!row) return fail("Карта не найдена");
+  const def = cardDef(str(row.card_id));
+  if (!def) return fail("Карта не найдена");
+  const clean = ids.map((x) => String(x));
+  const bad = validateLoadout(clean, def.cls, def.element, def.rank);
+  if (bad) return fail(bad);
+  db.prepare("UPDATE card_inv SET skills = ? WHERE id = ? AND user_id = ?").run(clean.join(","), invId, userId);
+  return { ok: true, value: clean };
 }

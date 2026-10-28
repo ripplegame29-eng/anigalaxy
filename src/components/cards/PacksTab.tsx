@@ -192,7 +192,7 @@ export function PacksTab({ s }: { s: CardsState }) {
             <div className="cg-pickstage">
               <div className="cg-offers">
                 {pendingOffers.map((id, i) => (
-                  <GameCard key={id} cardId={id} onClick={() => void pickCard(i)} className="cg-offer-card" />
+                  <GameCard key={id} cardId={id} live onClick={() => void pickCard(i)} className="cg-offer-card" />
                 ))}
               </div>
             </div>

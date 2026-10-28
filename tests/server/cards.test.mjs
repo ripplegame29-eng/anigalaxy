@@ -3,10 +3,11 @@ import assert from "node:assert/strict";
 
 import { CATALOG, cardsOfRank } from "../../.tsc-tests/lib/cards/catalog.js";
 import { simulate, seeded } from "../../.tsc-tests/lib/cards/battle.js";
+import { SKILLS, defaultLoadout, skillPool, slotsOf, validateLoadout } from "../../.tsc-tests/lib/cards/skills.js";
 import {
   addCard, addMoney, addScroll, bid, cancelAuction, claimDaily, claimMission, createAuction, disenchant, exchangeAc, getWallet,
   listAuctions, listInventory, melt, openPacks, pendingPack, pickFromPack, respondTrade, sendTrade, settleAuctions, sharpen, split, upgrade,
-  bumpMission, cancelTrade,
+  bumpMission, cancelTrade, setSkills,
 } from "../../.tsc-tests/lib/server/cards.js";
 import { fight, setDeck, unitOf } from "../../.tsc-tests/lib/server/cards-battle.js";
 import { cardsAction, cardsState } from "../../.tsc-tests/lib/server/cards-state.js";
@@ -26,7 +27,7 @@ function give(db, uid, cardId, n = 1, extra = {}) {
 test("каталог: уникальные id, все ранги заполнены, статы растут с рангом", () => {
   const ids = new Set(CATALOG.map((c) => c.id));
   assert.equal(ids.size, CATALOG.length);
-  assert.ok(CATALOG.length >= 120);
+  assert.ok(CATALOG.length >= 250);
   for (let r = 0; r < 5; r += 1) assert.ok(cardsOfRank(r).length >= 8, `ранг ${r}`);
   assert.ok(cardsOfRank(4)[0].atk > cardsOfRank(0)[0].atk * 3);
 });
@@ -321,4 +322,63 @@ test("стартовый отряд: выдаётся один раз, сраз�
   give(db, v.id, byRank(0), 1);
   grantStarter(db, v.id, NOW);
   assert.equal(listInventory(db, v.id).length, 1);
+});
+
+test("умения: пул героя, слоты по рангу, валидация и сохранение выбора", () => {
+  for (const c of CATALOG) {
+    assert.equal(skillPool(c.cls, c.element).length, 7);
+    const def = defaultLoadout(c.cls, c.element, c.rank);
+    assert.equal(def.length, slotsOf(c.rank));
+    assert.equal(validateLoadout(def, c.cls, c.element, c.rank), "");
+  }
+  assert.ok(SKILLS.every((s) => s.cd >= 1 && s.name && s.desc));
+  const db = freshDb();
+  const u = makeUser(db, "Skiller");
+  const card = cardsOfRank(0)[0];
+  const [inv] = give(db, u.id, card.id, 1);
+  assert.deepEqual(listInventory(db, u.id)[0].skills, defaultLoadout(card.cls, card.element, 0));
+  const pool = skillPool(card.cls, card.element);
+  assert.equal(setSkills(db, u.id, inv, [pool[0].id, pool[1].id]).ok, false, "у обычной один слот");
+  assert.equal(setSkills(db, u.id, inv, []).ok, false);
+  assert.equal(setSkills(db, u.id, inv, ["no-such"]).ok, false);
+  const other = SKILLS.find((s) => s.cls && s.cls !== card.cls);
+  assert.equal(setSkills(db, u.id, inv, [other.id]).ok, false, "чужой класс");
+  assert.ok(setSkills(db, u.id, inv, [pool[4].id]).ok);
+  assert.deepEqual(listInventory(db, u.id)[0].skills, [pool[4].id]);
+  const v = makeUser(db, "Thief");
+  assert.equal(setSkills(db, v.id, inv, [pool[0].id]).ok, false, "чужая карта");
+  assert.ok(cardsAction(db, u.id, "skills", { id: inv, skills: [pool[1].id] }).ok);
+});
+
+test("бой с умениями: касты, щиты, лечение, оглушение; результат детерминирован", () => {
+  const pick = (cls, rank) => cardsOfRank(rank).find((c) => c.cls === cls);
+  const squad = (side, defs, skills) => defs.map((d, i) => unitOf({ cardId: d.id, level: 3, foil: false, skills: skills[i] }, side, i));
+  const A = [pick("support", 3) ?? pick("support", 2), pick("warrior", 3), pick("mage", 3), pick("tank", 3) ?? pick("tank", 2)].filter(Boolean);
+  const B = cardsOfRank(2).slice(0, 4);
+  const sk = (d) => skillPool(d.cls, d.element).slice(0, slotsOf(d.rank)).map((s) => s.id);
+  const a1 = squad("a", A, A.map(sk));
+  const b1 = squad("b", B, B.map(sk));
+  const x = simulate(a1, b1, seeded(5));
+  const y = simulate(a1, b1, seeded(5));
+  assert.deepEqual(x, y);
+  const kinds = new Set(x.events.map((e) => e.t));
+  assert.ok(kinds.has("cast"), "умения применяются");
+  assert.ok(x.events.some((e) => e.t === "hit" && e.skill), "урон от умения");
+  // каждый cast ссылается на существующее умение
+  for (const e of x.events) if (e.t === "cast") assert.ok(SKILLS.some((s) => s.id === e.skill));
+  // здоровье в событиях не уходит ниже нуля и не выше максимума
+  const max = Object.fromEntries([...a1, ...b1].map((u) => [u.key, u.maxHp]));
+  for (const e of x.events) if ("hp" in e) assert.ok(e.hp >= 0 && e.hp <= max[e.to]);
+  // без умений бой всё равно идёт (обычные атаки)
+  const plain = simulate(a1.map((u) => ({ ...u, skills: [] })), b1.map((u) => ({ ...u, skills: [] })), seeded(5));
+  assert.ok(!plain.events.some((e) => e.t === "cast"));
+  assert.ok(plain.events.length > 0);
+  // оглушение пропускает ход
+  const stunner = SKILLS.find((s) => s.stun);
+  const st = simulate(
+    a1.map((u) => ({ ...u, skills: [stunner.id] })),
+    b1.map((u) => ({ ...u, skills: [] })),
+    seeded(8),
+  );
+  assert.ok(st.events.some((e) => e.t === "status" && e.kind === "stun" && e.on));
 });

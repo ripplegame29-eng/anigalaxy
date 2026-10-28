@@ -157,6 +157,134 @@ const RAW = `
 4|Меруэм|Meruem|Охотник х Охотник|d|w
 4|Айнз Оал Гоун|Ainz Ooal Gown|Оверлорд|d|m
 4|Эдвард Ньюгейт|Edward Newgate|Ван-Пис|w|t
+0|Тэнтэн|Tenten|Наруто|a|a
+0|Ино Яманака|Ino Yamanaka|Наруто|w|s
+0|Чоджи Акимичи|Choji Akimichi|Наруто|e|t
+0|Киба Инузука|Kiba Inuzuka|Наруто|e|a
+0|Брук|Brook|Ван-Пис|d|m
+0|Фрэнки|Franky|Ван-Пис|f|t
+0|Небтра Виви|Nefertari Vivi|Ван-Пис|w|s
+0|Орихиме Иноуэ|Orihime Inoue|Блич|l|s
+0|Ясутора Садо|Yasutora Sado|Блич|e|t
+0|Урю Исида|Uryu Ishida|Блич|l|m
+0|Ренджи Абараи|Renji Abarai|Блич|f|w
+0|Саша Браус|Sasha Blouse|Атака титанов|a|a
+0|Конни Спрингер|Connie Springer|Атака титанов|a|w
+0|Жан Кирштейн|Jean Kirstein|Атака титанов|e|w
+0|История Рейсс|Historia Reiss|Атака титанов|l|s
+0|Канао Цуюри|Kanao Tsuyuri|Истребитель демонов|f|a
+0|Генъя Синадзугава|Genya Shinazugawa|Истребитель демонов|d|w
+0|Май Дзенин|Mai Zenin|Магическая битва|f|m
+0|Мелло|Mello|Тетрадь смерти|f|a
+0|Нир|Near|Тетрадь смерти|l|m
+0|Уинри Рокбелл|Winry Rockbell|Стальной алхимик|e|s
+0|Алекс Армстронг|Alex Louis Armstrong|Стальной алхимик|e|t
+0|Леорио Парадинайт|Leorio Paradinight|Охотник х Охотник|l|s
+0|Бискит Круэгер|Biscuit Krueger|Охотник х Охотник|l|m
+0|Кулилин|Krillin|Драгонболл|l|w
+0|Бульма|Bulma|Драгонболл|w|s
+0|Мина Асидо|Mina Ashido|Моя геройская академия|d|a
+0|Тенья Иида|Tenya Iida|Моя геройская академия|a|a
+0|Цую Асуи|Tsuyu Asui|Моя геройская академия|w|a
+0|Эйджиро Киришима|Eijiro Kirishima|Моя геройская академия|e|t
+0|Фубуки|Fubuki|Ванпанчмен|a|m
+0|Мумэн Райдер|Mumen Rider|Ванпанчмен|w|w
+0|Лизбет|Lisbeth|Мастера Меча Онлайн|f|w
+0|Силика|Silica|Мастера Меча Онлайн|w|a
+0|Химэно|Himeno|Человек-бензопила|d|m
+0|Кобэни Хигасияма|Kobeni Higashiyama|Человек-бензопила|w|t
+0|Хайтер|Heiter|Провожающая в последний путь Фрирен|l|s
+0|Рам|Ram|Re:Zero|w|m
+0|Лалатина Дастинесс Форд|Lalatina Dustiness Ford|Коносуба|e|t
+0|Венди Марвелл|Wendy Marvell|Хвост Феи|a|s
+1|Неджи Хьюга|Neji Hyuga|Наруто|l|a
+1|Цунаде|Tsunade|Наруто|e|s
+1|Орочимару|Orochimaru|Наруто|d|m
+1|Обито Утиха|Obito Uchiha|Наруто|d|a
+1|Нагато|Nagato|Наруто|d|m
+1|Джимбэй|Jinbe|Ван-Пис|w|t
+1|Сабо|Sabo|Ван-Пис|f|w
+1|Гриммджо Джагерджак|Grimmjow Jaegerjaquez|Блич|w|w
+1|Улькиорра Шиффер|Ulquiorra Cifer|Блич|d|a
+1|Кискэ Урахара|Kisuke Urahara|Блич|f|m
+1|Ханджи Зоэ|Hange Zoe|Атака титанов|f|m
+1|Райнер Браун|Reiner Braun|Атака титанов|e|t
+1|Энни Леонхарт|Annie Leonhart|Атака титанов|w|a
+1|Мицури Канроджи|Mitsuri Kanroji|Истребитель демонов|f|w
+1|Обанай Игуро|Obanai Iguro|Истребитель демонов|a|a
+1|Санеми Синадзугава|Sanemi Shinazugawa|Истребитель демонов|a|w
+1|Гёмэй Химэдзима|Gyomei Himejima|Истребитель демонов|e|t
+1|Аказа|Akaza|Истребитель демонов|d|w
+1|Юта Оккоцу|Yuta Okkotsu|Магическая битва|l|m
+1|Кэнто Нанами|Kento Nanami|Магическая битва|e|w
+1|Аой Тодо|Aoi Todo|Магическая битва|e|w
+1|Рой Мустанг|Roy Mustang|Стальной алхимик|f|m
+1|Скар|Scar|Стальной алхимик|e|w
+1|Айзек Нетеро|Isaac Netero|Охотник х Охотник|l|w
+1|Сон Гохан|Son Gohan|Драгонболл|l|w
+1|Транкс|Trunks|Драгонболл|l|w
+1|Андроид 18|Android 18|Драгонболл|l|a
+1|Момо Яойорозу|Momo Yaoyorozu|Моя геройская академия|l|s
+1|Даби|Dabi|Моя геройская академия|f|a
+1|Химико Тога|Himiko Toga|Моя геройская академия|d|a
+1|Серебряный Клык|Silver Fang|Ванпанчмен|w|w
+1|Металлическая Бита|Metal Bat|Ванпанчмен|f|w
+1|Рэйгэн Аратака|Reigen Arataka|Моб Психо 100|l|s
+1|Фэй Валентайн|Faye Valentine|Ковбой Бибоп|d|a
+1|Мисато Кацураги|Misato Katsuragi|Евангелион|f|a
+1|Гинтоки Саката|Gintoki Sakata|Гинтама|e|w
+2|Хаширама Сенджу|Hashirama Senju|Наруто|e|w
+2|Майто Гай|Might Guy|Наруто|w|w
+2|Дракуль Михок|Dracule Mihawk|Ван-Пис|d|w
+2|Борсалино|Borsalino|Ван-Пис|l|a
+2|Сакадзуки|Sakazuki|Ван-Пис|f|w
+2|Кузан|Kuzan|Ван-Пис|w|m
+2|Марко|Marco|Ван-Пис|f|a
+2|Генрюсай Ямамото|Genryusai Shigekuni Yamamoto|Блич|f|m
+2|Зик Йегер|Zeke Yeager|Атака титанов|e|m
+2|Кокушибо|Kokushibo|Истребитель демонов|d|w
+2|Мукиро Токито|Muichiro Tokito|Истребитель демонов|a|a
+2|Тодзи Фусигуро|Toji Fushiguro|Магическая битва|d|a
+2|Сугуру Гэто|Suguru Geto|Магическая битва|d|m
+2|Махито|Mahito|Магическая битва|d|m
+2|Кинг Брэдли|King Bradley|Стальной алхимик|d|a
+2|Ван Хоэнхайм|Van Hohenheim|Стальной алхимик|l|m
+2|Иллуми Золдик|Illumi Zoldyck|Охотник х Охотник|d|a
+2|Броли|Broly|Драгонболл|l|w
+2|Вегито|Vegito|Драгонболл|l|w
+2|Кай Тисаки|Kai Chisaki|Моя геройская академия|d|m
+2|Томура Шигараки|Tomura Shigaraki|Моя геройская академия|d|m
+2|Хоукс|Hawks|Моя геройская академия|a|a
+2|Флэши Флэш|Flashy Flash|Ванпанчмен|a|a
+2|Синон|Sinon|Мастера Меча Онлайн|w|m
+2|Кисё Арима|Kishou Arima|Токийский гуль|l|w
+2|Тосиро Хиджиката|Toshiro Hijikata|Гинтама|d|w
+2|Серие|Serie|Провожающая в последний путь Фрирен|l|m
+2|Мелиодас|Meliodas|Семь смертных грехов|f|w
+3|Тобирама Сенджу|Tobirama Senju|Наруто|w|a
+3|Курама|Kurama|Наруто|f|m
+3|Маршалл Д. Тич|Marshall D. Teach|Ван-Пис|d|t
+3|Монки Д. Гарп|Monkey D. Garp|Ван-Пис|e|w
+3|Шарлотта Линлин|Charlotte Linlin|Ван-Пис|d|t
+3|Гин Ичимару|Gin Ichimaru|Блич|d|a
+3|Имир Фриц|Ymir Fritz|Атака титанов|e|m
+3|Дома|Doma|Истребитель демонов|l|m
+3|Юки Цукумо|Yuki Tsukumo|Магическая битва|l|m
+3|Кэндзяку|Kenjaku|Магическая битва|d|m
+3|Бирус|Beerus|Драгонболл|d|m
+3|Джирен|Jiren|Драгонболл|f|w
+3|Непферпито|Neferpitou|Охотник х Охотник|d|a
+3|Всё за Одного|All For One|Моя геройская академия|d|m
+3|Борос|Boros|Ванпанчмен|d|m
+3|Эскаллор|Escanor|Семь смертных грехов|l|w
+4|Кагуя Оцуцуки|Kaguya Otsutsuki|Наруто|l|m
+4|Зено|Zeno|Драгонболл|l|m
+4|Аностос Волдигод|Anos Voldigoad|Могущественнейший демон|d|m
+4|Римуру Темпест|Rimuru Tempest|О моём перерождении в слизь|w|m
+4|Алукард|Alucard|Хеллсинг|d|a
+4|Карс|Kars|Невероятные приключения ДжоДжо|d|m
+4|Гатс|Guts|Берсерк|d|w
+4|Гриффит|Griffith|Берсерк|l|m
 `;
 
 const BASE: Record<number, [number, number, number, number]> = {
@@ -222,4 +350,19 @@ export const CATALOG: CardDef[] = build();
 const BY_ID = new Map(CATALOG.map((c) => [c.id, c]));
 
 export const cardDef = (id: string): CardDef | undefined => BY_ID.get(id);
-export const cardsOfRank = (rank: Rank): CardDef[] => CATALOG.filter((c) => c.rank === rank);
+/** Герои без фото на AniList: не выпадают из паков (уже выпавшие остаются у владельцев) */
+let hidden = new Set<string>();
+export const setHidden = (ids: string[]): void => {
+  hidden = new Set(ids);
+};
+export const isHidden = (id: string): boolean => hidden.has(id);
+
+/** Пул для выпадения: только герои с артом (если арт подтверждённо отсутствует — героя заменяют другие) */
+export const cardsOfRank = (rank: Rank): CardDef[] => {
+  const all = CATALOG.filter((c) => c.rank === rank);
+  const ok = all.filter((c) => !hidden.has(c.id));
+  return ok.length ? ok : all;
+};
+
+/** Каталог для альбома: скрытые показываются только тем, у кого они уже есть */
+export const visibleCatalog = (owned: ReadonlySet<string>): CardDef[] => CATALOG.filter((c) => !hidden.has(c.id) || owned.has(c.id));

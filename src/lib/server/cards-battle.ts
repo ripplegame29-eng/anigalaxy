@@ -2,6 +2,7 @@
 
 import { applyMods, seeded, simulate, type BattleOutcome, type Unit } from "../cards/battle";
 import { CATALOG, cardDef, cardsOfRank } from "../cards/catalog";
+import { defaultLoadout } from "../cards/skills";
 import { BATTLE, DECK_SIZE, leagueOf, weeklyMods, type Rank } from "../cards/config";
 import {
   addMoney,
@@ -21,7 +22,7 @@ import { num, str, transaction, type Database } from "./sqlite";
 
 export const weekIndexOf = (ms: number): number => Math.floor((ms - 4 * 86_400_000) / (7 * 86_400_000));
 
-export function unitOf(card: { id?: number; cardId: string; level: number; foil: boolean }, side: "a" | "b", slot: number): Unit | null {
+export function unitOf(card: { id?: number; cardId: string; level: number; foil: boolean; skills?: string[] }, side: "a" | "b", slot: number): Unit | null {
   const def = cardDef(card.cardId);
   if (!def) return null;
   const m = statMul(card);
@@ -41,6 +42,7 @@ export function unitOf(card: { id?: number; cardId: string; level: number; foil:
     spd: def.spd,
     foil: card.foil,
     level: card.level,
+    skills: card.skills?.length ? card.skills : defaultLoadout(def.cls, def.element, def.rank),
   };
 }
 

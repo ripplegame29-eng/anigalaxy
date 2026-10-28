@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { act, ensureLoaded, refresh, useCards } from "@/lib/cards/client";
-import { CATALOG } from "@/lib/cards/catalog";
+import { CATALOG, visibleCatalog } from "@/lib/cards/catalog";
 import { EXCHANGE, RANKS } from "@/lib/cards/config";
 import { openAuthDialog } from "@/lib/auth-dialog";
 import { useAccount } from "@/lib/use-account";
@@ -10,6 +10,7 @@ import "../../app/cards.css";
 import "../../app/cards-card.css";
 import "../../app/cards-stage.css";
 import "../../app/cards-tabs.css";
+import "../../app/cards-battle.css";
 import { AuctionTab } from "./AuctionTab";
 import { BattleTab } from "./BattleTab";
 import { CollectionTab } from "./CollectionTab";
@@ -117,7 +118,7 @@ export function CardsApp() {
   /* арт подтягивается сервером в фоне — обновляем, пока он не докачался */
   const artCount = s?.art.length ?? 0;
   useEffect(() => {
-    if (!s || artCount >= CATALOG.length) return;
+    if (!s || artCount + (s.hidden?.length ?? 0) >= CATALOG.length) return;
     const id = window.setInterval(() => {
       if (document.hidden || tries.current > 40) return;
       tries.current += 1;
@@ -183,8 +184,9 @@ export function CardsApp() {
   const w = s.wallet;
   const energyLeft = w.nextEnergyAt ? w.nextEnergyAt - now : 0;
   const owned = new Set(s.inventory.map((c) => c.cardId));
+  const visible = visibleCatalog(owned);
   const perRank = RANKS.map((r) => {
-    const all = CATALOG.filter((c) => c.rank === r.id);
+    const all = visible.filter((c) => c.rank === r.id);
     const have = all.filter((c) => owned.has(c.id)).length;
     return { r, have, total: all.length };
   });
@@ -214,7 +216,7 @@ export function CardsApp() {
             <div className="cg-collprog-top">
               <span>Собрано героев</span>
               <span>
-                <b>{haveAll}</b> / {CATALOG.length}
+                <b>{haveAll}</b> / {visible.length}
               </span>
             </div>
             <div className="cg-segbar" aria-hidden>
