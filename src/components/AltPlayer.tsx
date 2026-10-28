@@ -2090,7 +2090,7 @@ export function AltPlayer({
             <p className="mx-2 mb-1.5 rounded-lg bg-accent-2/10 px-3 py-2 text-[11px] leading-relaxed text-accent-2/90 ring-1 ring-accent-2/25">
               {hqFreeForEpisode(episode) ? (
                 <>
-                  4K и 2K открыты на первых {FREE_HQ_EPISODES} сериях — С {FREE_HQ_EPISODES + 1}-й — по подписке.
+                  4K и 2K открыты на первых {FREE_HQ_EPISODES} сериях, с {FREE_HQ_EPISODES + 1}-й — по подписке.
                 </>
               ) : (
                 <>
