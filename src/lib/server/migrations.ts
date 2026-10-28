@@ -646,4 +646,102 @@ export const MIGRATIONS: Migration[] = [
       UPDATE watch_rooms SET host_id = state_by WHERE host_id = '';
     `,
   },
+  {
+    version: 21,
+    name: "cards",
+    sql: `
+      -- Карточная система: кошелёк, коллекция, журнал, обмен, аукцион, бои.
+      CREATE TABLE card_wallet (
+        user_id INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+        diamonds INTEGER NOT NULL DEFAULT 0,
+        dust INTEGER NOT NULL DEFAULT 0,
+        packs INTEGER NOT NULL DEFAULT 0,
+        energy INTEGER NOT NULL DEFAULT 10,
+        energy_at INTEGER NOT NULL DEFAULT 0,
+        scrolls TEXT NOT NULL DEFAULT '[0,0,0,0,0]',
+        pity_epic INTEGER NOT NULL DEFAULT 0,
+        pity_legend INTEGER NOT NULL DEFAULT 0,
+        split_day TEXT NOT NULL DEFAULT '',
+        split_count INTEGER NOT NULL DEFAULT 0,
+        exch_day TEXT NOT NULL DEFAULT '',
+        exch_count INTEGER NOT NULL DEFAULT 0,
+        login_day TEXT NOT NULL DEFAULT '',
+        free_pack_day TEXT NOT NULL DEFAULT '',
+        deck TEXT NOT NULL DEFAULT '[]',
+        rating INTEGER NOT NULL DEFAULT 1000,
+        wins INTEGER NOT NULL DEFAULT 0,
+        losses INTEGER NOT NULL DEFAULT 0,
+        mission_day TEXT NOT NULL DEFAULT '',
+        missions TEXT NOT NULL DEFAULT '{}',
+        created_at INTEGER NOT NULL
+      );
+      CREATE TABLE card_inv (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        card_id TEXT NOT NULL,
+        foil INTEGER NOT NULL DEFAULT 0,
+        level INTEGER NOT NULL DEFAULT 1,
+        pity INTEGER NOT NULL DEFAULT 0,
+        locked INTEGER NOT NULL DEFAULT 0,
+        listed INTEGER NOT NULL DEFAULT 0,
+        created_at INTEGER NOT NULL
+      );
+      CREATE INDEX idx_card_inv_user ON card_inv(user_id, card_id);
+      CREATE TABLE card_pending (
+        user_id INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+        offers TEXT NOT NULL,
+        created_at INTEGER NOT NULL
+      );
+      CREATE TABLE card_log (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        kind TEXT NOT NULL,
+        text TEXT NOT NULL,
+        card_id TEXT NOT NULL DEFAULT '',
+        rank INTEGER NOT NULL DEFAULT 0,
+        created_at INTEGER NOT NULL
+      );
+      CREATE INDEX idx_card_log_user ON card_log(user_id, id DESC);
+      CREATE INDEX idx_card_log_kind ON card_log(kind, created_at DESC);
+      CREATE TABLE card_trades (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        from_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        to_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        give TEXT NOT NULL,
+        want TEXT NOT NULL,
+        note TEXT NOT NULL DEFAULT '',
+        status TEXT NOT NULL DEFAULT 'pending',
+        created_at INTEGER NOT NULL,
+        resolved_at INTEGER NOT NULL DEFAULT 0
+      );
+      CREATE INDEX idx_card_trades_to ON card_trades(to_id, status);
+      CREATE INDEX idx_card_trades_from ON card_trades(from_id, status);
+      CREATE TABLE card_auctions (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        seller_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        inv_id INTEGER NOT NULL,
+        card_id TEXT NOT NULL,
+        foil INTEGER NOT NULL DEFAULT 0,
+        level INTEGER NOT NULL DEFAULT 1,
+        rank INTEGER NOT NULL DEFAULT 0,
+        start_price INTEGER NOT NULL,
+        bid INTEGER NOT NULL DEFAULT 0,
+        bidder_id INTEGER NOT NULL DEFAULT 0,
+        bids INTEGER NOT NULL DEFAULT 0,
+        ends_at INTEGER NOT NULL,
+        status TEXT NOT NULL DEFAULT 'active',
+        created_at INTEGER NOT NULL
+      );
+      CREATE INDEX idx_card_auctions_active ON card_auctions(status, ends_at);
+      CREATE TABLE card_bids (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        auction_id INTEGER NOT NULL REFERENCES card_auctions(id) ON DELETE CASCADE,
+        user_id INTEGER NOT NULL,
+        amount INTEGER NOT NULL,
+        created_at INTEGER NOT NULL
+      );
+      CREATE INDEX idx_card_bids ON card_bids(auction_id, id DESC);
+    `,
+  },
 ];
+

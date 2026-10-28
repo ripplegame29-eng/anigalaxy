@@ -45,6 +45,7 @@
     "src/lib/clan-world.ts",
     "src/lib/clan2/shop.ts",
     "src/lib/server/**/*.ts",
+    "src/lib/cards/**/*.ts",
     "src/lib/sync-keys.ts",
     "src/lib/voice-merge.ts",
     "src/app/api/account/**/*.ts",

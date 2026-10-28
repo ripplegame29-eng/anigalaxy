@@ -41,6 +41,7 @@ export const NAV_LINKS: NavLink[] = [
   { label: "AniSwipe", href: "/aniswipe", path: "/aniswipe" },
   { label: "Расписание", href: "/schedule", path: "/schedule" },
   { label: "Манга", href: "/manga", path: "/manga" },
+  { label: "Карточки", href: "/cards", path: "/cards" },
 ];
 
 /* ----------------------- Мега-меню под «Каталогом» ----------------------- */

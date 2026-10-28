@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "cards:sync": "node tools/cards-sync.mjs"
   },
   "dependencies": {
     "anime4k.js": "^1.1.3",

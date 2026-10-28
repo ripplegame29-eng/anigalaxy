@@ -18,6 +18,7 @@ const WATCH = [
 ];
 
 const COMMUNITY = [
+  { href: "/cards", label: "Карточки и гача" },
   { href: "/clans", label: "Кланы" },
   { href: "/events", label: "Ивенты" },
   { href: "/quests", label: "Квесты дня" },

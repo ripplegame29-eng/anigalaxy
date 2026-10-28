@@ -22,6 +22,7 @@ const NAV: NavItem[] = [
   { href: "/catalog", label: "Каталог" },
   { href: "/aniswipe", label: "AniSwipe" },
   { href: "/manga", label: "Манга" },
+  { href: "/cards", label: "Карточки" },
 ];
 
 /**
