@@ -226,6 +226,22 @@ export const TITLES: TitleItem[] = [
     },
   },
   {
+    id: "t-star-wanderer",
+    name: "Звёздный странник",
+    rarity: "rare",
+    color: "#8fc9ff",
+    unlock: { grant: "бонус «Разбуди лисёнка»: Telegram и канал" },
+    description: "Привязал Telegram и подписался на канал: лисёнок проснулся",
+    visual: {
+      c: "#8fc9ff",
+      c2: "#2b4fbf",
+      effects: ["shine"],
+      text: "plain",
+      // четырёхконечная звезда ✦
+      icon: `<path d="M12 2.5c.9 5.6 3.4 8.1 9 9-5.6.9-8.1 3.4-9 9-.9-5.6-3.4-8.1-9-9 5.6-.9 8.1-3.4 9-9z"/>`,
+    },
+  },
+  {
     id: "t-first",
     name: "Первый шаг",
     rarity: "common",

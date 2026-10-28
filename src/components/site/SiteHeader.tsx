@@ -47,6 +47,7 @@ import {
   ALL_GENRES_HREF,
   BONUS_COPY,
   BONUS_TASKS,
+  BONUS_TITLE_ID,
   BONUS_TIMING,
   CATALOG_LINKS,
   NAV_LINKS,
@@ -58,7 +59,7 @@ import { AnimeOfTheDay } from "./AnimeOfTheDay";
 import { useAccount } from "@/lib/use-account";
 import { activatePremium } from "@/lib/auth";
 import { useLinks } from "@/lib/accounts";
-import { markNoticesRead, setNoticeRead, unreadCount, useProfile } from "@/lib/profile";
+import { addNotice, markNoticesRead, profileStore, purchaseItem, setNoticeRead, unreadCount, updateProfile, useProfile } from "@/lib/profile";
 import { timeAgo } from "@/lib/history";
 import { useLevelInfo } from "@/lib/progression/events";
 
@@ -501,8 +502,8 @@ export function SiteHeader({ onOpenSearch }: SiteHeaderProps) {
    * Проверяется то, что проверить можно: привязка Telegram берётся из стора
    * (`useLinks`), а канал отметить можно только фактом перехода — подписку мы
    * не видим и говорим об этом прямо. Награда выдаётся по-настоящему:
-   * `activatePremium` продлевает подписку на 7 дней. Титула «Звёздный странник»
-   * в каталоге косметики нет, поэтому о нём в подписи сказано прямо. */
+   * `activatePremium` продлевает подписку на 7 дней, а титул «Звёздный странник»
+   * выдаётся в профиль и надевается, если слот титула свободен. */
   const onCheck = () => {
     if (granted || checking) return;
     setChecking(true);
@@ -522,6 +523,10 @@ export function SiteHeader({ onOpenSearch }: SiteHeaderProps) {
         setChDone(true);
         setJust("ch");
         later(() => setJust(null), 1000);
+        // Титул из окна бонуса: попадает в «купленное» и сам надевается, если слот свободен
+        purchaseItem(BONUS_TITLE_ID, 0);
+        if (!profileStore.get().titleId) updateProfile({ titleId: BONUS_TITLE_ID });
+        addNotice("Получен титул «Звёздный странник» и 7 дней Premium");
         markBonusClaimed(account?.nickname);
         setDot(false);
         setNote(BONUS_COPY.grantedNote);
