@@ -42,8 +42,9 @@
 
 /* Иконка — спокойная плитка, как значки в поиске */
 .ast-orb {
-  display: inline-grid;
+  display: grid;
   place-items: center;
+  margin: 0 auto;
   width: 72px;
   height: 72px;
   border: 1px solid var(--ast-line-2);
@@ -62,10 +63,11 @@
 }
 
 .ast-badge {
-  display: inline-flex;
+  display: flex;
   align-items: center;
+  width: fit-content;
   gap: 8px;
-  margin-top: 22px;
+  margin: 22px auto 0;
   padding: 6px 12px;
   border: 1px solid var(--ast-line);
   border-radius: 999px;
