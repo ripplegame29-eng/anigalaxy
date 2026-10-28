@@ -159,7 +159,7 @@ export function ChatWidget() {
         aria-hidden={!open}
         inert={!open}
         className={`ag-chat-panel fixed inset-y-0 right-0 z-[93] flex w-full flex-col overscroll-contain border-line bg-surface/98 shadow-[-24px_0_60px_-30px_rgba(0,0,0,0.9)] backdrop-blur-xl transition-transform duration-300 sm:inset-y-3 sm:right-3 sm:w-[380px] sm:rounded-2xl sm:border ${
-          open ? "translate-x-0" : "pointer-events-none translate-x-full"
+          open ? "translate-x-0" : "pointer-events-none translate-x-[calc(100%+2rem)]"
         }`}
       >
         <div className="flex items-center justify-between gap-3 border-b border-line px-4 pb-3 pt-[max(0.75rem,env(safe-area-inset-top))]">
