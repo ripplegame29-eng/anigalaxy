@@ -10,11 +10,11 @@ const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 export const metadata: Metadata = {
   title: "Аниме в 4K смотреть онлайн",
   description:
-    "Смотрите аниме онлайн в 4K: плеер AniGalaxy доводит картинку до 2160p шейдерами Anime4K в реальном времени. Лучшие тайтлы, русская озвучка, без регистрации.",
+    "Смотрите аниме онлайн в 4K: чёткие линии, насыщенные цвета, русская озвучка. Лучшие тайтлы без регистрации.",
   alternates: { canonical: "/anime-4k" },
   openGraph: {
     title: "Аниме в 4K смотреть онлайн · AniGalaxy",
-    description: "4K прямо в плеере на шейдерах Anime4K: чёткие линии, свежие цвета, русская озвучка.",
+    description: "4K прямо в плеере: чёткие линии, свежие цвета, русская озвучка.",
     type: "website",
   },
 };
@@ -24,8 +24,8 @@ export const dynamic = "force-dynamic";
 
 const FAQ: { q: string; a: string }[] = [
   {
-    q: "Как работает 4K?",
-    a: "Источники аниме отдают видео в 1080p и ниже. В плеере AniGalaxy включается Anime4K: нейросетевые шейдеры в реальном времени доводят кадр до 2160p и убирают «мыло» на линиях и градиентах. Это не исходное 4K-видео, а улучшение картинки на вашем экране.",
+    q: "Что даёт 4K?",
+    a: "Откройте тайтл, выберите источник «AniGalaxy» и поставьте качество «4K». Чем лучше исходный поток, тем заметнее разница на большом мониторе и телевизоре.",
   },
   {
     q: "Как включить 4K?",
@@ -79,12 +79,10 @@ export default async function Anime4kPage() {
       <header className="mb-8 max-w-3xl">
         <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl">Аниме в 4K</h1>
         <p className="mt-3 text-[15px] leading-relaxed text-white/75">
-          Плеер AniGalaxy повышает картинку до 4K прямо в браузере: шейдеры Anime4K дорисовывают чёткие контуры и сглаживают
-          градиенты, поэтому даже 1080p выглядит заметно резче на большом мониторе и телевизоре. Выберите тайтл ниже, откройте
-          источник «AniGalaxy» и поставьте качество «4K». Регистрация и подписка не нужны.
+          Смотрите аниме в 4K прямо в плеере AniGalaxy: чёткие контуры, чистые градиенты и русская озвучка. Выберите тайтл ниже, откройте источник «AniGalaxy» и поставьте качество «4K». Регистрация и подписка не нужны.
         </p>
         <div className="mt-4 flex flex-wrap gap-2 text-xs font-bold text-white/80">
-          <span className="rounded-full bg-white/8 px-3 py-1.5 ring-1 ring-white/10">4K на Anime4K</span>
+          <span className="rounded-full bg-white/8 px-3 py-1.5 ring-1 ring-white/10">Качество 4K</span>
           <span className="rounded-full bg-white/8 px-3 py-1.5 ring-1 ring-white/10">Русская озвучка</span>
           <span className="rounded-full bg-white/8 px-3 py-1.5 ring-1 ring-white/10">Бесплатно</span>
         </div>

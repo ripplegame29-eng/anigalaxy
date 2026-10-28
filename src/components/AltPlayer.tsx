@@ -2090,13 +2090,11 @@ export function AltPlayer({
             <p className="mx-2 mb-1.5 rounded-lg bg-accent-2/10 px-3 py-2 text-[11px] leading-relaxed text-accent-2/90 ring-1 ring-accent-2/25">
               {hqFreeForEpisode(episode) ? (
                 <>
-                  4K и 2K открыты на первых {FREE_HQ_EPISODES} сериях — картинка
-                  Anime4K на основе потока 1080p. С {FREE_HQ_EPISODES + 1}-й — по подписке.
+                  4K и 2K открыты на первых {FREE_HQ_EPISODES} сериях — С {FREE_HQ_EPISODES + 1}-й — по подписке.
                 </>
               ) : (
                 <>
-                  4K и 2K с {FREE_HQ_EPISODES + 1}-й серии — часть Premium: картинка
-                  Anime4K на основе потока 1080p. Первые {FREE_HQ_EPISODES} серии открыты
+                  4K и 2K с {FREE_HQ_EPISODES + 1}-й серии — часть Premium. Первые {FREE_HQ_EPISODES} серии открыты
                   всем.
                 </>
               )}
@@ -2224,8 +2222,7 @@ export function AltPlayer({
             </h3>
             <p className="mt-2 text-[13px] leading-relaxed text-muted">
               На первых {FREE_HQ_EPISODES} сериях 2K и 4K доступны всем. С 3-й серии
-              качество выше 1080p открывается по подписке — это обработка Anime4K, она
-              считается на видеокарте.
+              качество выше 1080p открывается по подписке — это часть Premium.
             </p>
 
             <div className="mt-5 flex flex-col gap-2 sm:flex-row-reverse">
