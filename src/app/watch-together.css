@@ -243,20 +243,6 @@
   }
 }
 
-.wtv-cin-jp {
-  position: absolute;
-  left: 6%;
-  top: 14%;
-  z-index: 1;
-  font-family: var(--font-unbounded), var(--font-body), sans-serif;
-  font-size: 92px;
-  font-weight: 800;
-  line-height: 1;
-  letter-spacing: -0.05em;
-  color: rgba(255, 255, 255, 0.08);
-  writing-mode: vertical-rl;
-}
-
 .wtv-cin-top {
   position: absolute;
   top: 14px;
@@ -1302,9 +1288,6 @@
     transform: none !important;
   }
 
-  .wtv-cin-jp {
-    font-size: 60px;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {

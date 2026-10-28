@@ -247,9 +247,6 @@ export function WatchTogetherHero() {
       <div className="wtv-stage" aria-label="Демонстрация комнаты совместного просмотра">
         <div className="wtv-cin">
           <div className="wtv-cin-screen">
-            <span className="wtv-cin-jp" aria-hidden>
-              呪術
-            </span>
             <div className="wtv-cin-top">
               <span>
                 {demo.anime} · серия {demo.episode}
