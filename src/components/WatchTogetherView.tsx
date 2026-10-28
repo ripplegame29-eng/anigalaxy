@@ -1004,7 +1004,7 @@ export function WatchTogetherView() {
               href={`https://t.me/share/url?url=${encodeURIComponent(`${typeof window !== "undefined" ? window.location.origin : ""}${created.path}`)}&text=${encodeURIComponent("Смотрим аниме вместе на AniGalaxy — заходи в комнату 🍿")}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="btn-ghost rounded-xl border border-line bg-white/6 px-5 py-2.5 text-sm font-bold text-white hover:border-accent/40"
+              className="btn-ghost inline-flex items-center rounded-xl border border-line bg-white/6 px-5 py-2.5 font-[family-name:var(--font-body)] text-sm font-bold leading-normal text-white no-underline hover:border-accent/40"
             >
               Отправить в Telegram
             </a>
