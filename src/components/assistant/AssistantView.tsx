@@ -90,8 +90,8 @@ function Spark({ id, className }: { id: string; className?: string }) {
     <svg viewBox="0 0 64 64" className={className} aria-hidden>
       <defs>
         <linearGradient id={id} x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor="#6fa8ff" />
-          <stop offset="1" stopColor="#22d3ee" />
+          <stop offset="0" stopColor="#6aa8ff" />
+          <stop offset="1" stopColor="#2b7fff" />
         </linearGradient>
       </defs>
       <path d="M30 6l5.4 15.6L51 27l-15.6 5.4L30 48l-5.4-15.6L9 27l15.6-5.4z" fill={`url(#${id})`} />
