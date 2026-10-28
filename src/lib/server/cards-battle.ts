@@ -19,6 +19,7 @@ import {
   type Res,
   type Rng,
 } from "./cards";
+import { trackFight } from "./cards-extra";
 import { num, str, transaction, type Database } from "./sqlite";
 
 export const weekIndexOf = (ms: number): number => Math.floor((ms - 4 * 86_400_000) / (7 * 86_400_000));
@@ -186,6 +187,7 @@ export function fight(
         "UPDATE card_wallet SET rating = ?, energy = ?, energy_at = CASE WHEN energy >= ? THEN ? ELSE energy_at END, wins = wins + ?, losses = losses + ? WHERE user_id = ?",
       ).run(rating, energy, 10, now, win ? 1 : 0, win ? 0 : 1, userId);
       if (win) bumpMission(db, userId, "win3", 1, now);
+      trackFight(db, userId, win);
       if (opp) {
         // соперник в защите: победа даёт немного очков, поражение отнимает меньше
         const delta = win ? -8 : 8;

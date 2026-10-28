@@ -8,6 +8,7 @@ import { Arena, type BattleReport as Report } from "./Arena";
 import { GameCard } from "./GameCard";
 import { SkillChips, SkillEditor, SynChips } from "./skillui";
 import { synergyList } from "@/lib/cards/synergy";
+import { CollectorModal } from "./collector";
 import { InvPicker, Panel, RankFilter, fmt, fmtLeft, toast, useBusy, useNow } from "./common";
 import { Cur, ELEMENT_ICON, Ico } from "./icons";
 
@@ -17,6 +18,7 @@ export function BattleTab({ s }: { s: CardsState }) {
   const [rank, setRank] = useState(-1);
   const [report, setReport] = useState<Report | null>(null);
   const [editing, setEditing] = useState<number | null>(null);
+  const [profile, setProfile] = useState<string | null>(null);
   const [top, setTop] = useState<{ place: number; nick: string; rating: number; wins: number; losses: number }[]>([]);
   const now = useNow();
   const w = s.wallet;
@@ -68,6 +70,7 @@ export function BattleTab({ s }: { s: CardsState }) {
   return (
     <div style={{ display: "grid", gap: 16 }}>
       {report && <Arena report={report} onClose={() => setReport(null)} />}
+      {profile && <CollectorModal nick={profile} onClose={() => setProfile(null)} />}
       {editing !== null && deck.find((c) => c.id === editing) && <SkillEditor key={editing} card={deck.find((c) => c.id === editing)!} onClose={() => setEditing(null)} />}
       <div className="cg-grid2">
         <Panel
@@ -186,7 +189,10 @@ export function BattleTab({ s }: { s: CardsState }) {
                 {top.slice(0, 10).map((t) => (
                   <li key={t.place}>
                     <span>
-                      <b>#{t.place}</b> {t.nick}
+                      <b>#{t.place}</b>{" "}
+                      <button type="button" className="cg-link" onClick={() => setProfile(t.nick)}>
+                        {t.nick}
+                      </button>
                     </span>
                     <span>
                       {fmt(t.rating)} · {t.wins}/{t.losses}

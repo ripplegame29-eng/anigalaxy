@@ -12,6 +12,8 @@ import {
   bumpMission, cancelTrade, setSkills, upgradeSkill,
 } from "../../.tsc-tests/lib/server/cards.js";
 import { fight, setDeck, unitOf } from "../../.tsc-tests/lib/server/cards-battle.js";
+import { claimAchievement, claimSet, claimWeekly, progressState, setShowcase, collectorProfile } from "../../.tsc-tests/lib/server/cards-progress.js";
+import { track } from "../../.tsc-tests/lib/server/cards-extra.js";
 import { cardsAction, cardsState } from "../../.tsc-tests/lib/server/cards-state.js";
 import { adjustBalance } from "../../.tsc-tests/lib/server/admin-edit.js";
 import { freshDb, makeUser } from "./helpers.mjs";
@@ -441,4 +443,65 @@ test("уровни умений: сила растёт, цена растёт; �
   assert.equal(inv.skillLv["w-slash"], 5);
   assert.ok(setSkills(db, u.id, id, ["w-slash"], "p-edge").ok);
   assert.equal(setSkills(db, u.id, id, ["w-slash"], "p-revive").ok, false);
+});
+
+test("серия входов: растёт по дням, бонус и веха на 3-й день, сбрасывается после пропуска", () => {
+  const db = freshDb();
+  const u = makeUser(db);
+  getWallet(db, u.id, NOW);
+  const day = 86_400_000;
+  const r1 = claimDaily(db, u.id, NOW);
+  assert.equal(r1.value.streak.n, 1);
+  assert.equal(r1.value.streak.bonusPct, 0);
+  claimDaily(db, u.id, NOW + day);
+  const r3 = claimDaily(db, u.id, NOW + 2 * day);
+  assert.equal(r3.value.streak.n, 3);
+  assert.ok(r3.value.streak.bonusPct > 0);
+  assert.ok(r3.value.streak.milestone, "награда за 3 дня");
+  assert.ok(r3.value.diamonds > r1.value.diamonds);
+  const skipped = claimDaily(db, u.id, NOW + 5 * day);
+  assert.equal(skipped.value.streak.n, 1);
+  assert.equal(skipped.value.streak.best, 3);
+});
+
+test("достижения: ступени по статистике, награда один раз, сеты и недельные задания", () => {
+  const db = freshDb();
+  const u = makeUser(db);
+  getWallet(db, u.id, NOW);
+  give(db, u.id, byRank(0));
+  const st = progressState(db, u.id, NOW);
+  assert.ok(st.achievements.find((a) => a.id === "collector").value >= 1);
+  assert.equal(claimAchievement(db, u.id, "opener", NOW).ok, false, "ещё ничего не выполнено");
+  track(db, u.id, "packs", 12, NOW);
+  const dBefore = getWallet(db, u.id, NOW).diamonds;
+  const c = claimAchievement(db, u.id, "opener", NOW);
+  assert.ok(c.ok);
+  assert.equal(c.value.tiers, 1);
+  assert.ok(getWallet(db, u.id, NOW).diamonds > dBefore);
+  assert.equal(claimAchievement(db, u.id, "opener", NOW).ok, false, "повторно нельзя");
+  // недельное: 10 паков
+  const wk = claimWeekly(db, u.id, "wk-pack", NOW);
+  assert.ok(wk.ok);
+  assert.equal(claimWeekly(db, u.id, "wk-pack", NOW).ok, false);
+  // сет: выдаём половину героев одной серии
+  const sets = progressState(db, u.id, NOW).sets;
+  const s0 = sets.find((s) => s.owned < s.need[0]);
+  const ids = CATALOG.filter((c) => c.series === s0.series).slice(0, s0.need[0]).map((c) => c.id);
+  for (const id of ids) give(db, u.id, id);
+  assert.ok(claimSet(db, u.id, s0.series, 0, NOW).ok);
+  assert.equal(claimSet(db, u.id, s0.series, 0, NOW).ok, false);
+  assert.equal(claimSet(db, u.id, s0.series, 1, NOW).ok, false, "полный набор не собран");
+});
+
+test("витрина: до 5 своих карт, профиль видят другие", () => {
+  const db = freshDb();
+  const u = makeUser(db);
+  getWallet(db, u.id, NOW);
+  const ids = [...give(db, u.id, byRank(2)), ...give(db, u.id, byRank(3))];
+  assert.ok(setShowcase(db, u.id, ids).ok);
+  assert.equal(setShowcase(db, u.id, [999999]).ok, false);
+  assert.equal(setShowcase(db, u.id, [1, 2, 3, 4, 5, 6]).ok, false);
+  const p = collectorProfile(db, u.nickname);
+  assert.ok(p.ok);
+  assert.equal(p.value.showcase.length, 2);
 });

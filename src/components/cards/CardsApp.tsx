@@ -11,11 +11,13 @@ import "../../app/cards-card.css";
 import "../../app/cards-stage.css";
 import "../../app/cards-tabs.css";
 import "../../app/cards-battle.css";
+import "../../app/cards-progress.css";
 import { AuctionTab } from "./AuctionTab";
 import { BattleTab } from "./BattleTab";
 import { CollectionTab } from "./CollectionTab";
 import { ForgeTab } from "./ForgeTab";
 import { PacksTab } from "./PacksTab";
+import { ProgressTab } from "./ProgressTab";
 import { SharpenTab } from "./SharpenTab";
 import { ToastHost, fmt, fmtLeft, toast, useBusy, useNow } from "./common";
 import { CUR, Cur, Ico, type CurKey, type IcoName } from "./icons";
@@ -29,8 +31,9 @@ const TABS: readonly (readonly [string, string, IcoName])[] = [
   ["auction", "Аукцион", "tag"],
   ["trade", "Обмен", "swap"],
   ["collection", "Коллекция", "grid"],
+  ["progress", "Прогресс", "trophy"],
 ] as const;
-type TabId = "packs" | "forge" | "sharpen" | "battle" | "auction" | "trade" | "collection";
+type TabId = "packs" | "forge" | "sharpen" | "battle" | "auction" | "trade" | "collection" | "progress";
 
 const EX_STEPS = [1, 5, 10, 25, 50, 100];
 
@@ -193,9 +196,9 @@ export function CardsApp() {
   const haveAll = perRank.reduce((a, x) => a + x.have, 0);
   const claim = () =>
     run(async () => {
-      const r = await act<{ diamonds: number; dust: number; packs: number }>("daily");
+      const r = await act<{ diamonds: number; dust: number; packs: number; streak: { n: number; bonusPct: number; milestone: unknown } }>("daily");
       if (!r.ok) return toast(r.error, true);
-      toast(`Подарок дня: +${r.result.diamonds} алмазов, +${r.result.dust} пыли, +${r.result.packs} пак(а)`);
+      toast(`Подарок дня (серия ${r.result.streak.n}): +${r.result.diamonds} алмазов, +${r.result.dust} пыли, +${r.result.packs} пак(а)${r.result.streak.milestone ? " и бонус за серию" : ""}`);
     });
 
   const tokens: { k: CurKey; value: string; note?: string }[] = [
@@ -280,6 +283,7 @@ export function CardsApp() {
         {tab === "auction" && <AuctionTab s={s} me={account.nickname} />}
         {tab === "trade" && <TradeTab s={s} />}
         {tab === "collection" && <CollectionTab s={s} />}
+        {tab === "progress" && <ProgressTab s={s} />}
       </div>
       <ToastHost />
     </div>

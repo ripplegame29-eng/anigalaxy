@@ -40,6 +40,7 @@ import {
   type Res,
 } from "./cards";
 import { buyEnergy, fight, ratingTop, setDeck, weekIndexOf } from "./cards-battle";
+import { claimAchievement, claimSet, claimWeekly, collectorProfile, progressState, setShowcase } from "./cards-progress";
 import { artIds, missingIds, startArtSync } from "./cards-art";
 import type { Database } from "./sqlite";
 
@@ -71,6 +72,7 @@ export function cardsState(db: Database, userId: number, now = Date.now()) {
     inventory: listInventory(db, userId),
     pending: pendingPack(db, userId),
     missions: missionList(db, userId, now),
+    progress: progressState(db, userId, now),
     split: splitUsage(db, userId, now),
     mods,
     ac: acBalance(db, userId),
@@ -108,6 +110,8 @@ export function cardsView(db: Database, userId: number, view: string, params: UR
       return { ok: true, value: ratingTop(db) };
     case "user":
       return viewCollection(db, params.get("nick") ?? "");
+    case "profile":
+      return collectorProfile(db, params.get("nick") ?? "");
     default:
       return { ok: true, value: cardsState(db, userId, now) };
   }
@@ -155,6 +159,14 @@ export function cardsAction(db: Database, userId: number, op: string, body: Reco
       return fight(db, userId, { training: !!body.training }, now);
     case "energy":
       return buyEnergy(db, userId, now);
+    case "ach-claim":
+      return claimAchievement(db, userId, String(body.id ?? ""), now);
+    case "set-claim":
+      return claimSet(db, userId, String(body.series ?? ""), Number(body.tier), now);
+    case "weekly-claim":
+      return claimWeekly(db, userId, String(body.id ?? ""), now);
+    case "showcase":
+      return setShowcase(db, userId, ints(body.ids));
     case "mission":
       return claimMission(db, userId, String(body.id ?? ""), now);
     case "exchange":

@@ -34,6 +34,16 @@ const P: Record<string, string> = {
   user: "M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8z M4 21c0-4 3.6-7 8-7s8 3 8 7",
   trend: "M4 17l6-6 4 4 6-8 M15 7h5v5",
   ban: "M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z M6 6l12 12",
+  crown: "M3 8l4.5 4L12 5l4.5 7L21 8l-2 11H5z M5 19h14",
+  calendar: "M4 6h16v14H4z M4 10h16 M8 3v5 M16 3v5 M8 14h2 M12 14h2 M8 17h2",
+  target: "M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10z M12 11.2a.8.8 0 1 0 0 1.6.8.8 0 0 0 0-1.6z",
+  flag: "M5 21V4 M5 4h12l-2.5 4L17 12H5",
+  book: "M5 4h10a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z M5 17a3 3 0 0 1 3-3h10",
+  bell: "M6 17V11a6 6 0 0 1 12 0v6l2 2H4z M10 21h4",
+  vol: "M4 9h4l5-4v14l-5-4H4z M16 9a4 4 0 0 1 0 6 M18.5 6.5a8 8 0 0 1 0 11",
+  volx: "M4 9h4l5-4v14l-5-4H4z M16 9l5 6 M21 9l-5 6",
+  eye: "M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6z",
+  pin: "M9 4h6l-1 6 3 3H7l3-3z M12 13v8",
 };
 
 export type IcoName = keyof typeof P;

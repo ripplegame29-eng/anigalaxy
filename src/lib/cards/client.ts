@@ -6,6 +6,7 @@ import { useSyncExternalStore } from "react";
 import { getProgressStore } from "../progression/store";
 import { cardDef, setHidden } from "./catalog";
 import type { Rank } from "./config";
+import type { ProgressState } from "./progress";
 
 export interface InvCard {
   id: number;
@@ -42,6 +43,7 @@ export interface CardsState {
   premium: boolean;
   inventory: InvCard[];
   pending: string[] | null;
+  progress: ProgressState;
   missions: { id: string; text: string; goal: number; progress: number; claimed: boolean; reward: { diamonds?: number; dust?: number; scroll?: number } }[];
   split: { used: number; free: number; max: number; extraCost: number };
   mods: { ban: string; buff: string };

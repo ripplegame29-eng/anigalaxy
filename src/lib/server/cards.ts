@@ -31,10 +31,12 @@ import {
   type Rank,
 } from "../cards/config";
 import { cardDef, cardsOfRank } from "../cards/catalog";
+import { STREAK, type Reward } from "../cards/progress";
 import { SKILL_MAX_LEVEL, defaultLoadout, defaultPassive, skillDef, skillPool, skillUpCost, validateLoadout, validatePassive } from "../cards/skills";
 import { PROGRESS_DOC_KEY } from "../sync-keys";
 import { adjustBalance } from "./admin-edit";
 import { dayKey } from "./day";
+import { getExtra, setExtra, touchStreak, track } from "./cards-extra";
 import { getDoc } from "./docs";
 import { num, str, transaction, type Database } from "./sqlite";
 import { findUserById, type UserRow } from "./users";
@@ -281,8 +283,11 @@ function missionState(db: Database, userId: number, now: number): MissionState {
   }
 }
 
+const MISSION_STAT: Record<string, string> = { pack1: "packs", sharp3: "sharpen", win3: "wins" };
+
 export function bumpMission(db: Database, userId: number, id: string, n = 1, now = Date.now()): void {
   getWallet(db, userId, now);
+  if (MISSION_STAT[id]) track(db, userId, MISSION_STAT[id], n, now);
   const st = missionState(db, userId, now);
   st.progress[id] = (st.progress[id] ?? 0) + n;
   db.prepare("UPDATE card_wallet SET missions = ? WHERE user_id = ?").run(JSON.stringify(st), userId);
@@ -318,20 +323,48 @@ export function claimMission(db: Database, userId: number, id: string, now = Dat
 
 /* ------------------------------ Ежедневный вход --------------------------- */
 
-export function claimDaily(db: Database, userId: number, now = Date.now()): Res<{ diamonds: number; dust: number; packs: number }> {
-  return transaction(db, (): Res<{ diamonds: number; dust: number; packs: number }> => {
+/** Выдать награду (алмазы, пыль, жетоны паков, свитки заточки) */
+export function grantReward(db: Database, userId: number, r: Reward): void {
+  if (r.diamonds) addMoney(db, userId, "diamonds", r.diamonds);
+  if (r.dust) addMoney(db, userId, "dust", r.dust);
+  if (r.packs) addMoney(db, userId, "packs", r.packs);
+  if (r.scroll) addScroll(db, userId, Math.max(0, Math.min(4, r.scrollRank ?? 1)), r.scroll);
+}
+
+export interface DailyResult {
+  diamonds: number;
+  dust: number;
+  packs: number;
+  streak: { n: number; best: number; bonusPct: number; milestone: Reward | null };
+}
+
+export function claimDaily(db: Database, userId: number, now = Date.now()): Res<DailyResult> {
+  return transaction(db, (): Res<DailyResult> => {
     const w = getWallet(db, userId, now);
     const today = dayKey(now);
     if (w.loginDay === today) return fail("Сегодняшний подарок уже забран");
     const pro = isPremium(db, userId, now);
     const mul = pro ? 2 : 1;
-    const gift = { diamonds: DAILY_LOGIN.diamonds * mul, dust: DAILY_LOGIN.dust * mul, packs: 1 + (pro ? 1 : 0) };
+    const st = touchStreak(db, userId, now);
+    const bonus = Math.min(STREAK.maxBonus, STREAK.bonusPerDay * (st.n - 1));
+    const gift = {
+      diamonds: Math.round(DAILY_LOGIN.diamonds * mul * (1 + bonus)),
+      dust: Math.round(DAILY_LOGIN.dust * mul * (1 + bonus)),
+      packs: 1 + (pro ? 1 : 0),
+    };
     db.prepare("UPDATE card_wallet SET login_day = ? WHERE user_id = ?").run(today, userId);
     addMoney(db, userId, "diamonds", gift.diamonds);
     addMoney(db, userId, "dust", gift.dust);
     addMoney(db, userId, "packs", gift.packs);
-    logEvent(db, userId, "daily", `Ежедневный подарок: ${gift.diamonds} 💎, ${gift.dust} пыли, ${gift.packs} пак(а)`, "", 0, now);
-    return { ok: true, value: gift };
+    const x = getExtra(db, userId);
+    const ms = STREAK.milestones.find((m) => m.day === st.n && !x.streak.claimed.includes(m.day));
+    if (ms) {
+      grantReward(db, userId, ms.reward);
+      x.streak.claimed.push(ms.day);
+      setExtra(db, userId, x);
+    }
+    logEvent(db, userId, "daily", `Ежедневный подарок (серия ${st.n}): ${gift.diamonds} 💎, ${gift.dust} пыли, ${gift.packs} пак(а)${ms ? ` + бонус за ${ms.day} дн.` : ""}`, "", 0, now);
+    return { ok: true, value: { ...gift, streak: { n: st.n, best: st.best, bonusPct: Math.round(bonus * 100), milestone: ms ? ms.reward : null } } };
   });
 }
 
@@ -756,6 +789,8 @@ export function respondTrade(db: Database, userId: number, tradeId: number, acce
     const text = giveIds.length && wantIds.length ? `Обмен ${giveIds.length}⇄${wantIds.length}` : giveIds.length ? `Подарок: ${giveIds.length} карт` : `Получено: ${wantIds.length} карт`;
     logEvent(db, userId, "trade", text, "", 0, now);
     logEvent(db, fromId, "trade", text, "", 0, now);
+    track(db, userId, "trades", 1, now);
+    track(db, fromId, "trades", 1, now);
     return { ok: true, value: "accepted" };
   });
 }
@@ -830,6 +865,9 @@ export function settleAuctions(db: Database, now = Date.now()): number {
         db.prepare("UPDATE card_auctions SET status = 'sold' WHERE id = ?").run(id);
         logEvent(db, seller, "auction", `Продано «${def?.name}» за ${num(a.bid)} 💎 (комиссия ${fee})`, str(a.card_id), num(a.rank), now);
         logEvent(db, winner, "auction", `Выиграно «${def?.name}» за ${num(a.bid)} 💎`, str(a.card_id), num(a.rank), now);
+        getWallet(db, winner, now);
+        track(db, seller, "auctions", 1, now);
+        track(db, winner, "auctions", 1, now);
       } else {
         db.prepare("UPDATE card_inv SET listed = 0 WHERE id = ?").run(inv);
         db.prepare("UPDATE card_auctions SET status = 'expired' WHERE id = ?").run(id);
@@ -1082,6 +1120,7 @@ export function upgradeSkill(db: Database, userId: number, invId: number, skillI
     lv[skillId] = cur + 1;
     db.prepare("UPDATE card_inv SET skill_lv = ? WHERE id = ? AND user_id = ?").run(JSON.stringify(lv), invId, userId);
     logEvent(db, userId, "skill", `Умение «${sk.name}» героя ${def.name}: уровень ${cur + 1}`, def.id, def.rank, now);
+    track(db, userId, "skillUps", 1, now);
     return { ok: true, value: { level: cur + 1, dust: cost.dust, scroll: cost.scroll } };
   });
 }
