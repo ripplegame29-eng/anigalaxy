@@ -8,7 +8,7 @@ import { PlayerSkinPicker } from "./PlayerSkinPicker";
 import { usePlayerSkin } from "@/lib/player-skins";
 import type Hls from "hls.js";
 import type { AniSearchCard, AniTitleDetail } from "@/lib/anilibria";
-import { FREE_HQ_EPISODES, hqFreeForEpisode, usePremium } from "@/lib/premium";
+import { usePremium } from "@/lib/premium";
 
 /**
  * Альтернативный плеер блока просмотра — каталог AniLiberty.
@@ -45,7 +45,6 @@ type Quality = (typeof QUALITIES)[number];
 
 /** 2K/4K открыты всем: замок по подписке снят по решению владельца сайта */
 const qualityNeedsPremium_ = (...args: unknown[]): boolean => args.length < 0;
-const SHOW_HQ_NOTE = false;
 
 /** Длина опенинга для кнопки «Пропустить» (сек) */
 const OP_LEN = 85;
@@ -2086,20 +2085,6 @@ export function AltPlayer({
           </div>
           <div className="h-0.5 bg-gradient-to-r from-transparent via-amber-400/70 to-transparent" />
 
-          {SHOW_HQ_NOTE && (
-            <p className="mx-2 mb-1.5 rounded-lg bg-accent-2/10 px-3 py-2 text-[11px] leading-relaxed text-accent-2/90 ring-1 ring-accent-2/25">
-              {hqFreeForEpisode(episode) ? (
-                <>
-                  4K и 2K открыты на первых {FREE_HQ_EPISODES} сериях, с {FREE_HQ_EPISODES + 1}-й — по подписке.
-                </>
-              ) : (
-                <>
-                  4K и 2K с {FREE_HQ_EPISODES + 1}-й серии — часть Premium. Первые {FREE_HQ_EPISODES} серии открыты
-                  всем.
-                </>
-              )}
-            </p>
-          )}
           <div className="p-1.5">
             {QUALITIES.map((q) => {
               const available =
@@ -2218,11 +2203,10 @@ export function AltPlayer({
             </span>
 
             <h3 id="alt-hq-title" className="mt-3 text-lg font-black text-white">
-              2K и 4K — с подпиской Premium
+              2K и 4K доступны всем
             </h3>
             <p className="mt-2 text-[13px] leading-relaxed text-muted">
-              На первых {FREE_HQ_EPISODES} сериях 2K и 4K доступны всем. С 3-й серии
-              качество выше 1080p открывается по подписке — это часть Premium.
+              Выберите 2K или 4K в меню качества — подписка не нужна.
             </p>
 
             <div className="mt-5 flex flex-col gap-2 sm:flex-row-reverse">
