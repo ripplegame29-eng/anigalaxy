@@ -137,7 +137,7 @@ export function Footer() {
                 <i />
                 Онлайн
               </span>
-              <span>HD-качество</span>
+              <span>4K-качество</span>
               <span>Озвучки и субтитры</span>
             </div>
 
