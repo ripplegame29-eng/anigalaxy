@@ -227,7 +227,7 @@ function Chat({ enabled }: { enabled: boolean }) {
         <header className="ast-hero">
           <img
             className="ast-banner"
-            src="/assistant-hero.webp?v=2"
+            src="/lumina-hero.webp"
             width={1536}
             height={1024}
             alt="Люмина — ИИ-ассистент AniGalaxy"
