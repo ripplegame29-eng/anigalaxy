@@ -2090,13 +2090,13 @@ export function AltPlayer({
             <p className="mx-2 mb-1.5 rounded-lg bg-accent-2/10 px-3 py-2 text-[11px] leading-relaxed text-accent-2/90 ring-1 ring-accent-2/25">
               {hqFreeForEpisode(episode) ? (
                 <>
-                  4K и 2K открыты на первых {FREE_HQ_EPISODES} сериях — это апскейл
-                  Anime4K поверх потока 1080p. С {FREE_HQ_EPISODES + 1}-й — по подписке.
+                  4K и 2K открыты на первых {FREE_HQ_EPISODES} сериях — картинка
+                  Anime4K на основе потока 1080p. С {FREE_HQ_EPISODES + 1}-й — по подписке.
                 </>
               ) : (
                 <>
-                  4K и 2K с {FREE_HQ_EPISODES + 1}-й серии — часть Premium: апскейл
-                  Anime4K поверх потока 1080p. Первые {FREE_HQ_EPISODES} серии открыты
+                  4K и 2K с {FREE_HQ_EPISODES + 1}-й серии — часть Premium: картинка
+                  Anime4K на основе потока 1080p. Первые {FREE_HQ_EPISODES} серии открыты
                   всем.
                 </>
               )}
@@ -2224,7 +2224,7 @@ export function AltPlayer({
             </h3>
             <p className="mt-2 text-[13px] leading-relaxed text-muted">
               На первых {FREE_HQ_EPISODES} сериях 2K и 4K доступны всем. С 3-й серии
-              качество выше 1080p открывается по подписке — это апскейл Anime4K, он
+              качество выше 1080p открывается по подписке — это обработка Anime4K, она
               считается на видеокарте.
             </p>
 
@@ -2363,7 +2363,7 @@ export function AltPlayer({
       {/* Anime4K не запустился: честно сообщаем, что играет исходный поток */}
       {upscaleNeeded && a4kFailed && started && mediaReady && (
         <div className="pointer-events-none absolute left-1/2 top-3 z-40 -translate-x-1/2 rounded-lg bg-black/70 px-2.5 py-1 text-[11px] font-black text-amber-300 ring-1 ring-amber-300/40 backdrop-blur">
-          Апскейл недоступен — {streamQuality}p
+          4K недоступен на этом устройстве — {streamQuality}p
         </div>
       )}
     </>
