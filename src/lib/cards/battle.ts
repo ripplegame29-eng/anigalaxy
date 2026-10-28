@@ -7,7 +7,9 @@
  */
 
 import { BATTLE, ELEMENTS, type CardClass, type Element } from "./config";
-import { skillDef, type Skill, type SkillFx } from "./skills";
+import { ENERGY, ULTIMATES, levelled, skillDef, type Skill, type SkillFx } from "./skills";
+import { bonusPerMember, type Synergy } from "./synergy";
+import { cardDef } from "./catalog";
 
 export interface Unit {
   key: string;
@@ -27,12 +29,20 @@ export interface Unit {
   level: number;
   /** Экипированные умения в порядке приоритета */
   skills?: string[];
+  /** Уровни умений по id */
+  skillLv?: Record<string, number>;
+  /** Пассивка героя */
+  passive?: string;
+  /** Аниме героя (для синергий) */
+  series?: string;
 }
 
 export type StatusKind = "stun" | "burn" | "atkUp" | "defDown" | "taunt" | "shield";
 
 export type BattleEvent =
-  | { t: "cast"; from: string; skill: string; fx: SkillFx; targets: string[]; round: number }
+  | { t: "cast"; from: string; skill: string; fx: SkillFx; targets: string[]; round: number; ult?: boolean }
+  | { t: "energy"; to: string; en: number; round: number }
+  | { t: "revive"; to: string; hp: number; round: number }
   | { t: "hit"; from: string; to: string; dmg: number; crit: boolean; adv: number; round: number; hp: number; dead: boolean; guard?: string; skill?: string; absorbed: number; sh: number }
   | { t: "heal"; from: string; to: string; amount: number; round: number; hp: number; skill?: string }
   | { t: "shield"; from: string; to: string; amount: number; round: number; skill?: string }
@@ -61,6 +71,40 @@ export function applyMods(units: Unit[], mods: Mods): Unit[] {
   }));
 }
 
+/** Бонусы синергий: возвращает усиленных героев и список активных синергий */
+export function applySynergies(units: Unit[]): { units: Unit[]; list: Synergy[] } {
+  const members = units.map((u) => ({ series: u.series ?? cardDef(u.cardId)?.series ?? u.cardId, element: u.element, cls: u.cls }));
+  const per = bonusPerMember(members);
+  const list = new Map<string, Synergy>();
+  per.forEach((p) => p.list.forEach((s) => list.set(s.id, s)));
+  return {
+    units: units.map((u, i) => {
+      const b = per[i].bonus;
+      const hp = Math.round(u.maxHp * (1 + b.hp));
+      return { ...u, atk: Math.round(u.atk * (1 + b.atk)), def: Math.round(u.def * (1 + b.def)), spd: Math.round(u.spd * (1 + b.spd)), maxHp: hp, hp: Math.round(u.hp * (1 + b.hp)) };
+    }),
+    list: [...list.values()],
+  };
+}
+
+/** Статовые пассивки (поведенческие обрабатывает симуляция) */
+export function applyPassives(units: Unit[]): Unit[] {
+  return units.map((u) => {
+    switch (u.passive) {
+      case "p-vigor":
+        return { ...u, maxHp: Math.round(u.maxHp * 1.12), hp: Math.round(u.hp * 1.12) };
+      case "p-edge":
+        return { ...u, atk: Math.round(u.atk * 1.1) };
+      case "p-bulwark":
+        return { ...u, def: Math.round(u.def * 1.18) };
+      case "p-swift":
+        return { ...u, spd: Math.round(u.spd * 1.2) };
+      default:
+        return u;
+    }
+  });
+}
+
 const alive = (xs: Unit[]) => xs.filter((u) => u.hp > 0);
 
 function advantage(att: Element, def: Element): number {
@@ -78,6 +122,8 @@ interface State {
   taunt: number;
   shield: number;
   shieldN: number;
+  en: number;
+  revived: boolean;
 }
 
 const EFFECT_TURNS = 3;
@@ -91,15 +137,31 @@ export function simulate(aIn: Unit[], bIn: Unit[], rng: () => number): BattleOut
   const foes = (u: Unit) => alive(u.side === "a" ? b : a);
   const friends = (u: Unit) => alive(u.side === "a" ? a : b);
 
+  const skillOf = (u: Unit, id: string): Skill | undefined => {
+    const sk = skillDef(id);
+    return sk ? levelled(sk, u.skillLv?.[id] ?? 1) : undefined;
+  };
   const st = new Map<string, State>();
   for (const u of all) {
     const cd = new Map<string, number>();
     for (const id of u.skills ?? []) {
-      const sk = skillDef(id);
+      const sk = skillOf(u, id);
       if (sk) cd.set(id, Math.max(0, sk.cd - 2));
     }
-    st.set(u.key, { cd, stun: 0, atkUp: { n: 0, v: 0 }, defDown: { n: 0, v: 0 }, burn: { n: 0, dmg: 0 }, taunt: 0, shield: 0, shieldN: 0 });
+    st.set(u.key, { cd, stun: 0, atkUp: { n: 0, v: 0 }, defDown: { n: 0, v: 0 }, burn: { n: 0, dmg: 0 }, taunt: 0, shield: 0, shieldN: 0, en: u.passive === "p-swift" ? 30 : 0, revived: false });
   }
+  const gainEnergy = (u: Unit, n: number) => {
+    const s = st.get(u.key)!;
+    const before = s.en;
+    s.en = Math.min(ENERGY.max, s.en + n);
+    if (s.en !== before) events.push({ t: "energy", to: u.key, en: s.en, round });
+  };
+  const canRevive = (u: Unit) => u.hp <= 0 && u.passive === "p-revive" && !st.get(u.key)!.revived;
+  const revive = (u: Unit) => {
+    st.get(u.key)!.revived = true;
+    u.hp = Math.max(1, Math.round(u.maxHp * 0.3));
+    events.push({ t: "revive", to: u.key, hp: u.hp, round });
+  };
   const S = (u: Unit) => st.get(u.key)!;
   const effAtk = (u: Unit) => u.atk * (1 + (S(u).atkUp.n > 0 ? S(u).atkUp.v : 0));
   const effDef = (u: Unit) => u.def * (1 - (S(u).defDown.n > 0 ? S(u).defDown.v : 0));
@@ -116,17 +178,32 @@ export function simulate(aIn: Unit[], bIn: Unit[], rng: () => number): BattleOut
 
   const strike = (u: Unit, target: Unit, power: number, skill?: Skill, guard?: string): number => {
     const adv = advantage(u.element, target.element);
-    const critChance = u.cls === "assassin" ? 0.25 : 0.08;
+    const critChance = (u.cls === "assassin" ? 0.25 : 0.08) + (u.passive === "p-focus" ? 0.12 : 0);
     const crit = rng() < critChance;
     let raw = effAtk(u) * power * (u.cls === "warrior" ? 1.1 : 1) * (crit ? 1.6 : 1) * adv * (0.9 + rng() * 0.2);
     if (skill?.exec && target.hp / target.maxHp < 0.35) raw *= skill.exec;
     const dmg = Math.max(1, Math.round((raw * 100) / (100 + effDef(target) * 0.8)));
     const { absorbed } = damage(target, dmg);
-    events.push({ t: "hit", from: u.key, to: target.key, dmg, crit, adv, round, hp: target.hp, dead: target.hp <= 0, guard, skill: skill?.id, absorbed, sh: S(target).shield });
-    if (target.hp <= 0) {
+    const saved = canRevive(target);
+    events.push({ t: "hit", from: u.key, to: target.key, dmg, crit, adv, round, hp: target.hp, dead: target.hp <= 0 && !saved, guard, skill: skill?.id, absorbed, sh: S(target).shield });
+    if (saved) revive(target);
+    else if (target.hp <= 0) {
       const s = S(target);
       s.stun = 0;
       s.shield = 0;
+    } else {
+      gainEnergy(target, ENERGY.perHit);
+      if (target.passive === "p-thorns" && u.hp > 0) {
+        const back = Math.max(1, Math.round(dmg * 0.15));
+        const r = damage(u, back);
+        const sv = canRevive(u);
+        events.push({ t: "hit", from: target.key, to: u.key, dmg: back, crit: false, adv: 1, round, hp: u.hp, dead: u.hp <= 0 && !sv, skill: "p-thorns", absorbed: r.absorbed, sh: S(u).shield });
+        if (sv) revive(u);
+        else if (u.hp <= 0) {
+          S(u).stun = 0;
+          S(u).shield = 0;
+        }
+      }
     }
     return dmg;
   };
@@ -178,10 +255,10 @@ export function simulate(aIn: Unit[], bIn: Unit[], rng: () => number): BattleOut
     return true;
   };
 
-  const cast = (u: Unit, sk: Skill) => {
+  const cast = (u: Unit, sk: Skill, ult = false) => {
     const targets = targetsOf(u, sk).filter((t) => t.hp > 0);
-    if (!targets.length) return;
-    events.push({ t: "cast", from: u.key, skill: sk.id, fx: sk.fx, targets: targets.map((t) => t.key), round });
+    if (!targets.length) return false;
+    events.push({ t: "cast", from: u.key, skill: sk.id, fx: sk.fx, targets: targets.map((t) => t.key), round, ult: ult || undefined });
     for (const t of targets) {
       let dealt = 0;
       if (sk.power) dealt = strike(u, t, sk.power, sk);
@@ -213,6 +290,7 @@ export function simulate(aIn: Unit[], bIn: Unit[], rng: () => number): BattleOut
         status(t, "taunt", true);
       }
     }
+    return true;
   };
 
   const basic = (u: Unit): void => {
@@ -233,7 +311,8 @@ export function simulate(aIn: Unit[], bIn: Unit[], rng: () => number): BattleOut
       guard = target.key;
       target = tank;
     }
-    strike(u, target, 1, undefined, guard);
+    const dealt = strike(u, target, 1, undefined, guard);
+    if (u.passive === "p-vamp" && u.hp > 0) heal(u, u, dealt * 0.2);
   };
 
   const expire = (u: Unit) => {
@@ -262,9 +341,11 @@ export function simulate(aIn: Unit[], bIn: Unit[], rng: () => number): BattleOut
       if (s.burn.n > 0) {
         s.burn.n -= 1;
         const { absorbed } = damage(u, s.burn.dmg);
-        events.push({ t: "dot", to: u.key, dmg: s.burn.dmg, round, hp: u.hp, dead: u.hp <= 0, sh: s.shield });
+        const saved = canRevive(u);
+        events.push({ t: "dot", to: u.key, dmg: s.burn.dmg, round, hp: u.hp, dead: u.hp <= 0 && !saved, sh: s.shield });
         void absorbed;
         if (s.burn.n === 0) status(u, "burn", false);
+        if (saved) revive(u);
         if (u.hp <= 0) {
           s.stun = 0;
           continue;
@@ -279,15 +360,23 @@ export function simulate(aIn: Unit[], bIn: Unit[], rng: () => number): BattleOut
         continue;
       }
       for (const [id, v] of s.cd) if (v > 0) s.cd.set(id, v - 1);
+      gainEnergy(u, ENERGY.perTurn + (u.passive === "p-flow" ? 8 : 0));
 
       let used = false;
-      for (const id of u.skills ?? []) {
-        const sk = skillDef(id);
-        if (!sk || (s.cd.get(id) ?? 0) > 0 || !useful(u, sk)) continue;
-        cast(u, sk);
-        s.cd.set(id, sk.cd);
+      if (s.en >= ENERGY.max && cast(u, ULTIMATES[u.cls], true)) {
+        s.en = 0;
+        events.push({ t: "energy", to: u.key, en: 0, round });
         used = true;
-        break;
+      }
+      if (!used) {
+        for (const id of u.skills ?? []) {
+          const sk = skillOf(u, id);
+          if (!sk || (s.cd.get(id) ?? 0) > 0 || !useful(u, sk)) continue;
+          cast(u, sk);
+          s.cd.set(id, sk.cd);
+          used = true;
+          break;
+        }
       }
       if (!used) basic(u);
     }

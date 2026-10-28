@@ -6,7 +6,8 @@ import { BATTLE, DECK_SIZE, ELEMENTS, LEAGUES, type Element } from "@/lib/cards/
 import { act, view, type CardsState } from "@/lib/cards/client";
 import { Arena, type BattleReport as Report } from "./Arena";
 import { GameCard } from "./GameCard";
-import { SkillChips, SkillEditor } from "./skillui";
+import { SkillChips, SkillEditor, SynChips } from "./skillui";
+import { synergyList } from "@/lib/cards/synergy";
 import { InvPicker, Panel, RankFilter, fmt, fmtLeft, toast, useBusy, useNow } from "./common";
 import { Cur, ELEMENT_ICON, Ico } from "./icons";
 
@@ -55,6 +56,10 @@ export function BattleTab({ s }: { s: CardsState }) {
       setReport(r.result);
     });
 
+  const syn = useMemo(
+    () => synergyList(deck.map((c) => cardDef(c.cardId)).filter((d): d is NonNullable<typeof d> => !!d).map((d) => ({ series: d.series, element: d.element, cls: d.cls }))),
+    [deck],
+  );
   const league = s.league;
   const next = LEAGUES.find((l) => l.from > w.rating);
   const energyLeft = w.nextEnergyAt ? w.nextEnergyAt - now : 0;
@@ -89,6 +94,14 @@ export function BattleTab({ s }: { s: CardsState }) {
                   + Карта
                 </button>
               ),
+            )}
+          </div>
+          <div className="bt-syn">
+            <h4>Синергии отряда</h4>
+            {syn.length ? (
+              <SynChips list={syn} />
+            ) : (
+              <p className="cg-hint">Соберите 2–4 героя из одного аниме, 3–4 одной стихии или по одному герою четырёх разных классов: отряд получит бонусы к характеристикам.</p>
             )}
           </div>
           <div className="cg-row">

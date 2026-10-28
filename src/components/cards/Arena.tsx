@@ -2,10 +2,11 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { BattleEvent, BattleOutcome, StatusKind, Unit } from "@/lib/cards/battle";
-import { skillDef, type SkillFx } from "@/lib/cards/skills";
+import { ENERGY, passiveDef, skillDef, type SkillFx } from "@/lib/cards/skills";
+import type { Synergy } from "@/lib/cards/synergy";
 import { GameCard } from "./GameCard";
 import { Portal } from "./common";
-import { SkillGlyph } from "./skillui";
+import { SkillGlyph, SynChips } from "./skillui";
 import { Cur, Ico, type IcoName } from "./icons";
 
 export interface BattleReport {
@@ -15,6 +16,8 @@ export interface BattleReport {
   foeName: string;
   foeRating: number;
   pvp: boolean;
+  youSyn?: Synergy[];
+  foeSyn?: Synergy[];
   win: boolean;
   reward: { diamonds: number; dust: number; rating: number; scroll: number };
   rating: number;
@@ -25,6 +28,7 @@ interface UV {
   hp: number;
   sh: number;
   st: StatusKind[];
+  en: number;
 }
 interface Float {
   id: number;
@@ -57,13 +61,13 @@ export function Arena({ report, onClose }: { report: BattleReport; onClose: () =
   const [step, setStep] = useState(0);
   const [delay, setDelay] = useState(700);
   const [speed, setSpeed] = useState<1 | 2>(1);
-  const [uv, setUv] = useState<Record<string, UV>>(() => Object.fromEntries(all.map((u) => [u.key, { hp: u.maxHp, sh: 0, st: [] }])));
+  const [uv, setUv] = useState<Record<string, UV>>(() => Object.fromEntries(all.map((u) => [u.key, { hp: u.maxHp, sh: 0, st: [], en: u.passive === "p-swift" ? 30 : 0 }])));
   const [floats, setFloats] = useState<Float[]>([]);
   const [fx, setFx] = useState<Record<string, { fx: SkillFx; n: number }>>({});
   const [acting, setActing] = useState<Record<string, "cast" | "atk">>({});
   const [hit, setHit] = useState<Record<string, number>>({});
-  const [banner, setBanner] = useState<{ text: string; fx: SkillFx; n: number } | null>(null);
-  const [flash, setFlash] = useState<SkillFx | "crit" | null>(null);
+  const [banner, setBanner] = useState<{ text: string; fx: SkillFx; n: number; ult: boolean } | null>(null);
+  const [flash, setFlash] = useState<SkillFx | "crit" | "ult" | null>(null);
   const [round, setRound] = useState(1);
   const [log, setLog] = useState<string[]>([]);
   const counter = useRef(0);
@@ -114,14 +118,14 @@ export function Arena({ report, onClose }: { report: BattleReport; onClose: () =
     [],
   );
   const flashScreen = useCallback(
-    (f: SkillFx | "crit") => {
+    (f: SkillFx | "crit" | "ult") => {
       setFlash(f);
       later(() => setFlash(null), 520);
     },
     [later],
   );
 
-  const patch = (key: string, fn: (u: UV) => UV) => setUv((p) => ({ ...p, [key]: fn(p[key] ?? { hp: 0, sh: 0, st: [] }) }));
+  const patch = (key: string, fn: (u: UV) => UV) => setUv((p) => ({ ...p, [key]: fn(p[key] ?? { hp: 0, sh: 0, st: [], en: 0 }) }));
 
   /** Проигрывает событие, возвращает его длительность (мс) */
   const play = (e: BattleEvent): number => {
@@ -130,11 +134,12 @@ export function Arena({ report, onClose }: { report: BattleReport; onClose: () =
       case "cast": {
         const sk = skillDef(e.skill);
         act(e.from, "cast", 900);
-        setBanner({ text: `${nameOf(e.from)} · ${sk?.name ?? e.skill}`, fx: e.fx, n: ++counter.current });
+        setBanner({ text: `${nameOf(e.from)} · ${sk?.name ?? e.skill}`, fx: e.fx, n: ++counter.current, ult: !!e.ult });
         burst(e.targets, e.fx);
-        flashScreen(e.fx);
-        say(`${nameOf(e.from)} применяет «${sk?.name ?? e.skill}»`);
-        return 950;
+        flashScreen(e.ult ? "ult" : e.fx);
+        if (e.ult) act(e.from, "cast", 1300);
+        say(`${nameOf(e.from)} применяет ${e.ult ? "УЛЬТИМЕЙТ " : ""}«${sk?.name ?? e.skill}»`);
+        return e.ult ? 1500 : 950;
       }
       case "hit": {
         patch(e.to, (u) => ({ ...u, hp: e.hp, sh: e.sh, st: e.dead ? [] : u.st }));
@@ -146,7 +151,7 @@ export function Arena({ report, onClose }: { report: BattleReport; onClose: () =
           burst([e.to], "slash");
         }
         if (e.crit) flashScreen("crit");
-        say(`${nameOf(e.from)} → ${nameOf(e.to)}: −${e.dmg}${e.crit ? " (крит)" : ""}${e.dead ? ", повержен" : ""}`);
+        say(`${nameOf(e.from)} → ${nameOf(e.to)}: −${e.dmg}${e.skill === "p-thorns" ? " (шипы)" : ""}${e.crit ? " (крит)" : ""}${e.dead ? ", повержен" : ""}`);
         return e.skill ? 480 : 720;
       }
       case "heal":
@@ -172,6 +177,16 @@ export function Arena({ report, onClose }: { report: BattleReport; onClose: () =
         burst([e.to], "fire");
         say(`${nameOf(e.to)} получает урон от горения: −${e.dmg}`);
         return 560;
+      case "energy":
+        patch(e.to, (u) => ({ ...u, en: e.en }));
+        return 0;
+      case "revive": {
+        patch(e.to, (u) => ({ ...u, hp: e.hp }));
+        addFloat(e.to, passiveDef("p-revive")?.name ?? "Второе дыхание", "heal");
+        burst([e.to], "heal");
+        say(`${nameOf(e.to)} возвращается в бой: «Второе дыхание»`);
+        return 800;
+      }
       case "skip":
         addFloat(e.from, "Пропуск хода", "info");
         say(`${nameOf(e.from)} оглушён и пропускает ход`);
@@ -193,7 +208,7 @@ export function Arena({ report, onClose }: { report: BattleReport; onClose: () =
 
   const skip = () => {
     const final: Record<string, UV> = {};
-    [...report.outcome.a, ...report.outcome.b].forEach((u) => (final[u.key] = { hp: u.hp, sh: 0, st: [] }));
+    [...report.outcome.a, ...report.outcome.b].forEach((u) => (final[u.key] = { hp: u.hp, sh: 0, st: [], en: 0 }));
     setUv(final);
     setFloats([]);
     setBanner(null);
@@ -209,7 +224,7 @@ export function Arena({ report, onClose }: { report: BattleReport; onClose: () =
         const dead = v.hp <= 0;
         const f = fx[u.key];
         return (
-          <div key={u.key} className={`ar-unit ${dead ? "dead" : ""} ${acting[u.key] ? `act-${acting[u.key]}` : ""} ${hit[u.key] ? "hit" : ""}`} style={{ ["--dir" as string]: s === "a" ? 1 : -1 }}>
+          <div key={u.key} className={`ar-unit ${dead ? "dead" : ""} ${acting[u.key] ? `act-${acting[u.key]}` : ""} ${hit[u.key] ? "hit" : ""} ${v.en >= ENERGY.max && !dead ? "ult-ready" : ""}`} style={{ ["--dir" as string]: s === "a" ? 1 : -1 }}>
             <div className="ar-card">
               <GameCard cardId={u.cardId} foil={u.foil} level={u.level} stats={false} />
               {f && <span key={f.n} className={`ar-fx fx-${f.fx}`} aria-hidden />}
@@ -218,6 +233,9 @@ export function Arena({ report, onClose }: { report: BattleReport; onClose: () =
             <div className="ar-hp" role="progressbar" aria-valuemin={0} aria-valuemax={u.maxHp} aria-valuenow={v.hp} aria-label={`${u.name}: здоровье`}>
               <i className="hp" style={{ width: `${Math.max(0, (v.hp / u.maxHp) * 100)}%` }} />
               {v.sh > 0 && <i className="sh" style={{ width: `${Math.min(100, (v.sh / u.maxHp) * 100)}%` }} />}
+            </div>
+            <div className="ar-en" role="progressbar" aria-valuemin={0} aria-valuemax={ENERGY.max} aria-valuenow={v.en} aria-label={`${u.name}: энергия ультимейта`}>
+              <i style={{ width: `${Math.min(100, (v.en / ENERGY.max) * 100)}%` }} />
             </div>
             <div className="ar-meta">
               <span className="ar-name">{u.name}</span>
@@ -272,11 +290,19 @@ export function Arena({ report, onClose }: { report: BattleReport; onClose: () =
           )}
         </div>
 
+        {((report.youSyn?.length ?? 0) > 0 || (report.foeSyn?.length ?? 0) > 0) && (
+          <div className="ar-syns">
+            <SynChips list={report.youSyn ?? []} />
+            <SynChips list={report.foeSyn ?? []} right />
+          </div>
+        )}
+
         <div className={`ar-field ${flash ? `flash-${flash}` : ""}`}>
           {side(report.you, "a")}
           <div className="ar-mid">
             {banner && !done ? (
-              <div key={banner.n} className={`ar-banner fx-c-${banner.fx}`}>
+              <div key={banner.n} className={`ar-banner fx-c-${banner.fx} ${banner.ult ? "ult" : ""}`}>
+                {banner.ult && <b className="ar-ult-tag">Ультимейт</b>}
                 <SkillGlyph fx={banner.fx} size={22} />
                 <span>{banner.text}</span>
               </div>

@@ -98,6 +98,82 @@ export const SKILLS: Skill[] = [
 const BY_ID = new Map(SKILLS.map((s) => [s.id, s]));
 export const skillDef = (id: string): Skill | undefined => BY_ID.get(id);
 
+/* ------------------------------ Ультимейты ------------------------------- */
+
+/** Энергия для ультимейта и её приток */
+export const ENERGY = { max: 100, perTurn: 18, perHit: 12 } as const;
+
+const U = (id: string, name: string, desc: string, fx: SkillFx, rest: Partial<Skill> & Pick<Skill, "target" | "cls">): Skill => S({ id, name, desc, cd: 0, fx, ...rest });
+
+/** Ультимейт класса: срабатывает сам, когда шкала энергии полна */
+export const ULTIMATES: Record<CardClass, Skill> = {
+  warrior: U("u-warrior", "Крушение небес", "Удар по всем врагам: 150% атаки и −20% защиты на 3 раунда.", "slash", { target: "enemies", cls: "warrior", power: 1.5, defDown: 0.2 }),
+  mage: U("u-mage", "Падение метеоритов", "Метеориты по всем врагам: 170% атаки и ожог (3 тика по 30%).", "burst", { target: "enemies", cls: "mage", power: 1.7, burn: 0.3 }),
+  tank: U("u-tank", "Несокрушимый бастион", "Щит всей команде на 25% максимального здоровья на 3 раунда.", "shield", { target: "allies", cls: "tank", shieldPct: 0.25 }),
+  assassin: U("u-assassin", "Танец теней", "Серия ударов по слабейшему врагу: 340% атаки, вдвое больше при <35% здоровья.", "pierce", { target: "enemyLow", cls: "assassin", power: 3.4, exec: 1.5 }),
+  support: U("u-support", "Дар жизни", "Лечит всю команду на 35% здоровья и даёт +25% к атаке на 3 раунда.", "heal", { target: "allies", cls: "support", healPct: 0.35, atkUp: 0.25 }),
+};
+
+/* -------------------------------- Пассивки -------------------------------- */
+
+export interface Passive {
+  id: string;
+  name: string;
+  desc: string;
+  fx: SkillFx;
+  minRank: number;
+}
+
+export const PASSIVES: Passive[] = [
+  { id: "p-vigor", name: "Крепость", desc: "+12% к максимальному здоровью.", fx: "heal", minRank: 0 },
+  { id: "p-edge", name: "Острие", desc: "+10% к атаке.", fx: "slash", minRank: 0 },
+  { id: "p-bulwark", name: "Броня", desc: "+18% к защите.", fx: "shield", minRank: 0 },
+  { id: "p-swift", name: "Стремительность", desc: "+20% к скорости, бой начинается с 30 энергии.", fx: "wind", minRank: 0 },
+  { id: "p-vamp", name: "Кровожадность", desc: "Обычные атаки лечат на 20% нанесённого урона.", fx: "drain", minRank: 1 },
+  { id: "p-thorns", name: "Шипы", desc: "Возвращает атакующему 15% полученного урона.", fx: "earth", minRank: 1 },
+  { id: "p-focus", name: "Фокус", desc: "+12% к шансу критического удара.", fx: "beam", minRank: 1 },
+  { id: "p-flow", name: "Поток силы", desc: "+8 энергии каждый ход: ультимейт быстрее.", fx: "buff", minRank: 2 },
+  { id: "p-revive", name: "Второе дыхание", desc: "Раз за бой: вместо гибели герой восстанавливает 30% здоровья.", fx: "beam", minRank: 3 },
+];
+const PASSIVE_BY_ID = new Map(PASSIVES.map((p) => [p.id, p]));
+export const passiveDef = (id: string | undefined): Passive | undefined => (id ? PASSIVE_BY_ID.get(id) : undefined);
+
+/** Пассивка по умолчанию — по классу */
+export const defaultPassive = (cls: CardClass): string => ({ warrior: "p-edge", mage: "p-flow", tank: "p-bulwark", assassin: "p-focus", support: "p-vigor" })[cls];
+
+export const passivesFor = (rank: number): Passive[] => PASSIVES.filter((p) => p.minRank <= rank);
+
+export function validatePassive(id: string, rank: number): string {
+  const p = passiveDef(id);
+  if (!p) return "Нет такой пассивки";
+  return p.minRank > rank ? "Пассивка недоступна для этого ранга" : "";
+}
+
+/* ----------------------------- Прокачка умений ---------------------------- */
+
+export const SKILL_MAX_LEVEL = 5;
+/** Прирост силы умения за уровень (урон, лечение, щиты, горение) */
+export const SKILL_LEVEL_BONUS = 0.1;
+
+/** Цена перехода с уровня `lv` на `lv+1`: пыль и свитки ранга героя (свитки с 3-го уровня) */
+export function skillUpCost(rank: number, lv: number): { dust: number; scroll: number } {
+  const base = [12, 30, 70, 150, 320][Math.max(0, Math.min(4, rank))];
+  return { dust: base * lv * lv, scroll: lv >= 3 ? 1 : 0 };
+}
+
+/** Умение с учётом уровня: сила растёт, на максимуме перезарядка короче на 1 ход */
+export function levelled(sk: Skill, lv: number): Skill {
+  const l = Math.max(1, Math.min(SKILL_MAX_LEVEL, Math.floor(lv) || 1));
+  if (l === 1) return sk;
+  const m = 1 + SKILL_LEVEL_BONUS * (l - 1);
+  const o: Skill = { ...sk };
+  for (const k of ["power", "heal", "healPct", "shield", "shieldPct", "burn"] as const) if (o[k]) o[k] = Math.round((o[k] as number) * m * 100) / 100;
+  if (l >= SKILL_MAX_LEVEL && o.cd > 1) o.cd -= 1;
+  return o;
+}
+
+for (const u of Object.values(ULTIMATES)) BY_ID.set(u.id, u);
+
 /** Сколько умений можно экипировать по рангу */
 export const SKILL_SLOTS: Record<Rank, number> = { 0: 1, 1: 2, 2: 2, 3: 3, 4: 3 };
 

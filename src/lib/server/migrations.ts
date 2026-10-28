@@ -751,5 +751,15 @@ export const MIGRATIONS: Migration[] = [
       ALTER TABLE card_inv ADD COLUMN skills TEXT NOT NULL DEFAULT '';
     `,
   },
+  {
+    version: 23,
+    name: "cards-depth",
+    sql: `
+      -- Пассивка героя и уровни его умений (JSON: {"id":уровень}).
+      ALTER TABLE card_inv ADD COLUMN passive TEXT NOT NULL DEFAULT '';
+      ALTER TABLE card_inv ADD COLUMN skill_lv TEXT NOT NULL DEFAULT '';
+      -- Расширяемое хранилище прогресса игрока (достижения, серии, кампания, избранное и т.д.).
+      ALTER TABLE card_wallet ADD COLUMN extra TEXT NOT NULL DEFAULT '{}';
+    `,
+  },
 ];
-

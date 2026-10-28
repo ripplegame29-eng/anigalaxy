@@ -21,6 +21,7 @@ import {
   MELT,
   MISSIONS,
   PACK,
+  RANKS,
   SCROLL_DUST,
   SHARPEN_PITY_STEP,
   SPLIT,
@@ -30,7 +31,7 @@ import {
   type Rank,
 } from "../cards/config";
 import { cardDef, cardsOfRank } from "../cards/catalog";
-import { defaultLoadout, validateLoadout } from "../cards/skills";
+import { SKILL_MAX_LEVEL, defaultLoadout, defaultPassive, skillDef, skillPool, skillUpCost, validateLoadout, validatePassive } from "../cards/skills";
 import { PROGRESS_DOC_KEY } from "../sync-keys";
 import { adjustBalance } from "./admin-edit";
 import { dayKey } from "./day";
@@ -161,6 +162,10 @@ export interface InvCard {
   listed: boolean;
   /** Экипированные умения в порядке приоритета */
   skills: string[];
+  /** Пассивка героя */
+  passive: string;
+  /** Уровни умений */
+  skillLv: Record<string, number>;
 }
 
 function loadoutFromRow(cardId: string, raw: string): string[] {
@@ -168,6 +173,23 @@ function loadoutFromRow(cardId: string, raw: string): string[] {
   if (!def) return [];
   const saved = raw.split(",").filter(Boolean);
   return saved.length && !validateLoadout(saved, def.cls, def.element, def.rank) ? saved : defaultLoadout(def.cls, def.element, def.rank);
+}
+
+function parseLv(raw: string): Record<string, number> {
+  try {
+    const v = JSON.parse(raw || "{}") as Record<string, unknown>;
+    const out: Record<string, number> = {};
+    for (const [k, x] of Object.entries(v)) if (skillDef(k) && Number(x) > 1) out[k] = Math.min(SKILL_MAX_LEVEL, Math.floor(Number(x)));
+    return out;
+  } catch {
+    return {};
+  }
+}
+
+function passiveFromRow(cardId: string, raw: string): string {
+  const def = cardDef(cardId);
+  if (!def) return "";
+  return raw && !validatePassive(raw, def.rank) ? raw : defaultPassive(def.cls);
 }
 
 const rowToInv = (r: Record<string, unknown>): InvCard => ({
@@ -179,6 +201,8 @@ const rowToInv = (r: Record<string, unknown>): InvCard => ({
   locked: num(r.locked) === 1,
   listed: num(r.listed) === 1,
   skills: loadoutFromRow(str(r.card_id), str(r.skills)),
+  passive: passiveFromRow(str(r.card_id), str(r.passive)),
+  skillLv: parseLv(str(r.skill_lv)),
 });
 
 export function listInventory(db: Database, userId: number): InvCard[] {
@@ -1020,8 +1044,8 @@ export function grantStarter(db: Database, userId: number, now = Date.now(), rng
 }
 
 
-/** Сохранить набор умений героя (порядок = приоритет в бою) */
-export function setSkills(db: Database, userId: number, invId: number, ids: string[]): Res<string[]> {
+/** Сохранить набор умений героя (порядок = приоритет в бою) и пассивку */
+export function setSkills(db: Database, userId: number, invId: number, ids: string[], passive?: string): Res<{ skills: string[]; passive: string }> {
   const row = db.prepare("SELECT * FROM card_inv WHERE id = ? AND user_id = ?").get(invId, userId);
   if (!row) return fail("Карта не найдена");
   const def = cardDef(str(row.card_id));
@@ -1029,6 +1053,35 @@ export function setSkills(db: Database, userId: number, invId: number, ids: stri
   const clean = ids.map((x) => String(x));
   const bad = validateLoadout(clean, def.cls, def.element, def.rank);
   if (bad) return fail(bad);
-  db.prepare("UPDATE card_inv SET skills = ? WHERE id = ? AND user_id = ?").run(clean.join(","), invId, userId);
-  return { ok: true, value: clean };
+  const pas = passive ? String(passive) : passiveFromRow(str(row.card_id), str(row.passive));
+  const badP = validatePassive(pas, def.rank);
+  if (badP) return fail(badP);
+  db.prepare("UPDATE card_inv SET skills = ?, passive = ? WHERE id = ? AND user_id = ?").run(clean.join(","), pas, invId, userId);
+  return { ok: true, value: { skills: clean, passive: pas } };
+}
+
+/** Прокачать умение героя на уровень: тратит пыль и (с 3-го уровня) свиток ранга героя */
+export function upgradeSkill(db: Database, userId: number, invId: number, skillId: string, now = Date.now()): Res<{ level: number; dust: number; scroll: number }> {
+  return transaction(db, (): Res<{ level: number; dust: number; scroll: number }> => {
+    const row = db.prepare("SELECT * FROM card_inv WHERE id = ? AND user_id = ?").get(invId, userId);
+    if (!row) return fail("Карта не найдена");
+    const def = cardDef(str(row.card_id));
+    const sk = skillDef(skillId);
+    if (!def || !sk) return fail("Умение не найдено");
+    const pool = new Set(skillPool(def.cls, def.element).map((x) => x.id));
+    if (!pool.has(skillId)) return fail("Это умение недоступно герою");
+    const lv = parseLv(str(row.skill_lv));
+    const cur = lv[skillId] ?? 1;
+    if (cur >= SKILL_MAX_LEVEL) return fail("Умение уже на максимальном уровне");
+    const cost = skillUpCost(def.rank, cur);
+    if (cost.scroll && !addScroll(db, userId, def.rank, -cost.scroll)) return fail(`Нужен свиток заточки (${RANKS[def.rank].name})`);
+    if (!addMoney(db, userId, "dust", -cost.dust)) {
+      if (cost.scroll) addScroll(db, userId, def.rank, cost.scroll);
+      return fail(`Не хватает пыли (${cost.dust})`);
+    }
+    lv[skillId] = cur + 1;
+    db.prepare("UPDATE card_inv SET skill_lv = ? WHERE id = ? AND user_id = ?").run(JSON.stringify(lv), invId, userId);
+    logEvent(db, userId, "skill", `Умение «${sk.name}» героя ${def.name}: уровень ${cur + 1}`, def.id, def.rank, now);
+    return { ok: true, value: { level: cur + 1, dust: cost.dust, scroll: cost.scroll } };
+  });
 }

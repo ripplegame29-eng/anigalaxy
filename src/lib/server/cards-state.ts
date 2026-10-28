@@ -35,6 +35,7 @@ import {
   splitUsage,
   toggleLock,
   upgrade,
+  upgradeSkill,
   viewCollection,
   type Res,
 } from "./cards";
@@ -147,7 +148,9 @@ export function cardsAction(db: Database, userId: number, op: string, body: Reco
     case "deck":
       return setDeck(db, userId, ints(body.ids));
     case "skills":
-      return setSkills(db, userId, Math.floor(Number(body.id)) || 0, Array.isArray(body.skills) ? body.skills.map(String) : []);
+      return setSkills(db, userId, Math.floor(Number(body.id)) || 0, Array.isArray(body.skills) ? body.skills.map(String) : [], body.passive === undefined ? undefined : String(body.passive));
+    case "skill-up":
+      return upgradeSkill(db, userId, Math.floor(Number(body.id)) || 0, String(body.skill ?? ""), now);
     case "fight":
       return fight(db, userId, { training: !!body.training }, now);
     case "energy":

@@ -1,8 +1,9 @@
 /** Карточные бои: колода, лига, соперник (игрок или бот), награды. */
 
-import { applyMods, seeded, simulate, type BattleOutcome, type Unit } from "../cards/battle";
+import { applyMods, applyPassives, applySynergies, seeded, simulate, type BattleOutcome, type Unit } from "../cards/battle";
+import type { Synergy } from "../cards/synergy";
 import { CATALOG, cardDef, cardsOfRank } from "../cards/catalog";
-import { defaultLoadout } from "../cards/skills";
+import { defaultLoadout, defaultPassive } from "../cards/skills";
 import { BATTLE, DECK_SIZE, leagueOf, weeklyMods, type Rank } from "../cards/config";
 import {
   addMoney,
@@ -22,7 +23,7 @@ import { num, str, transaction, type Database } from "./sqlite";
 
 export const weekIndexOf = (ms: number): number => Math.floor((ms - 4 * 86_400_000) / (7 * 86_400_000));
 
-export function unitOf(card: { id?: number; cardId: string; level: number; foil: boolean; skills?: string[] }, side: "a" | "b", slot: number): Unit | null {
+export function unitOf(card: { id?: number; cardId: string; level: number; foil: boolean; skills?: string[]; passive?: string; skillLv?: Record<string, number> }, side: "a" | "b", slot: number): Unit | null {
   const def = cardDef(card.cardId);
   if (!def) return null;
   const m = statMul(card);
@@ -43,6 +44,9 @@ export function unitOf(card: { id?: number; cardId: string; level: number; foil:
     foil: card.foil,
     level: card.level,
     skills: card.skills?.length ? card.skills : defaultLoadout(def.cls, def.element, def.rank),
+    skillLv: card.skillLv,
+    passive: card.passive || defaultPassive(def.cls),
+    series: def.series,
   };
 }
 
@@ -114,6 +118,9 @@ export interface BattleReport {
   foeName: string;
   foeRating: number;
   pvp: boolean;
+  /** Активные синергии отрядов */
+  youSyn: Synergy[];
+  foeSyn: Synergy[];
   win: boolean;
   reward: { diamonds: number; dust: number; rating: number; scroll: number };
   rating: number;
@@ -151,7 +158,11 @@ export function fight(
     const opp = training ? null : findOpponent(db, userId, w.rating, rng);
     const foe = opp ? deckUnits(db, opp.id, "b")! : botSquad(w.rating, rng);
     const mods = weeklyMods(weekIndexOf(now));
-    const outcome = simulate(applyMods(mine, mods), applyMods(foe, mods), rng);
+    const youP = applySynergies(applyPassives(mine));
+    const foeP = applySynergies(applyPassives(foe));
+    const youU = applyMods(youP.units, mods);
+    const foeU = applyMods(foeP.units, mods);
+    const outcome = simulate(youU, foeU, rng);
     const win = outcome.winner === "a";
 
     const reward = { diamonds: 0, dust: 0, rating: 0, scroll: 0 };
@@ -187,8 +198,10 @@ export function fight(
       ok: true,
       value: {
         outcome,
-        you: applyMods(mine, mods),
-        foe: applyMods(foe, mods),
+        you: youU,
+        foe: foeU,
+        youSyn: youP.list,
+        foeSyn: foeP.list,
         foeName: opp ? opp.nick : "Тренировочный бот",
         foeRating: opp ? opp.rating : w.rating,
         pvp: !!opp,

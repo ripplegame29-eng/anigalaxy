@@ -17,6 +17,8 @@ export interface InvCard {
   listed: boolean;
   /** Экипированные умения в порядке приоритета */
   skills: string[];
+  passive: string;
+  skillLv: Record<string, number>;
 }
 
 export interface CardsState {

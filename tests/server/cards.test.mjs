@@ -3,11 +3,13 @@ import assert from "node:assert/strict";
 
 import { CATALOG, cardsOfRank } from "../../.tsc-tests/lib/cards/catalog.js";
 import { simulate, seeded } from "../../.tsc-tests/lib/cards/battle.js";
-import { SKILLS, defaultLoadout, skillPool, slotsOf, validateLoadout } from "../../.tsc-tests/lib/cards/skills.js";
+import { SKILLS, ULTIMATES, defaultLoadout, skillPool, slotsOf, validateLoadout, skillUpCost, levelled, validatePassive, skillDef } from "../../.tsc-tests/lib/cards/skills.js";
+import { synergyList } from "../../.tsc-tests/lib/cards/synergy.js";
+import { applySynergies, applyPassives } from "../../.tsc-tests/lib/cards/battle.js";
 import {
   addCard, addMoney, addScroll, bid, cancelAuction, claimDaily, claimMission, createAuction, disenchant, exchangeAc, getWallet,
   listAuctions, listInventory, melt, openPacks, pendingPack, pickFromPack, respondTrade, sendTrade, settleAuctions, sharpen, split, upgrade,
-  bumpMission, cancelTrade, setSkills,
+  bumpMission, cancelTrade, setSkills, upgradeSkill,
 } from "../../.tsc-tests/lib/server/cards.js";
 import { fight, setDeck, unitOf } from "../../.tsc-tests/lib/server/cards-battle.js";
 import { cardsAction, cardsState } from "../../.tsc-tests/lib/server/cards-state.js";
@@ -365,13 +367,13 @@ test("бой с умениями: касты, щиты, лечение, оглу
   assert.ok(kinds.has("cast"), "умения применяются");
   assert.ok(x.events.some((e) => e.t === "hit" && e.skill), "урон от умения");
   // каждый cast ссылается на существующее умение
-  for (const e of x.events) if (e.t === "cast") assert.ok(SKILLS.some((s) => s.id === e.skill));
+  for (const e of x.events) if (e.t === "cast") assert.ok(skillDef(e.skill));
   // здоровье в событиях не уходит ниже нуля и не выше максимума
   const max = Object.fromEntries([...a1, ...b1].map((u) => [u.key, u.maxHp]));
   for (const e of x.events) if ("hp" in e) assert.ok(e.hp >= 0 && e.hp <= max[e.to]);
   // без умений бой всё равно идёт (обычные атаки)
   const plain = simulate(a1.map((u) => ({ ...u, skills: [] })), b1.map((u) => ({ ...u, skills: [] })), seeded(5));
-  assert.ok(!plain.events.some((e) => e.t === "cast"));
+  assert.ok(!plain.events.some((e) => e.t === "cast" && !e.ult));
   assert.ok(plain.events.length > 0);
   // оглушение пропускает ход
   const stunner = SKILLS.find((s) => s.stun);
@@ -381,4 +383,62 @@ test("бой с умениями: касты, щиты, лечение, оглу
     seeded(8),
   );
   assert.ok(st.events.some((e) => e.t === "status" && e.kind === "stun" && e.on));
+});
+
+test("синергии: аниме, стихия и баланс классов дают бонусы; усиленные герои сильнее", () => {
+  const m = (series, element, cls) => ({ series, element, cls });
+  assert.equal(synergyList([m("A", "fire", "mage"), m("B", "water", "tank")]).length, 0);
+  const two = synergyList([m("A", "fire", "mage"), m("A", "water", "tank")]);
+  assert.equal(two[0].kind, "series");
+  assert.ok(two[0].bonus.atk > 0);
+  const four = synergyList([m("A", "fire", "warrior"), m("A", "fire", "tank"), m("A", "fire", "mage"), m("A", "fire", "support")]);
+  assert.ok(four.some((s) => s.kind === "series" && s.tier === 3));
+  assert.ok(four.some((s) => s.kind === "element"));
+  assert.ok(four.some((s) => s.kind === "classes"));
+  const units = ["warrior", "tank"].map((cls, i) => ({ key: `a${i}`, side: "a", slot: i, cardId: "x", name: "x", rank: 0, element: "fire", cls, atk: 100, def: 100, hp: 1000, maxHp: 1000, spd: 50, foil: false, level: 1, series: "S" }));
+  const r = applySynergies(units);
+  assert.equal(r.list.length, 1);
+  assert.ok(r.units[0].atk > 100);
+});
+
+test("пассивки: статовые усиливают, ранг ограничивает «Второе дыхание»", () => {
+  const u = [{ key: "a0", side: "a", slot: 0, cardId: "x", name: "x", rank: 0, element: "fire", cls: "mage", atk: 100, def: 100, hp: 1000, maxHp: 1000, spd: 100, foil: false, level: 1, passive: "p-vigor" }];
+  assert.equal(applyPassives(u)[0].maxHp, 1120);
+  assert.ok(validatePassive("p-revive", 1));
+  assert.equal(validatePassive("p-revive", 3), "");
+  assert.ok(validatePassive("nope", 4));
+});
+
+test("ультимейты: копится энергия и срабатывает; «Второе дыхание» спасает от гибели один раз", () => {
+  const mk = (side, i, extra = {}) => ({ key: `${side}${i}`, side, slot: i, cardId: "x", name: `${side}${i}`, rank: 3, element: "fire", cls: "warrior", atk: 400, def: 60, hp: 3000, maxHp: 3000, spd: 80 - i, foil: false, level: 1, skills: ["w-slash"], ...extra });
+  const a = [mk("a", 0), mk("a", 1)];
+  const b = [mk("b", 0, { passive: "p-revive", hp: 200, maxHp: 200 }), mk("b", 1)];
+  const out = simulate(a, b, seeded(3));
+  assert.ok(out.events.some((e) => e.t === "energy"));
+  assert.ok(out.events.some((e) => e.t === "cast" && e.ult), "ультимейт применён");
+  assert.equal(out.events.filter((e) => e.t === "revive").length, 1);
+  assert.ok(ULTIMATES.mage.power > 1);
+});
+
+test("уровни умений: сила растёт, цена растёт; прокачка списывает пыль и свиток", () => {
+  const sk = skillDef("w-slash");
+  assert.ok(levelled(sk, 3).power > sk.power);
+  assert.equal(levelled(sk, 5).cd, sk.cd - 1);
+  assert.ok(skillUpCost(3, 2).dust > skillUpCost(3, 1).dust);
+  assert.equal(skillUpCost(3, 3).scroll, 1);
+  const db = freshDb();
+  const u = makeUser(db);
+  getWallet(db, u.id, NOW);
+  const [id] = give(db, u.id, cardsOfRank(0).find((c) => c.cls === "warrior").id);
+  assert.equal(upgradeSkill(db, u.id, id, "m-fireball").ok, false, "чужое для класса умение");
+  addMoney(db, u.id, "dust", -getWallet(db, u.id, NOW).dust);
+  assert.equal(upgradeSkill(db, u.id, id, "w-slash").ok, false, "нет пыли");
+  addMoney(db, u.id, "dust", 5000);
+  addScroll(db, u.id, 0, 3);
+  for (let i = 0; i < 4; i += 1) assert.ok(upgradeSkill(db, u.id, id, "w-slash").ok, `ур. ${i + 2}`);
+  assert.equal(upgradeSkill(db, u.id, id, "w-slash").ok, false, "максимум");
+  const inv = listInventory(db, u.id).find((c) => c.id === id);
+  assert.equal(inv.skillLv["w-slash"], 5);
+  assert.ok(setSkills(db, u.id, id, ["w-slash"], "p-edge").ok);
+  assert.equal(setSkills(db, u.id, id, ["w-slash"], "p-revive").ok, false);
 });
