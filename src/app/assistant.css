@@ -1,137 +1,311 @@
 /*
- * ИИ-ассистент «Нова» — тёмный плоский стиль каталога: те же токены --ag-*,
- * тонкие синие линии, без стеклянных «навигаторов». Префикс ast- не задевает
+ * ИИ-ассистент «Нова» — тёмный стиль каталога, доведённый до «игрового» уровня:
+ * звёздное небо и медленное северное сияние, орб с орбитами, стеклянные панели
+ * с градиентной рамкой, карточки тайтлов с постерами. Все цвета берутся из
+ * токенов --ag-*. Анимируются только transform и opacity, на телефонах и при
+ * prefers-reduced-motion фон остаётся статичным. Префикс ast- не задевает
  * другие страницы.
  */
 
 .ast-page {
+  --ast-grad: linear-gradient(135deg, #2b7fff, #22d3ee);
+  --ast-edge: linear-gradient(135deg, rgba(43, 127, 255, 0.65), rgba(34, 211, 238, 0.28) 45%, rgba(255, 255, 255, 0.05));
   position: relative;
-  min-height: 70vh;
+  isolation: isolate;
+  min-height: 78vh;
+  overflow: hidden;
+}
+
+/* Небо: северное сияние (два размытых пятна, дрейфуют) и звёзды */
+.ast-page::before,
+.ast-page::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.ast-page::before {
+  inset: -20% -10% auto;
+  height: 90%;
   background:
-    radial-gradient(900px 440px at 82% -8%, rgba(43, 127, 255, 0.11), transparent 60%),
-    radial-gradient(700px 420px at 4% 18%, rgba(34, 211, 238, 0.05), transparent 60%);
+    radial-gradient(520px 340px at 22% 28%, rgba(43, 127, 255, 0.2), transparent 70%),
+    radial-gradient(560px 360px at 78% 14%, rgba(34, 211, 238, 0.13), transparent 70%),
+    radial-gradient(420px 300px at 56% 60%, rgba(120, 90, 255, 0.1), transparent 70%);
+  animation: ast-drift 26s ease-in-out infinite alternate;
+}
+
+.ast-page::after {
+  inset: 0;
+  background-image:
+    radial-gradient(1.2px 1.2px at 12% 18%, rgba(255, 255, 255, 0.7), transparent 60%),
+    radial-gradient(1px 1px at 28% 62%, rgba(180, 210, 255, 0.6), transparent 60%),
+    radial-gradient(1.4px 1.4px at 44% 12%, rgba(255, 255, 255, 0.8), transparent 60%),
+    radial-gradient(1px 1px at 61% 40%, rgba(180, 230, 255, 0.55), transparent 60%),
+    radial-gradient(1.3px 1.3px at 76% 22%, rgba(255, 255, 255, 0.75), transparent 60%),
+    radial-gradient(1px 1px at 88% 58%, rgba(200, 220, 255, 0.5), transparent 60%),
+    radial-gradient(1.1px 1.1px at 6% 80%, rgba(255, 255, 255, 0.55), transparent 60%),
+    radial-gradient(1px 1px at 93% 86%, rgba(180, 210, 255, 0.5), transparent 60%),
+    radial-gradient(1.2px 1.2px at 52% 88%, rgba(255, 255, 255, 0.6), transparent 60%);
+  animation: ast-twinkle 7s ease-in-out infinite alternate;
+}
+
+@keyframes ast-drift {
+  to {
+    transform: translate3d(3%, 4%, 0) scale(1.06);
+  }
+}
+
+@keyframes ast-twinkle {
+  from {
+    opacity: 0.55;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .ast-wrap {
+  position: relative;
   width: 100%;
-  max-width: 860px;
+  max-width: 900px;
   margin: 0 auto;
-  padding: 40px 20px 70px;
+  padding: 56px 20px 80px;
 }
 
 /* ------------------------------ Приветствие ------------------------------ */
 
 .ast-hero {
   text-align: center;
-  padding-top: 18px;
 }
 
+/* Орб: ядро-звезда и три орбиты, у каждой свой «спутник» */
 .ast-orb {
+  position: relative;
   display: inline-grid;
   place-items: center;
-  width: 84px;
-  height: 84px;
-  border: 1px solid var(--ag-line-strong);
-  border-radius: 26px;
-  background: radial-gradient(circle at 50% 0%, rgba(43, 127, 255, 0.28), rgba(10, 15, 31, 0.9) 70%);
-  box-shadow: 0 18px 50px -18px rgba(43, 127, 255, 0.65);
+  width: 148px;
+  height: 148px;
 }
 
-.ast-orb svg {
-  width: 46px;
-  height: 46px;
+.ast-orb::before {
+  content: "";
+  position: absolute;
+  inset: 18px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(43, 127, 255, 0.55), rgba(34, 211, 238, 0.12) 55%, transparent 72%);
+  filter: blur(14px);
+  animation: ast-pulse 4.5s ease-in-out infinite;
+}
+
+.ast-orb > svg {
+  position: relative;
+  width: 62px;
+  height: 62px;
+  filter: drop-shadow(0 0 16px rgba(34, 211, 238, 0.65));
+}
+
+.ast-ring {
+  position: absolute;
+  inset: 0;
+  border: 1px solid rgba(111, 168, 255, 0.22);
+  border-radius: 50%;
+  animation: ast-spin 24s linear infinite;
+}
+
+.ast-ring::after {
+  content: "";
+  position: absolute;
+  top: -3px;
+  left: 50%;
+  width: 6px;
+  height: 6px;
+  margin-left: -3px;
+  border-radius: 50%;
+  background: #6fa8ff;
+  box-shadow: 0 0 10px 2px rgba(111, 168, 255, 0.8);
+}
+
+.ast-ring.r2 {
+  inset: 16px;
+  border-color: rgba(34, 211, 238, 0.2);
+  animation-duration: 17s;
+  animation-direction: reverse;
+}
+
+.ast-ring.r2::after {
+  background: #22d3ee;
+  box-shadow: 0 0 10px 2px rgba(34, 211, 238, 0.8);
+}
+
+.ast-ring.r3 {
+  inset: 34px;
+  border-color: rgba(255, 255, 255, 0.1);
+  animation-duration: 11s;
+}
+
+.ast-ring.r3::after {
+  width: 4px;
+  height: 4px;
+  margin-left: -2px;
+  background: #fff;
+  box-shadow: 0 0 8px 2px rgba(255, 255, 255, 0.7);
+}
+
+@keyframes ast-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes ast-pulse {
+  0%,
+  100% {
+    opacity: 0.7;
+    transform: scale(0.94);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.08);
+  }
+}
+
+.ast-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 18px;
+  padding: 6px 14px;
+  border: 1px solid var(--ag-line-strong);
+  border-radius: 999px;
+  background: rgba(43, 127, 255, 0.1);
+  color: var(--ag-accent-ink);
+  font-size: 12.5px;
+  font-weight: 700;
+}
+
+.ast-badge i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #3ddc97;
+  box-shadow: 0 0 8px #3ddc97;
 }
 
 .ast-h1 {
-  margin: 22px 0 10px;
-  color: #fff;
+  max-width: 760px;
+  margin: 18px auto 14px;
+  background: linear-gradient(180deg, #ffffff 30%, #a9c8ff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
   font-family: var(--font-display), var(--font-body), sans-serif;
-  font-size: clamp(30px, 5vw, 42px);
+  font-size: clamp(34px, 6vw, 58px);
   font-weight: 800;
-  line-height: 1.1;
-  letter-spacing: -0.4px;
+  line-height: 1.06;
+  letter-spacing: -0.8px;
 }
 
 .ast-lead {
-  max-width: 600px;
+  max-width: 620px;
   margin: 0 auto;
   color: var(--ag-text-2);
-  font-size: 16px;
-  line-height: 1.6;
+  font-size: 17px;
+  line-height: 1.65;
 }
 
 .ast-soon {
   display: inline-block;
-  margin: 20px 0 0;
-  padding: 9px 16px;
+  margin: 22px 0 0;
+  padding: 10px 18px;
   border: 1px solid var(--ag-line);
-  border-radius: 12px;
+  border-radius: 14px;
   background: var(--ag-ctl);
   color: var(--ag-muted);
   font-size: 14px;
 }
 
 .ast-login {
-  margin-top: 20px;
-  padding: 12px 24px;
+  margin-top: 22px;
+  padding: 14px 30px;
   border: 0;
-  border-radius: 14px;
-  background: linear-gradient(135deg, #2b7fff, #22d3ee);
+  border-radius: 16px;
+  background: var(--ast-grad);
   color: #04101f;
+  font-family: inherit;
   font-size: 15px;
   font-weight: 800;
   cursor: pointer;
+  box-shadow: 0 14px 34px -12px rgba(34, 211, 238, 0.7);
   transition:
     transform 0.2s,
     filter 0.2s;
 }
 
 .ast-login:hover {
-  transform: translateY(-1px);
+  transform: translateY(-2px);
   filter: brightness(1.08);
 }
 
 .ast-starters {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-  margin-top: 34px;
+  gap: 14px;
+  margin-top: 42px;
   text-align: left;
 }
 
 .ast-starter {
+  position: relative;
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  padding: 16px 18px;
-  border: 1px solid var(--ag-line);
-  border-radius: 16px;
-  background: var(--ag-ctl);
+  gap: 8px;
+  padding: 20px 22px 22px;
+  border: 1px solid transparent;
+  border-radius: 20px;
+  background:
+    linear-gradient(180deg, rgba(14, 22, 44, 0.9), rgba(8, 13, 28, 0.94)) padding-box,
+    var(--ast-edge) border-box;
   color: var(--ag-text-2);
   font-family: inherit;
   text-align: left;
   cursor: pointer;
   transition:
-    border-color 0.2s,
-    background-color 0.2s,
-    transform 0.2s;
+    transform 0.25s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.25s;
+}
+
+.ast-starter-ic {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border: 1px solid var(--ag-line-strong);
+  border-radius: 12px;
+  background: rgba(43, 127, 255, 0.12);
+  color: var(--ag-accent-ink);
+}
+
+.ast-starter-ic svg {
+  width: 19px;
+  height: 19px;
 }
 
 .ast-starter b {
-  color: var(--ag-accent-ink);
-  font-size: 13px;
+  margin-top: 4px;
+  color: #fff;
+  font-size: 15px;
   font-weight: 800;
 }
 
 .ast-starter span {
   font-size: 14px;
-  line-height: 1.45;
+  line-height: 1.5;
 }
 
 .ast-starter:hover:not(:disabled) {
-  border-color: var(--ag-accent-bd);
-  background: var(--ag-ctl-hover);
-  transform: translateY(-2px);
+  transform: translateY(-4px);
+  box-shadow: 0 22px 44px -22px rgba(43, 127, 255, 0.75);
 }
 
 .ast-starter:disabled {
@@ -146,9 +320,13 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  margin-bottom: 18px;
-  padding-bottom: 14px;
-  border-bottom: 1px solid var(--ag-line);
+  margin-bottom: 26px;
+  padding: 12px 14px 12px 16px;
+  border: 1px solid transparent;
+  border-radius: 18px;
+  background:
+    linear-gradient(180deg, rgba(14, 22, 44, 0.85), rgba(8, 13, 28, 0.9)) padding-box,
+    var(--ast-edge) border-box;
 }
 
 .ast-bar-name {
@@ -156,17 +334,29 @@
   align-items: center;
   gap: 10px;
   color: #fff;
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 800;
 }
 
+.ast-bar-name::after {
+  content: "онлайн";
+  margin-left: 4px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: rgba(61, 220, 151, 0.12);
+  color: #3ddc97;
+  font-size: 11px;
+  font-weight: 700;
+}
+
 .ast-bar-ic {
-  width: 26px;
-  height: 26px;
+  width: 28px;
+  height: 28px;
+  filter: drop-shadow(0 0 8px rgba(34, 211, 238, 0.55));
 }
 
 .ast-new {
-  padding: 8px 16px;
+  padding: 9px 16px;
   border: 1px solid var(--ag-line);
   border-radius: 12px;
   background: var(--ag-ctl);
@@ -177,11 +367,13 @@
   cursor: pointer;
   transition:
     border-color 0.2s,
-    color 0.2s;
+    color 0.2s,
+    background-color 0.2s;
 }
 
 .ast-new:hover:not(:disabled) {
   border-color: var(--ag-accent-bd);
+  background: var(--ag-ctl-hover);
   color: #fff;
 }
 
@@ -195,14 +387,22 @@
 .ast-log {
   display: flex;
   flex-direction: column;
-  gap: 18px;
-  margin-bottom: 22px;
+  gap: 22px;
+  margin-bottom: 26px;
 }
 
 .ast-msg {
   display: flex;
-  gap: 12px;
+  gap: 14px;
   max-width: 100%;
+  animation: ast-in 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes ast-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
 }
 
 .ast-user {
@@ -213,63 +413,71 @@
   flex: none;
   display: grid;
   place-items: center;
-  width: 36px;
-  height: 36px;
-  border: 1px solid var(--ag-line-strong);
-  border-radius: 12px;
-  background: var(--ag-card);
+  width: 40px;
+  height: 40px;
+  border: 1px solid transparent;
+  border-radius: 14px;
+  background:
+    linear-gradient(180deg, #0c1428, #070c1a) padding-box,
+    var(--ast-edge) border-box;
+  box-shadow: 0 0 22px -6px rgba(43, 127, 255, 0.6);
 }
 
 .ast-av svg {
-  width: 22px;
-  height: 22px;
+  width: 24px;
+  height: 24px;
 }
 
 .ast-col {
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  max-width: min(640px, 100%);
+  gap: 14px;
+  max-width: min(680px, 100%);
 }
 
 .ast-bub {
   margin: 0;
-  padding: 12px 16px;
-  border: 1px solid var(--ag-line);
-  border-radius: 6px 18px 18px 18px;
-  background: var(--ag-card);
+  padding: 14px 18px;
+  border: 1px solid transparent;
+  border-radius: 6px 20px 20px 20px;
+  background:
+    linear-gradient(180deg, rgba(14, 22, 44, 0.92), rgba(8, 13, 28, 0.95)) padding-box,
+    var(--ast-edge) border-box;
   color: var(--ag-text);
-  font-size: 15px;
-  line-height: 1.6;
+  font-size: 15.5px;
+  line-height: 1.65;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
 
 .ast-user .ast-bub {
-  border-color: var(--ag-accent-bd);
-  border-radius: 18px 6px 18px 18px;
-  background: var(--ag-accent-bg);
+  border-radius: 20px 6px 20px 20px;
+  background:
+    linear-gradient(135deg, rgba(43, 127, 255, 0.42), rgba(34, 211, 238, 0.22)) padding-box,
+    linear-gradient(135deg, rgba(111, 168, 255, 0.7), rgba(34, 211, 238, 0.35)) border-box;
+  color: #fff;
 }
 
 .ast-err .ast-bub {
-  border-color: rgba(255, 106, 120, 0.4);
-  background: rgba(255, 106, 120, 0.08);
-  color: #ffb4bc;
+  background:
+    linear-gradient(180deg, rgba(60, 14, 22, 0.9), rgba(30, 8, 14, 0.94)) padding-box,
+    linear-gradient(135deg, rgba(255, 106, 120, 0.6), rgba(255, 106, 120, 0.15)) border-box;
+  color: #ffc0c7;
 }
 
 .ast-typing {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  height: 46px;
+  gap: 6px;
+  height: 50px;
 }
 
 .ast-typing i {
-  width: 7px;
-  height: 7px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
-  background: var(--ag-accent-ink);
+  background: var(--ast-grad);
   animation: ast-dot 1.2s ease-in-out infinite;
 }
 
@@ -290,7 +498,7 @@
   }
   40% {
     opacity: 1;
-    transform: translateY(-3px);
+    transform: translateY(-4px);
   }
 }
 
@@ -298,104 +506,145 @@
 
 .ast-picks {
   display: grid;
-  gap: 10px;
+  gap: 12px;
 }
 
 .ast-pick {
+  position: relative;
   display: flex;
-  gap: 14px;
-  padding: 10px;
-  border: 1px solid var(--ag-line);
-  border-radius: 16px;
-  background: var(--ag-ctl);
+  gap: 16px;
+  padding: 12px;
+  border: 1px solid transparent;
+  border-radius: 20px;
+  background:
+    linear-gradient(180deg, rgba(14, 22, 44, 0.9), rgba(8, 13, 28, 0.94)) padding-box,
+    var(--ast-edge) border-box;
   color: inherit;
   text-decoration: none;
   transition:
-    border-color 0.2s,
-    background-color 0.2s,
-    transform 0.2s;
+    transform 0.25s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.25s;
 }
 
 .ast-pick:hover {
-  border-color: var(--ag-accent-bd);
-  background: var(--ag-ctl-hover);
-  transform: translateY(-2px);
+  transform: translateY(-3px);
+  box-shadow: 0 22px 44px -24px rgba(43, 127, 255, 0.8);
 }
 
 .ast-pick-poster {
   position: relative;
   flex: none;
-  width: 70px;
+  width: 92px;
   aspect-ratio: 2 / 3;
   overflow: hidden;
-  border-radius: 10px;
+  border-radius: 12px;
   background: var(--ag-card);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.08),
+    0 14px 26px -10px rgba(0, 0, 0, 0.8);
+}
+
+.ast-pick-poster img {
+  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.ast-pick:hover .ast-pick-poster img {
+  transform: scale(1.07);
 }
 
 .ast-pick-body {
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 5px;
   justify-content: center;
 }
 
 .ast-pick-body b {
   color: #fff;
-  font-size: 15px;
+  font-size: 16.5px;
   font-weight: 800;
-  line-height: 1.3;
+  line-height: 1.25;
 }
 
 .ast-pick-body small {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
   color: var(--ag-muted);
   font-size: 12.5px;
 }
 
 .ast-pick-body em {
-  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(255, 211, 106, 0.12);
   color: #ffd36a;
   font-style: normal;
-  font-weight: 700;
+  font-weight: 800;
 }
 
 .ast-pick-why {
   color: var(--ag-text-2);
-  font-size: 13.5px;
+  font-size: 14px;
   line-height: 1.5;
+}
+
+.ast-pick-go {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+  color: var(--ag-accent-ink);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.ast-pick-go svg {
+  width: 15px;
+  height: 15px;
+  transition: transform 0.25s;
+}
+
+.ast-pick:hover .ast-pick-go svg {
+  transform: translateX(4px);
 }
 
 /* --------------------------------- Ввод ----------------------------------- */
 
 .ast-compose {
   position: sticky;
-  bottom: 16px;
+  bottom: 18px;
+  z-index: 2;
   display: flex;
   align-items: flex-end;
   gap: 10px;
-  margin-top: 28px;
+  margin-top: 30px;
   padding: 10px;
-  border: 1px solid var(--ag-line-strong);
-  border-radius: 20px;
-  background: var(--ag-pop);
-  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.5);
-  transition:
-    border-color 0.2s,
-    box-shadow 0.2s;
+  border: 1px solid transparent;
+  border-radius: 24px;
+  background:
+    linear-gradient(180deg, rgba(12, 19, 38, 0.82), rgba(7, 11, 24, 0.88)) padding-box,
+    var(--ast-edge) border-box;
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  box-shadow: 0 24px 60px -16px rgba(0, 0, 0, 0.75);
+  transition: box-shadow 0.25s;
 }
 
 .ast-compose:focus-within {
-  border-color: var(--ag-accent-bd);
   box-shadow:
     0 0 0 3px var(--ag-ring),
-    0 18px 50px rgba(0, 0, 0, 0.5);
+    0 24px 60px -16px rgba(0, 0, 0, 0.75),
+    0 0 50px -14px rgba(43, 127, 255, 0.55);
 }
 
 .ast-compose textarea {
   flex: 1;
   min-width: 0;
   max-height: 160px;
-  padding: 10px 8px 10px 10px;
+  padding: 12px 8px 12px 14px;
   border: 0;
   outline: 0;
   resize: none;
@@ -415,13 +664,14 @@
   flex: none;
   display: grid;
   place-items: center;
-  width: 44px;
-  height: 44px;
+  width: 48px;
+  height: 48px;
   border: 0;
-  border-radius: 14px;
-  background: linear-gradient(135deg, #2b7fff, #22d3ee);
+  border-radius: 16px;
+  background: var(--ast-grad);
   color: #04101f;
   cursor: pointer;
+  box-shadow: 0 10px 26px -10px rgba(34, 211, 238, 0.8);
   transition:
     transform 0.2s,
     filter 0.2s,
@@ -429,22 +679,23 @@
 }
 
 .ast-send svg {
-  width: 20px;
-  height: 20px;
+  width: 21px;
+  height: 21px;
 }
 
 .ast-send:hover:not(:disabled) {
-  transform: translateY(-1px);
+  transform: translateY(-2px);
   filter: brightness(1.1);
 }
 
 .ast-send:disabled {
-  opacity: 0.35;
+  opacity: 0.3;
+  box-shadow: none;
   cursor: not-allowed;
 }
 
 .ast-note {
-  margin: 12px 4px 0;
+  margin: 14px 4px 0;
   color: var(--ag-muted);
   font-size: 12.5px;
   text-align: center;
@@ -457,7 +708,17 @@
 
 @media (max-width: 640px) {
   .ast-wrap {
-    padding: 26px 14px 56px;
+    padding: 34px 14px 60px;
+  }
+
+  .ast-orb {
+    width: 120px;
+    height: 120px;
+  }
+
+  .ast-orb > svg {
+    width: 50px;
+    height: 50px;
   }
 
   .ast-starters {
@@ -465,20 +726,35 @@
   }
 
   .ast-pick-poster {
-    width: 60px;
+    width: 72px;
+  }
+
+  /* На телефоне небо не анимируем: экономим батарею */
+  .ast-page::before,
+  .ast-page::after {
+    animation: none;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .ast-typing i {
+  .ast-page::before,
+  .ast-page::after,
+  .ast-ring,
+  .ast-orb::before,
+  .ast-typing i,
+  .ast-msg {
     animation: none;
+  }
+
+  .ast-typing i {
     opacity: 0.7;
   }
 
   .ast-starter,
   .ast-pick,
   .ast-login,
-  .ast-send {
+  .ast-send,
+  .ast-pick-poster img {
     transition: none;
   }
 }

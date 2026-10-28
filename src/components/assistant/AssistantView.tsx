@@ -40,10 +40,36 @@ const STORE_KEY = "ag-assistant-chat-v1";
 const KEEP = 40;
 
 const STARTERS = [
-  { title: "Под настроение", text: "Посоветуй что-нибудь лёгкое и доброе на вечер" },
-  { title: "Поиск по сюжету", text: "Помоги найти аниме: школьник попадает в виртуальную игру и не может из неё выйти" },
-  { title: "Что дальше", text: "Что посмотреть после «Атаки титанов»?" },
-  { title: "Коротко и сильно", text: "Короткое аниме до 13 серий с хорошим сюжетом" },
+  {
+    title: "Под настроение",
+    text: "Посоветуй что-нибудь лёгкое и доброе на вечер",
+    icon: <path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z" />,
+  },
+  {
+    title: "Поиск по сюжету",
+    text: "Помоги найти аниме: школьник попадает в виртуальную игру и не может из неё выйти",
+    icon: (
+      <>
+        <circle cx="11" cy="11" r="6.5" />
+        <path d="M16 16l4.5 4.5" />
+      </>
+    ),
+  },
+  {
+    title: "Что дальше",
+    text: "Что посмотреть после «Атаки титанов»?",
+    icon: <path d="M4 12h14M12 5l7 7-7 7" />,
+  },
+  {
+    title: "Коротко и сильно",
+    text: "Короткое аниме до 13 серий с хорошим сюжетом",
+    icon: (
+      <>
+        <circle cx="12" cy="12" r="8.5" />
+        <path d="M12 7.5V12l3 2" />
+      </>
+    ),
+  },
 ];
 
 function load(): Msg[] {
@@ -96,6 +122,12 @@ function PickCard({ pick }: { pick: Pick }) {
           {rating ? <em>★ {rating}</em> : null}
         </small>
         {pick.why ? <span className="ast-pick-why">{pick.why}</span> : null}
+        <span className="ast-pick-go">
+          Смотреть
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+            <path d="M5 12h14M13 6l6 6-6 6" />
+          </svg>
+        </span>
       </span>
     </Link>
   );
@@ -193,10 +225,17 @@ function Chat({ enabled }: { enabled: boolean }) {
     <div className="ast-wrap">
       {empty ? (
         <header className="ast-hero">
-          <span className="ast-orb">
+          <span className="ast-orb" aria-hidden>
+            <i className="ast-ring r1" />
+            <i className="ast-ring r2" />
+            <i className="ast-ring r3" />
             <Spark id="ast-g1" />
           </span>
-          <h1 className="ast-h1">Нова — ИИ-помощник</h1>
+          <span className="ast-badge">
+            <i />
+            ИИ-помощник · бета
+          </span>
+          <h1 className="ast-h1">Нова — ваш ИИ-гид по аниме</h1>
           <p className="ast-lead">
             Расскажите, какое у вас настроение, опишите сюжет или сцену, которую запомнили, — и Нова подскажет, что
             посмотреть. Всё, что она советует, можно сразу открыть на AniGalaxy.
@@ -217,6 +256,11 @@ function Chat({ enabled }: { enabled: boolean }) {
                 disabled={!enabled || busy}
                 onClick={() => void send(s.text)}
               >
+                <i className="ast-starter-ic">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                    {s.icon}
+                  </svg>
+                </i>
                 <b>{s.title}</b>
                 <span>{s.text}</span>
               </button>
