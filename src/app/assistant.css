@@ -593,6 +593,16 @@
   text-align: center;
 }
 
+/* Рамку фокуса рисует сам .ast-compose; у поля внутри её нет, иначе получаются две плашки */
+.ast-page .ast-compose textarea,
+.ast-page .ast-compose textarea:focus,
+.ast-page .ast-compose textarea:focus-visible {
+  outline: 0;
+  box-shadow: none;
+  border: 0;
+  background: transparent;
+}
+
 .ast-page :focus-visible {
   outline: 2px solid var(--ast-accent);
   outline-offset: 2px;
