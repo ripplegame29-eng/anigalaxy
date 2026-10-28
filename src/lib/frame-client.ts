@@ -66,7 +66,8 @@ export function clockOf(seconds: number): string {
 /* ------------------------------ ИИ-разбор -------------------------------- */
 
 export interface FrameAiPick {
-  id: string;
+  /** null — тайтла нет в каталоге сайта */
+  id: string | null;
   title: string;
   year?: number;
   poster?: string;

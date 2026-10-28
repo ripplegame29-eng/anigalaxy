@@ -1,12 +1,21 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type PointerEvent } from "react";
 import { Poster } from "@/components/Poster";
-import { openAuthDialog } from "@/lib/auth-dialog";
 import { shikimoriPoster } from "@/lib/anime";
-import { FrameAuthError, askFrameAi, clockOf, findFrame, percent, type FrameAiResult } from "@/lib/frame-client";
+import { openAuthDialog } from "@/lib/auth-dialog";
+import {
+  FrameAuthError,
+  askFrameAi,
+  clockOf,
+  findFrame,
+  percent,
+  type FrameAiPick,
+  type FrameAiResult,
+} from "@/lib/frame-client";
 import type { FrameMatch } from "@/lib/frame-types";
+import { useAccount } from "@/lib/use-account";
 import { FrameGuide } from "./FrameGuide";
 
 type State =
@@ -25,41 +34,116 @@ const CONFIDENCE_LABEL = { high: "Уверенно", medium: "Похоже", low
 
 const ACCEPT = "image/jpeg,image/png,image/webp,image/gif,image/avif";
 const SURE = 0.87;
+const GAUGE_R = 34;
+const GAUGE_C = 2 * Math.PI * GAUGE_R;
 
 const titleOf = (m: FrameMatch) =>
   m.card?.title ?? m.names.english ?? m.names.romaji ?? m.names.native ?? "Неизвестный тайтл";
 
+/** Подсветка за курсором: кладём координаты в CSS-переменные, без перерисовок React */
+function glow(event: PointerEvent<HTMLElement>) {
+  const box = event.currentTarget.getBoundingClientRect();
+  event.currentTarget.style.setProperty("--mx", `${event.clientX - box.left}px`);
+  event.currentTarget.style.setProperty("--my", `${event.clientY - box.top}px`);
+}
+
+function Spark({ id }: { id: string }) {
+  return (
+    <svg viewBox="0 0 64 64" aria-hidden>
+      <defs>
+        <linearGradient id={id} x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stopColor="#6fa8ff" />
+          <stop offset="1" stopColor="#22d3ee" />
+        </linearGradient>
+      </defs>
+      <path d="M30 6l5.4 15.6L51 27l-15.6 5.4L30 48l-5.4-15.6L9 27l15.6-5.4z" fill={`url(#${id})`} />
+      <path d="M50 38l2.3 6.7 6.7 2.3-6.7 2.3L50 56l-2.3-6.7L41 47l6.7-2.3z" fill={`url(#${id})`} opacity=".75" />
+    </svg>
+  );
+}
+
+/** Круговой датчик совпадения: дуга «дорисовывается» при появлении */
+function Gauge({ value, sure }: { value: number; sure: boolean }) {
+  return (
+    <span className={`fs-gauge${sure ? " sure" : ""}`}>
+      <svg viewBox="0 0 80 80" aria-hidden>
+        <circle className="bg" cx="40" cy="40" r={GAUGE_R} />
+        <circle
+          className="fg"
+          cx="40"
+          cy="40"
+          r={GAUGE_R}
+          strokeDasharray={GAUGE_C}
+          strokeDashoffset={GAUGE_C * (1 - value)}
+          style={{ ["--c" as string]: GAUGE_C }}
+        />
+      </svg>
+      <b>
+        {Math.round(value * 100)}
+        <small>%</small>
+      </b>
+    </span>
+  );
+}
+
+function pickHref(pick: FrameAiPick): string {
+  return pick.id ? `/title/${pick.id}` : `/catalog?q=${encodeURIComponent(pick.title)}`;
+}
+
 export function FrameSearchView({ aiEnabled = false }: { aiEnabled?: boolean }) {
+  const account = useAccount();
   const [state, setState] = useState<State>({ kind: "idle" });
   const [ai, setAi] = useState<AiState>({ kind: "idle" });
-  const sourceRef = useRef<File | string | null>(null);
   const [drag, setDrag] = useState(false);
   const [url, setUrl] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
   const previewRef = useRef<string | null>(null);
+  const sourceRef = useRef<File | string | null>(null);
 
   const setPreview = (next: string | null) => {
     if (previewRef.current?.startsWith("blob:")) URL.revokeObjectURL(previewRef.current);
     previewRef.current = next;
   };
 
-  const run = useCallback(async (input: File | string) => {
-    const preview = typeof input === "string" ? input : URL.createObjectURL(input);
-    setPreview(preview);
-    sourceRef.current = input;
-    setAi({ kind: "idle" });
-    setState({ kind: "busy", preview });
+  /** Один запрос к ИИ; 401 открывает окно входа, остальные ошибки показываются в панели */
+  const runAi = useCallback(async (source: File | string) => {
+    setAi({ kind: "busy" });
     try {
-      const result = await findFrame(input);
-      setState(
-        result.matches.length
-          ? { kind: "done", preview, matches: result.matches }
-          : { kind: "error", message: "Ничего похожего не нашли. Попробуйте кадр почище: без субтитров и рамок.", preview },
-      );
+      setAi({ kind: "done", result: await askFrameAi(source) });
     } catch (error) {
-      setState({ kind: "error", message: error instanceof Error ? error.message : "Не удалось выполнить поиск.", preview });
+      if (error instanceof FrameAuthError) {
+        openAuthDialog("login");
+        setAi({ kind: "idle" });
+        return;
+      }
+      setAi({ kind: "error", message: error instanceof Error ? error.message : "ИИ не смог разобрать кадр." });
     }
   }, []);
+
+  const run = useCallback(
+    async (input: File | string) => {
+      const preview = typeof input === "string" ? input : URL.createObjectURL(input);
+      setPreview(preview);
+      sourceRef.current = input;
+      setState({ kind: "busy", preview });
+
+      // ИИ и база сцен работают параллельно: ИИ узнаёт тайтл, база находит секунду
+      if (aiEnabled && account) void runAi(input);
+      else setAi({ kind: "idle" });
+
+      try {
+        const result = await findFrame(input);
+        setState(
+          result.matches.length
+            ? { kind: "done", preview, matches: result.matches }
+            : { kind: "error", message: "В базе сцен ничего похожего не нашли.", preview },
+        );
+      } catch (error) {
+        setState({ kind: "error", message: error instanceof Error ? error.message : "Не удалось выполнить поиск.", preview });
+      }
+    },
+    [account, aiEnabled, runAi],
+  );
 
   // Ctrl+V с картинкой в буфере — на всей странице
   useEffect(() => {
@@ -89,25 +173,190 @@ export function FrameSearchView({ aiEnabled = false }: { aiEnabled?: boolean }) 
     setUrl("");
   };
 
-  const askAi = async () => {
-    const source = sourceRef.current;
-    if (!source || ai.kind === "busy") return;
-    setAi({ kind: "busy" });
-    try {
-      setAi({ kind: "done", result: await askFrameAi(source) });
-    } catch (error) {
-      if (error instanceof FrameAuthError) {
-        openAuthDialog("login");
-        setAi({ kind: "idle" });
-        return;
-      }
-      setAi({ kind: "error", message: error instanceof Error ? error.message : "ИИ не смог разобрать кадр." });
-    }
-  };
-
-  const busy = state.kind === "busy";
+  const scanning = state.kind === "busy" || ai.kind === "busy";
   const best = state.kind === "done" ? state.matches[0] : null;
   const rest = state.kind === "done" ? state.matches.slice(1) : [];
+  const sure = Boolean(best && best.similarity >= SURE);
+  const aiResult = ai.kind === "done" ? ai.result : null;
+  /** ИИ идёт первым, если база сцен не уверена: именно он «узнаёт» тайтл */
+  const aiFirst = Boolean(aiResult) && !sure;
+  const finished = state.kind === "done" || state.kind === "error";
+
+  /* ------------------------------ Карточка ИИ ------------------------------ */
+  const aiCard = aiResult && (
+    <section
+      className={`fs-air${aiFirst ? " is-primary" : ""}`}
+      aria-label="Разбор кадра с помощью ИИ"
+      onPointerMove={glow}
+    >
+      <div className="fs-air-tag">
+        <span className="fs-ai-ic" aria-hidden>
+          <Spark id="fs-air-g" />
+        </span>
+        <b>{aiFirst ? "ИИ узнал аниме" : "Мнение ИИ"}</b>
+        <small>NVIDIA Nemotron</small>
+      </div>
+      <p className="fs-ai-desc">{aiResult.description}</p>
+
+      {aiResult.picks.length > 0 ? (
+        <>
+          <article className="fs-hero-pick">
+            <div className="fs-hero-poster">
+              <Poster
+                src={aiResult.picks[0].poster}
+                fallback={aiResult.picks[0].shikimoriId ? shikimoriPoster(aiResult.picks[0].shikimoriId) : undefined}
+                alt=""
+                title={aiResult.picks[0].title}
+                sizes="160px"
+                className="object-cover"
+              />
+            </div>
+            <div className="fs-hero-info">
+              <span className={`fs-conf is-${aiResult.picks[0].confidence}`}>{CONFIDENCE_LABEL[aiResult.picks[0].confidence]}</span>
+              <h2>{aiResult.picks[0].title}</h2>
+              {aiResult.picks[0].year || aiResult.picks[0].genres.length > 0 ? (
+                <p className="fs-orig">{[aiResult.picks[0].year, ...aiResult.picks[0].genres].filter(Boolean).join(" · ")}</p>
+              ) : null}
+              {aiResult.picks[0].why ? <p className="fs-hero-why">{aiResult.picks[0].why}</p> : null}
+              <div className="fs-acts">
+                <Link href={pickHref(aiResult.picks[0])} className="fs-btn is-primary">
+                  {aiResult.picks[0].id ? "Смотреть на AniGalaxy" : "Поискать в каталоге"}
+                </Link>
+              </div>
+              {!aiResult.picks[0].id && <p className="fs-miss">Точного совпадения в каталоге пока нет.</p>}
+            </div>
+          </article>
+
+          {aiResult.picks.length > 1 && (
+            <ul className="fs-ai-list">
+              {aiResult.picks.slice(1).map((p) => (
+                <li key={p.id ?? p.title}>
+                  <Link href={pickHref(p)} className="fs-ai-pick">
+                    <span className="fs-ai-poster">
+                      <Poster
+                        src={p.poster}
+                        fallback={p.shikimoriId ? shikimoriPoster(p.shikimoriId) : undefined}
+                        alt=""
+                        title={p.title}
+                        sizes="56px"
+                        className="object-cover"
+                      />
+                    </span>
+                    <span className="fs-ai-info">
+                      <b>{p.title}</b>
+                      <span className={`fs-conf is-${p.confidence}`}>{CONFIDENCE_LABEL[p.confidence]}</span>
+                      {p.why ? <small>{p.why}</small> : null}
+                    </span>
+                    <span className="fs-go" aria-hidden>→</span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+        </>
+      ) : (
+        <p className="fs-ai-none">ИИ не смог уверенно назвать аниме. Попробуйте другой кадр, лучше с лицом героя или узнаваемой сценой.</p>
+      )}
+      <button type="button" className="fs-btn" onClick={() => sourceRef.current && void runAi(sourceRef.current)}>
+        Разобрать заново
+      </button>
+    </section>
+  );
+
+  /* -------------------------- Результаты базы сцен -------------------------- */
+  const traceSection = best && (
+    <section className="fs-result" aria-label="Совпадение по базе сцен">
+      {aiResult && <h3 className="fs-sec">{sure ? "Точная сцена" : "Возможное совпадение по базе сцен"}</h3>}
+      <article className="fs-best" onPointerMove={glow}>
+        <div className="fs-clip">
+          {best.video ? (
+            <video src={best.video} poster={best.image} autoPlay muted loop playsInline />
+          ) : (
+            <img src={best.image} alt="" />
+          )}
+          <span className="fs-badge">{clockOf(best.at)}</span>
+        </div>
+
+        <div className="fs-info">
+          <div className="fs-sim-row">
+            <Gauge value={best.similarity} sure={sure} />
+            <span className={`fs-sim-label${sure ? " sure" : ""}`}>{sure ? "Точное совпадение" : "Возможно, это оно"}</span>
+          </div>
+          <h2>{titleOf(best)}</h2>
+          {best.names.native && best.card && <p className="fs-orig">{best.names.native}</p>}
+          <ul className="fs-facts">
+            {best.episode != null && <li><small>Серия</small><b>{best.episode}</b></li>}
+            <li><small>Момент</small><b>{clockOf(best.from)} – {clockOf(best.to)}</b></li>
+            {best.card?.year ? <li><small>Год</small><b>{best.card.year}</b></li> : null}
+          </ul>
+
+          {!sure && (
+            <p className="fs-warn">Совпадение неуверенное: база сцен ошибается на кадрах с субтитрами, рамками и артами.</p>
+          )}
+
+          {best.card ? (
+            <div className="fs-acts">
+              <Link href={`/title/${best.card.id}`} className="fs-btn is-primary">Смотреть на AniGalaxy</Link>
+              <Link href={`/title/${best.card.id}#episodes`} className="fs-btn">Открыть серии</Link>
+            </div>
+          ) : (
+            <div className="fs-acts">
+              <p className="fs-miss">Этого тайтла пока нет в нашем каталоге.</p>
+              <Link href={`/catalog?q=${encodeURIComponent(best.names.romaji ?? best.names.english ?? "")}`} className="fs-btn">Поискать в каталоге</Link>
+            </div>
+          )}
+        </div>
+      </article>
+
+      {rest.length > 0 && (
+        <>
+          <h3 className="fs-more">Другие варианты</h3>
+          <ul className="fs-list">
+            {rest.map((m, index) => (
+              <li key={`${m.malId}-${index}`} style={{ ["--n" as string]: index }}>
+                <div className="fs-mini">
+                  {m.card ? <Poster src={m.card.poster} alt="" title={m.card.title} sizes="56px" className="object-cover" /> : null}
+                </div>
+                <div className="fs-mi">
+                  <b>{titleOf(m)}</b>
+                  <span>{m.episode != null ? `Серия ${m.episode} · ` : ""}{clockOf(m.at)}</span>
+                </div>
+                <div className="fs-meter"><i style={{ width: `${Math.round(m.similarity * 100)}%` }} /><em>{percent(m.similarity)}</em></div>
+                {m.card && <Link href={`/title/${m.card.id}`} className="fs-go" aria-label={`Открыть «${m.card.title}»`}>→</Link>}
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+    </section>
+  );
+
+  /* Приглашение к ИИ: гостям нужен вход, а после сбоя — повтор */
+  const askPanel =
+    aiEnabled && finished && !aiResult && ai.kind !== "busy" ? (
+      <section className="fs-ai is-hot" aria-label="Разбор кадра с помощью ИИ" onPointerMove={glow}>
+        <div className="fs-ai-head">
+          <span className="fs-ai-ic" aria-hidden>
+            <Spark id="fs-ai-g" />
+          </span>
+          <div>
+            <h3>{account ? "ИИ не смог разобрать кадр" : "Пусть кадр разберёт ИИ"}</h3>
+            <p>
+              {ai.kind === "error"
+                ? ai.message
+                : "ИИ смотрит на картинку, как человек: узнаёт героев и сцены, находит аниме даже по артам. Для этого нужен вход."}
+            </p>
+          </div>
+          <button
+            type="button"
+            className="fs-btn is-primary"
+            onClick={() => (account && sourceRef.current ? void runAi(sourceRef.current) : openAuthDialog("login"))}
+          >
+            {account ? "Попробовать ещё раз" : "Войти и разобрать"}
+          </button>
+        </div>
+      </section>
+    ) : null;
 
   return (
     <div className="fs-page">
@@ -115,14 +364,15 @@ export function FrameSearchView({ aiEnabled = false }: { aiEnabled?: boolean }) 
         <header className="fs-head">
           <span className="fs-badge-top">
             <i />
-            Поиск по кадру
+            ИИ-поиск по кадру
           </span>
           <h1>Узнайте аниме по одному кадру</h1>
-          <p>Загрузите скриншот — найдём тайтл, серию и точную секунду сцены. Если не вышло, поможет ИИ.</p>
+          <p>Загрузите скриншот или арт: ИИ узнает тайтл, а база сцен покажет серию и точную секунду.</p>
         </header>
 
         <section
-          className={`fs-drop${drag ? " is-drag" : ""}${busy ? " is-busy" : ""}${state.kind !== "idle" ? " has-img" : ""}`}
+          className={`fs-drop${drag ? " is-drag" : ""}${scanning ? " is-busy" : ""}${state.kind !== "idle" ? " has-img" : ""}`}
+          onPointerMove={glow}
           onDragOver={(event) => {
             event.preventDefault();
             setDrag(true);
@@ -140,7 +390,13 @@ export function FrameSearchView({ aiEnabled = false }: { aiEnabled?: boolean }) 
               <i className="fs-corner tr" aria-hidden />
               <i className="fs-corner bl" aria-hidden />
               <i className="fs-corner br" aria-hidden />
+              <i className="fs-dust d1" aria-hidden />
+              <i className="fs-dust d2" aria-hidden />
+              <i className="fs-dust d3" aria-hidden />
+              <i className="fs-dust d4" aria-hidden />
               <span className="fs-orb" aria-hidden>
+                <i className="fs-ring r1" />
+                <i className="fs-ring r2" />
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3" />
                   <circle cx="12" cy="12" r="3.2" />
@@ -155,15 +411,19 @@ export function FrameSearchView({ aiEnabled = false }: { aiEnabled?: boolean }) 
             </div>
           ) : (
             <div className="fs-shot">
-              {/* eslint-disable-next-line @next/next/no-img-element -- локальный blob или внешняя ссылка пользователя */}
-              <img src={state.preview} alt="Ваш кадр" />
-              {busy && (
+                            <img src={state.preview} alt="Ваш кадр" />
+              {scanning && (
                 <div className="fs-scan" aria-live="polite">
                   <i />
-                  <span>Сверяем с базой аниме…</span>
+                  <b className="fs-reticle" aria-hidden />
+                  <span className="fs-hud">
+                    <em>Изучаю кадр…</em>
+                    <em>Узнаю героев и сцену…</em>
+                    <em>Сверяю с базой сцен…</em>
+                  </span>
                 </div>
               )}
-              {!busy && (
+              {!scanning && (
                 <button type="button" className="fs-again" onClick={reset}>
                   Другой кадр
                 </button>
@@ -192,7 +452,16 @@ export function FrameSearchView({ aiEnabled = false }: { aiEnabled?: boolean }) 
           </form>
         )}
 
-        {state.kind === "error" && (
+        {/* Пока ИИ думает, а база уже ответила, показываем заглушку-«скелет» */}
+        {ai.kind === "busy" && state.kind !== "busy" && (
+          <div className="fs-air-skel" aria-hidden>
+            <i />
+            <i />
+            <i />
+          </div>
+        )}
+
+        {state.kind === "error" && !aiResult && !askPanel && (
           <div className="fs-error" role="alert">
             <b>Не получилось</b>
             <p>{state.message}</p>
@@ -200,157 +469,16 @@ export function FrameSearchView({ aiEnabled = false }: { aiEnabled?: boolean }) 
           </div>
         )}
 
-        {best && (
-          <section className="fs-result" aria-label="Найденный тайтл">
-            <article className="fs-best">
-              <div className="fs-clip">
-                {best.video ? (
-                  <video src={best.video} poster={best.image} autoPlay muted loop playsInline />
-                ) : (
-                  // eslint-disable-next-line @next/next/no-img-element -- превью trace.moe
-                  <img src={best.image} alt="" />
-                )}
-                <span className="fs-badge">{clockOf(best.at)}</span>
-              </div>
-
-              <div className="fs-info">
-                <div className={`fs-sim${best.similarity >= SURE ? " sure" : ""}`}>
-                  <b>{percent(best.similarity)}</b>
-                  <span>{best.similarity >= SURE ? "Точное совпадение" : "Возможно, это оно"}</span>
-                </div>
-                <h2>{titleOf(best)}</h2>
-                {best.names.native && best.card && <p className="fs-orig">{best.names.native}</p>}
-                <ul className="fs-facts">
-                  {best.episode != null && <li><small>Серия</small><b>{best.episode}</b></li>}
-                  <li><small>Момент</small><b>{clockOf(best.from)} – {clockOf(best.to)}</b></li>
-                  {best.card?.year ? <li><small>Год</small><b>{best.card.year}</b></li> : null}
-                </ul>
-
-                {best.similarity < SURE && (
-                  <p className="fs-warn">Совпадение неуверенное. Для точности возьмите кадр без субтитров, логотипов и чёрных полос.</p>
-                )}
-
-                {best.card ? (
-                  <div className="fs-acts">
-                    <Link href={`/title/${best.card.id}`} className="fs-btn is-primary">Смотреть на AniGalaxy</Link>
-                    <Link href={`/title/${best.card.id}#episodes`} className="fs-btn">Открыть серии</Link>
-                  </div>
-                ) : (
-                  <div className="fs-acts">
-                    <p className="fs-miss">Этого тайтла пока нет в нашем каталоге.</p>
-                    <Link href={`/catalog?q=${encodeURIComponent(best.names.romaji ?? best.names.english ?? "")}`} className="fs-btn">Поискать в каталоге</Link>
-                  </div>
-                )}
-              </div>
-            </article>
-
-            {rest.length > 0 && (
-              <>
-                <h3 className="fs-more">Другие варианты</h3>
-                <ul className="fs-list">
-                  {rest.map((m, index) => (
-                    <li key={`${m.malId}-${index}`} style={{ ["--n" as string]: index }}>
-                      <div className="fs-mini">
-                        {m.card ? <Poster src={m.card.poster} alt="" title={m.card.title} sizes="56px" className="object-cover" /> : null}
-                      </div>
-                      <div className="fs-mi">
-                        <b>{titleOf(m)}</b>
-                        <span>{m.episode != null ? `Серия ${m.episode} · ` : ""}{clockOf(m.at)}</span>
-                      </div>
-                      <div className="fs-meter"><i style={{ width: `${Math.round(m.similarity * 100)}%` }} /><em>{percent(m.similarity)}</em></div>
-                      {m.card && <Link href={`/title/${m.card.id}`} className="fs-go" aria-label={`Открыть «${m.card.title}»`}>→</Link>}
-                    </li>
-                  ))}
-                </ul>
-              </>
-            )}
-          </section>
-        )}
-
-        {aiEnabled && (state.kind === "done" || state.kind === "error") && (
-          <section
-            className={`fs-ai${state.kind === "error" || (best && best.similarity < SURE) ? " is-hot" : ""}`}
-            aria-label="Разбор кадра с помощью ИИ"
-          >
-            <div className="fs-ai-head">
-              <span className="fs-ai-ic" aria-hidden>
-                <svg viewBox="0 0 64 64">
-                  <defs>
-                    <linearGradient id="fs-ai-g" x1="0" y1="0" x2="1" y2="1">
-                      <stop offset="0" stopColor="#6fa8ff" />
-                      <stop offset="1" stopColor="#22d3ee" />
-                    </linearGradient>
-                  </defs>
-                  <path d="M30 6l5.4 15.6L51 27l-15.6 5.4L30 48l-5.4-15.6L9 27l15.6-5.4z" fill="url(#fs-ai-g)" />
-                  <path d="M50 38l2.3 6.7 6.7 2.3-6.7 2.3L50 56l-2.3-6.7L41 47l6.7-2.3z" fill="url(#fs-ai-g)" opacity=".75" />
-                </svg>
-              </span>
-              <div>
-                <h3>{state.kind === "error" || (best && best.similarity < SURE) ? "Не уверены в результате?" : "Хотите второе мнение?"}</h3>
-                <p>ИИ посмотрит на кадр, опишет, что на нём, и предложит, из какого он аниме. Подходит для артов и сцен с субтитрами.</p>
-              </div>
-              {ai.kind === "idle" && (
-                <button type="button" className="fs-btn is-primary" onClick={() => void askAi()}>
-                  Разобрать кадр с ИИ
-                </button>
-              )}
-            </div>
-
-            {ai.kind === "busy" && (
-              <div className="fs-ai-busy" aria-live="polite">
-                <i />
-                <span>ИИ изучает кадр…</span>
-              </div>
-            )}
-
-            {ai.kind === "error" && (
-              <div className="fs-ai-err" role="alert">
-                <p>{ai.message}</p>
-                <button type="button" className="fs-btn" onClick={() => void askAi()}>Попробовать ещё раз</button>
-              </div>
-            )}
-
-            {ai.kind === "done" && (
-              <div className="fs-ai-body">
-                <p className="fs-ai-desc">{ai.result.description}</p>
-                {ai.result.picks.length > 0 ? (
-                  <ul className="fs-ai-list">
-                    {ai.result.picks.map((pick) => (
-                      <li key={pick.id}>
-                        <Link href={`/title/${pick.id}`} className="fs-ai-pick">
-                          <span className="fs-ai-poster">
-                            <Poster
-                              src={pick.poster}
-                              fallback={pick.shikimoriId ? shikimoriPoster(pick.shikimoriId) : undefined}
-                              alt=""
-                              title={pick.title}
-                              sizes="72px"
-                              className="object-cover"
-                            />
-                          </span>
-                          <span className="fs-ai-info">
-                            <b>{pick.title}</b>
-                            <span className={`fs-conf is-${pick.confidence}`}>{CONFIDENCE_LABEL[pick.confidence]}</span>
-                            {pick.why ? <small>{pick.why}</small> : null}
-                          </span>
-                          <span className="fs-go" aria-hidden>→</span>
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="fs-ai-none">В каталоге AniGalaxy подходящих тайтлов не нашлось. Попробуйте другой кадр.</p>
-                )}
-                <button type="button" className="fs-btn" onClick={() => void askAi()}>Разобрать заново</button>
-              </div>
-            )}
-          </section>
-        )}
+        {aiFirst && aiCard}
+        {traceSection}
+        {!aiFirst && aiCard}
+        {state.kind === "error" && !aiResult && askPanel}
+        {state.kind === "done" && !aiResult && askPanel}
 
         <FrameGuide />
 
         <p className="fs-credit">
-          Поиск работает на открытой базе trace.moe — иногда он ошибается на редких сценах.{aiEnabled ? " ИИ-разбор: NVIDIA Nemotron, он тоже может ошибаться." : ""}
+          База сцен — открытый trace.moe, иногда он ошибается на редких кадрах.{aiEnabled ? " ИИ-разбор: NVIDIA Nemotron, он тоже может ошибаться." : ""}
         </p>
       </div>
     </div>

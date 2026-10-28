@@ -195,3 +195,111 @@
   .fs-page::before, .fs-page::after { animation: none; }
 }
 @media (prefers-reduced-motion: reduce) { .fs-corner, .fs-ai-busy i { animation: none !important; } }
+
+/* ===================== Эффекты v2: сканер, подсветка, датчик ===================== */
+
+@property --fs-a { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
+@keyframes fs-orbit { to { --fs-a: 360deg; } }
+@keyframes fs-shine { to { background-position: 200% 0; } }
+
+/* Заголовок: медленный перелив */
+.fs-head h1 { background: linear-gradient(100deg, #fff 20%, #a9c8ff 40%, #22d3ee 55%, #a9c8ff 70%, #fff 90%); background-size: 220% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; animation: fs-shine 9s linear infinite; }
+
+/* Рамка загрузки: бегущий по краю луч и свет за курсором */
+.fs-drop { --mx: 50%; --my: 0%;
+  background: radial-gradient(520px circle at var(--mx) var(--my), rgb(43 127 255 / 0.17), transparent 62%) padding-box, linear-gradient(180deg, rgb(14 22 44 / 0.92), rgb(8 13 28 / 0.95)) padding-box, linear-gradient(135deg, rgb(43 127 255 / 0.5), rgb(34 211 238 / 0.2) 45%, rgb(255 255 255 / 0.05)) border-box; }
+.fs-drop::after { content: ""; position: absolute; inset: 0; border-radius: inherit; padding: 1.5px; pointer-events: none;
+  background: conic-gradient(from var(--fs-a), transparent 0 62%, rgb(34 211 238 / 0.9) 82%, #2b7fff 92%, transparent 100%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0); mask-composite: exclude;
+  animation: fs-orbit 7s linear infinite; }
+.fs-drop.is-busy::after { animation-duration: 2.2s; }
+
+/* Пыль в рамке и орбиты орба */
+.fs-dust { position: absolute; width: 4px; height: 4px; border-radius: 50%; background: #6fa8ff; box-shadow: 0 0 10px 2px rgb(111 168 255 / 0.7); opacity: 0; animation: fs-dust 6s ease-in-out infinite; pointer-events: none; }
+.fs-dust.d1 { left: 18%; top: 62%; animation-delay: 0s; }
+.fs-dust.d2 { left: 80%; top: 70%; background: #22d3ee; box-shadow: 0 0 10px 2px rgb(34 211 238 / 0.7); animation-delay: 1.6s; }
+.fs-dust.d3 { left: 70%; top: 24%; animation-delay: 3.1s; }
+.fs-dust.d4 { left: 28%; top: 30%; background: #22d3ee; box-shadow: 0 0 10px 2px rgb(34 211 238 / 0.7); animation-delay: 4.4s; }
+@keyframes fs-dust { 0% { opacity: 0; transform: translateY(14px); } 30% { opacity: 1; } 100% { opacity: 0; transform: translateY(-46px); } }
+.fs-orb { position: relative; overflow: visible; }
+.fs-ring { position: absolute; inset: -14px; border: 1px solid rgb(111 168 255 / 0.28); border-radius: 36px; animation: fs-spin 22s linear infinite; }
+.fs-ring::after { content: ""; position: absolute; top: -3px; left: 50%; width: 6px; height: 6px; margin-left: -3px; border-radius: 50%; background: #22d3ee; box-shadow: 0 0 10px 2px rgb(34 211 238 / 0.8); }
+.fs-ring.r2 { inset: -30px; border-color: rgb(34 211 238 / 0.16); border-radius: 46px; animation-duration: 15s; animation-direction: reverse; }
+.fs-ring.r2::after { background: #6fa8ff; box-shadow: 0 0 10px 2px rgb(111 168 255 / 0.8); }
+
+/* Кнопки: блик при наведении */
+.fs-btn.is-primary, .fs-idle .fs-btn { position: relative; overflow: hidden; }
+.fs-btn.is-primary::after, .fs-idle .fs-btn::after { content: ""; position: absolute; inset: 0; background: linear-gradient(105deg, transparent 35%, rgb(255 255 255 / 0.45) 50%, transparent 65%); transform: translateX(-120%); transition: transform 0.6s; }
+.fs-btn.is-primary:hover::after, .fs-idle .fs-btn:hover::after { transform: translateX(120%); }
+
+/* Сканер: сетка, прицел и бегущие статусы */
+.fs-scan::before { content: ""; position: absolute; inset: 0; pointer-events: none;
+  background-image: linear-gradient(rgb(34 211 238 / 0.14) 1px, transparent 1px), linear-gradient(90deg, rgb(34 211 238 / 0.14) 1px, transparent 1px); background-size: 38px 38px;
+  -webkit-mask: radial-gradient(circle at 50% 50%, #000 20%, transparent 78%); mask: radial-gradient(circle at 50% 50%, #000 20%, transparent 78%); }
+.fs-reticle { position: absolute; top: 50%; left: 50%; width: 112px; height: 112px; margin: -56px 0 0 -56px; border: 2px solid rgb(34 211 238 / 0.9); border-radius: 50%; box-shadow: 0 0 30px rgb(34 211 238 / 0.5), inset 0 0 24px rgb(34 211 238 / 0.25); animation: fs-lock 1.8s ease-in-out infinite; }
+.fs-reticle::before, .fs-reticle::after { content: ""; position: absolute; background: rgb(34 211 238 / 0.9); }
+.fs-reticle::before { top: -14px; bottom: -14px; left: 50%; width: 2px; margin-left: -1px; clip-path: polygon(0 0, 100% 0, 100% 10px, 0 10px, 0 calc(100% - 10px), 100% calc(100% - 10px), 100% 100%, 0 100%); }
+.fs-reticle::after { left: -14px; right: -14px; top: 50%; height: 2px; margin-top: -1px; clip-path: polygon(0 0, 10px 0, 10px 100%, 0 100%, calc(100% - 10px) 0, 100% 0, 100% 100%, calc(100% - 10px) 100%); }
+@keyframes fs-lock { 0%, 100% { transform: scale(1.18); opacity: 0.55; } 50% { transform: scale(0.9); opacity: 1; } }
+.fs-hud { position: relative; display: grid; height: 36px; min-width: 250px; padding: 0 18px; place-items: center; border-radius: 999px; background: rgb(10 12 20 / 0.88); box-shadow: inset 0 0 0 1px rgb(34 211 238 / 0.5); overflow: hidden; }
+.fs-hud em { grid-area: 1 / 1; color: #bff3ff; font-size: 13px; font-style: normal; font-weight: 800; opacity: 0; animation: fs-say 6s linear infinite; }
+.fs-hud em:nth-child(2) { animation-delay: 2s; }
+.fs-hud em:nth-child(3) { animation-delay: 4s; }
+@keyframes fs-say { 0% { opacity: 0; transform: translateY(8px); } 6%, 30% { opacity: 1; transform: none; } 36%, 100% { opacity: 0; transform: translateY(-8px); } }
+.fs-scan span.fs-hud { padding: 0 18px; }
+
+/* Датчик совпадения */
+.fs-sim-row { display: flex; align-items: center; gap: 16px; }
+.fs-gauge { position: relative; display: grid; place-items: center; width: 84px; height: 84px; flex: none; }
+.fs-gauge svg { position: absolute; inset: 0; width: 100%; height: 100%; transform: rotate(-90deg); }
+.fs-gauge circle { fill: none; stroke-width: 6; }
+.fs-gauge .bg { stroke: rgb(255 255 255 / 0.08); }
+.fs-gauge .fg { stroke: #ffd36b; stroke-linecap: round; filter: drop-shadow(0 0 8px rgb(255 176 32 / 0.6)); animation: fs-gauge 1.2s cubic-bezier(0.2, 0.9, 0.3, 1) backwards; }
+.fs-gauge.sure .fg { stroke: #34e0a1; filter: drop-shadow(0 0 8px rgb(52 224 161 / 0.7)); }
+@keyframes fs-gauge { from { stroke-dashoffset: var(--c); } }
+.fs-gauge b { position: relative; font: 800 24px/1 var(--font-display, var(--font-body)), sans-serif; font-variant-numeric: tabular-nums; }
+.fs-gauge small { font-size: 13px; opacity: 0.7; }
+.fs-sim-label { color: #ffd36b; font-size: 14px; font-weight: 800; }
+.fs-sim-label.sure { color: #34e0a1; }
+
+/* Карточки результата: свет за курсором и «парящий» вход */
+.fs-best, .fs-air, .fs-ai, .fs-step { --mx: 50%; --my: 0%; }
+.fs-best { background: radial-gradient(460px circle at var(--mx) var(--my), rgb(43 127 255 / 0.14), transparent 60%) padding-box, linear-gradient(180deg, rgb(14 22 44 / 0.92), rgb(8 13 28 / 0.95)) padding-box, linear-gradient(135deg, rgb(43 127 255 / 0.65), rgb(34 211 238 / 0.28) 45%, rgb(255 255 255 / 0.05)) border-box; }
+.fs-sec { margin: 4px 0 -4px; color: #9aa6c4; font: 800 13px var(--font-body), sans-serif; letter-spacing: 0.04em; }
+
+/* Карточка ИИ */
+.fs-air { position: relative; display: grid; gap: 16px; padding: 24px; border: 1px solid transparent; border-radius: 28px; justify-items: start;
+  background: radial-gradient(460px circle at var(--mx) var(--my), rgb(34 211 238 / 0.1), transparent 60%) padding-box, linear-gradient(180deg, rgb(14 22 44 / 0.93), rgb(8 13 28 / 0.96)) padding-box, linear-gradient(135deg, rgb(43 127 255 / 0.45), rgb(34 211 238 / 0.2) 45%, rgb(255 255 255 / 0.05)) border-box;
+  animation: fs-rise 0.55s cubic-bezier(0.2, 0.9, 0.3, 1); }
+.fs-air.is-primary { background: radial-gradient(520px circle at var(--mx) var(--my), rgb(34 211 238 / 0.14), transparent 60%) padding-box, linear-gradient(180deg, rgb(14 22 44 / 0.93), rgb(8 13 28 / 0.96)) padding-box, linear-gradient(135deg, rgb(43 127 255 / 0.95), rgb(34 211 238 / 0.55) 50%, rgb(255 255 255 / 0.1)) border-box; box-shadow: 0 40px 100px -56px rgb(43 127 255 / 0.95); }
+.fs-air-tag { display: flex; align-items: center; gap: 10px; }
+.fs-air-tag .fs-ai-ic { width: 38px; height: 38px; border-radius: 12px; }
+.fs-air-tag .fs-ai-ic svg { width: 22px; height: 22px; }
+.fs-air-tag b { font: 800 15px var(--font-display, var(--font-body)), sans-serif; }
+.fs-air-tag small { padding: 3px 9px; border-radius: 999px; background: rgb(118 185 0 / 0.14); color: #a7e22e; font-size: 11px; font-weight: 800; }
+.fs-hero-pick { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 22px; width: 100%; }
+.fs-hero-poster { position: relative; aspect-ratio: 2 / 3; overflow: hidden; border-radius: 18px; background: #0d0f18; box-shadow: 0 0 0 1px rgb(255 255 255 / 0.1), 0 30px 50px -22px rgb(0 0 0 / 0.9), 0 0 60px -20px rgb(43 127 255 / 0.8); animation: fs-pop 0.7s cubic-bezier(0.2, 0.9, 0.3, 1) 0.1s backwards; }
+@keyframes fs-pop { from { opacity: 0; transform: scale(0.86) rotate(-2deg); } }
+.fs-hero-info { display: grid; align-content: center; justify-items: start; gap: 10px; min-width: 0; }
+.fs-hero-info h2 { margin: 0; font: 800 clamp(24px, 3.6vw, 34px) / 1.1 var(--font-display, var(--font-body)), sans-serif; letter-spacing: -0.02em; }
+.fs-hero-why { margin: 0; color: #b3bdd6; font-size: 14.5px; line-height: 1.55; }
+
+/* Скелет, пока ИИ думает */
+.fs-air-skel { display: grid; gap: 12px; padding: 24px; border-radius: 28px; background: rgb(255 255 255 / 0.03); box-shadow: inset 0 0 0 1px rgb(96 150 255 / 0.2); }
+.fs-air-skel i { display: block; height: 16px; border-radius: 8px; background: linear-gradient(100deg, rgb(255 255 255 / 0.05) 30%, rgb(111 168 255 / 0.22) 50%, rgb(255 255 255 / 0.05) 70%); background-size: 220% 100%; animation: fs-shine 1.6s linear infinite reverse; }
+.fs-air-skel i:nth-child(1) { width: 38%; height: 22px; }
+.fs-air-skel i:nth-child(2) { width: 92%; }
+.fs-air-skel i:nth-child(3) { width: 64%; }
+
+.fs-ai-info b { white-space: normal; }
+.fs-conf { justify-self: start; }
+
+@media (max-width: 760px) {
+  .fs-hero-pick { grid-template-columns: 110px minmax(0, 1fr); gap: 14px; }
+  .fs-ring { display: none; }
+  .fs-drop::after { animation-duration: 10s; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fs-head h1, .fs-drop::after, .fs-dust, .fs-ring, .fs-reticle, .fs-hud em, .fs-gauge .fg, .fs-hero-poster, .fs-air-skel i { animation: none !important; }
+  .fs-hud em:first-child { opacity: 1; }
+}

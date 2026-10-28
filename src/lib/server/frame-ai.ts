@@ -15,7 +15,8 @@ const DEFAULT_VISION_MODEL = "nvidia/nemotron-3.5-super-vl:free";
 export type Confidence = "high" | "medium" | "low";
 
 export interface FramePick {
-  id: string;
+  /** null — ИИ назвал тайтл, но в каталоге сайта его нет */
+  id: string | null;
   title: string;
   year?: number;
   poster?: string;
@@ -101,18 +102,21 @@ export async function describeFrame(image: string): Promise<FrameAiResult> {
 
   const found = await Promise.all(wanted.map((g) => findInCatalog(g.title, g.alt)));
 
+  // Догадки ИИ показываем все: даже если тайтла нет в каталоге, пользователю
+  // важно узнать, что это за аниме. Совпавшие с каталогом ведут на страницу тайтла.
   const seen = new Set<string>();
   const picks: FramePick[] = [];
   found.forEach((card, i) => {
-    if (!card || seen.has(card.id)) return;
-    seen.add(card.id);
+    const mark = card ? card.id : `t:${wanted[i].title.toLowerCase()}`;
+    if (seen.has(mark)) return;
+    seen.add(mark);
     picks.push({
-      id: card.id,
-      title: card.title,
-      year: card.year,
-      poster: card.poster,
-      shikimoriId: card.shikimoriId,
-      genres: card.genres.slice(0, 3),
+      id: card?.id ?? null,
+      title: card?.title ?? wanted[i].title,
+      year: card?.year,
+      poster: card?.poster,
+      shikimoriId: card?.shikimoriId,
+      genres: card?.genres.slice(0, 3) ?? [],
       why: wanted[i].why,
       confidence: wanted[i].confidence,
     });
