@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Страница ИИ-ассистента «Лумина»: чат с подбором аниме и поиском по сюжету.
+ * Страница ИИ-ассистента «Люмина»: чат с подбором аниме и поиском по сюжету.
  *
  * Состояние чата хранится в localStorage (последние реплики), на сервер
  * уходит только текст запроса. Ответ приходит вместе с карточками тайтлов,
@@ -230,12 +230,12 @@ function Chat({ enabled }: { enabled: boolean }) {
             src="/assistant-hero.webp"
             width={1536}
             height={1024}
-            alt="Лумина — ИИ-ассистент AniGalaxy"
+            alt="Люмина — ИИ-ассистент AniGalaxy"
             fetchPriority="high"
           />
-          <h1 className="ast-sr">Лумина — ИИ-ассистент AniGalaxy: подбор аниме и поиск по сюжету</h1>
+          <h1 className="ast-sr">Люмина — ИИ-ассистент AniGalaxy: подбор аниме и поиск по сюжету</h1>
           {!enabled ? (
-            <p className="ast-soon">Лумина пока настраивается и скоро будет доступна.</p>
+            <p className="ast-soon">Люмина пока настраивается и скоро будет доступна.</p>
           ) : !account ? (
             <button type="button" className="ast-login" onClick={() => openAuthDialog("login")}>
               Войти, чтобы начать
@@ -265,7 +265,7 @@ function Chat({ enabled }: { enabled: boolean }) {
         <div className="ast-bar">
           <span className="ast-bar-name">
             <Spark id="ast-g2" className="ast-bar-ic" />
-            Лумина
+            Люмина
           </span>
           <button type="button" className="ast-new" onClick={reset} disabled={busy}>
             Новый чат
@@ -300,7 +300,7 @@ function Chat({ enabled }: { enabled: boolean }) {
                 <Spark id="ast-typing" />
               </span>
               <div className="ast-col">
-                <p className="ast-bub ast-typing" aria-label="Лумина печатает">
+                <p className="ast-bub ast-typing" aria-label="Люмина печатает">
                   <i />
                   <i />
                   <i />
@@ -325,7 +325,7 @@ function Chat({ enabled }: { enabled: boolean }) {
           value={input}
           maxLength={1000}
           disabled={!enabled}
-          placeholder={enabled ? "Опишите сюжет или спросите, что посмотреть…" : "Лумина скоро будет доступна"}
+          placeholder={enabled ? "Опишите сюжет или спросите, что посмотреть…" : "Люмина скоро будет доступна"}
           onChange={(e) => {
             setInput(e.target.value);
             e.target.style.height = "auto";
@@ -344,7 +344,7 @@ function Chat({ enabled }: { enabled: boolean }) {
           </svg>
         </button>
       </form>
-      <p className="ast-note">Лумина — ИИ и может ошибаться. Описание и серии проверяйте на странице тайтла.</p>
+      <p className="ast-note">Люмина — ИИ и может ошибаться. Описание и серии проверяйте на странице тайтла.</p>
     </div>
   );
 }
