@@ -62,3 +62,59 @@ export function clockOf(seconds: number): string {
   const m = Math.floor(s / 60);
   return `${m}:${String(s % 60).padStart(2, "0")}`;
 }
+
+/* ------------------------------ ИИ-разбор -------------------------------- */
+
+export interface FrameAiPick {
+  id: string;
+  title: string;
+  year?: number;
+  poster?: string;
+  shikimoriId?: number;
+  genres: string[];
+  why: string;
+  confidence: "high" | "medium" | "low";
+}
+
+export interface FrameAiResult {
+  description: string;
+  picks: FrameAiPick[];
+}
+
+/** Для разбора входа нужен аккаунт: вызывающий открывает окно входа */
+export class FrameAuthError extends Error {}
+
+/** Сжимает кадр до 1280 px по ширине в JPEG: модели хватает, а запрос лёгкий */
+async function shrink(file: File): Promise<File> {
+  try {
+    const bitmap = await createImageBitmap(file);
+    const scale = Math.min(1, 1280 / bitmap.width);
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.max(1, Math.round(bitmap.width * scale));
+    canvas.height = Math.max(1, Math.round(bitmap.height * scale));
+    canvas.getContext("2d")?.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+    bitmap.close();
+    const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/jpeg", 0.88));
+    return blob ? new File([blob], "frame.jpg", { type: "image/jpeg" }) : file;
+  } catch {
+    return file;
+  }
+}
+
+/** Просит ИИ определить аниме по кадру. Бросает Error с текстом для пользователя. */
+export async function askFrameAi(input: File | string): Promise<FrameAiResult> {
+  const form = new FormData();
+  if (typeof input === "string") form.set("url", input);
+  else form.set("file", await shrink(input));
+
+  let res: Response;
+  try {
+    res = await fetch("/api/frame/ai", { method: "POST", body: form, signal: AbortSignal.timeout(60_000) });
+  } catch {
+    throw new Error("Нет связи с сервером. Проверьте интернет и попробуйте ещё раз.");
+  }
+  const data = (await res.json().catch(() => ({}))) as Partial<FrameAiResult> & { error?: string };
+  if (res.status === 401) throw new FrameAuthError("Нужен вход");
+  if (!res.ok || typeof data.description !== "string") throw new Error(data.error ?? "ИИ не смог разобрать кадр.");
+  return { description: data.description, picks: data.picks ?? [] };
+}

@@ -20,7 +20,7 @@ import type { AnimeCard } from "@/lib/types";
 
 const DEFAULT_MODEL = "gemini-2.5-flash";
 const DEFAULT_OR_MODEL = "google/gemini-2.5-flash";
-const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
+export const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 const DEFAULT_BASE = "https://generativelanguage.googleapis.com";
 
 /** Сколько последних реплик уходит модели и какой длины каждая */
@@ -137,7 +137,7 @@ function parseModelJson(text: string): { reply: string; titles: GeminiTitle[] } 
   }
 }
 
-async function post(url: string, headers: Record<string, string>, body: unknown): Promise<unknown> {
+export async function postJson(url: string, headers: Record<string, string>, body: unknown): Promise<unknown> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 30_000);
   let res: Response;
@@ -165,7 +165,7 @@ async function post(url: string, headers: Record<string, string>, body: unknown)
 async function askModel(turns: AssistantTurn[]): Promise<{ reply: string; titles: GeminiTitle[] }> {
   const orKey = process.env.OPENROUTER_API_KEY?.trim();
   if (orKey) {
-    const data = (await post(
+    const data = (await postJson(
       OPENROUTER_URL,
       {
         Authorization: `Bearer ${orKey}`,
@@ -187,7 +187,7 @@ async function askModel(turns: AssistantTurn[]): Promise<{ reply: string; titles
   if (!key) throw new AssistantError("ИИ-ассистент ещё не подключён", "not_configured", 503);
   const model = process.env.GEMINI_MODEL?.trim() || DEFAULT_MODEL;
   const base = (process.env.GEMINI_BASE_URL?.trim() || DEFAULT_BASE).replace(/\/+$/, "");
-  const data = (await post(
+  const data = (await postJson(
     `${base}/v1beta/models/${encodeURIComponent(model)}:generateContent`,
     { "x-goog-api-key": key },
     {
@@ -204,10 +204,10 @@ async function askModel(turns: AssistantTurn[]): Promise<{ reply: string; titles
   return parseModelJson(data?.candidates?.[0]?.content?.parts?.map((p) => p.text ?? "").join("") ?? "");
 }
 
-const str = (v: unknown, max: number) => (typeof v === "string" ? v.trim().slice(0, max) : "");
+export const str = (v: unknown, max: number) => (typeof v === "string" ? v.trim().slice(0, max) : "");
 
 /** Ищет название в каталоге: сперва русское, затем оригинальное */
-async function findInCatalog(title: string, alt: string): Promise<AnimeCard | null> {
+export async function findInCatalog(title: string, alt: string): Promise<AnimeCard | null> {
   for (const q of [title, alt]) {
     if (q.length < 2) continue;
     const cards = await quickSearch(q, 3).catch(() => [] as AnimeCard[]);
