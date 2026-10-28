@@ -9,6 +9,7 @@ const ROUTES: Array<[string, number, MetadataRoute.Sitemap[number]["changeFreque
   ["/", 1, "daily"],
   ["/catalog", 0.9, "daily"],
   ["/anime-4k", 0.8, "weekly"],
+  ["/assistant", 0.6, "monthly"],
   ["/schedule", 0.8, "daily"],
   ["/aniswipe", 0.6, "weekly"],
   ["/manga", 0.7, "daily"],

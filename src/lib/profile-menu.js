@@ -36,6 +36,7 @@
     levels:'<path d="M12 3l2.6 5.3 5.9.9-4.2 4.1 1 5.8L12 16.4 6.7 19.1l1-5.8L3.5 9.2l5.9-.9z"/>',
     crown:'<path d="M3 8l4 4 5-7 5 7 4-4-2 11H5z"/>',
     shield:'<path d="M12 3l8 3v6c0 4.5-3.2 7.8-8 9-4.8-1.2-8-4.5-8-9V6zM9 12l2.2 2.2L15.5 10"/>',
+    spark:'<path d="M11 3l2 5.8L19 11l-6 2.2L11 19l-2-5.8L3 11l6-2.2zM19 16l.8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8z"/>',
     out:'<path d="M10 4H5v16h5M15 8l4 4-4 4M19 12H9"/>'
   };
   /* Пункты сгруппированы по смыслу: одиннадцать одинаковых строк подряд
@@ -49,6 +50,7 @@
     {id:'quests',label:'Квесты',icon:'bulb',group:'Прогресс'},
     {id:'shop',label:'Магазин',icon:'store',group:'Прогресс'},
     /* Пункт «Подарки Premium» заменён на «Ивенты»: подарки ушли из меню */
+    {id:'assistant',label:'ИИ-ассистент',icon:'spark',group:'Ещё'},
     {id:'events',label:'Ивенты',icon:'event',group:'Ещё'},
     {id:'invite',label:'Пригласи друзей',icon:'uplus',group:'Ещё'},
     {id:'apps',label:'Приложения',icon:'device',group:'Ещё'},

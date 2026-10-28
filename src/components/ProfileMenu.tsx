@@ -48,6 +48,7 @@ const NAV: Record<string, string> = {
   cosmetics: "/cosmetics",
   invite: "/referrals",
   events: "/events",
+  assistant: "/assistant",
   apps: "/apps",
   notices: "/notifications",
   settings: "/settings",

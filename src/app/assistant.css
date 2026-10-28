@@ -1,0 +1,484 @@
+/*
+ * ИИ-ассистент «Нова» — тёмный плоский стиль каталога: те же токены --ag-*,
+ * тонкие синие линии, без стеклянных «навигаторов». Префикс ast- не задевает
+ * другие страницы.
+ */
+
+.ast-page {
+  position: relative;
+  min-height: 70vh;
+  background:
+    radial-gradient(900px 440px at 82% -8%, rgba(43, 127, 255, 0.11), transparent 60%),
+    radial-gradient(700px 420px at 4% 18%, rgba(34, 211, 238, 0.05), transparent 60%);
+}
+
+.ast-wrap {
+  width: 100%;
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 40px 20px 70px;
+}
+
+/* ------------------------------ Приветствие ------------------------------ */
+
+.ast-hero {
+  text-align: center;
+  padding-top: 18px;
+}
+
+.ast-orb {
+  display: inline-grid;
+  place-items: center;
+  width: 84px;
+  height: 84px;
+  border: 1px solid var(--ag-line-strong);
+  border-radius: 26px;
+  background: radial-gradient(circle at 50% 0%, rgba(43, 127, 255, 0.28), rgba(10, 15, 31, 0.9) 70%);
+  box-shadow: 0 18px 50px -18px rgba(43, 127, 255, 0.65);
+}
+
+.ast-orb svg {
+  width: 46px;
+  height: 46px;
+}
+
+.ast-h1 {
+  margin: 22px 0 10px;
+  color: #fff;
+  font-family: var(--font-display), var(--font-body), sans-serif;
+  font-size: clamp(30px, 5vw, 42px);
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.4px;
+}
+
+.ast-lead {
+  max-width: 600px;
+  margin: 0 auto;
+  color: var(--ag-text-2);
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+.ast-soon {
+  display: inline-block;
+  margin: 20px 0 0;
+  padding: 9px 16px;
+  border: 1px solid var(--ag-line);
+  border-radius: 12px;
+  background: var(--ag-ctl);
+  color: var(--ag-muted);
+  font-size: 14px;
+}
+
+.ast-login {
+  margin-top: 20px;
+  padding: 12px 24px;
+  border: 0;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #2b7fff, #22d3ee);
+  color: #04101f;
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+  transition:
+    transform 0.2s,
+    filter 0.2s;
+}
+
+.ast-login:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.08);
+}
+
+.ast-starters {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 34px;
+  text-align: left;
+}
+
+.ast-starter {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px 18px;
+  border: 1px solid var(--ag-line);
+  border-radius: 16px;
+  background: var(--ag-ctl);
+  color: var(--ag-text-2);
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color 0.2s,
+    background-color 0.2s,
+    transform 0.2s;
+}
+
+.ast-starter b {
+  color: var(--ag-accent-ink);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.ast-starter span {
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.ast-starter:hover:not(:disabled) {
+  border-color: var(--ag-accent-bd);
+  background: var(--ag-ctl-hover);
+  transform: translateY(-2px);
+}
+
+.ast-starter:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* -------------------------------- Шапка чата ------------------------------ */
+
+.ast-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--ag-line);
+}
+
+.ast-bar-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: #fff;
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.ast-bar-ic {
+  width: 26px;
+  height: 26px;
+}
+
+.ast-new {
+  padding: 8px 16px;
+  border: 1px solid var(--ag-line);
+  border-radius: 12px;
+  background: var(--ag-ctl);
+  color: var(--ag-text-2);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    border-color 0.2s,
+    color 0.2s;
+}
+
+.ast-new:hover:not(:disabled) {
+  border-color: var(--ag-accent-bd);
+  color: #fff;
+}
+
+.ast-new:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ---------------------------------- Лента --------------------------------- */
+
+.ast-log {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  margin-bottom: 22px;
+}
+
+.ast-msg {
+  display: flex;
+  gap: 12px;
+  max-width: 100%;
+}
+
+.ast-user {
+  justify-content: flex-end;
+}
+
+.ast-av {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--ag-line-strong);
+  border-radius: 12px;
+  background: var(--ag-card);
+}
+
+.ast-av svg {
+  width: 22px;
+  height: 22px;
+}
+
+.ast-col {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: min(640px, 100%);
+}
+
+.ast-bub {
+  margin: 0;
+  padding: 12px 16px;
+  border: 1px solid var(--ag-line);
+  border-radius: 6px 18px 18px 18px;
+  background: var(--ag-card);
+  color: var(--ag-text);
+  font-size: 15px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.ast-user .ast-bub {
+  border-color: var(--ag-accent-bd);
+  border-radius: 18px 6px 18px 18px;
+  background: var(--ag-accent-bg);
+}
+
+.ast-err .ast-bub {
+  border-color: rgba(255, 106, 120, 0.4);
+  background: rgba(255, 106, 120, 0.08);
+  color: #ffb4bc;
+}
+
+.ast-typing {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 46px;
+}
+
+.ast-typing i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--ag-accent-ink);
+  animation: ast-dot 1.2s ease-in-out infinite;
+}
+
+.ast-typing i:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.ast-typing i:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@keyframes ast-dot {
+  0%,
+  80%,
+  100% {
+    opacity: 0.25;
+    transform: translateY(0);
+  }
+  40% {
+    opacity: 1;
+    transform: translateY(-3px);
+  }
+}
+
+/* ------------------------------ Карточки тайтлов -------------------------- */
+
+.ast-picks {
+  display: grid;
+  gap: 10px;
+}
+
+.ast-pick {
+  display: flex;
+  gap: 14px;
+  padding: 10px;
+  border: 1px solid var(--ag-line);
+  border-radius: 16px;
+  background: var(--ag-ctl);
+  color: inherit;
+  text-decoration: none;
+  transition:
+    border-color 0.2s,
+    background-color 0.2s,
+    transform 0.2s;
+}
+
+.ast-pick:hover {
+  border-color: var(--ag-accent-bd);
+  background: var(--ag-ctl-hover);
+  transform: translateY(-2px);
+}
+
+.ast-pick-poster {
+  position: relative;
+  flex: none;
+  width: 70px;
+  aspect-ratio: 2 / 3;
+  overflow: hidden;
+  border-radius: 10px;
+  background: var(--ag-card);
+}
+
+.ast-pick-body {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  justify-content: center;
+}
+
+.ast-pick-body b {
+  color: #fff;
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1.3;
+}
+
+.ast-pick-body small {
+  color: var(--ag-muted);
+  font-size: 12.5px;
+}
+
+.ast-pick-body em {
+  margin-left: 8px;
+  color: #ffd36a;
+  font-style: normal;
+  font-weight: 700;
+}
+
+.ast-pick-why {
+  color: var(--ag-text-2);
+  font-size: 13.5px;
+  line-height: 1.5;
+}
+
+/* --------------------------------- Ввод ----------------------------------- */
+
+.ast-compose {
+  position: sticky;
+  bottom: 16px;
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  margin-top: 28px;
+  padding: 10px;
+  border: 1px solid var(--ag-line-strong);
+  border-radius: 20px;
+  background: var(--ag-pop);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.5);
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+}
+
+.ast-compose:focus-within {
+  border-color: var(--ag-accent-bd);
+  box-shadow:
+    0 0 0 3px var(--ag-ring),
+    0 18px 50px rgba(0, 0, 0, 0.5);
+}
+
+.ast-compose textarea {
+  flex: 1;
+  min-width: 0;
+  max-height: 160px;
+  padding: 10px 8px 10px 10px;
+  border: 0;
+  outline: 0;
+  resize: none;
+  background: transparent;
+  color: var(--ag-text);
+  font-family: inherit;
+  /* 16px — меньше iOS приближает страницу при фокусе */
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.ast-compose textarea::placeholder {
+  color: var(--ag-muted);
+}
+
+.ast-send {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #2b7fff, #22d3ee);
+  color: #04101f;
+  cursor: pointer;
+  transition:
+    transform 0.2s,
+    filter 0.2s,
+    opacity 0.2s;
+}
+
+.ast-send svg {
+  width: 20px;
+  height: 20px;
+}
+
+.ast-send:hover:not(:disabled) {
+  transform: translateY(-1px);
+  filter: brightness(1.1);
+}
+
+.ast-send:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.ast-note {
+  margin: 12px 4px 0;
+  color: var(--ag-muted);
+  font-size: 12.5px;
+  text-align: center;
+}
+
+.ast-page :focus-visible {
+  outline: 2px solid var(--ag-accent);
+  outline-offset: 2px;
+}
+
+@media (max-width: 640px) {
+  .ast-wrap {
+    padding: 26px 14px 56px;
+  }
+
+  .ast-starters {
+    grid-template-columns: 1fr;
+  }
+
+  .ast-pick-poster {
+    width: 60px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ast-typing i {
+    animation: none;
+    opacity: 0.7;
+  }
+
+  .ast-starter,
+  .ast-pick,
+  .ast-login,
+  .ast-send {
+    transition: none;
+  }
+}
