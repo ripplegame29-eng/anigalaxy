@@ -133,7 +133,21 @@ function parseModelJson(text: string): { reply: string; titles: GeminiTitle[] } 
     if (!reply) throw new Error("пустой ответ");
     return { reply, titles: Array.isArray(parsed.titles) ? (parsed.titles as GeminiTitle[]) : [] };
   } catch {
-    throw new AssistantError("ИИ ответил не по формату. Попробуйте переформулировать вопрос.", "upstream", 502);
+    // Модель ответила не JSON-ом (или JSON оборвался): не теряем ответ, показываем текст как есть
+    const loose = /"reply"\s*:\s*"((?:[^"\\]|\\.)*)/.exec(text);
+    let plain = loose ? loose[1] : text;
+    if (loose) {
+      try {
+        plain = JSON.parse(`"${loose[1]}"`) as string;
+      } catch {
+        plain = loose[1].replace(/\\n/g, "\n").replace(/\\"/g, '"');
+      }
+    }
+    plain = plain.replace(/```(?:json)?/gi, "").trim();
+    if (!plain) {
+      throw new AssistantError("ИИ не смог ответить. Попробуйте переформулировать вопрос.", "upstream", 502);
+    }
+    return { reply: plain.slice(0, 4000), titles: [] };
   }
 }
 
