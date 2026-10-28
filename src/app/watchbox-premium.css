@@ -279,7 +279,7 @@
     position: sticky; top: -6px; background: #0d0d15; z-index: 1;
   }
   .wb-vhead button { font-size: 13px; font-weight: 800; color: rgb(var(--accent-rgb, 43 127 255)); padding: 6px 8px; }
-  .wb-vmenu li > button { min-height: 48px; font-size: 15px !important; padding: 10px 12px !important; }
+  .wb-vmenu li > button[role="option"] { min-height: 48px; font-size: 15px !important; padding: 10px 12px !important; }
 
   /* Серии: крупнее цели касания, шесть в ряд не нужны */
   .wb-eps { max-height: 260px !important; }
@@ -400,7 +400,7 @@
     order: 2; margin: 12px 0 0 !important; padding: 8px 10px; border-radius: 16px;
     background: rgba(255, 255, 255, .04); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .06);
   }
-  .wb-card .wb-src > button {
+  .wb-card .wb-src > button[aria-haspopup] {
     background: rgba(var(--accent-rgb), .16) !important; box-shadow: inset 0 0 0 1px rgba(var(--accent-rgb), .45) !important; color: #fff;
   }
   .wb-card .wb-src ul { top: auto !important; bottom: calc(100% + 8px); }
@@ -431,7 +431,7 @@
     border: 0 !important; background: none !important; box-shadow: none !important; backdrop-filter: none; animation: none;
     scrollbar-width: thin; scrollbar-color: rgba(var(--accent-rgb), .45) transparent;
   }
-  .wb-voices .wb-vmenu li > button { position: relative; padding: 9px 12px !important; border-radius: 12px; }
+  .wb-voices .wb-vmenu li > button[role="option"] { position: relative; padding: 9px 12px !important; border-radius: 12px; }
   .wb-voices .wb-vmenu li > button[aria-selected="true"] {
     background: linear-gradient(90deg, rgba(var(--accent-rgb), .32), rgba(139, 92, 246, .16)) !important;
     box-shadow: inset 0 0 0 1px rgba(var(--accent-rgb), .55) !important;
@@ -455,3 +455,7 @@
   .wb-aside > div:nth-child(2) { flex: none; }
   .wb-aside .wb-eps { max-height: 320px !important; }
 }
+
+/* Звёздочка «сохранить озвучку» в списке студий */
+.wb-vmenu li > button:not([role="option"]) { min-height: 0 !important; padding: 0 !important; width: 36px; height: 36px; border-radius: 12px; }
+.wb-vmenu li > button:not([role="option"]):hover { background: rgba(255, 255, 255, .06); }

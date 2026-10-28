@@ -1,7 +1,8 @@
 "use client";
 
 import { SHIELD_SANDBOX, setShield, useShield } from "@/lib/shield";
-import { mergeVoices, pickDefaultVoice } from "@/lib/voice-merge";
+import { mergeVoices, pickDefaultVoice, pickFavoriteVoice } from "@/lib/voice-merge";
+import { isFavVoice, toggleFavVoice, useFavVoices } from "@/lib/fav-voices";
 import { toggleFullscreen as toggleFs } from "@/lib/fullscreen";
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
@@ -215,6 +216,7 @@ export function WatchBox({
   const [source, setSource] = useState<PlayerSource>("anigalaxy");
   const [sourcePick, setSourcePick] = useState<SourcePick>("auto");
   const [sourceMenuOpen, setSourceMenuOpen] = useState(false);
+  const favVoices = useFavVoices();
   /**
    * Релиз AniLiberty, подтверждённый по id Shikimori. Помечен id тайтла:
    * при смене озвучки материал меняется, и старый релиз не подставится.
@@ -792,7 +794,7 @@ export function WatchBox({
     setSourcePick(next);
     setSourceMenuOpen(false);
     if (next === "auto") {
-      const best = pickDefaultVoice(mergedVoices, studioList.find((t) => t.id === transId)?.title);
+      const best = pickFavoriteVoice(mergedVoices, favVoices) ?? pickDefaultVoice(mergedVoices, studioList.find((t) => t.id === transId)?.title);
       if (best) void switchTranslation(best, { silent: true, keepEpisode: episode, season });
       return;
     }
@@ -849,8 +851,10 @@ export function WatchBox({
   useEffect(() => {
     if (userPicked.current || initialProviderTr) return;
     if (detail.card.id !== initialDetail.card.id || isAltSource(source)) return;
-    const best = pickDefaultVoice(voiceList, studioList.find((t) => t.id === transId)?.title);
-    if (!best || !best.provider) return;
+    // Любимая студия (звёздочка) важнее, чем «лучшее качество»
+    const fav = pickFavoriteVoice(voiceList, favVoices);
+    const best = fav ?? pickDefaultVoice(voiceList, studioList.find((t) => t.id === transId)?.title);
+    if (!best || (!best.provider && !fav) || best.id === transId) return;
     const raf = requestAnimationFrame(() => {
       void switchTranslation(best, { silent: true, keepEpisode: episode, season });
     });
@@ -1185,14 +1189,19 @@ export function WatchBox({
                     <span>Студия озвучки</span>
                     <button type="button" tabIndex={-1} onClick={() => setMenuOpen(false)}>Готово</button>
                   </li>
-                  {voiceList.filter((t) => compactUi || !voiceQ.trim() || t.title.toLowerCase().includes(voiceQ.trim().toLowerCase())).map((t) => (
-                    <li key={t.id}>
+                  {voiceList
+                    .filter((t) => compactUi || !voiceQ.trim() || t.title.toLowerCase().includes(voiceQ.trim().toLowerCase()))
+                    // Любимые студии — наверху, остальной порядок сохраняется
+                    .map((t, i) => ({ t, i, fav: isFavVoice(favVoices, t.title) }))
+                    .sort((a, b) => Number(b.fav) - Number(a.fav) || a.i - b.i)
+                    .map(({ t, fav }) => (
+                    <li key={t.id} className="flex items-center gap-1">
                       <button
                         type="button"
                         role="option"
                         aria-selected={t.id === transId}
                         onClick={() => switchTranslation(t)}
-                        className={`flex w-full items-center justify-between gap-2 rounded-lg px-3 py-2 text-left text-[13px] transition-colors ${
+                        className={`flex min-w-0 flex-1 items-center justify-between gap-2 rounded-lg px-3 py-2 text-left text-[13px] transition-colors ${
                           t.id === transId
                             ? "bg-accent/20 text-white ring-1 ring-accent/40"
                             : "text-white/75 hover:bg-white/8 hover:text-white"
@@ -1207,6 +1216,18 @@ export function WatchBox({
                             </span>
                           ) : null}
                         </span>
+                      </button>
+                      <button
+                        type="button"
+                        aria-label={fav ? `Убрать «${t.title}» из любимых` : `Сохранить «${t.title}» как любимую озвучку`}
+                        aria-pressed={fav}
+                        title={fav ? "Любимая озвучка" : "Сохранить озвучку"}
+                        onClick={() => toggleFavVoice(t.title)}
+                        className={`grid h-8 w-8 shrink-0 place-items-center rounded-lg transition-colors ${fav ? "text-amber-300" : "text-white/35 hover:text-white/80"}`}
+                      >
+                        <svg viewBox="0 0 24 24" className="h-[18px] w-[18px]" fill={fav ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" aria-hidden>
+                          <path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z" />
+                        </svg>
                       </button>
                     </li>
                   ))}

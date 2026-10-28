@@ -79,6 +79,15 @@ export function mergeVoices(kodik: TranslationOption[], alternatives: Translatio
     .map((m) => m.option);
 }
 
+/** Любимая студия зрителя (звёздочка): лучшее качество среди отмеченных */
+export function pickFavoriteVoice(list: TranslationOption[], favKeys: string[]): TranslationOption | undefined {
+  if (!favKeys.length) return undefined;
+  const hits = list.filter((o) => o.type === "voice" && favKeys.includes(voiceKey(o.title)));
+  if (!hits.length) return undefined;
+  const rank = (o: TranslationOption) => favKeys.indexOf(voiceKey(o.title));
+  return hits.sort((a, b) => rank(a) - rank(b) || qualityOf(b) - qualityOf(a))[0];
+}
+
 /** Какую озвучку включить по умолчанию: лучшее качество, а среди равных — та, что играла у Kodik */
 export function pickDefaultVoice(list: TranslationOption[], currentKodikTitle?: string): TranslationOption | undefined {
   const best = Math.max(0, ...list.map(qualityOf));
