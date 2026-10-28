@@ -137,7 +137,7 @@ export function Footer() {
                 <i />
                 Онлайн
               </span>
-              <span>4K-качество</span>
+              <Link href="/anime-4k">4K-качество</Link>
               <span>Озвучки и субтитры</span>
             </div>
 

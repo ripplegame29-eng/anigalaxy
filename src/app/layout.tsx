@@ -129,17 +129,17 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
   title: {
-    default: "AniGalaxy — смотреть аниме онлайн в HD",
+    default: "AniGalaxy — смотреть аниме онлайн в HD и 4K",
     template: "%s · AniGalaxy",
   },
   description:
-    "Большая библиотека аниме онлайн: свежие релизы, онгоинги, фильмы и OVA. Удобный выбор серий и озвучек, быстрый поиск и фильтры.",
-  keywords: ["аниме", "смотреть аниме", "онгоинги", "аниме онлайн", "Kodik"],
+    "Большая библиотека аниме онлайн: свежие релизы, онгоинги, фильмы и OVA. Плеер с апскейлом до 4K, выбор озвучек, быстрый поиск и фильтры.",
+  keywords: ["аниме", "смотреть аниме", "онгоинги", "аниме онлайн", "аниме в 4K", "аниме 4K"],
   openGraph: {
     type: "website",
     siteName: "AniGalaxy",
     locale: "ru_RU",
-    title: "AniGalaxy — смотреть аниме онлайн в HD",
+    title: "AniGalaxy — смотреть аниме онлайн в HD и 4K",
     description: "Свежие релизы, онгоинги и классика аниме. Смотрите онлайн с выбором озвучки.",
   },
   robots: { index: true, follow: true },

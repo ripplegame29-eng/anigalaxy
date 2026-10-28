@@ -8,6 +8,7 @@ const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 const ROUTES: Array<[string, number, MetadataRoute.Sitemap[number]["changeFrequency"]]> = [
   ["/", 1, "daily"],
   ["/catalog", 0.9, "daily"],
+  ["/anime-4k", 0.8, "weekly"],
   ["/schedule", 0.8, "daily"],
   ["/aniswipe", 0.6, "weekly"],
   ["/manga", 0.7, "daily"],
