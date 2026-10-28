@@ -405,21 +405,31 @@
 .sx__foot .frame {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 7px 12px;
-  border-radius: 10px;
-  border: 1px dashed rgba(255, 255, 255, 0.28);
-  background: rgba(255, 255, 255, 0.04);
-  color: #f4f5f8;
-  font-weight: 600;
+  gap: 10px;
+  padding: 8px 14px 8px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--ag-line);
+  background: rgba(255, 255, 255, 0.035);
+  color: var(--ag-text-2);
+  font-weight: 500;
   min-width: 0;
   transition:
-    border-color 0.18s,
-    background-color 0.18s;
+    border-color 0.2s,
+    background-color 0.2s;
 }
 .sx__foot .frame:hover {
-  border-color: rgba(255, 255, 255, 0.5);
-  background: rgba(255, 255, 255, 0.07);
+  border-color: var(--ag-line-strong);
+  background: rgba(43, 127, 255, 0.08);
+}
+.sx__foot .frame .icon {
+  flex: none;
+  box-sizing: content-box;
+  width: 16px;
+  height: 16px;
+  padding: 5px;
+  border-radius: 50%;
+  background: rgba(43, 127, 255, 0.16);
+  color: #6aa8ff;
 }
 .sx__foot .frame span {
   overflow: hidden;
@@ -428,15 +438,19 @@
 }
 .sx__foot .framelink {
   flex: none;
-  color: #f4f5f8;
+  color: var(--ag-muted);
   font-weight: 600;
   text-decoration: none;
   transition: color 0.18s;
 }
 .sx__foot .framelink:hover {
-  color: #fff;
-  text-decoration: underline;
-  text-underline-offset: 3px;
+  color: var(--ag-text);
+}
+.sx__foot a.framelink[href="/catalog"] {
+  color: #6aa8ff;
+}
+.sx__foot a.framelink[href="/catalog"]:hover {
+  color: #9cc4ff;
 }
 .sx__foot .hints {
   margin-left: auto;
