@@ -221,11 +221,11 @@ export function SeasonTab({ s }: { s: CardsState }) {
         </div>
 
         <div className="sv-main">
-          <span className="cg-eyebrow">Сезон {p.season % 100}</span>
+          <span className="cg-eyebrow">Сезон {p.season % 100} · наградной путь</span>
           <h2 className="sv-title">
             Сезонный <em>пропуск</em>
           </h2>
-          <p className="sv-sub">Очищай путь за бой, паки, кампанию, рейды, обмены и подарки дня. Две ветки наград: бесплатная и премиум.</p>
+          <p className="sv-sub">Поднимайся по уровням за бои, паки, кампанию и рейды. Две ветки наград — бесплатная и премиум.</p>
 
           <div className="sv-prog">
             <div className="sv-prog-top">
