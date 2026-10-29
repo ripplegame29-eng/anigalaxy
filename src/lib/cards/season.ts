@@ -31,6 +31,9 @@ export const PASS_XP: Record<string, number> = {
 export const PASS_XP_DAILY = 20;
 export const PASS_XP_MISSION = 30;
 
+/** Номер сезона для игроков: первый сезон после запуска — «Сезон 1» */
+export const SEASON_FIRST = 740;
+export const seasonNo = (season: number): number => Math.max(1, season - SEASON_FIRST);
 export const seasonOf = (ms: number): number => Math.floor(ms / PASS.seasonMs);
 export const seasonEnd = (season: number): number => (season + 1) * PASS.seasonMs;
 

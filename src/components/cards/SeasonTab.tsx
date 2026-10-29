@@ -8,7 +8,7 @@ import type { CSSProperties } from "react";
  */
 
 import { memo, useCallback, useEffect, useRef, useState } from "react";
-import { PASS, PASS_XP, PASS_XP_DAILY, PASS_XP_MISSION, passReward, type PassTrack } from "@/lib/cards/season";
+import { PASS, PASS_XP, PASS_XP_DAILY, PASS_XP_MISSION, passReward, seasonNo, type PassTrack } from "@/lib/cards/season";
 import { rewardText, type Reward } from "@/lib/cards/progress";
 import { act, type CardsState } from "@/lib/cards/client";
 import { fmt, fmtLeft, toast, useBusy, useNow } from "./common";
@@ -223,7 +223,7 @@ export function SeasonTab({ s }: { s: CardsState }) {
         </div>
 
         <div className="sv-main">
-          <span className="cg-eyebrow">Сезон {p.season % 100} · наградной путь</span>
+          <span className="cg-eyebrow">Сезон {seasonNo(p.season)} · наградной путь</span>
           <h2 className="sv-title">
             Сезонный <em>пропуск</em>
           </h2>
