@@ -58,6 +58,8 @@ import { useTitles } from "@/lib/titles";
 import { openProfileDialog } from "@/lib/profile-dialog";
 import { Poster } from "@/components/Poster";
 import { AvatarFrame, type AvSize } from "@/components/profile/AvatarFrame";
+import { EmblemArt } from "@/components/clans/EmblemArt";
+import { clanEmblem } from "@/lib/emblems.data";
 import { AchievementEmblem } from "@/components/progression/AchievementEmblem";
 import { LevelBadge, ERA_THEME, eraIndex } from "@/components/levels/LevelBadge";
 import { emblemMeta } from "@/lib/progression/achievements.config";
@@ -1582,7 +1584,8 @@ function AchievementDialog({ item, onClose }: { item: AchievementItem; onClose: 
  * (`progressEmit`) и профилю (`updateProfile`).
  */
 
-type ShopCat = "tags" | "titles" | "backgrounds" | "frames" | "decor" | "effects" | "services" | "custom";
+type ShopCat = "tags" | "titles" | "backgrounds" | "frames" | "emblems" | "decor" | "effects" | "services" | "custom";
+const CLAN_EMBLEM_PREFIX = "clan-emblem-";
 /** Вкладка «Все» — весь каталог витрины разом */
 type ShopTab = ShopCat | "all";
 /** Порядок выдачи в сетке */
@@ -1593,6 +1596,7 @@ const SHOP_CATS: { id: ShopCat; label: string }[] = [
   { id: "titles", label: "Титулы" },
   { id: "backgrounds", label: "Фоны" },
   { id: "frames", label: "Рамки" },
+  { id: "emblems", label: "Эмблемы кланов" },
   { id: "decor", label: "Оформление" },
   { id: "effects", label: "Эффекты" },
   { id: "services", label: "Сервисы" },
@@ -1911,8 +1915,8 @@ export function ShopSection(_props: { title?: string } = {}) {
     };
   });
 
-  const configEntries = (kind: "effect" | "service" | "custom"): ShopEntry[] =>
-    PROGRESSION_CONFIG.shop.filter((item) => item.kind === kind).map((item) => {
+  const configEntries = (kind: "effect" | "service" | "custom", emblems = false): ShopEntry[] =>
+    PROGRESSION_CONFIG.shop.filter((item) => item.kind === kind && item.id.startsWith(CLAN_EMBLEM_PREFIX) === emblems).map((item) => {
       const held = heldCount(item.id);
       const unlimited = item.maxOwned === undefined;
       // Для постоянного предмета (`custom`, `effect`) лимит 1 — это
@@ -1942,6 +1946,7 @@ export function ShopSection(_props: { title?: string } = {}) {
     titles: titleEntries,
     backgrounds: backgroundEntries,
     frames: frameEntries,
+    emblems: configEntries("custom", true),
     decor: decorEntries,
     effects: configEntries("effect"),
     services: configEntries("service"),
@@ -2036,6 +2041,8 @@ export function ShopSection(_props: { title?: string } = {}) {
 
   /** Превью любого предмета: рамки и аватары — готовым компонентом */
   const stagePreview = (entry: ShopEntry, size: AvSize) => {
+    const crest = entry.id.startsWith(CLAN_EMBLEM_PREFIX) ? clanEmblem(entry.id) : undefined;
+    if (crest) return <EmblemArt emblem={crest} size={size === "sm" ? 92 : size === "md" ? 150 : 190} interactive={size !== "sm"} />;
     const item = FRAMES.find((f) => f.id === entry.id);
     if (PROFILE_DECORS.some((d) => d.id === entry.id)) {
       return (

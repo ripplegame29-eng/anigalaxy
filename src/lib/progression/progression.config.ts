@@ -11,6 +11,7 @@
  * Правило §1: названия достижений и тегов не совпадают.
  */
 
+import { CLAN_EMBLEMS } from "@/lib/emblems.data";
 import type { ProgressionConfig } from "./types";
 import { PARTICLE_EFFECTS, STYLE_EFFECTS } from "../profile-effects";
 
@@ -31,6 +32,22 @@ export const LEVEL_CARD_SERVICE = "svc_levelcard";
  * редкость эффекта нужны и в витрине, и в «Внешнем виде», и при покупке —
  * три копии одного числа разъехались бы при первой же правке баланса.
  */
+/**
+ * Эмблемы кланов в магазине: берутся из `emblems.data`, чтобы название, редкость и
+ * цена жили в одном месте. Постоянная покупка (maxOwned 1), вид «custom».
+ */
+const CLAN_EMBLEM_PRICE = { c: 1800, e: 4500, l: 9000 } as const;
+const CLAN_EMBLEM_RARITY = { c: "COMMON", e: "EPIC", l: "LEGENDARY" } as const;
+const CLAN_EMBLEM_SHOP_ITEMS = CLAN_EMBLEMS.map((e) => ({
+  id: e.id,
+  name: e.ru,
+  kind: "custom" as const,
+  price: CLAN_EMBLEM_PRICE[e.tier],
+  rarity: CLAN_EMBLEM_RARITY[e.tier],
+  maxOwned: 1,
+  description: `Эмблема клана · ${e.motto}`,
+}));
+
 const EFFECT_SHOP_ITEMS = [...PARTICLE_EFFECTS, ...STYLE_EFFECTS].map((item) => ({
   id: item.id,
   name: item.name,
@@ -2126,6 +2143,8 @@ export const PROGRESSION_CONFIG = {
     // каталог `profile-effects` вместе с остальными: id и цены те же, чтобы
     // уже записанные покупки не осиротели, а эффекты наконец заработали.
     ...EFFECT_SHOP_ITEMS,
+    // — эмблемы кланов (emblems.data.ts) —
+    ...CLAN_EMBLEM_SHOP_ITEMS,
     // — титулы магазина (guild-cosmetics.ts) —
     { id: "gt-wanderer", name: "Странник", kind: "title", price: 400, rarity: "COMMON", description: "Титул профиля" },
     { id: "gt-recruit", name: "Новичок гильдии", kind: "title", price: 400, rarity: "COMMON", description: "Титул профиля" },

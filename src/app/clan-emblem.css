@@ -70,12 +70,11 @@
     display: grid;
     place-items: center;
     animation: cl-float 6s ease-in-out infinite;
-    will-change: transform;
   }
 
   @keyframes cl-float {
     50% {
-      transform: translateY(-2.2%) scale(1.016);
+      transform: translateY(-2.2%);
     }
   }
 
@@ -131,8 +130,10 @@
     filter: drop-shadow(0 0 16px var(--c));
   }
 
+  /* Раньше здесь стоял SVG-фильтр «жара» (feDisplacementMap): он перерисовывал знак
+     искажённой растровой копией, и эмблема выглядела размытой. Живость даёт блик и свечение. */
   .cl-st-pic img.heat {
-    filter: url(#cl-heat);
+    filter: none;
   }
 
   /* Блик: маской вырезан по самому знаку, поэтому бежит по нему,
