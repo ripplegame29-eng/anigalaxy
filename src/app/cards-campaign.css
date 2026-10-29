@@ -473,3 +473,42 @@
 @keyframes sv-emb { 50% { filter: drop-shadow(0 0 32px rgba(255,220,120,1)); } }
 .cg .sv-col.cur .sv-node b { animation: sv-emb 2s ease-in-out infinite; box-shadow: none; background-color: transparent; }
 @media (max-width: 820px) { .cg .sv-hex { width: 150px; height: 170px; } .cg .sv-hex-in b { font-size: 70px; } }
+
+/* --- Сцена сезона: готовый арт с рамкой уровня и плашкой премиума --- */
+.cg .sv-stage { position: relative; container-type: inline-size; border-radius: 26px; overflow: hidden; background: #06112c url("/banners/season-bg.webp") center / cover no-repeat; border: 1px solid rgba(233,199,121,.5); box-shadow: 0 40px 90px -46px rgba(30,70,170,.9); }
+.cg .sv-stage .sv-hero { display: block; min-height: 0; padding: 0; border: 0; border-radius: 0; background: none; box-shadow: none; overflow: visible; }
+.cg .sv-stage .sv-hero::before, .cg .sv-stage .sv-hero::after, .cg .sv-stage .sv-sky, .cg .sv-stage .sv-clouds, .cg .sv-stage .sv-sea, .cg .sv-stage .sv-art { display: none; }
+.cg .sv-hero .cg-eyebrow { color: #31457a; text-shadow: 0 1px 0 rgba(255,255,255,.6); }
+.cg .sv-prog, .cg .sv-facts { color: #fff; }
+.cg .sv-prog-top, .cg .sv-prog-top b { color: #fff; text-shadow: 0 1px 6px rgba(0,10,40,.8); }
+.cg .sv-facts li span { color: #c3d2f5; }
+@media (min-width: 821px) {
+  .cg .sv-stage { aspect-ratio: 2170 / 725; }
+  .cg .sv-stage .sv-hero { position: absolute; inset: 0; }
+  .cg .sv-crest { position: absolute; left: 4.75%; top: 19.4%; width: 10.85%; height: 41%; display: grid; place-items: center; filter: none; }
+  .cg .sv-crest .sv-hex { width: 100%; height: 100%; clip-path: none; background: none; animation: none; }
+  .cg .sv-crest .sv-hex-in { position: absolute; inset: 0; clip-path: none; background: none; display: grid; place-content: center; justify-items: center; gap: 0; padding-top: 4%; }
+  .cg .sv-hex-in small { font-size: clamp(8px, 1cqw, 14px); letter-spacing: .22em; color: #e9c779; font-weight: 800; }
+  .cg .sv-hex-in b { font-family: Georgia, "Times New Roman", serif; font-size: 6.4cqw; line-height: 1; margin: .3cqw 0; background: linear-gradient(180deg, #fff, #cfd8f2 55%, #f3d48a); -webkit-background-clip: text; background-clip: text; filter: drop-shadow(0 3px 10px rgba(255,190,70,.5)); }
+  .cg .sv-stage .sv-main { position: absolute; left: 17.4%; top: 17%; width: 43%; }
+  .cg .sv-stage .sv-title { margin: .4cqw 0 .6cqw; font-size: 4.6cqw; filter: drop-shadow(0 2px 0 rgba(255,255,255,.45)); }
+  .cg .sv-stage .sv-sub { font-size: clamp(11px, 1.12cqw, 16px); max-width: 33cqw; color: #1c2c58; font-weight: 600; text-shadow: 0 1px 0 rgba(255,255,255,.55); }
+  .cg .sv-stage .sv-prog { margin-top: 1.6cqw; max-width: 30cqw; }
+  .cg .sv-stage .sv-facts { margin-top: 1.1cqw; gap: .7cqw; flex-wrap: nowrap; }
+  .cg .sv-stage .sv-facts li { padding: .5cqw .9cqw; background: rgba(6,16,46,.55); }
+  .cg .sv-stage .sv-facts li b { font-size: clamp(11px, 1.05cqw, 16px); }
+  .cg .sv-stage .sv-facts li span { font-size: clamp(8px, .72cqw, 11px); }
+  .cg .sv-stage .sv-offer.on { position: absolute; left: 4.6%; width: 90.9%; top: 76.4%; height: 14.6%; display: flex; align-items: center; margin: 0; padding: 0 5% 0 8.8%; border: 0; border-radius: 0; background: none; box-shadow: none; overflow: visible; }
+  .cg .sv-stage .sv-offer.on .sv-crown { display: none; }
+  .cg .sv-stage .sv-offer.on h3 { font-size: clamp(14px, 1.45cqw, 22px); margin: 0 0 .3cqw; }
+  .cg .sv-stage .sv-offer.on p { font-size: clamp(10px, .95cqw, 14px); }
+}
+@media (max-width: 820px) {
+  .cg .sv-stage { background-position: 72% center; }
+  .cg .sv-stage::before { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(6,12,32,.55), rgba(6,12,32,.9)); }
+  .cg .sv-stage > * { position: relative; }
+  .cg .sv-stage .sv-hero { padding: 28px 18px 8px; }
+  .cg .sv-hero .cg-eyebrow, .cg .sv-sub { color: #dbe5ff; text-shadow: none; }
+  .cg .sv-title { background: linear-gradient(180deg, #fff, #cfd8f2); -webkit-background-clip: text; background-clip: text; }
+  .cg .sv-stage .sv-offer.on { margin: 8px 14px 16px; }
+}

@@ -205,6 +205,7 @@ export function SeasonTab({ s }: { s: CardsState }) {
   return (
     <div className="sv">
       {/* ------------------------------ Герб сезона ------------------------------ */}
+      <div className="sv-stage">
       <section className={`sv-hero${p.bought ? " is-prem" : ""}`}>
         <i className="sv-sky" aria-hidden />
         <i className="sv-clouds" aria-hidden />
@@ -257,9 +258,7 @@ export function SeasonTab({ s }: { s: CardsState }) {
           </ul>
         </div>
       </section>
-
-      {/* --------------------------------- Премиум -------------------------------- */}
-      {p.bought ? (
+      {p.bought && (
         <section className="sv-offer on">
           <span className="sv-crown" aria-hidden><Ico name="crown" size={26} /></span>
           <div>
@@ -270,7 +269,11 @@ export function SeasonTab({ s }: { s: CardsState }) {
             </p>
           </div>
         </section>
-      ) : (
+      )}
+      </div>
+
+      {/* --------------------------------- Премиум -------------------------------- */}
+      {!p.bought && (
         <section className="sv-offer">
           <i className="sv-sweep" aria-hidden />
           <span className="sv-crown" aria-hidden><Ico name="crown" size={34} /></span>
