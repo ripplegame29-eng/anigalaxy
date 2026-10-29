@@ -111,6 +111,10 @@ export function proxy(request: NextRequest) {
     return NextResponse.json({ error: "Payload too large" }, { status: 413 });
   }
 
+  // Арты карточек: сетка коллекции запрашивает сотни картинок разом, это статика с диска,
+  // общий лимит тут превращал арт в инициалы (429)
+  if (pathname.startsWith("/api/cards/art/") && method === "GET") return NextResponse.next();
+
   const now = Date.now();
   sweep(now);
   const ip = clientKey(request);
