@@ -26,7 +26,7 @@ export const CLASSES: Record<CardClass, { name: string; hint: string }> = {
   warrior: { name: "Воин", hint: "Бьёт ближайшего врага, +10% к урону" },
   mage: { name: "Маг", hint: "Бьёт врага с наименьшим здоровьем" },
   tank: { name: "Страж", hint: "Принимает на себя часть урона союзников" },
-  assassin: { name: "Убийца", hint: "Атакует первым, шанс крита 25%" },
+  assassin: { name: "Убийца", hint: "Атакует первым, шанс крита 20%" },
   support: { name: "Хилер", hint: "Лечит самого раненого союзника" },
 };
 

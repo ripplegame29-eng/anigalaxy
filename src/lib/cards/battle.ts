@@ -179,7 +179,7 @@ export function simulate(aIn: Unit[], bIn: Unit[], rng: () => number, opts: { ma
 
   const strike = (u: Unit, target: Unit, power: number, skill?: Skill, guard?: string): number => {
     const adv = advantage(u.element, target.element);
-    const critChance = (u.cls === "assassin" ? 0.25 : 0.08) + (u.passive === "p-focus" ? 0.12 : 0);
+    const critChance = (u.cls === "assassin" ? 0.2 : 0.08) + (u.passive === "p-focus" ? 0.12 : 0);
     const crit = rng() < critChance;
     let raw = effAtk(u) * power * (u.cls === "warrior" ? 1.1 : 1) * (crit ? 1.6 : 1) * adv * (0.9 + rng() * 0.2);
     if (skill?.exec && target.hp / target.maxHp < 0.35) raw *= skill.exec;
@@ -330,8 +330,8 @@ export function simulate(aIn: Unit[], bIn: Unit[], rng: () => number, opts: { ma
   while (round < maxRounds && alive(a).length && alive(b).length) {
     round += 1;
     const order = alive(all).sort((x, y) => {
-      const sx = x.spd + (x.cls === "assassin" ? 20 : 0) + rng();
-      const sy = y.spd + (y.cls === "assassin" ? 20 : 0) + rng();
+      const sx = x.spd + (x.cls === "assassin" ? 12 : 0) + rng();
+      const sy = y.spd + (y.cls === "assassin" ? 12 : 0) + rng();
       return sy - sx;
     });
     for (const u of order) {

@@ -708,3 +708,33 @@ test("уведомления: защита и итоги аукциона счи
   noticesSeen(db, d.id);
   assert.equal(noticesOf(db, d.id).defenses, 0);
 });
+
+test("баланс: в равных случайных отрядах ни один класс и ни одна сторона не доминируют", () => {
+  const rng = seeded(777);
+  const pick = (a) => a[Math.floor(rng() * a.length)];
+  const draw = () => {
+    const used = new Set();
+    return [1, 2, 2, 3].map((r) => {
+      let c;
+      do c = pick(cardsOfRank(r));
+      while (used.has(c.id));
+      used.add(c.id);
+      return c;
+    });
+  };
+  const mk = (cs, side) => cs.map((c, i) => unitOf({ cardId: c.id, level: 10, foil: false }, side, i));
+  const cls = {};
+  let sideA = 0;
+  const N = 1500;
+  for (let i = 0; i < N; i += 1) {
+    const A = draw();
+    const B = draw();
+    const o = simulate(applyPassives(applySynergies(mk(A, "a")).units), applyPassives(applySynergies(mk(B, "b")).units), rng);
+    const w = o.winner === "a" ? 1 : 0;
+    sideA += w;
+    for (const c of A) (cls[c.cls] ??= { w: 0, n: 0 }), (cls[c.cls].w += w), (cls[c.cls].n += 1);
+    for (const c of B) (cls[c.cls] ??= { w: 0, n: 0 }), (cls[c.cls].w += 1 - w), (cls[c.cls].n += 1);
+  }
+  assert.ok(Math.abs(sideA / N - 0.5) < 0.06, `сторона A: ${sideA / N}`);
+  for (const [k, v] of Object.entries(cls)) assert.ok(v.w / v.n > 0.38 && v.w / v.n < 0.62, `${k}: ${(v.w / v.n).toFixed(3)}`);
+});

@@ -21,6 +21,7 @@ import { PacksTab } from "./PacksTab";
 import { ProgressTab } from "./ProgressTab";
 import { SeasonTab } from "./SeasonTab";
 import { SharpenTab } from "./SharpenTab";
+import { setSound, useSoundOn } from "@/lib/cards/sound";
 import { ToastHost, fmt, fmtLeft, toast, useBusy, useNow } from "./common";
 import { CUR, Cur, Ico, type CurKey, type IcoName } from "./icons";
 import { TradeTab } from "./TradeTab";
@@ -145,6 +146,7 @@ export function CardsApp() {
   const now = useNow(30_000);
   const tries = useRef(0);
   const [notify, setNotify] = useState(false);
+  const snd = useSoundOn();
   useGameNotices(s, notify);
 
   useEffect(() => {
@@ -330,6 +332,9 @@ export function CardsApp() {
             )}
             <button type="button" className="cg-btn" aria-pressed={notify} onClick={() => void toggleNotify()} title="Системные уведомления">
               <Ico name="bell" size={16} /> {notify ? "Уведомления вкл." : "Уведомления"}
+            </button>
+            <button type="button" className="cg-btn" aria-pressed={snd} aria-label={snd ? "Выключить звук" : "Включить звук"} onClick={() => setSound(!snd)}>
+              <Ico name={snd ? "vol" : "volx"} size={16} /> Звук
             </button>
             <span className="cg-league" style={{ color: s.league.color }}>
               <Ico name="trophy" size={17} />

@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState, useSyncExternalStore, type ReactNode } fr
 import { createPortal } from "react-dom";
 import { cardDef } from "@/lib/cards/catalog";
 import { RANKS } from "@/lib/cards/config";
+import { sfx } from "@/lib/cards/sound";
 import type { InvCard } from "@/lib/cards/client";
 import { GameCard } from "./GameCard";
 import { Ico } from "./icons";
@@ -15,6 +16,7 @@ let timer: ReturnType<typeof setTimeout> | undefined;
 
 export function toast(text: string, err = false): void {
   toastState = { id: Date.now(), text, err };
+  sfx(err ? "err" : "ok");
   toastSubs.forEach((f) => f());
   clearTimeout(timer);
   timer = setTimeout(() => {
@@ -155,6 +157,10 @@ export function Reveal({
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
+  const topRank = cards.reduce((m, c) => Math.max(m, cardDef(c.cardId)?.rank ?? 0), 0);
+  useEffect(() => {
+    if (cards.length) sfx(`reveal${topRank}` as "reveal0");
+  }, [cards.length, topRank]);
   if (!cards.length) return null;
   const defs = cards.map((c) => cardDef(c.cardId)).filter((d): d is NonNullable<ReturnType<typeof cardDef>> => !!d);
   const best = defs.reduce((m, d) => Math.max(m, d.rank), 0);

@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { cardDef } from "@/lib/cards/catalog";
 import { PACK, RANKS } from "@/lib/cards/config";
+import { sfx } from "@/lib/cards/sound";
 import { act, hasArt, type CardsState, type Pull } from "@/lib/cards/client";
 import { GameCard } from "./GameCard";
 import { BannerCard } from "./BannerCard";
@@ -146,6 +147,7 @@ export function PacksTab({ s }: { s: CardsState }) {
       if (reason) return;
       const fast = reduced();
       setPhase("charge");
+      sfx("charge");
       const t0 = Date.now();
       const r = await act<{ results: PackResult[]; pending: string[] | null }>("open", { count, pay: effectivePay, quick });
       if (!alive.current) return;
@@ -158,6 +160,7 @@ export function PacksTab({ s }: { s: CardsState }) {
       if (!fast && spent < 650) await wait(650 - spent);
       if (!alive.current) return;
       setPhase("burst");
+      sfx("burst");
       if (!fast) await wait(560);
       if (!alive.current) return;
       setPhase("idle");
