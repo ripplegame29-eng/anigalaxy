@@ -10,9 +10,9 @@
   align-items: center;
   justify-content: space-between;
   gap: 24px;
-  min-height: 210px;
-  padding: 26px clamp(22px, 3vw, 44px);
-  background: linear-gradient(120deg, #4a7bff, #8a5cff 45%, #3a6bff);
+  min-height: 240px;
+  padding: 30px clamp(24px, 3.4vw, 56px);
+  background: linear-gradient(135deg, #b9ccff 0%, #5b7dff 14%, #2a3585 38%, #1b2050 58%, #6f5bf0 84%, #a9b8ff 100%);
   clip-path: polygon(var(--cut) 0, calc(100% - var(--cut)) 0, 100% var(--cut), 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, var(--cut) 100%, 0 calc(100% - var(--cut)), 0 var(--cut));
   overflow: hidden;
 }
@@ -110,11 +110,31 @@
   position: relative;
   z-index: 1;
 }
+.gb-gem {
+  position: relative;
+  flex: none;
+  display: grid;
+  place-items: center;
+}
+.gb-gem::before {
+  content: "";
+  position: absolute;
+  inset: -45%;
+  background: radial-gradient(closest-side, rgba(110, 150, 255, 0.5), rgba(110, 150, 255, 0.12) 55%, transparent 75%);
+  animation: gb-breathe 5s ease-in-out infinite;
+}
+@keyframes gb-breathe {
+  50% {
+    opacity: 0.6;
+    transform: scale(0.92);
+  }
+}
 .gb-crystal {
-  width: clamp(74px, 8vw, 112px);
+  position: relative;
+  width: clamp(92px, 9.6vw, 142px);
   height: auto;
   flex: none;
-  filter: drop-shadow(0 0 18px rgba(100, 140, 255, 0.85));
+  filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.5)) drop-shadow(0 0 14px rgba(110, 150, 255, 0.7));
   animation: gb-float 5s ease-in-out infinite;
   user-select: none;
 }
@@ -128,42 +148,56 @@
 }
 .gb-eyebrow {
   margin: 0 0 6px;
-  font-size: 10.5px;
-  font-weight: 800;
-  letter-spacing: 0.22em;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: #9fb4ff;
+  color: #a9bcff;
+}
+.gb-dot {
+  width: 22px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #8fb0ff);
 }
 .gb-title {
   margin: 0;
   font-family: var(--font-display, inherit);
   font-weight: 800;
-  font-size: clamp(28px, 3.4vw, 46px);
-  line-height: 1.04;
+  font-size: clamp(34px, 4.2vw, 60px);
+  line-height: 1;
   letter-spacing: -0.03em;
   color: #fff;
-  text-shadow: 0 2px 24px rgba(80, 110, 255, 0.55);
+  background: linear-gradient(180deg, #fff 30%, #c4d2ff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 4px 22px rgba(80, 110, 255, 0.45));
 }
 .gb-title em {
   font-style: italic;
-  background: linear-gradient(90deg, #7fb2ff, #c08bff);
+  background: linear-gradient(90deg, #86b8ff, #b99aff 60%, #e0b8ff);
   -webkit-background-clip: text;
   background-clip: text;
-  color: transparent;
+  -webkit-text-fill-color: transparent;
   padding-right: 4px;
 }
 .gb-sub {
-  margin: 8px 0 16px;
-  font-size: clamp(14px, 1.3vw, 17px);
-  color: #dbe4ff;
+  margin: 12px 0 20px;
+  max-width: 40ch;
+  font-size: clamp(14px, 1.2vw, 16px);
+  line-height: 1.45;
+  color: #c9d5f5;
 }
 .gb-cta {
   position: relative;
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  height: 46px;
-  padding: 0 26px;
+  height: 50px;
+  padding: 0 30px;
   border-radius: 14px;
   font-weight: 800;
   font-size: 15px;
@@ -284,7 +318,7 @@
   gap: 7px;
   font-weight: 800;
   font-size: 14px;
-  color: #9cc3ff;
+  color: #a9bcff;
   text-decoration: none;
   padding: 6px 4px;
   transition: color 0.2s, gap 0.2s;
@@ -325,5 +359,104 @@
   .gb-crystal,
   .gb-fan .gc {
     animation: none;
+  }
+}
+
+.gb-all b {
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+}
+
+/* алтарь: пул света и тонкие кольца под веером — даёт сцене пол и глубину */
+.gb-altar {
+  position: absolute;
+  right: clamp(18px, 3.4vw, 64px);
+  bottom: 0;
+  width: var(--fan-w);
+  height: 62%;
+  z-index: 0;
+  pointer-events: none;
+}
+.gb-pool {
+  position: absolute;
+  inset: auto -8% -34% -8%;
+  height: 120%;
+  background: radial-gradient(ellipse 50% 50% at 50% 60%, rgba(120, 150, 255, 0.55), rgba(110, 90, 255, 0.18) 45%, transparent 70%);
+}
+.gb-ring {
+  position: absolute;
+  left: 6%;
+  right: 6%;
+  bottom: -26%;
+  height: 74%;
+  border-radius: 50%;
+  border: 1px solid rgba(170, 195, 255, 0.35);
+  box-shadow: 0 0 24px -4px rgba(110, 150, 255, 0.45), inset 0 0 30px -10px rgba(110, 150, 255, 0.4);
+  mask-image: linear-gradient(180deg, #000 0%, transparent 62%);
+  -webkit-mask-image: linear-gradient(180deg, #000 0%, transparent 62%);
+}
+.gb-ring-2 {
+  left: -6%;
+  right: -6%;
+  bottom: -42%;
+  height: 100%;
+  border-color: rgba(170, 195, 255, 0.16);
+  box-shadow: none;
+}
+
+/* центральная карта — единственный тёплый акцент композиции */
+.gb-card:nth-child(3) {
+  filter: drop-shadow(0 24px 26px rgba(0, 0, 0, 0.65)) drop-shadow(0 0 22px rgba(255, 80, 100, 0.32));
+}
+
+/* появление: карточки поднимаются по очереди (translate не конфликтует с transform при hover) */
+@keyframes gb-rise {
+  from {
+    opacity: 0;
+    translate: 0 46px;
+  }
+}
+@keyframes gb-fade {
+  from {
+    opacity: 0;
+    translate: -14px 0;
+  }
+}
+.gb-card {
+  animation: gb-rise 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.gb-card:nth-child(1) { animation-delay: 0.25s; }
+.gb-card:nth-child(2) { animation-delay: 0.35s; }
+.gb-card:nth-child(4) { animation-delay: 0.45s; }
+.gb-card:nth-child(5) { animation-delay: 0.55s; }
+.gb-card:nth-child(3) { animation-delay: 0.7s; }
+.gb-left {
+  animation: gb-fade 0.8s ease-out both;
+}
+@media (max-width: 900px) {
+  .gb-altar {
+    right: auto;
+    left: 50%;
+    transform: translateX(-50%);
+    height: 48%;
+  }
+  .gb-crystal {
+    width: 84px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .gb-card,
+  .gb-left,
+  .gb-gem::before {
+    animation: none;
+  }
+}
+@media (max-width: 520px) {
+  .gb-eyebrow {
+    font-size: 11px;
+    letter-spacing: 0.06em;
+  }
+  .gb-dot {
+    display: none;
   }
 }

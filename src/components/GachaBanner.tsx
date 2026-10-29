@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { CSSProperties } from "react";
 import { GameCard } from "@/components/cards/GameCard";
+import { CATALOG } from "@/lib/cards/catalog";
 import "../app/cards-card.css";
 import "./gacha-banner.css";
 
@@ -34,14 +35,22 @@ export function GachaBanner({ variant = "aurora" }: { variant?: GachaVariant }) 
           <i key={i} className="gb-sp" aria-hidden style={{ ["--x" as string]: `${8 + i * 13}%`, ["--d" as string]: `${i * 0.8}s` } as CSSProperties} />
         ))}
 
+        <div className="gb-altar" aria-hidden>
+          <i className="gb-pool" />
+          <i className="gb-ring" />
+          <i className="gb-ring gb-ring-2" />
+        </div>
+
         <div className="gb-left">
-          <img className="gb-crystal" src="/banners/gacha-crystal.webp" alt="" width={325} height={328} draggable={false} />
+          <span className="gb-gem">
+            <img className="gb-crystal" src="/banners/gacha-crystal.webp" alt="" width={325} height={328} draggable={false} />
+          </span>
           <div className="gb-text">
-            <p className="gb-eyebrow">Коллекция · Бои · Аукцион</p>
+            <p className="gb-eyebrow"><span className="gb-dot" aria-hidden />Коллекция · Бои · Аукцион</p>
             <h2 className="gb-title">
               Гача <em>AniGalaxy</em>
             </h2>
-            <p className="gb-sub">Открой карточки любимых персонажей</p>
+            <p className="gb-sub">Открой карточки любимых персонажей и собери свою галактику</p>
             <div className="gb-row">
               <Link href="/cards" className="gb-cta">
                 Открыть гачу
@@ -50,7 +59,7 @@ export function GachaBanner({ variant = "aurora" }: { variant?: GachaVariant }) 
                 </svg>
               </Link>
               <Link href="/cards#collection" className="gb-all">
-                Все карты
+                <b>{CATALOG.length}</b> карт в коллекции
                 <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
                   <path d="M5 12h14M13 6l6 6-6 6" />
                 </svg>
