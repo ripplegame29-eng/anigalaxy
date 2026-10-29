@@ -12,7 +12,7 @@ import { PASS, PASS_XP, PASS_XP_DAILY, PASS_XP_MISSION, passReward, seasonNo, ty
 import { rewardText, type Reward } from "@/lib/cards/progress";
 import { act, type CardsState } from "@/lib/cards/client";
 import { fmt, fmtLeft, toast, useBusy, useNow } from "./common";
-import { Cur, Ico, type IcoName } from "./icons";
+import { Cur, Ico, ScrollArt, type IcoName } from "./icons";
 
 const XP_ROWS: [string, string, IcoName][] = [
   ["wins", "Победа в бою", "swords"],
@@ -38,7 +38,7 @@ function parts(r: Reward): Part[] {
 }
 
 function PartIcon({ k, size }: { k: Part["k"]; size: number }) {
-  return k === "scroll" ? <Ico name="scroll" size={size} style={{ color: "#ffc45e" }} /> : <Cur k={k} size={size} />;
+  return k === "scroll" ? <ScrollArt size={Math.round(size * 1.75)} /> : <Cur k={k} size={size} />;
 }
 
 type Status = "got" | "can" | "locked";

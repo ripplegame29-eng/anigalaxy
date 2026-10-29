@@ -8,7 +8,7 @@ import type { Synergy } from "@/lib/cards/synergy";
 import { act, useCards, type InvCard } from "@/lib/cards/client";
 import { GameCard } from "./GameCard";
 import { Portal, fmt, toast, useBusy } from "./common";
-import { Cur, ELEMENT_ICON, Ico, type IcoName } from "./icons";
+import { Cur, ELEMENT_ICON, Ico, ScrollArt, type IcoName } from "./icons";
 
 /** Запасные иконки (оставлены для совместимости: используются в других местах интерфейса) */
 export const FX_ICON: Record<SkillFx, IcoName> = {
@@ -257,7 +257,7 @@ export function SkillEditor({ card, onClose }: { card: InvCard; onClose: () => v
         <Ico name="trend" size={13} /> {fmt(c.dust)} <Cur k="dust" />
         {c.scroll > 0 && (
           <>
-            {" "}+ <Ico name="scroll" size={13} />
+            {" "}+ <ScrollArt size={20} />
           </>
         )}
       </button>
@@ -324,7 +324,7 @@ export function SkillEditor({ card, onClose }: { card: InvCard; onClose: () => v
                       <Cur k="dust" /> {fmt(wallet.dust)}
                     </span>
                     <span>
-                      <Ico name="scroll" size={14} /> {wallet.scrolls[def.rank] ?? 0} <small>({RANKS[def.rank].name})</small>
+                      <ScrollArt size={22} /> {wallet.scrolls[def.rank] ?? 0} <small>({RANKS[def.rank].name})</small>
                     </span>
                   </p>
                 )}

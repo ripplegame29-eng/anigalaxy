@@ -58,6 +58,11 @@ export function Ico({ name, size = 18, className = "", style }: { name: IcoName;
 
 export const ELEMENT_ICON: Record<string, IcoName> = { fire: "fire", water: "water", wind: "wind", earth: "earth", light: "light", dark: "dark" };
 
+/** Иллюстрация свитка заточки (прозрачный webp). Пропорции чуть шире квадрата — рисуем в квадрат с запасом. */
+export function ScrollArt({ size = 24 }: { size?: number }) {
+  return <img className="scroll-art" src="/icons/scroll.webp" width={size} height={size} alt="" draggable={false} />;
+}
+
 export type CurKey = "diamonds" | "dust" | "packs" | "energy";
 export const CUR: Record<CurKey, { ico: IcoName; color: string; label: string }> = {
   diamonds: { ico: "diamond", color: "#5ec8ff", label: "Алмазы" },

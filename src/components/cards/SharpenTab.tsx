@@ -6,7 +6,7 @@ import { LEVEL_BONUS, MAX_LEVEL, RANKS, SCROLL_DUST, sharpenChance } from "@/lib
 import { act, type CardsState } from "@/lib/cards/client";
 import { GameCard } from "./GameCard";
 import { InvPicker, Panel, RankFilter, Stepper, fmt, toast, useBusy } from "./common";
-import { Ico } from "./icons";
+import { ScrollArt } from "./icons";
 
 interface Step {
   success: boolean;
@@ -136,7 +136,7 @@ export function SharpenTab({ s }: { s: CardsState }) {
         <div className="cg-scrolls" style={{ marginBottom: 10 }}>
           {RANKS.map((r) => (
             <span key={r.id} className="cg-chip" style={{ color: r.color }}>
-              <Ico name="scroll" size={15} /> {s.wallet.scrolls[r.id]} <small>{r.short}</small>
+              <ScrollArt size={22} /> {s.wallet.scrolls[r.id]} <small>{r.short}</small>
             </span>
           ))}
         </div>
