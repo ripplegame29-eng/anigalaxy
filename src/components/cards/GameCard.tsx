@@ -1,6 +1,6 @@
 "use client";
 
-import type { CSSProperties, ReactNode } from "react";
+import { useState, type CSSProperties, type ReactNode } from "react";
 import { cardDef } from "@/lib/cards/catalog";
 import { ELEMENTS, RANKS } from "@/lib/cards/config";
 import { hasArt } from "@/lib/cards/client";
@@ -56,6 +56,9 @@ export function RankMark({ rank }: { rank: number }) {
 /** Карточка персонажа: арт + рамка ранга + плашка имени. Размер задаёт родитель (ширина). */
 export function GameCard({ cardId, foil, level = 1, selected, dim, locked, count, stats = true, unknown, live, evo = 0, onClick, className = "", children }: GameCardProps) {
   const def = cardDef(cardId);
+  // Арт пробуем загрузить всегда: список артов на клиенте мог устареть, а битый файл
+  // тогда превращается в заглушку с инициалами, а не в пустую рамку
+  const [artFailed, setArtFailed] = useState<string | null>(null);
   if (!def) return null;
   const rank = RANKS[def.rank];
   const el = ELEMENTS[def.element];
@@ -75,8 +78,8 @@ export function GameCard({ cardId, foil, level = 1, selected, dim, locked, count
       aria-label={unknown ? "Неизвестная карта" : `${def.name}, ${rank.name}${foil ? ", анимированная" : ""}${evo > 0 ? `, пробуждение ${evo}` : ""}`}
     >
       <div className="gc-art">
-        {hasArt(def.id) && !unknown ? (
-          <img src={`/api/cards/art/${def.id}`} alt="" loading="lazy" draggable={false} />
+        {(hasArt(def.id) || artFailed !== def.id) && !unknown && artFailed !== def.id ? (
+          <img src={`/api/cards/art/${def.id}`} alt="" loading="lazy" draggable={false} onError={() => setArtFailed(def.id)} />
         ) : (
           <div className="gc-ph" aria-hidden>
             <span>{unknown ? "?" : initials}</span>
