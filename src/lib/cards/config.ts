@@ -52,12 +52,12 @@ export const PACK = {
     { n: 20, pay: 15 },
   ],
   choices: 3,
-  /** Шансы одной карты в наборе, ‰: C 72%, B 23%, A 4,2%, S 0,7%, SS 0,1% — S и выше выпадают редко */
-  weights: [720, 230, 42, 7, 1],
+  /** Шансы одной карты в наборе, ‰: C 75,6%, B 21,5%, A 2,4%, S 0,4%, SS 0,1% — S и выше выпадают редко */
+  weights: [756, 215, 24, 4, 1],
   /** Гарантия: эпик и выше не позже чем через N паков, легенда — через M */
   pityEpic: 25,
   pityLegend: 100,
-  premiumBonusLuck: 1.1,
+  premiumBonusLuck: 1.05,
 } as const;
 
 export const SPLIT = {
@@ -68,7 +68,8 @@ export const SPLIT = {
 } as const;
 
 export const UPGRADE = { need: 3 } as const;
-export const MELT = { need: 3 } as const;
+/** Переплавка: шанс получить ранг выше (индекс — текущий ранг C→B, B→A, A→S, S→SS); при неудаче выпадет карта того же ранга */
+export const MELT = { need: 3, up: [0.85, 0.45, 0.12, 0.03] } as const;
 
 export const EXCHANGE = { acPerDiamond: 12, dailyDiamonds: 100 } as const;
 
