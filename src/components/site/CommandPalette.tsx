@@ -34,6 +34,7 @@
  *     `quickSearch` кэширует результаты на 5 минут.
  */
 
+import { addAniExtras, searchReleasesInBrowser } from "@/lib/anilibria-browser";
 import { clockOf, findFrame, percent } from "@/lib/frame-client";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
@@ -129,6 +130,9 @@ export function CommandPalette({ open, onOpenChange, onPick }: CommandPalettePro
     const mine = ++seq.current;
     setLoading(true);
     try {
+      // Релизы AniLiberty, скрытые от адреса сервера, ищем из браузера и добавляем к выдаче
+      const aniPromise =
+        term.length >= 2 && (filter === "all" || filter === "ongoing") ? searchReleasesInBrowser(term, 6) : Promise.resolve([]);
       const res = await fetch(requestFor(term, filter), { signal: AbortSignal.timeout(8000) });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data: unknown = await res.json();
@@ -145,6 +149,11 @@ export function CommandPalette({ open, onOpenChange, onPick }: CommandPalettePro
 
       let next = rows;
       if (filter === "top") next = rows.filter((c) => (c.rating ?? 0) >= 8);
+      else {
+        const extra = (await aniPromise).filter((c) => filter !== "ongoing" || c.status === "ongoing");
+        if (mine !== seq.current) return;
+        next = addAniExtras(rows, extra);
+      }
       setItems(next);
       setActive(0);
       setFailed(false);
