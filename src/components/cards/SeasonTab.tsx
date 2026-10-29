@@ -261,71 +261,61 @@ export function SeasonTab({ s }: { s: CardsState }) {
         ))}
       </div>
       {/* ------------------------------ Герб сезона ------------------------------ */}
-      <div className="sv-stage">
-      <section className={`sv-hero${p.bought ? " is-prem" : ""}`}>
-        <i className="sv-sky" aria-hidden />
-        <i className="sv-clouds" aria-hidden />
-        <i className="sv-sea" aria-hidden />
-        <i className="sv-art" aria-hidden />
-
-        <div className="sv-crest" style={{ "--p": Math.round((p.level / PASS.levels) * 100) } as CSSProperties} aria-label={`Уровень ${p.level} из ${PASS.levels}`}>
-          <div className="sv-hex">
-            <div className="sv-hex-in">
-              <small>Уровень</small>
+      <div className="hx">
+        <section className={`hx-hero${p.bought ? " is-prem" : ""}`}>
+          <div className="hx-lvl" style={{ "--p": Math.round((p.level / PASS.levels) * 100) } as CSSProperties} aria-label={`Уровень ${p.level} из ${PASS.levels}`}>
+            <div className="hx-lvl-in">
               <b>{p.level}</b>
               <small>из {PASS.levels}</small>
             </div>
           </div>
-        </div>
 
-        <div className="sv-main">
-          <span className="cg-eyebrow">Сезон {seasonNo(p.season)} · наградной путь</span>
-          <h2 className="sv-title">
-            Сезонный <em>пропуск</em>
-          </h2>
-          <p className="sv-sub">Поднимайся по уровням за бои, паки, кампанию и рейды. Две ветки наград — бесплатная и премиум.</p>
+          <div className="hx-main">
+            <span className="hx-eyebrow">Сезонный пропуск · Сезон {seasonNo(p.season)}</span>
+            <h2 className="hx-title">Наградной путь</h2>
+            <p className="hx-sub">Поднимайся по уровням за бои, паки, кампанию и рейды. Две ветки наград — бесплатная и премиум.</p>
 
-          <div className="sv-prog">
-            <div className="sv-prog-top">
-              <span>{maxed ? "Максимальный уровень" : `Уровень ${p.level} → ${p.level + 1}`}</span>
-              <b>{maxed ? `${fmt(p.xp)} оч.` : `${p.into} / ${PASS.xpPerLevel} оч.`}</b>
+            <div className="hx-prog">
+              <div className="hx-prog-top">
+                <span>{maxed ? "Максимальный уровень" : `${p.into} / ${PASS.xpPerLevel} оч. до ${p.level + 1} уровня`}</span>
+                <b>{Math.round(pct)}%</b>
+              </div>
+              <div className="hx-bar" role="progressbar" aria-valuenow={Math.round(pct)} aria-valuemin={0} aria-valuemax={100}>
+                <i style={{ width: `${pct}%` }} />
+              </div>
             </div>
-            <div className="sv-bar" role="progressbar" aria-valuenow={Math.round(pct)} aria-valuemin={0} aria-valuemax={100}>
-              <i style={{ width: `${pct}%` }} />
-            </div>
-          </div>
 
-          <ul className="sv-facts">
-            <li>
-              <Ico name="clock" size={16} />
-              <span>До конца сезона</span>
-              <b>{fmtLeft(p.endsAt - now)}</b>
-            </li>
-            <li className={claimable > 0 ? "hot" : ""}>
-              <Ico name="gift" size={16} />
-              <span>К получению</span>
-              <b>{claimable}</b>
-            </li>
-            <li className={p.bought ? "gold" : ""}>
-              <Ico name={p.bought ? "crown" : "lock"} size={16} />
-              <span>Премиум</span>
-              <b>{p.bought ? "Активен" : "Закрыт"}</b>
-            </li>
-          </ul>
-        </div>
-      </section>
-      {p.bought && (
-        <section className="sv-offer on">
-          <span className="sv-crown" aria-hidden><Ico name="crown" size={26} /></span>
-          <div>
-            <h3>Премиум-лента открыта</h3>
-            <p>
-              Все {PASS.levels} наградных уровней нижней ленты ваши: {premSum.diamonds.toLocaleString("ru-RU")} алмазов, {premSum.packs} паков и {premSum.scroll} свитков.
-              Незабранное не сгорит до конца сезона.
-            </p>
+            <ul className="hx-facts">
+              <li>
+                <Ico name="clock" size={17} />
+                <span>До конца сезона</span>
+                <b>{fmtLeft(p.endsAt - now)}</b>
+              </li>
+              <li className={claimable > 0 ? "hot" : ""}>
+                <Ico name="gift" size={17} />
+                <span>Наград ждёт</span>
+                <b>{claimable}</b>
+              </li>
+              <li className={p.bought ? "gold" : ""}>
+                <Ico name={p.bought ? "crown" : "lock"} size={17} />
+                <span>Премиум</span>
+                <b>{p.bought ? "Активен" : "Закрыт"}</b>
+              </li>
+            </ul>
           </div>
         </section>
-      )}
+        {p.bought && (
+          <section className="hx-note">
+            <span className="hx-note-ico" aria-hidden><Ico name="crown" size={22} /></span>
+            <div>
+              <h3>Премиум-лента открыта</h3>
+              <p>
+                Все {PASS.levels} наградных уровней нижней ленты ваши: {premSum.diamonds.toLocaleString("ru-RU")} алмазов, {premSum.packs} паков и {premSum.scroll} свитков.
+                Незабранное не сгорит до конца сезона.
+              </p>
+            </div>
+          </section>
+        )}
       </div>
 
       {/* --------------------------------- Премиум -------------------------------- */}
