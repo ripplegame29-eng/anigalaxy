@@ -61,9 +61,13 @@ export function raidView(db: Database, userId: number, now = Date.now()): RaidVi
   };
 }
 
-/** Босс этой недели в виде бойца: сильнее героя, здоровье — запас на один бой */
-export function raidBossUnit(week: number): Unit | null {
-  const u = unitOf({ cardId: raidBossId(week), level: 12, foil: true }, "b", 0);
+/**
+ * Босс этой недели в виде бойца: сильнее героя, здоровье — запас на один бой.
+ * Берём босса, записанного в рейд при его создании: список мифических героев мог
+ * пополниться, и расчёт по неделе дал бы другого (на странице один, в бою — другой).
+ */
+export function raidBossUnit(week: number, bossId?: string): Unit | null {
+  const u = unitOf({ cardId: bossId || raidBossId(week), level: 12, foil: true }, "b", 0);
   if (!u) return null;
   return { ...u, hp: RAID.fightHp, maxHp: RAID.fightHp, atk: Math.round(u.atk * RAID.atkMul), def: Math.round(u.def * RAID.defMul), passive: "p-flow" };
 }
@@ -89,7 +93,7 @@ export function raidFight(db: Database, userId: number, now = Date.now(), rng: R
       if (u) mine.push(u);
     });
     if (mine.length < DECK_SIZE) return fail(`Соберите колоду из ${DECK_SIZE} карт`);
-    const boss = raidBossUnit(r.week);
+    const boss = raidBossUnit(r.week, r.boss);
     if (!boss) return fail("Босс недоступен");
 
     const side = prepareSides(mine, [boss], now);
