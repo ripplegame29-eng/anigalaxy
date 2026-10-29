@@ -1076,3 +1076,17 @@
 .cg .sv-card .sv-gem .sv-face { width: 86%; height: 86%; border-radius: 50%; object-fit: cover; object-position: 50% 18%; display: block; pointer-events: none; box-shadow: 0 0 0 1px rgba(255, 200, 100, 0.55), 0 2px 8px rgba(0, 0, 0, 0.5); }
 .cg .sv-card .sv-gem { display: grid; place-items: center; }
 .cg .sv-card:has(.sv-face) .sv-val, .cg .sv-card.premium:has(.sv-face) .sv-val { font-size: 19px; }
+
+/* Закрытая премиум-лента в полосе баннера: объяснение и кнопка покупки */
+.cg .sv-stage .sv-offer.on.off { gap: 2cqw; justify-content: space-between; }
+.cg .sv-stage .sv-offer.on.off h3 { color: #f1c970; }
+.cg .sv-stage .sv-offer.on.off p { color: #cdd8f2; max-width: 46cqw; }
+.cg .sv-off-btn { flex: none; display: inline-flex; align-items: center; gap: .5em; padding: .55em 1.2em; border: 0; border-radius: 999px; cursor: pointer; font: 800 clamp(10px, .95cqw, 14px)/1 var(--font-display, inherit); letter-spacing: .02em; color: #2a1802; background: linear-gradient(180deg, #ffe39b, #e0a93c 55%, #b9812a); box-shadow: 0 0 0 1px rgba(255,226,150,.55), 0 8px 20px -8px rgba(224,169,60,.8), inset 0 1px 0 rgba(255,255,255,.55); transition: transform .15s, filter .15s; }
+.cg .sv-off-btn:hover { transform: translateY(-1px); filter: brightness(1.08); }
+.cg .sv-off-btn:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+@media (max-width: 820px) {
+  .cg .sv-stage .sv-offer.on.off { flex-direction: column; align-items: flex-start; gap: 10px; }
+  .cg .sv-stage .sv-offer.on.off .sv-crown { display: none; }
+  .cg .sv-stage .sv-offer.on.off p { max-width: none; font-size: 12.5px; }
+  .cg .sv-off-btn { font-size: 13px; }
+}

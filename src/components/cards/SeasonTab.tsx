@@ -324,11 +324,23 @@ export function SeasonTab({ s }: { s: CardsState }) {
           </div>
         </section>
       )}
+      {!p.bought && (
+        <section className="sv-offer on off">
+          <span className="sv-crown" aria-hidden><Ico name="lock" size={26} /></span>
+          <div className="sv-off-t">
+            <h3>Премиум-лента закрыта</h3>
+            <p>Нижняя лента наград открывается вместе с премиумом. Купите его, и пройденные уровни выдадим сразу.</p>
+          </div>
+          <button type="button" className="sv-off-btn" onClick={() => document.getElementById("sv-premium")?.scrollIntoView({ behavior: "smooth", block: "center" })}>
+            <Ico name="crown" size={15} /> Купить премиум
+          </button>
+        </section>
+      )}
       </div>
 
       {/* --------------------------------- Премиум -------------------------------- */}
       {!p.bought && (
-        <section className="sv-offer">
+        <section className="sv-offer" id="sv-premium">
           <i className="sv-sweep" aria-hidden />
           <span className="sv-crown" aria-hidden><Ico name="crown" size={34} /></span>
           <div className="sv-offer-t">
