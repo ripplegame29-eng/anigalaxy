@@ -1,4 +1,7 @@
 import { NextEpisode } from "@/components/NextEpisode";
+import { AniTitlePage } from "@/components/AniTitlePage";
+import { aniAlias, isAniId } from "@/lib/ani-fallback";
+import { getRelease } from "@/lib/anilibria";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -42,6 +45,16 @@ const ID_PATTERN = /^(serial|movie)-\d+$/;
 
 export async function generateMetadata({ params }: PageParams): Promise<Metadata> {
   const { id } = await params;
+  if (isAniId(id)) {
+    const d = await getRelease(aniAlias(id)).catch(() => null);
+    if (!d) return { title: "Тайтл не найден" };
+    return {
+      title: d.card.title,
+      description: truncate(d.card.description, 155) ?? `${d.card.title} — смотреть онлайн.`,
+      openGraph: { title: d.card.title, images: d.card.poster ? [{ url: d.card.poster, alt: d.card.title }] : undefined },
+      alternates: { canonical: `/title/${id}` },
+    };
+  }
   if (!ID_PATTERN.test(id)) return { title: "Тайтл не найден" };
 
   try {
@@ -95,6 +108,7 @@ function Chip({ children }: { children: React.ReactNode }) {
 
 export default async function TitlePage({ params }: PageParams) {
   const { id } = await params;
+  if (isAniId(id)) return <AniTitlePage id={id} />;
   if (!ID_PATTERN.test(id)) notFound();
 
   let detail;

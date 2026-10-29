@@ -3,6 +3,7 @@ import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { CatalogFilters } from "@/components/CatalogFilters";
 import { CatalogResults } from "@/components/CatalogResults";
 import { catalog, getMeta } from "@/lib/kodik";
+import { withAniFallback } from "@/lib/ani-fallback";
 import { parseQuery, toSearch, type SearchParams } from "@/lib/catalog-query";
 import type { CatalogQuery } from "@/lib/types";
 
@@ -41,11 +42,16 @@ export default async function CatalogPage({ searchParams }: PageProps) {
     sort: state.sort,
   };
 
-  const [{ cards, total, next }, meta] = await Promise.all([
+  const [{ cards: kodikCards, total: kodikTotal, next }, meta] = await Promise.all([
     // Если API временно недоступен — каталог не должен падать
     catalog(query).catch(() => ({ cards: [], total: 0, next: null })),
     getMeta().catch(() => ({ genres: [], years: [] })),
   ]);
+
+  // Поиск по названию: тайтлы, которых нет в Kodik, добираем из AniLiberty
+  const withExtra = state.q ? await withAniFallback(state.q, kodikCards) : kodikCards;
+  const cards = withExtra;
+  const total = kodikTotal + (withExtra.length - kodikCards.length);
 
   const title = state.q ? `Поиск: «${state.q}»` : "Каталог аниме";
   const totalText = total.toLocaleString("ru-RU");
