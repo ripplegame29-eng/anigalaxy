@@ -6,7 +6,7 @@ import { cardDef } from "@/lib/cards/catalog";
 import { AUCTION, RANKS } from "@/lib/cards/config";
 import { act, view, type CardsState } from "@/lib/cards/client";
 import { GameCard } from "./GameCard";
-import { InvPicker, Panel, RankFilter, fmt, fmtLeft, toast, useBusy, useNow } from "./common";
+import { InvPicker, Panel, RankFilter, Stepper, fmt, fmtLeft, toast, useBusy, useNow } from "./common";
 import { Cur, Ico } from "./icons";
 
 interface Lot {
@@ -178,7 +178,7 @@ export function AuctionTab({ s, me }: { s: CardsState; me: string }) {
             <p className="cg-hint" style={{ margin: 0 }}>
               Минимальная ставка {fmt(bidFor.minNext)} <Cur k="diamonds" />. У вас {fmt(s.wallet.diamonds)} <Cur k="diamonds" />.
             </p>
-            <input className="cg-input" type="number" min={bidFor.minNext} value={amount} onChange={(e) => setAmount(Number(e.target.value))} style={{ width: 160, textAlign: "center" }} />
+            <Stepper label="Ставка" value={amount} min={bidFor.minNext} step={10} onChange={setAmount} width={200} />
             <div className="cg-row">
               <button type="button" className="cg-btn pri" disabled={busy || amount < bidFor.minNext} onClick={() => void placeBid()}>
                 Сделать ставку
@@ -215,10 +215,10 @@ function Sell({ s, onDone }: { s: CardsState; onDone: () => void }) {
       <Panel title="Новый лот" hint={`Стартовая цена от ${AUCTION.minPrice} алмазов, срок от ${AUCTION.minHours} до ${AUCTION.maxHours} часов. Пока лот активен, карта заморожена. Лот без ставок можно снять.`}>
         <div style={{ display: "grid", gap: 12, justifyItems: "start" }}>
           <div style={{ width: 170 }}>{card ? <GameCard cardId={card.cardId} foil={card.foil} level={card.level} /> : <div className="cg-slot">Выберите карту</div>}</div>
-          <label className="cg-row" style={{ fontSize: 13 }}>
-            Стартовая цена (алмазы)
-            <input className="cg-input" type="number" min={AUCTION.minPrice} value={price} onChange={(e) => setPrice(Number(e.target.value))} style={{ width: 120 }} />
-          </label>
+          <div className="cg-field" style={{ fontSize: 13 }}>
+            <span>Стартовая цена (алмазы)</span>
+            <Stepper label="Стартовая цена" value={price} min={AUCTION.minPrice} step={10} onChange={setPrice} width={200} />
+          </div>
           <label className="cg-row" style={{ fontSize: 13 }}>
             Срок
             <PSelect className="cg-input" value={hours} onChange={(e) => setHours(Number(e.target.value))}>

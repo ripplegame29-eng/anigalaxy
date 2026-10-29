@@ -5,7 +5,7 @@ import { cardDef } from "@/lib/cards/catalog";
 import { LEVEL_BONUS, MAX_LEVEL, RANKS, SCROLL_DUST, sharpenChance } from "@/lib/cards/config";
 import { act, type CardsState } from "@/lib/cards/client";
 import { GameCard } from "./GameCard";
-import { InvPicker, Panel, RankFilter, fmt, toast, useBusy } from "./common";
+import { InvPicker, Panel, RankFilter, Stepper, fmt, toast, useBusy } from "./common";
 import { Ico } from "./icons";
 
 interface Step {
@@ -100,14 +100,14 @@ export function SharpenTab({ s }: { s: CardsState }) {
               <div className="cg-panel" style={{ marginTop: 14, padding: 12 }}>
                 <h3>Автозаточка</h3>
                 <div className="cg-row" style={{ fontSize: 13 }}>
-                  <label>
-                    До уровня{" "}
-                    <input className="cg-input" type="number" min={card.level + 1} max={MAX_LEVEL} value={target} onChange={(e) => setTarget(Number(e.target.value))} style={{ width: 70 }} />
-                  </label>
-                  <label>
-                    Не больше попыток{" "}
-                    <input className="cg-input" type="number" min={1} max={200} value={budget} onChange={(e) => setBudget(Number(e.target.value))} style={{ width: 80 }} />
-                  </label>
+                  <div className="cg-field">
+                    <span>До уровня</span>
+                    <Stepper label="До уровня" value={target} min={card.level + 1} max={MAX_LEVEL} onChange={setTarget} width={140} />
+                  </div>
+                  <div className="cg-field">
+                    <span>Не больше попыток</span>
+                    <Stepper label="Не больше попыток" value={budget} min={1} max={200} step={5} onChange={setBudget} width={150} />
+                  </div>
                 </div>
                 <label className="cg-row" style={{ fontSize: 13, margin: "8px 0" }}>
                   <input type="checkbox" checked={useDust} onChange={(e) => setUseDust(e.target.checked)} /> Докупать свитки за пыль

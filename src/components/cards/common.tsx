@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, useSyncExternalStore, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { cardDef } from "@/lib/cards/catalog";
 import { RANKS } from "@/lib/cards/config";
@@ -241,4 +241,77 @@ export function useBusy(): [boolean, <T>(fn: () => Promise<T>) => Promise<T | un
 export function Portal({ children }: { children: ReactNode }) {
   if (typeof document === "undefined") return null;
   return createPortal(<div className="cg cg-portal">{children}</div>, document.body);
+}
+
+/** Числовое поле с кнопками «−» и «+»: зажатие повторяет шаг, значение можно вводить с клавиатуры */
+export function Stepper({
+  value,
+  onChange,
+  min = 0,
+  max = 999_999,
+  step = 1,
+  width = 150,
+  label,
+}: {
+  value: number;
+  onChange: (n: number) => void;
+  min?: number;
+  max?: number;
+  step?: number;
+  width?: number;
+  label: string;
+}) {
+  const clamp = useCallback((n: number) => Math.min(max, Math.max(min, Math.round(n))), [min, max]);
+  const [draft, setDraft] = useState<string | null>(null);
+  const cur = useRef(value);
+  useEffect(() => {
+    cur.current = value;
+  }, [value]);
+  const timer = useRef<number | undefined>(undefined);
+  const stop = () => {
+    window.clearTimeout(timer.current);
+    window.clearInterval(timer.current);
+  };
+  useEffect(() => stop, []);
+  const bump = (dir: 1 | -1) => {
+    const next = clamp(cur.current + dir * step);
+    cur.current = next;
+    onChange(next);
+  };
+  const hold = (dir: 1 | -1) => {
+    stop();
+    bump(dir);
+    timer.current = window.setTimeout(() => {
+      timer.current = window.setInterval(() => bump(dir), 70);
+    }, 380);
+  };
+  const commit = () => {
+    if (draft === null) return;
+    const n = Number(draft.replace(/\s/g, ""));
+    onChange(clamp(Number.isFinite(n) && draft.trim() !== "" ? n : value));
+    setDraft(null);
+  };
+  return (
+    <div className="cg-step" style={{ width }} role="group" aria-label={label}>
+      <button type="button" className="cg-step-b" aria-label="Меньше" disabled={value <= min} onPointerDown={() => hold(-1)} onPointerUp={stop} onPointerLeave={stop} onPointerCancel={stop} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); bump(-1); } }}>
+        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden><path d="M6 12h12" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" /></svg>
+      </button>
+      <input
+        className="cg-step-i"
+        inputMode="numeric"
+        aria-label={label}
+        value={draft ?? String(value)}
+        onChange={(e) => setDraft(e.target.value.replace(/[^\d\s]/g, ""))}
+        onBlur={commit}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") commit();
+          if (e.key === "ArrowUp") { e.preventDefault(); bump(1); }
+          if (e.key === "ArrowDown") { e.preventDefault(); bump(-1); }
+        }}
+      />
+      <button type="button" className="cg-step-b" aria-label="Больше" disabled={value >= max} onPointerDown={() => hold(1)} onPointerUp={stop} onPointerLeave={stop} onPointerCancel={stop} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); bump(1); } }}>
+        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden><path d="M12 6v12M6 12h12" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" /></svg>
+      </button>
+    </div>
+  );
 }

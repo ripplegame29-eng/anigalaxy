@@ -716,3 +716,13 @@
 .cg .cg-tok-ico { width: 42px; height: 42px; border-radius: 14px; background: radial-gradient(circle at 50% 25%, color-mix(in oklab, var(--c) 30%, #0a1030), #070b1e 78%); box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--c) 55%, transparent), inset 0 1px 0 rgba(255,255,255,.18), 0 0 20px -6px var(--c); }
 .cg .cg-tok-ico .cur-art { filter: drop-shadow(0 0 6px color-mix(in oklab, var(--c) 70%, transparent)); }
 .cg .cg-hero2.mini .cg-tok-ico { width: 36px; height: 36px; border-radius: 12px; }
+
+/* --- Числовое поле «− 15 +» --- */
+.cg .cg-field { display: inline-flex; align-items: center; gap: 12px; flex-wrap: wrap; font-size: 13px; color: var(--cg-text2); }
+.cg .cg-step { display: inline-flex; align-items: stretch; height: 42px; border-radius: 14px; background: rgba(8,12,30,.75); box-shadow: inset 0 0 0 1px rgba(233,199,121,.3), inset 0 1px 0 rgba(255,255,255,.08); transition: box-shadow .2s; }
+.cg .cg-step:focus-within { box-shadow: inset 0 0 0 1px #e9c779, 0 0 22px -6px rgba(255,196,94,.7); }
+.cg .cg-step-b { flex: none; width: 40px; display: grid; place-items: center; border: 0; background: transparent; color: #e9c779; cursor: pointer; border-radius: 14px; transition: background .15s, color .15s; touch-action: manipulation; user-select: none; }
+.cg .cg-step-b:hover:not(:disabled) { background: rgba(233,199,121,.14); color: #fff1c4; }
+.cg .cg-step-b:active:not(:disabled) { background: rgba(233,199,121,.26); }
+.cg .cg-step-b:disabled { opacity: .3; cursor: default; }
+.cg .cg-step-i { flex: 1; min-width: 0; width: 100%; border: 0; background: transparent; text-align: center; font: 800 17px/1 var(--font-display, inherit); font-variant-numeric: tabular-nums; color: #fff; outline: 0; }
