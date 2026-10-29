@@ -96,7 +96,7 @@ export function ProgressTab({ s }: { s: CardsState }) {
         </Panel>
         </div>
 
-        <Panel title="Недельные задания" right={<span className="cg-chip">Обновление через {fmtLeft(left)}</span>}>
+        <Panel title="Недельные задания" right={<span className="cg-chip">Сброс через {fmtLeft(left)}</span>}>
           <ul className="cg-list">
             {p.weekly.map((m) => (
               <li key={m.id}>
