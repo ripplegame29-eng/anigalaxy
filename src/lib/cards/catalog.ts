@@ -429,7 +429,7 @@ const CLS_MUL: Record<CardClass, [number, number, number, number]> = {
   mage: [118, 85, 90, 105],
   tank: [85, 130, 125, 85],
   assassin: [120, 85, 85, 125],
-  support: [90, 105, 110, 108],
+  support: [86, 94, 98, 102],
 };
 
 function slug(s: string): string {
