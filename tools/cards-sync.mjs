@@ -65,11 +65,36 @@ async function find(search) {
   throw new Error("AniList ограничил запросы (HTTP 429) — подождите несколько минут и запустите снова");
 }
 
+/** Запасные написания имени: AniList пишет японские имена по-разному (Shouko/Shoko, Jiro/Jirou) */
+const OVERRIDES = {
+  "Shoko Ieiri": ["Shouko Ieiri", "Ieiri Shouko"],
+  "Barragan Luisenbarn": ["Baraggan Louisenbairn", "Baraggan"],
+  "Zeref Dragneel": ["Zeref"],
+};
+function variants(name) {
+  const set = new Set([name, ...(OVERRIDES[name] ?? [])]);
+  const parts = name.split(/\s+/);
+  if (parts.length === 2) set.add(`${parts[1]} ${parts[0]}`);
+  for (const v of [...set]) {
+    set.add(v.replace(/ou/gi, "o").replace(/oo/gi, "o").replace(/uu/gi, "u"));
+    set.add(v.replace(/o(?=[^aeiouy]|\b)/g, "ou"));
+  }
+  return [...set];
+}
+async function findAny(name) {
+  for (const v of variants(name)) {
+    const url = await find(v);
+    if (url && !url.includes("default.jpg")) return url;
+    await sleep(400);
+  }
+  return null;
+}
+
 let ok = 0;
 const failed = [];
 for (const [i, c] of todo.entries()) {
   try {
-    const url = await find(c.search);
+    const url = await findAny(c.search);
     if (!url || url.includes("default.jpg")) throw new Error(`персонаж «${c.search}» не найден на AniList`);
     const img = await fetch(url);
     if (!img.ok) throw new Error(`HTTP ${img.status}`);
