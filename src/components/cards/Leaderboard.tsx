@@ -53,7 +53,7 @@ export function Leaderboard({
   const rest = rows.slice(3, 20);
   const inList = rows.some(isMe);
   // Подиум читается 2-1-3: победитель по центру и выше остальных
-  const order = podium.length === 3 ? [1, 0, 2] : podium.map((_, i) => i);
+  const order = [1, 0, 2];
 
   return (
     <section className="lb" aria-labelledby="lb-title">
@@ -74,10 +74,20 @@ export function Leaderboard({
         <div className="cg-empty">Рейтинг появится после первых боёв</div>
       ) : (
         <>
-          <div className={`lb-podium n${podium.length}`}>
+          <div className="lb-podium n3">
             {order.map((i) => {
               const r = podium[i];
               const c = MEDAL[i];
+              if (!r)
+                return (
+                  <div key={`empty${i}`} className={`lb-pod empty p${i + 1}`} style={{ "--m": c } as CSSProperties}>
+                    <b className="lb-big" aria-hidden>{i + 1}</b>
+                    <span className="lb-vac" aria-hidden><Ico name="trophy" size={34} /></span>
+                    <span className="lb-medal">{MEDAL_NAME[i]}</span>
+                    <span className="lb-name">Место свободно</span>
+                    <span className="lb-rec">Выигрывайте рейтинговые бои, чтобы занять его</span>
+                  </div>
+                );
               return (
                 <button
                   key={r.nick}
