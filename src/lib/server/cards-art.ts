@@ -7,6 +7,7 @@
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { CATALOG, setHidden } from "../cards/catalog";
+import { ART_QUERY, pickImage, type RawChar } from "../cards/art-match";
 
 export const ART_DIR = path.join(process.cwd(), "data", "cards-art");
 
@@ -49,16 +50,15 @@ function saveMissing(ids: string[]): void {
   }
 }
 
-const QUERY = `query ($q: String) { Character(search: $q, sort: FAVOURITES_DESC) { image { large } } }`;
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 /** null — сеть/сервис недоступны, "none" — AniList ответил, но фото у героя нет */
-async function findImage(search: string): Promise<string | "none" | null> {
+async function findImage(search: string, series: string): Promise<string | "none" | null> {
   for (let attempt = 0; attempt < 3; attempt += 1) {
     const res = await fetch("https://graphql.anilist.co", {
       method: "POST",
       headers: { "Content-Type": "application/json", Accept: "application/json" },
-      body: JSON.stringify({ query: QUERY, variables: { q: search } }),
+      body: JSON.stringify({ query: ART_QUERY, variables: { q: search } }),
       signal: AbortSignal.timeout(15_000),
     });
     if (res.status === 429) {
@@ -66,9 +66,8 @@ async function findImage(search: string): Promise<string | "none" | null> {
       continue;
     }
     if (!res.ok) return null;
-    const data = (await res.json()) as { data?: { Character?: { image?: { large?: string } } } };
-    const url = data.data?.Character?.image?.large;
-    return url && !url.includes("default") ? url : "none";
+    const data = (await res.json()) as { data?: { Page?: { characters?: RawChar[] } } };
+    return pickImage(search, series, data.data?.Page?.characters ?? []) ?? "none";
   }
   return null;
 }
@@ -90,7 +89,7 @@ export function startArtSync(): void {
       mkdirSync(ART_DIR, { recursive: true });
       for (const c of missing()) {
         try {
-          const url = await findImage(c.search);
+          const url = await findImage(c.search, c.series);
           if (url === "none") {
             artStatus.failed.push(c.id);
             saveMissing([...missingIds(), c.id]);

@@ -3,6 +3,8 @@
  *
  *   node tools/cards-sync.mjs            — скачать недостающие арты
  *   node tools/cards-sync.mjs --force    — перекачать все
+ *   node tools/cards-sync.mjs --ambiguous — перекачать героев с одиночным именем (Haku, Ban, Karin…)
+ *                                           с проверкой аниме: нужно, если у кого-то арт от тёзки
  *   node tools/cards-sync.mjs naruto-uzumaki  — только указанные id
  *
  * Файлы кладутся в data/cards-art/<id>.jpg (сервер делает то же самое сам в фоне). Пока файла нет, на карточке
@@ -23,24 +25,87 @@ const slug = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g
 const seen = new Set();
 const cards = [];
 for (const line of src.split("\n")) {
-  const m = /^[0-4]\|([^|]+)\|([^|]+)\|/.exec(line);
+  const m = /^[0-4]\|([^|]+)\|([^|]+)\|([^|]*)\|/.exec(line);
   if (!m) continue;
   let id = slug(m[2]);
   while (seen.has(id)) id += "-x";
   seen.add(id);
-  cards.push({ id, name: m[1], search: m[2] });
+  cards.push({ id, name: m[1], search: m[2], series: m[3] });
 }
 
 const args = process.argv.slice(2);
 const force = args.includes("--force");
+const ambiguous = args.includes("--ambiguous");
 const only = args.filter((a) => !a.startsWith("--"));
-const todo = cards.filter((c) => (only.length ? only.includes(c.id) : true) && (force || !existsSync(path.join(outDir, `${c.id}.jpg`))));
+const todo = cards.filter((c) => (only.length ? only.includes(c.id) : true) && (force || (ambiguous && !/\s/.test(c.search.trim())) || !existsSync(path.join(outDir, `${c.id}.jpg`))));
 console.log(`Карт в каталоге: ${cards.length}, к загрузке: ${todo.length}`);
 
-const QUERY = `query ($q: String) { Page(page: 1, perPage: 1) { characters(search: $q, sort: FAVOURITES_DESC) { id image { large } } } }`;
+const SERIES_KEYS = {
+  "Наруто": ["naruto"],
+  "Ван-Пис": ["one piece"],
+  "Блич": ["bleach"],
+  "Атака титанов": ["shingeki", "attack on titan"],
+  "Истребитель демонов": ["kimetsu", "demon slayer"],
+  "Магическая битва": ["jujutsu"],
+  "Тетрадь смерти": ["death note"],
+  "Стальной алхимик": ["fullmetal", "hagane"],
+  "Охотник х Охотник": ["hunter x hunter"],
+  "Драгонболл": ["dragon ball"],
+  "Моя геройская академия": ["boku no hero", "my hero"],
+  "Ванпанчмен": ["one punch", "one-punch"],
+  "Мастера Меча Онлайн": ["sword art"],
+  "Токийский гуль": ["tokyo ghoul"],
+  "Семья шпиона": ["spy x family", "spy×family"],
+  "Человек-бензопила": ["chainsaw"],
+  "Провожающая в последний путь Фрирен": ["frieren", "sousou"],
+  "Re:Zero": ["re:zero"],
+  "Коносуба": ["kono subarashii", "konosuba"],
+  "Хвост Феи": ["fairy tail"],
+  "Чёрный клевер": ["black clover"],
+  "Евангелион": ["evangelion"],
+  "Врата Штейна": ["steins"],
+  "Волейбол!!": ["haikyuu"],
+  "Доктор Стоун": ["dr. stone", "dr stone"],
+  "Судьба": ["fate"],
+  "Ковбой Бибоп": ["cowboy bebop"],
+  "Моб Психо 100": ["mob psycho"],
+  "Невероятные приключения ДжоДжо": ["jojo"],
+  "Код Гиасс": ["code geass"],
+  "Поднятие уровня в одиночку": ["solo leveling", "ore dake"],
+  "Оши но Ко": ["oshi no ko"],
+  "Оверлорд": ["overlord"],
+  "Гинтама": ["gintama"],
+  "Семь смертных грехов": ["nanatsu", "seven deadly"],
+  "О моём перерождении в слизь": ["slime", "tensei shitara"],
+  "Хеллсинг": ["hellsing"],
+  "Берсерк": ["berserk"],
+  "Токийские мстители": ["tokyo revengers"],
+  "Синяя тюрьма": ["blue lock"],
+  "Пламенная бригада": ["fire force", "enen no shouboutai"],
+};
+const QUERY = `query ($q: String) { Page(page: 1, perPage: 15) { characters(search: $q, sort: FAVOURITES_DESC) { image { large } name { full alternative } media(perPage: 6, sort: POPULARITY_DESC) { nodes { title { romaji english } } } } } }`;
+
+/** Выбирает персонажа нужного аниме среди тёзок (Haku из Наруто, а не из «Пламенной бригады») */
+function pickImage(search, series, chars) {
+  const q = search.toLowerCase().trim();
+  const keys = SERIES_KEYS[series];
+  let best = null;
+  for (const c of chars) {
+    const url = c.image?.large;
+    if (!url || url.includes("default")) continue;
+    const names = [c.name?.full, ...(c.name?.alternative ?? [])].filter(Boolean).map((n) => n.toLowerCase());
+    const nameScore = names.some((n) => n === q) ? 3 : names.some((n) => n.split(/\s+/).includes(q) || n.startsWith(q) || q.startsWith(n)) ? 2 : names.some((n) => n.includes(q)) ? 1 : 0;
+    const titles = (c.media?.nodes ?? []).flatMap((m) => [m.title?.romaji, m.title?.english]).filter(Boolean).map((t) => t.toLowerCase());
+    const seriesOk = !keys || titles.some((t) => keys.some((k) => t.includes(k)));
+    if (!seriesOk || nameScore === 0) continue;
+    const score = nameScore + (keys ? 3 : 0);
+    if (!best || score > best.score) best = { url, score };
+  }
+  return best ? best.url : null;
+}
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-async function find(search) {
+async function find(search, series) {
   for (let attempt = 0; attempt < 4; attempt += 1) {
     const res = await fetch("https://graphql.anilist.co", {
       method: "POST",
@@ -61,7 +126,7 @@ async function find(search) {
       throw new Error(`AniList вернул не JSON: ${text.replace(/\s+/g, " ").slice(0, 160)}`);
     }
     if (json?.errors?.length) throw new Error(`AniList: ${json.errors[0].message}`);
-    return json?.data?.Page?.characters?.[0]?.image?.large ?? null;
+    return pickImage(search, series, json?.data?.Page?.characters ?? []);
   }
   throw new Error("AniList ограничил запросы (HTTP 429) — подождите несколько минут и запустите снова");
 }
@@ -130,22 +195,24 @@ async function findShikimori(names) {
   return null;
 }
 
-async function findAny(name, ru) {
-  const fromShiki = await findShikimori([...variants(name).slice(0, 2), ru].filter(Boolean));
+async function findAny(name, ru, series) {
+  const multi = /\s/.test(name.trim());
+  // у одиночных имён (Haku, Ban, Karin) запасные источники не знают аниме и подсунут тёзку
+  const fromShiki = multi ? await findShikimori([...variants(name).slice(0, 2), ru].filter(Boolean)) : null;
   if (fromShiki) return fromShiki;
   for (const v of variants(name)) {
-    const url = await find(v);
+    const url = await find(v, series);
     if (url && !url.includes("default.jpg")) return url;
     await sleep(400);
   }
-  return findJikan(name);
+  return multi ? findJikan(name) : null;
 }
 
 let ok = 0;
 const failed = [];
 for (const [i, c] of todo.entries()) {
   try {
-    const url = await findAny(c.search, c.name);
+    const url = await findAny(c.search, c.name, c.series);
     if (!url || url.includes("default.jpg")) throw new Error(`персонаж «${c.search}» не найден на AniList`);
     const img = await fetch(url, { signal: AbortSignal.timeout(15000) });
     if (!img.ok) throw new Error(`HTTP ${img.status}`);
