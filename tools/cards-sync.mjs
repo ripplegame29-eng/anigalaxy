@@ -103,7 +103,36 @@ async function findJikan(name) {
   return null;
 }
 
-async function findAny(name) {
+/** Shikimori: работает без VPN, понимает и английские, и русские имена */
+async function findShikimori(names) {
+  for (const n of names) {
+    for (const host of ["https://shikimori.one", "https://shikimori.io"]) {
+      try {
+        const res = await fetch(`${host}/api/characters/search?search=${encodeURIComponent(n)}&limit=1`, {
+          headers: { Accept: "application/json", "User-Agent": "AniGalaxy art sync" },
+          signal: AbortSignal.timeout(8000),
+        });
+        if (res.status === 429) {
+          await sleep(1500);
+          continue;
+        }
+        if (!res.ok) continue;
+        const list = await res.json();
+        const path = list?.[0]?.image?.original;
+        if (path && !path.includes("missing")) return path.startsWith("http") ? path : `${host}${path}`;
+        break;
+      } catch {
+        /* хост недоступен — пробуем зеркало */
+      }
+    }
+    await sleep(350);
+  }
+  return null;
+}
+
+async function findAny(name, ru) {
+  const fromShiki = await findShikimori([...variants(name).slice(0, 2), ru].filter(Boolean));
+  if (fromShiki) return fromShiki;
   for (const v of variants(name)) {
     const url = await find(v);
     if (url && !url.includes("default.jpg")) return url;
@@ -116,7 +145,7 @@ let ok = 0;
 const failed = [];
 for (const [i, c] of todo.entries()) {
   try {
-    const url = await findAny(c.search);
+    const url = await findAny(c.search, c.name);
     if (!url || url.includes("default.jpg")) throw new Error(`персонаж «${c.search}» не найден на AniList`);
     const img = await fetch(url, { signal: AbortSignal.timeout(15000) });
     if (!img.ok) throw new Error(`HTTP ${img.status}`);
