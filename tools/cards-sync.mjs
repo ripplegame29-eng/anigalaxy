@@ -136,6 +136,7 @@ async function find(search, series) {
 const MAL_IDS = { "sung-jinwoo": 174185 };
 
 const OVERRIDES = {
+  Jugo: ["Juugo", "Jūgo"],
   "Sung Jinwoo": ["Sung Jin-Woo", "Jinwoo Sung"],
   "Shoko Ieiri": ["Shouko Ieiri", "Ieiri Shouko"],
   "Barragan Luisenbarn": ["Baraggan Louisenbairn", "Baraggan"],
