@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Poster } from "@/components/Poster";
-import { AniWatch } from "@/components/AniWatch";
+import { WatchBox } from "@/components/WatchBox";
 import { ReadMore } from "@/components/ReadMore";
 import { AnimeRow } from "@/components/AnimeRow";
 import { NextEpisode } from "@/components/NextEpisode";
@@ -226,14 +226,14 @@ export async function AniTitlePage({ id }: { id: string }) {
           <h2 className="text-lg font-extrabold tracking-tight sm:text-xl">Смотреть онлайн</h2>
         </div>
         {episodes.length ? (
-          <AniWatch
-            id={id}
-            alias={card.alias}
-            title={card.title}
-            titleOrig={card.titleOrig}
-            year={card.year}
-            malId={card.shikimoriId}
-            episodes={episodes.map((e) => ({ number: e.number, name: e.name }))}
+          <WatchBox
+            initialDetail={{
+              card,
+              isSerial: true,
+              seasons: [{ number: 1, episodes: episodes.map((e) => ({ number: e.number, link: "", title: e.name })) }],
+            }}
+            translations={[]}
+            aniStart={{ alias: card.alias, episodesTotal: card.episodesTotal ?? null }}
           />
         ) : (
           <p className="rounded-2xl bg-white/[0.04] p-6 text-white/70 ring-1 ring-white/10">
