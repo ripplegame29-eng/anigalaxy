@@ -42,7 +42,7 @@ export function ProgressTab({ s }: { s: CardsState }) {
   const cycle = p.streak.claimedToday ? ((p.streak.n - 1) % 7) + 1 : p.streak.n % 7;
 
   return (
-    <div style={{ display: "grid", gap: 16 }}>
+    <div className="cg-bt cg-pg" style={{ display: "grid", gap: 16 }}>
       <div className="cg-grid2">
         <div style={{ display: "grid", gap: 16, alignContent: "start" }}>
         <Panel
