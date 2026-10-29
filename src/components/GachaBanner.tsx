@@ -59,17 +59,7 @@ export function GachaBanner({ variant = "aurora" }: { variant?: GachaVariant }) 
               <span className="gb-t1">Гача</span>
               <em className="gb-t2">AniGalaxy</em>
             </h2>
-            <i className="gb-orn" aria-hidden />
-            <p className="gb-sub">Открой карточки любимых персонажей и собери свою галактику</p>
-            <ul className="gb-ladder" aria-label="Редкость карт">
-              {LADDER.map((r) => (
-                <li key={r.id} style={{ ["--c" as string]: r.color } as CSSProperties} title={r.name}>
-                  <i aria-hidden />
-                  <b>{r.short}</b>
-                  <span>{r.n}</span>
-                </li>
-              ))}
-            </ul>
+            <p className="gb-sub">Открой карточки любимых персонажей</p>
             <div className="gb-row">
               <Link href="/cards" className="gb-cta">
                 <svg className="gb-spark" viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden>
@@ -80,12 +70,15 @@ export function GachaBanner({ variant = "aurora" }: { variant?: GachaVariant }) 
                   <path d="M5 12h14M13 6l6 6-6 6" />
                 </svg>
               </Link>
-              <Link href="/cards#collection" className="gb-all">
-                <b>{CATALOG.length}</b> карт в коллекции
-                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-                  <path d="M5 12h14M13 6l6 6-6 6" />
-                </svg>
-              </Link>
+              <ul className="gb-ladder" aria-label="Редкость карт">
+                {LADDER.map((r) => (
+                  <li key={r.id} style={{ ["--c" as string]: r.color } as CSSProperties} title={r.name}>
+                    <i aria-hidden />
+                    <b>{r.short}</b>
+                    <span>{r.n}</span>
+                  </li>
+                ))}
+              </ul>
             </div>
           </div>
         </div>
@@ -96,6 +89,7 @@ export function GachaBanner({ variant = "aurora" }: { variant?: GachaVariant }) 
             <GameCard cardId={c.id} stats={false} />
           </span>
         ))}
+        <i className="gb-rays" aria-hidden />
       </Link>
     </section>
   );
