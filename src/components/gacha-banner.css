@@ -179,21 +179,149 @@
 }
 .gb-title {
   margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
   font-family: var(--font-display, inherit);
   font-weight: 900;
-  font-size: clamp(32px, 3.6vw, 50px);
-  line-height: 1.06;
-  letter-spacing: -0.02em;
-  color: #fff;
-  text-shadow: 0 3px 26px rgba(0, 0, 0, 0.55);
+  line-height: 0.95;
+  letter-spacing: -0.03em;
 }
-.gb-title em {
+.gb-t1 {
+  font-size: clamp(22px, 2.2vw, 30px);
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.92);
+  text-shadow: 0 2px 20px rgba(0, 0, 0, 0.6);
+  padding-left: 3px;
+}
+.gb-t2 {
   font-style: normal;
-  background: linear-gradient(95deg, #5aa0ff, #8b7bff 55%, #d24dff);
+  font-size: clamp(46px, 5.8vw, 86px);
+  padding: 4px 8px 8px 0;
+  background: linear-gradient(100deg, #fff 0%, #cfe0ff 22%, #6fa8ff 45%, #9a7bff 70%, #e08bff 100%);
+  background-size: 200% 100%;
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
   color: transparent;
+  filter: drop-shadow(0 3px 0 rgba(20, 20, 90, 0.8)) drop-shadow(0 0 26px rgba(100, 130, 255, 0.5)) drop-shadow(0 10px 22px rgba(0, 0, 0, 0.7));
+  animation: gb-flow 7s ease-in-out infinite alternate;
+}
+@keyframes gb-flow {
+  to {
+    background-position: 100% 0;
+  }
+}
+.gb-orn {
+  display: block;
+  width: min(100%, 360px);
+  height: 12px;
+  margin-top: -4px;
+  background:
+    linear-gradient(90deg, rgba(130, 165, 255, 0), rgba(130, 165, 255, 0.8)) left center / calc(50% - 14px) 1px no-repeat,
+    linear-gradient(270deg, rgba(130, 165, 255, 0), rgba(130, 165, 255, 0.8)) right center / calc(50% - 14px) 1px no-repeat;
+  position: relative;
+}
+.gb-orn::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 12px;
+  height: 12px;
+  translate: -50% -50%;
+  background: linear-gradient(135deg, #fff, #8fb4ff);
+  clip-path: polygon(50% 0, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0 50%, 40% 40%);
+  filter: drop-shadow(0 0 6px #7fa2ff);
+}
+/* редкости: реальные числа каталога */
+.gb-ladder {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.gb-ladder li {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 12px 6px 10px;
+  border-radius: 99px;
+  font-size: 12px;
+  background: rgba(8, 10, 28, 0.6);
+  border: 1px solid color-mix(in srgb, var(--c) 45%, transparent);
+  box-shadow: 0 0 16px -8px var(--c);
+}
+.gb-ladder i {
+  width: 8px;
+  height: 8px;
+  rotate: 45deg;
+  background: var(--c);
+  box-shadow: 0 0 8px var(--c);
+}
+.gb-ladder b {
+  font-weight: 900;
+  color: var(--c);
+  letter-spacing: 0.04em;
+}
+.gb-ladder span {
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.7);
+  font-variant-numeric: tabular-nums;
+}
+/* призрачный иероглиф «призыв» между текстом и картами */
+.gb-kanji {
+  position: absolute;
+  z-index: -1;
+  left: 47%;
+  top: 46%;
+  translate: -50% -50%;
+  font-family: "Noto Serif JP", "Yu Mincho", "Hiragino Mincho ProN", serif;
+  font-weight: 900;
+  font-size: clamp(110px, 14vw, 210px);
+  letter-spacing: 0.04em;
+  line-height: 1;
+  color: transparent;
+  -webkit-text-stroke: 1.5px rgba(150, 180, 255, 0.22);
+  text-shadow: 0 0 60px rgba(100, 130, 255, 0.25);
+  user-select: none;
+  pointer-events: none;
+}
+/* лепестки */
+.gb-petals {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+}
+.gb-petals b {
+  position: absolute;
+  top: -20px;
+  left: var(--x);
+  width: var(--s);
+  height: calc(var(--s) * 0.7);
+  border-radius: 80% 0 80% 0;
+  background: linear-gradient(135deg, #ffd7ec, #ff8fc4);
+  opacity: 0;
+  animation: gb-petal var(--d) linear infinite;
+  animation-delay: var(--w);
+}
+@keyframes gb-petal {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) rotate(0deg);
+  }
+  12% {
+    opacity: 0.75;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-120px, 300px) rotate(400deg);
+  }
 }
 .gb-sub {
   margin: 0;
@@ -479,6 +607,8 @@
 @media (prefers-reduced-motion: reduce) {
   .gb-card,
   .gb-left,
+  .gb-t2,
+  .gb-petals b,
   .gb-frame::before,
   .gb-sp,
   .gb-eyebrow::before,
@@ -493,5 +623,17 @@
   }
   .gb-dot {
     display: none;
+  }
+}
+@media (max-width: 900px) {
+  .gb-kanji {
+    left: auto;
+    right: 4%;
+    top: 30%;
+    font-size: 110px;
+    top: 26%;
+  }
+  .gb-t2 {
+    font-size: clamp(42px, 13vw, 64px);
   }
 }

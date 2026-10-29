@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { CSSProperties } from "react";
 import { GameCard } from "@/components/cards/GameCard";
 import { CATALOG } from "@/lib/cards/catalog";
+import { RANKS } from "@/lib/cards/config";
 import "../app/cards-card.css";
 import "./gacha-banner.css";
 
@@ -17,6 +18,8 @@ const FAN: { id: string; r: number; x: number; y: number; z: number }[] = [
   { id: "madara-uchiha", r: 7, x: 1, y: 4, z: 2 },
   { id: "monkey-d-luffy", r: 15, x: 2, y: 14, z: 1 },
 ];
+
+const LADDER = [...RANKS].reverse().map((r) => ({ ...r, n: CATALOG.filter((c) => c.rank === r.id).length }));
 
 export type GachaVariant = "aurora" | "sakura" | "crystal";
 
@@ -36,6 +39,13 @@ export function GachaBanner({ variant = "aurora" }: { variant?: GachaVariant }) 
           <u key={i} className="gb-sp" aria-hidden style={{ ["--x" as string]: `${8 + i * 13}%`, ["--d" as string]: `${i * 0.8}s` } as CSSProperties} />
         ))}
 
+        <span className="gb-kanji" aria-hidden>召喚</span>
+        <span className="gb-petals" aria-hidden>
+          {Array.from({ length: 9 }).map((_, i) => (
+            <b key={i} style={{ ["--x" as string]: `${(i * 41 + 7) % 100}%`, ["--d" as string]: `${9 + (i % 4) * 2}s`, ["--w" as string]: `${-i * 1.3}s`, ["--s" as string]: `${8 + (i % 3) * 4}px` } as CSSProperties} />
+          ))}
+        </span>
+
         <div className="gb-altar" aria-hidden>
           <i className="gb-pool" />
           <i className="gb-ring" />
@@ -46,9 +56,20 @@ export function GachaBanner({ variant = "aurora" }: { variant?: GachaVariant }) 
           <div className="gb-text">
             <p className="gb-eyebrow">Коллекция · Бои · Аукцион</p>
             <h2 className="gb-title">
-              Гача <em>AniGalaxy</em>
+              <span className="gb-t1">Гача</span>
+              <em className="gb-t2">AniGalaxy</em>
             </h2>
+            <i className="gb-orn" aria-hidden />
             <p className="gb-sub">Открой карточки любимых персонажей и собери свою галактику</p>
+            <ul className="gb-ladder" aria-label="Редкость карт">
+              {LADDER.map((r) => (
+                <li key={r.id} style={{ ["--c" as string]: r.color } as CSSProperties} title={r.name}>
+                  <i aria-hidden />
+                  <b>{r.short}</b>
+                  <span>{r.n}</span>
+                </li>
+              ))}
+            </ul>
             <div className="gb-row">
               <Link href="/cards" className="gb-cta">
                 <svg className="gb-spark" viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden>
