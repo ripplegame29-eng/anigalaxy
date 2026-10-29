@@ -266,7 +266,13 @@ export function PacksTab({ s }: { s: CardsState }) {
                         <Ico name="check" size={14} />
                       </span>
                       {i === bundles.length - 1 && <span className="ribbon">Больше всего выгоды</span>}
-                      <img className="art" src={`/cards/offers/${Math.min(i, 2) + 1}.webp`} alt="" draggable={false} loading="lazy" />
+                      <span className="stage" aria-hidden>
+                        <span className="floor" />
+                        <img className="art" src={`/cards/offers/${Math.min(i, 2) + 1}.webp`} alt="" draggable={false} loading="lazy" />
+                        {[0, 1, 2, 3, 4].map((k) => (
+                          <i key={k} className="sp" style={{ ["--x" as string]: `${14 + k * 17}%`, ["--d" as string]: `${k * 0.9}s` }} />
+                        ))}
+                      </span>
                       <span className="body">
                         <span className="big">
                           ×{b.n}
@@ -276,9 +282,9 @@ export function PacksTab({ s }: { s: CardsState }) {
                           <span className="cost">
                             {fmt(costOf(b))} <Cur k={PAY_CUR[effectivePay]} size={16} />
                           </span>
-                          {saved > 0 && <span className="save">−{saved} {saved < 5 ? "пак" : "паков"} в подарок</span>}
+                          <span className="slot">{saved > 0 && <span className="save">−{saved} {saved < 5 ? "пак" : "паков"} в подарок</span>}</span>
                         </span>
-                        {l > 0 && <span className="lack">Не хватает {fmt(l)} {unit}</span>}
+                        <span className="slot lackslot">{l > 0 && <span className="lack">Не хватает {fmt(l)} {unit}</span>}</span>
                       </span>
                     </button>
                   </div>
