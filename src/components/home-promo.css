@@ -383,3 +383,8 @@
 .hp-don .hp-cta--don::before{content:"";position:absolute;left:6%;right:6%;top:0;height:46%;border-radius:0 0 50% 50%/0 0 100% 100%;background:linear-gradient(180deg,rgba(255,255,255,.34),rgba(255,255,255,0));pointer-events:none}
 .hp-don .hp-cta--don .hp-crown-ic{color:#fff;width:22px;height:22px;filter:drop-shadow(0 0 6px rgba(255,255,255,.7))}
 .hp-don .hp-cta--don:hover{filter:brightness(1.08) saturate(1.1);transform:translateY(-1px)}
+
+/* donate CTA v4: без светлого ободка — глубокий градиент, цветная кромка, глянец */
+.hp-don .hp-cta--don{border:0!important;border-radius:18px;background:linear-gradient(135deg,#ff6aa8 0%,#d63a9a 30%,#8a3ae0 68%,#4b2bb8 100%)!important;font-weight:800;box-shadow:0 16px 36px -12px rgba(255,80,190,.85),0 0 30px -8px rgba(160,90,255,.6),inset 0 0 0 1px rgba(120,20,110,.35),inset 0 1px 0 rgba(255,255,255,.3),inset 0 -14px 22px -14px rgba(40,6,90,.75)}
+.hp-don .hp-cta--don::before{left:4%;right:4%;height:50%;background:linear-gradient(180deg,rgba(255,255,255,.26),rgba(255,255,255,.03) 85%,transparent)}
+.hp-don .hp-cta--don:hover{filter:brightness(1.1) saturate(1.1);transform:translateY(-2px)}

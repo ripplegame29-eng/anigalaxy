@@ -31,13 +31,27 @@ export const PASS_XP: Record<string, number> = {
 export const PASS_XP_DAILY = 20;
 export const PASS_XP_MISSION = 30;
 
+/** Номер сезона для игроков: первый сезон после запуска — «Сезон 1» */
+export const SEASON_FIRST = 740;
+export const seasonNo = (season: number): number => Math.max(1, season - SEASON_FIRST);
 export const seasonOf = (ms: number): number => Math.floor(ms / PASS.seasonMs);
 export const seasonEnd = (season: number): number => (season + 1) * PASS.seasonMs;
 
 export type PassTrack = "free" | "premium";
 
 /** Награда за уровень пасса */
+/** Карты-награды: слабые — в бесплатной ветке, легендарная S — финал премиума */
+export const PASS_CARDS: Record<PassTrack, Record<number, string>> = {
+  free: { 12: "usopp", 24: "nami" },
+  premium: { 30: "shanks" },
+};
+
 export function passReward(level: number, track: PassTrack): Reward {
+  const card = PASS_CARDS[track][level];
+  return card ? { ...passBase(level, track), card } : passBase(level, track);
+}
+
+function passBase(level: number, track: PassTrack): Reward {
   const five = level % 5 === 0;
   if (track === "free") {
     if (level === PASS.levels) return { diamonds: 100, scroll: 1, scrollRank: 3 };
@@ -67,9 +81,9 @@ export interface PassView {
 
 export const BANNER = {
   /** Шанс, что в паке баннера один из вариантов заменится на героя недели */
-  boost: 0.08,
+  boost: 0.008,
   /** Гарантия: герой недели выпадет не позже чем через N паков баннера */
-  guarantee: 20,
+  guarantee: 80,
 } as const;
 
 /** Герой недели: чаще S, каждую четвёртую неделю — SS */

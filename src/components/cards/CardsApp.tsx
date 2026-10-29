@@ -24,7 +24,7 @@ import { SeasonTab } from "./SeasonTab";
 import { SharpenTab } from "./SharpenTab";
 import { setSound, useSoundOn } from "@/lib/cards/sound";
 import { ToastHost, fmt, fmtLeft, toast, useBusy, useNow } from "./common";
-import { CUR, Cur, Ico, type CurKey, type IcoName } from "./icons";
+import { CUR, Cur, CurArt, Ico, type CurKey, type IcoName } from "./icons";
 import { TradeTab } from "./TradeTab";
 
 const TABS: readonly (readonly [string, string, IcoName])[] = [
@@ -291,7 +291,8 @@ export function CardsApp() {
 
   return (
     <div className="cg">
-      <section className="cg-hero2 cg-enter">
+      <section className={`cg-hero2 cg-enter${tab === "collection" ? "" : " mini"}`}>
+        {tab === "collection" && (
         <div>
           <span className="cg-eyebrow">ANIGALAXY COLLECTION</span>
           <h1>Коллекция</h1>
@@ -313,12 +314,13 @@ export function CardsApp() {
             </div>
           </div>
         </div>
+        )}
         <div className="cg-hero-r">
           <div className="cg-ledger" aria-label="Кошелёк">
             {tokens.map((t) => (
               <div key={t.k} className="cg-tok" style={{ ["--c" as string]: CUR[t.k].color }} title={CUR[t.k].label}>
                 <span className="cg-tok-ico">
-                  <Ico name={CUR[t.k].ico} size={17} />
+                  <CurArt k={t.k} size={26} />
                 </span>
                 <b>{t.value}</b>
                 <small>{t.note ?? CUR[t.k].label}</small>
@@ -331,6 +333,8 @@ export function CardsApp() {
                 <Ico name="gift" size={17} /> Подарок дня
               </button>
             )}
+            {tab === "collection" && (
+              <>
             <button type="button" className="cg-btn" aria-pressed={notify} onClick={() => void toggleNotify()} title="Системные уведомления">
               <Ico name="bell" size={16} /> {notify ? "Уведомления вкл." : "Уведомления"}
             </button>
@@ -342,6 +346,8 @@ export function CardsApp() {
               {s.league.name}
               <small>{fmt(w.rating)}</small>
             </span>
+              </>
+            )}
             <div className="cg-popwrap">
               <button type="button" className="cg-btn" aria-expanded={exOpen} onClick={() => setExOpen((v) => !v)}>
                 <Ico name="swap" size={16} /> AC → <Cur k="diamonds" />

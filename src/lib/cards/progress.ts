@@ -10,6 +10,8 @@ export interface Reward {
   scroll?: number;
   scrollRank?: number;
   packs?: number;
+  /** Карта-награда: id героя из каталога (выдаётся в коллекцию) */
+  card?: string;
 }
 
 export type StatKey =
@@ -105,7 +107,7 @@ export const WEEKLY: WeeklyDef[] = [
 export const SHOWCASE_MAX = 5;
 
 export const rewardText = (r: Reward): string =>
-  [r.diamonds && `${r.diamonds} алм.`, r.dust && `${r.dust} пыли`, r.scroll && `${r.scroll} свиток`, r.packs && `${r.packs} пак${r.packs > 1 ? "а" : ""}`].filter(Boolean).join(" · ");
+  [r.diamonds && `${r.diamonds} алм.`, r.dust && `${r.dust} пыли`, r.scroll && `${r.scroll} свиток`, r.packs && `${r.packs} пак${r.packs > 1 ? "а" : ""}`, r.card && "карта"].filter(Boolean).join(" · ");
 
 export interface AchView {
   id: string;

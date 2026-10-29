@@ -58,6 +58,11 @@ export function Ico({ name, size = 18, className = "", style }: { name: IcoName;
 
 export const ELEMENT_ICON: Record<string, IcoName> = { fire: "fire", water: "water", wind: "wind", earth: "earth", light: "light", dark: "dark" };
 
+/** Иллюстрация свитка заточки (прозрачный webp). Пропорции чуть шире квадрата — рисуем в квадрат с запасом. */
+export function ScrollArt({ size = 24 }: { size?: number }) {
+  return <img className="scroll-art" src="/icons/scroll.webp" width={size} height={size} alt="" draggable={false} />;
+}
+
 export type CurKey = "diamonds" | "dust" | "packs" | "energy";
 export const CUR: Record<CurKey, { ico: IcoName; color: string; label: string }> = {
   diamonds: { ico: "diamond", color: "#5ec8ff", label: "Алмазы" },
@@ -66,7 +71,12 @@ export const CUR: Record<CurKey, { ico: IcoName; color: string; label: string }>
   energy: { ico: "bolt", color: "#ffd84d", label: "Энергия" },
 };
 
+/** Иллюстрация валюты (прозрачный webp из /public/icons): алмазы, пыль, жетоны паков, энергия */
+export function CurArt({ k, size = 28 }: { k: CurKey; size?: number }) {
+  return <img className="cur-art" src={`/icons/cur-${k}.webp`} width={size} height={size} alt="" draggable={false} />;
+}
+
 /** Значок валюты в тексте */
 export function Cur({ k, size = 15 }: { k: CurKey; size?: number }) {
-  return <Ico name={CUR[k].ico} size={size} className="cur" style={{ color: CUR[k].color, verticalAlign: "-0.2em" }} />;
+  return <CurArt k={k} size={Math.round(size * 1.15)} />;
 }

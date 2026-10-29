@@ -9,15 +9,17 @@ import { GameCard } from "./GameCard";
 import { SkillChips, SkillEditor, SynChips } from "./skillui";
 import { synergyList } from "@/lib/cards/synergy";
 import { CollectorModal } from "./collector";
+import { Leaderboard, type TopRow } from "./Leaderboard";
+import { useAccount } from "@/lib/use-account";
 import { InvPicker, Panel, RankFilter, fmt, fmtLeft, toast, useBusy, useNow } from "./common";
 import { Cur, ELEMENT_ICON, Ico } from "./icons";
 import { CampaignView, DuelPanel, RaidPanel } from "./PveTabs";
 
 const MODES = [
-  ["ladder", "Рейтинг", "trophy"],
-  ["campaign", "Кампания", "flag"],
-  ["raid", "Рейд", "skull"],
-  ["duel", "Дуэли и журнал", "swords"],
+  ["ladder", "Рейтинг", "trophy", "Лига и лидеры"],
+  ["campaign", "Кампания", "flag", "Главы и боссы"],
+  ["raid", "Рейд", "skull", "Босс недели"],
+  ["duel", "Дуэли и журнал", "swords", "Бои с игроками"],
 ] as const;
 type Mode = (typeof MODES)[number][0];
 
@@ -30,7 +32,8 @@ export function BattleTab({ s }: { s: CardsState }) {
   const [profile, setProfile] = useState<string | null>(null);
   const [mode, setMode] = useState<Mode>("ladder");
   const [duelNick, setDuelNick] = useState("");
-  const [top, setTop] = useState<{ place: number; nick: string; rating: number; wins: number; losses: number }[]>([]);
+  const [top, setTop] = useState<TopRow[]>([]);
+  const account = useAccount();
   const now = useNow();
   const w = s.wallet;
   const deck = useMemo(() => w.deck.map((id) => s.inventory.find((c) => c.id === id)).filter((c): c is NonNullable<typeof c> => !!c), [w.deck, s.inventory]);
@@ -79,7 +82,7 @@ export function BattleTab({ s }: { s: CardsState }) {
   const mods = s.mods as { ban: Element; buff: Element };
 
   return (
-    <div style={{ display: "grid", gap: 16 }}>
+    <div className="cg-bt" style={{ display: "grid", gap: 16 }}>
       {report && <Arena report={report} onClose={() => setReport(null)} />}
       {profile && (
         <CollectorModal
@@ -94,9 +97,13 @@ export function BattleTab({ s }: { s: CardsState }) {
       )}
       {editing !== null && deck.find((c) => c.id === editing) && <SkillEditor key={editing} card={deck.find((c) => c.id === editing)!} onClose={() => setEditing(null)} />}
       <div className="bt-modes" role="tablist" aria-label="Режим боёв">
-        {MODES.map(([id, label, ico]) => (
+        {MODES.map(([id, label, ico, sub]) => (
           <button key={id} type="button" role="tab" aria-selected={mode === id} className="bt-mode" onClick={() => setMode(id)}>
-            <Ico name={ico} size={16} /> {label}
+            <Ico name={ico} size={22} />
+            <span>
+              <b>{label}</b>
+              <small>{sub}</small>
+            </span>
           </button>
         ))}
       </div>
@@ -104,6 +111,7 @@ export function BattleTab({ s }: { s: CardsState }) {
       {mode === "raid" && <RaidPanel s={s} onReport={setReport} />}
       {mode === "duel" && <DuelPanel s={s} onReport={setReport} onProfile={setProfile} nick={duelNick} setNick={setDuelNick} />}
       {mode === "ladder" && (
+      <>
       <div className="cg-grid2">
         <Panel
           title="Ваш отряд"
@@ -213,29 +221,10 @@ export function BattleTab({ s }: { s: CardsState }) {
               ))}
             </ul>
           </Panel>
-          <Panel title="Топ сезона">
-            {top.length === 0 ? (
-              <div className="cg-empty">Рейтинг появится после первых боёв</div>
-            ) : (
-              <ul className="cg-list">
-                {top.slice(0, 10).map((t) => (
-                  <li key={t.place}>
-                    <span>
-                      <b>#{t.place}</b>{" "}
-                      <button type="button" className="cg-link" onClick={() => setProfile(t.nick)}>
-                        {t.nick}
-                      </button>
-                    </span>
-                    <span>
-                      {fmt(t.rating)} · {t.wins}/{t.losses}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </Panel>
         </div>
       </div>
+      <Leaderboard rows={top} me={account?.nickname ?? ""} myRating={w.rating} onOpen={setProfile} />
+      </>
       )}
     </div>
   );

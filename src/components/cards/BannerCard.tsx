@@ -47,7 +47,7 @@ export function BannerCard({ s }: { s: CardsState }) {
           {owned ? " · уже в коллекции" : ""}
         </p>
         <div className="bn-rate">
-          <span className="cg-chip">Шанс героя в паке +{Math.round(b.boost * 100)}%</span>
+          <span className="cg-chip">Шанс героя в паке +{String(+(b.boost * 100).toFixed(1)).replace(".", ",")}%</span>
           <span className="cg-chip">Гарантия: не позже {b.guarantee}-го пака</span>
         </div>
         <div className="bn-gar" role="progressbar" aria-valuemin={0} aria-valuemax={b.guarantee} aria-valuenow={b.counter} aria-label="Прогресс гарантии баннера">

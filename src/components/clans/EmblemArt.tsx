@@ -82,7 +82,7 @@ export function EmblemArt({
       <span
         className="cl-st-par"
         style={{
-          transform: `perspective(900px) rotateY(${p.x * 7}deg) rotateX(${-p.y * 6}deg)`,
+          transform: p.x || p.y ? `perspective(900px) rotateY(${p.x * 7}deg) rotateX(${-p.y * 6}deg)` : undefined,
         }}
       >
         {/* Цветной ореол под знаком */}

@@ -64,6 +64,7 @@ export function passClaim(db: Database, userId: number, track: PassTrack, level:
       total.dust = (total.dust ?? 0) + (r.dust ?? 0);
       total.packs = (total.packs ?? 0) + (r.packs ?? 0);
       total.scroll = (total.scroll ?? 0) + (r.scroll ?? 0);
+      if (r.card) total.card = r.card;
     }
     if (!count) return fail("Нет доступных наград");
     setExtra(db, userId, x);

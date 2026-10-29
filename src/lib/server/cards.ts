@@ -335,6 +335,7 @@ export function grantReward(db: Database, userId: number, r: Reward): void {
   if (r.dust) addMoney(db, userId, "dust", r.dust);
   if (r.packs) addMoney(db, userId, "packs", r.packs);
   if (r.scroll) addScroll(db, userId, Math.max(0, Math.min(4, r.scrollRank ?? 1)), r.scroll);
+  if (r.card && cardDef(r.card)) addCard(db, userId, r.card);
 }
 
 export interface DailyResult {
@@ -561,9 +562,10 @@ export function melt(db: Database, userId: number, ids: number[], now = Date.now
     if (cards.some((c) => rankOf(c.cardId) !== rank)) return fail("Все карты должны быть одного ранга");
     if (rank >= MAX_RANK) return fail("Мифические карты переплавить нельзя");
     removeCards(db, userId, ids);
-    const def = pickRandom(cardsOfRank((rank + 1) as Rank), rng);
+    const up = rng() < ((MELT.up as readonly number[])[rank] ?? 0);
+    const def = pickRandom(cardsOfRank((up ? rank + 1 : rank) as Rank), rng);
     const invId = addCard(db, userId, def.id, now);
-    logEvent(db, userId, "melt", `Переплавка 3 карт → «${def.name}»`, def.id, def.rank, now);
+    logEvent(db, userId, "melt", `Переплавка 3 карт → «${def.name}»${up ? "" : " (без повышения)"}`, def.id, def.rank, now);
     return { ok: true, value: { cardId: def.id, invId } };
   });
 }

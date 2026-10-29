@@ -42,7 +42,7 @@ export function ProgressTab({ s }: { s: CardsState }) {
   const cycle = p.streak.claimedToday ? ((p.streak.n - 1) % 7) + 1 : p.streak.n % 7;
 
   return (
-    <div style={{ display: "grid", gap: 16 }}>
+    <div className="cg-bt cg-pg" style={{ display: "grid", gap: 16 }}>
       <div className="cg-grid2">
         <div style={{ display: "grid", gap: 16, alignContent: "start" }}>
         <Panel
@@ -61,8 +61,16 @@ export function ProgressTab({ s }: { s: CardsState }) {
               const today = p.streak.claimedToday ? day === cycle : day === cycle + 1;
               return (
                 <div key={day} role="listitem" className={`pg-day ${done ? "done" : ""} ${today ? "today" : ""}`}>
-                  <small>День {day}</small>
-                  <Ico name={done ? "check" : "gift"} size={18} />
+                  <span className="pg-dn">{day}</span>
+                  {done && (
+                    <span className="pg-ck" aria-hidden>
+                      <Ico name="check" size={11} />
+                    </span>
+                  )}
+                  <span className="pg-dico" aria-hidden>
+                    <Ico name="gift" size={20} />
+                  </span>
+                  <small>{done ? "Получено" : today ? "Сегодня" : `День ${day}`}</small>
                 </div>
               );
             })}
@@ -96,7 +104,7 @@ export function ProgressTab({ s }: { s: CardsState }) {
         </Panel>
         </div>
 
-        <Panel title="Недельные задания" right={<span className="cg-chip">Обновление через {fmtLeft(left)}</span>}>
+        <Panel title="Недельные задания" right={<span className="cg-chip">Сброс через {fmtLeft(left)}</span>}>
           <ul className="cg-list">
             {p.weekly.map((m) => (
               <li key={m.id}>
@@ -187,7 +195,7 @@ export function ProgressTab({ s }: { s: CardsState }) {
         </div>
       </Panel>
 
-      <Panel title="Наборы по аниме" hint="Собирайте героев одного аниме: награда за половину набора и за полный набор. Герои без арта в набор не входят.">
+      <Panel title="Наборы по аниме" right={<span className="cg-chip">Собрано полностью: {p.sets.filter((x) => x.owned >= x.size).length} из {p.sets.length}</span>} hint="Собирайте героев одного аниме: награда за половину набора и за полный набор. Герои без арта в набор не входят.">
         <div className="pg-sets">
           {p.sets.map((st) => (
             <article key={st.series} className={`pg-set ${st.owned >= st.size ? "full" : ""}`}>

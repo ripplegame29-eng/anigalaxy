@@ -1,5 +1,6 @@
 /** Карточные бои: колода, лига, соперник (игрок или бот), награды. */
 
+import { looksOf } from "./looks";
 import { applyMods, applyPassives, applySynergies, seeded, simulate, type BattleOutcome, type Unit } from "../cards/battle";
 import type { Synergy } from "../cards/synergy";
 import type { Reward } from "../cards/progress";
@@ -389,14 +390,31 @@ export function buyEnergy(db: Database, userId: number, now = Date.now()): Res<n
   });
 }
 
+/** Топ сезона: рейтинг, бои, аватар с рамкой и тег клана для таблицы лидеров */
 export function ratingTop(db: Database, limit = 20) {
-  return db
+  const rows = db
     .prepare(
-      `SELECT w.user_id, w.rating, w.wins, w.losses, u.nickname FROM card_wallet w JOIN users u ON u.id = w.user_id
+      `SELECT w.user_id, w.rating, w.wins, w.losses, u.nickname, c.tag AS clan_tag
+       FROM card_wallet w JOIN users u ON u.id = w.user_id
+       LEFT JOIN clan_members m ON m.user_id = w.user_id LEFT JOIN clans c ON c.id = m.clan_id
        WHERE w.wins + w.losses > 0 ORDER BY w.rating DESC, w.wins DESC LIMIT ?`,
     )
-    .all(limit)
-    .map((r, i) => ({ place: i + 1, userId: num(r.user_id), nick: str(r.nickname), rating: num(r.rating), wins: num(r.wins), losses: num(r.losses) }));
+    .all(limit);
+  const looks = looksOf(db, rows.map((r) => num(r.user_id)));
+  return rows.map((r, i) => {
+    const look = looks.get(num(r.user_id));
+    return {
+      place: i + 1,
+      userId: num(r.user_id),
+      nick: str(r.nickname),
+      rating: num(r.rating),
+      wins: num(r.wins),
+      losses: num(r.losses),
+      avatar: look?.avatar ?? "",
+      frameId: look?.frameId ?? "",
+      clan: str(r.clan_tag),
+    };
+  });
 }
 
 export { seeded };

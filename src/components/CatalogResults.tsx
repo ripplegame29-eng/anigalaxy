@@ -9,6 +9,7 @@
  * `CatalogFilters`, поэтому обе половины панели остаются независимыми.
  */
 
+import { addAniExtras, searchReleasesInBrowser } from "@/lib/anilibria-browser";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { cardKey, kindLabel, statusLabel } from "@/lib/anime";
@@ -180,6 +181,17 @@ export function CatalogResults({
   const [favs, setFavs] = useState<Set<string>>(new Set());
   /** SSR-ответ мог отдать верхнюю границу счётчика — помечаем её ≈ */
   const [approxTotal] = useState(Boolean(next));
+
+  // Поиск по названию: релизы AniLiberty, скрытые от адреса сервера, добираем из браузера
+  useEffect(() => {
+    const q = state.q?.trim();
+    if (!q || q.length < 2) return;
+    const ctrl = new AbortController();
+    void searchReleasesInBrowser(q, 12, ctrl.signal).then((found) => {
+      if (!ctrl.signal.aborted && found.length) setItems((prev) => addAniExtras(prev, found));
+    });
+    return () => ctrl.abort();
+  }, [state.q]);
 
   useEffect(() => {
     const sync = () => setFavs(new Set(loadFavorites()));
