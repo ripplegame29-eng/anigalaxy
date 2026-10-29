@@ -9,7 +9,6 @@ import { HeroSlider } from "@/components/HeroSlider";
 import { getTitleDetail, row } from "@/lib/kodik";
 import { mangaRow } from "@/lib/senku";
 import { HomePromo } from "@/components/HomePromo";
-import { GachaBanner } from "@/components/GachaBanner";
 import { TelegramCta } from "@/components/TelegramCta";
 import { HomeTopUsers } from "@/components/HomeTopUsers";
 
@@ -205,7 +204,6 @@ export default function HomePage() {
         </Suspense>
 
         {/* Гача: плашка между топом и мангой — заметна, но не в самом верху */}
-        <GachaBanner />
 
         <Suspense fallback={<RowSkeleton title="Манга" />}>
           <MangaSection />
