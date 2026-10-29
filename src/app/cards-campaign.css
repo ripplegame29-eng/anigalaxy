@@ -1013,3 +1013,4 @@
 .cg .cg-bt .lb-rate { width: 72%; justify-content: center; margin-top: 10px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,.08); }
 .cg .cg-bt .lb-rec { margin-top: 2px; font-size: 12px; color: #8d98b4; letter-spacing: .02em; }
 .cg .cg-bt .lb-pod.me .lb-medal::after { content: " · ВЫ"; color: #22d3ee; }
+.cg .cg-bt .lb-top { color: #fff; }
