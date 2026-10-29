@@ -1,0 +1,329 @@
+/* Плашка гачи на главной */
+.gb {
+  position: relative;
+}
+.gb-frame {
+  --cut: 26px;
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  min-height: 210px;
+  padding: 26px clamp(22px, 3vw, 44px);
+  background: linear-gradient(120deg, #4a7bff, #8a5cff 45%, #3a6bff);
+  clip-path: polygon(var(--cut) 0, calc(100% - var(--cut)) 0, 100% var(--cut), 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, var(--cut) 100%, 0 calc(100% - var(--cut)), 0 var(--cut));
+  overflow: hidden;
+}
+/* внутренний фон лежит на 1.5px глубже, поэтому по краю остаётся светящаяся кромка */
+.gb-bg,
+.gb-shade {
+  position: absolute;
+  inset: 1.5px;
+  z-index: -3;
+  --k: 24.5px;
+  clip-path: polygon(var(--k) 0, calc(100% - var(--k)) 0, 100% var(--k), 100% calc(100% - var(--k)), calc(100% - var(--k)) 100%, var(--k) 100%, 0 calc(100% - var(--k)), 0 var(--k));
+}
+.gb-bg {
+  background: #04050f url("/banners/gacha-bg.webp") center / cover no-repeat;
+}
+/* sakura: ночной сад с храмом и луной */
+.gb[data-v="sakura"] .gb-bg,
+.gb[data-v="aurora"] .gb-bg {
+  background: #04050f url("/banners/gacha-sakura.webp") 62% 24% / cover no-repeat;
+}
+/* aurora: поверх сада — световые осколки из кристального фона */
+.gb[data-v="aurora"] .gb-bg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: url("/banners/gacha-bg.webp") center / cover no-repeat;
+  mix-blend-mode: screen;
+  opacity: 0.45;
+}
+.gb[data-v="sakura"] .gb-shade,
+.gb[data-v="aurora"] .gb-shade {
+  background:
+    linear-gradient(90deg, rgba(3, 5, 20, 0.82) 0%, rgba(3, 5, 20, 0.42) 38%, transparent 66%),
+    linear-gradient(180deg, rgba(3, 5, 20, 0.12), transparent 40%, rgba(3, 5, 20, 0.3)),
+    radial-gradient(45% 90% at 76% 50%, rgba(130, 110, 255, 0.3), transparent 70%);
+}
+.gb-shade {
+  z-index: -2;
+  background:
+    linear-gradient(90deg, rgba(4, 6, 18, 0.82) 0%, rgba(4, 6, 18, 0.45) 42%, rgba(4, 6, 18, 0) 70%),
+    radial-gradient(50% 90% at 74% 55%, rgba(120, 100, 255, 0.28), transparent 70%);
+}
+.gb-shine {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(105deg, transparent 38%, rgba(255, 255, 255, 0.1) 48%, transparent 58%);
+  transform: translateX(-120%);
+  animation: gb-shine 7s ease-in-out infinite;
+}
+@keyframes gb-shine {
+  0%,
+  55% {
+    transform: translateX(-120%);
+  }
+  85%,
+  100% {
+    transform: translateX(120%);
+  }
+}
+.gb-sp {
+  position: absolute;
+  left: var(--x);
+  bottom: 12%;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: #cfe0ff;
+  box-shadow: 0 0 9px 1px #6d8dff;
+  opacity: 0;
+  z-index: -1;
+  animation: gb-spark 5.5s ease-in infinite;
+  animation-delay: var(--d);
+}
+@keyframes gb-spark {
+  0% {
+    transform: translateY(0) scale(0.6);
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: translateY(-150px) scale(1);
+    opacity: 0;
+  }
+}
+
+.gb-left {
+  display: flex;
+  align-items: center;
+  gap: clamp(14px, 2vw, 28px);
+  min-width: 0;
+  position: relative;
+  z-index: 1;
+}
+.gb-crystal {
+  width: clamp(74px, 8vw, 112px);
+  height: auto;
+  flex: none;
+  filter: drop-shadow(0 0 18px rgba(100, 140, 255, 0.85));
+  animation: gb-float 5s ease-in-out infinite;
+  user-select: none;
+}
+@keyframes gb-float {
+  50% {
+    transform: translateY(-7px) rotate(2deg);
+  }
+}
+.gb-text {
+  min-width: 0;
+}
+.gb-eyebrow {
+  margin: 0 0 6px;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #9fb4ff;
+}
+.gb-title {
+  margin: 0;
+  font-family: var(--font-display, inherit);
+  font-weight: 800;
+  font-size: clamp(28px, 3.4vw, 46px);
+  line-height: 1.04;
+  letter-spacing: -0.03em;
+  color: #fff;
+  text-shadow: 0 2px 24px rgba(80, 110, 255, 0.55);
+}
+.gb-title em {
+  font-style: italic;
+  background: linear-gradient(90deg, #7fb2ff, #c08bff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  padding-right: 4px;
+}
+.gb-sub {
+  margin: 8px 0 16px;
+  font-size: clamp(14px, 1.3vw, 17px);
+  color: #dbe4ff;
+}
+.gb-cta {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  height: 46px;
+  padding: 0 26px;
+  border-radius: 14px;
+  font-weight: 800;
+  font-size: 15px;
+  color: #fff;
+  text-decoration: none;
+  background: linear-gradient(180deg, #3f9bff, #2a62ee 70%, #6a4cf0);
+  border: 1px solid rgba(190, 215, 255, 0.55);
+  box-shadow: 0 14px 34px -14px rgba(60, 120, 255, 1), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  transition: transform 0.18s, filter 0.2s, box-shadow 0.2s;
+}
+.gb-cta svg {
+  transition: transform 0.2s;
+}
+.gb:hover .gb-cta,
+.gb-cta:hover {
+  filter: brightness(1.1);
+  box-shadow: 0 18px 40px -12px rgba(90, 130, 255, 1), inset 0 1px 0 rgba(255, 255, 255, 0.45);
+}
+.gb:hover .gb-cta svg {
+  transform: translateX(3px);
+}
+.gb-cta:focus-visible,
+.gb-all:focus-visible,
+.gb-fan:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 3px;
+}
+
+/* веер карточек: вынесен за рамку, чтобы выступать за неё сверху и снизу */
+.gb {
+  --fan-w: clamp(330px, 37vw, 540px);
+  --card-w: clamp(88px, 9vw, 124px);
+}
+.gb-frame {
+  min-height: 226px;
+  padding-right: calc(var(--fan-w) + clamp(24px, 4vw, 70px));
+}
+.gb-fan {
+  position: absolute;
+  right: clamp(18px, 3.4vw, 64px);
+  bottom: -22px;
+  z-index: 2;
+  width: var(--fan-w);
+  height: calc(var(--card-w) * 1.4 * 1.14 + 10px);
+  display: block;
+  text-decoration: none;
+}
+.gb-card {
+  position: absolute;
+  bottom: 0;
+  width: var(--card-w);
+  transform-origin: 50% 118%;
+  transform: translate(-50%, var(--y)) rotate(var(--r));
+  transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+  filter: drop-shadow(0 20px 22px rgba(0, 0, 0, 0.6));
+}
+.gb-card:nth-child(1) {
+  left: 13%;
+}
+.gb-card:nth-child(2) {
+  left: 31.5%;
+}
+.gb-card:nth-child(3) {
+  left: 50%;
+  width: calc(var(--card-w) * 1.14);
+}
+.gb-card:nth-child(4) {
+  left: 68.5%;
+}
+.gb-card:nth-child(5) {
+  left: 87%;
+}
+.gb-fan .gc {
+  animation: gb-card-float 5.4s ease-in-out infinite;
+}
+.gb-card:nth-child(2) .gc {
+  animation-delay: -1s;
+}
+.gb-card:nth-child(3) .gc {
+  animation-delay: -2.2s;
+}
+.gb-card:nth-child(4) .gc {
+  animation-delay: -3.1s;
+}
+.gb-card:nth-child(5) .gc {
+  animation-delay: -4s;
+}
+@keyframes gb-card-float {
+  50% {
+    transform: translateY(-5px);
+  }
+}
+.gb:hover .gb-card:nth-child(1) {
+  transform: translate(calc(-50% - 14px), calc(var(--y) + 4px)) rotate(-19deg);
+}
+.gb:hover .gb-card:nth-child(2) {
+  transform: translate(calc(-50% - 8px), calc(var(--y) - 6px)) rotate(-10deg);
+}
+.gb:hover .gb-card:nth-child(3) {
+  transform: translate(-50%, calc(var(--y) - 16px)) scale(1.04);
+}
+.gb:hover .gb-card:nth-child(4) {
+  transform: translate(calc(-50% + 8px), calc(var(--y) - 6px)) rotate(10deg);
+}
+.gb:hover .gb-card:nth-child(5) {
+  transform: translate(calc(-50% + 14px), calc(var(--y) + 4px)) rotate(19deg);
+}
+
+.gb-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 18px;
+}
+.gb-all {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-weight: 800;
+  font-size: 14px;
+  color: #9cc3ff;
+  text-decoration: none;
+  padding: 6px 4px;
+  transition: color 0.2s, gap 0.2s;
+}
+.gb-all:hover {
+  color: #fff;
+  gap: 10px;
+}
+
+@media (max-width: 900px) {
+  .gb {
+    --fan-w: min(92%, 380px);
+    --card-w: clamp(70px, 20vw, 96px);
+  }
+  .gb[data-v] .gb-shade {
+    background: linear-gradient(180deg, rgba(3, 5, 20, 0.86), rgba(3, 5, 20, 0.5) 55%, rgba(3, 5, 20, 0.15));
+  }
+  .gb-frame {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 22px 20px calc(var(--card-w) * 1.4 + 28px);
+    min-height: 0;
+  }
+  .gb-fan {
+    right: auto;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: -16px;
+    height: calc(var(--card-w) * 1.4 * 1.14 + 12px);
+  }
+  .gb-crystal {
+    width: 70px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .gb-shine,
+  .gb-sp,
+  .gb-crystal,
+  .gb-fan .gc {
+    animation: none;
+  }
+}
