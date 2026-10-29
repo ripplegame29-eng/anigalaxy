@@ -7,7 +7,8 @@ import { useRouter } from "next/navigation";
 import { PlayerSkinPicker } from "./PlayerSkinPicker";
 import { usePlayerSkin } from "@/lib/player-skins";
 import type Hls from "hls.js";
-import type { AniSearchCard, AniTitleDetail } from "@/lib/anilibria";
+import type { AniSearchCard, AniTitleDetail } from "@/lib/anilibria-map";
+import { fetchReleaseInBrowser } from "@/lib/anilibria-browser";
 import { usePremium } from "@/lib/premium";
 
 /**
@@ -838,8 +839,11 @@ export function AltPlayer({
         const res = await fetch(`/api/anilibria/title?id=${encodeURIComponent(picked.alias)}`);
         const data = res.ok ? ((await res.json()) as { detail?: AniTitleDetail }) : null;
         if (!alive) return;
-        if (data?.detail?.episodes.length) {
-          setDetail(data.detail);
+        // Сервер релиз не видит (AniLiberty скрывает часть тайтлов от дата-центров) — спрашиваем из браузера
+        const found = data?.detail?.episodes.length ? data.detail : await fetchReleaseInBrowser(picked.alias);
+        if (!alive) return;
+        if (found?.episodes.length) {
+          setDetail(found);
           setStatus("ok");
         } else {
           setSourceError("AniLiberty не отдал серии этого тайтла");

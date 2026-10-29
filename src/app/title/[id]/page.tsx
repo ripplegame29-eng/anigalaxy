@@ -47,7 +47,7 @@ export async function generateMetadata({ params }: PageParams): Promise<Metadata
   const { id } = await params;
   if (isAniId(id)) {
     const d = await getRelease(aniAlias(id)).catch(() => null);
-    if (!d) return { title: "Тайтл не найден" };
+    if (!d) return { title: "Смотреть аниме онлайн", robots: { index: false } };
     return {
       title: d.card.title,
       description: truncate(d.card.description, 155) ?? `${d.card.title} — смотреть онлайн.`,

@@ -68,3 +68,5 @@ next-env.d.ts
 promo/raw/
 promo/clips/
 promo/out/
+
+_to_delete/
