@@ -321,7 +321,11 @@ export function SeasonTab({ s }: { s: CardsState }) {
               ))}
             </div>
             <button type="button" className="sv-all" onClick={claimAll} disabled={busy || claimable === 0}>
-              Забрать всё <em>{claimable}</em>
+              <Ico name="gift" size={22} />
+              <span>
+                <b>Забрать всё</b>
+                <small>Доступно: {claimable}</small>
+              </span>
             </button>
           </div>
         </div>

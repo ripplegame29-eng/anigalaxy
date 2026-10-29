@@ -563,3 +563,20 @@
   .cg .sv-stage .sv-offer.on h3 { font-size: clamp(12px, 1.3cqw, 20px); margin: 0 0 .15cqw; }
   .cg .sv-stage .sv-offer.on p { font-size: clamp(9px, .85cqw, 13px); line-height: 1.35; }
 }
+
+/* --- Фиксы: свет лидеров, цифра уровня, кнопки в стиле стеклянных сегментов --- */
+.cg .lb-podium::before { clip-path: none; filter: none; top: -10px; width: 80%; border-radius: 50%; background: radial-gradient(closest-side, rgba(255,214,130,.2), rgba(255,200,90,.06) 60%, transparent); }
+@media (min-width: 821px) {
+  .cg .sv-crest .sv-hex-in { place-content: unset; align-content: space-between; justify-content: center; justify-items: center; }
+  .cg .sv-stage .sv-prog { padding: .5cqw .9cqw .7cqw; border-radius: 1cqw; background: rgba(6,16,46,.5); backdrop-filter: blur(8px); box-shadow: inset 0 0 0 1px rgba(233,199,121,.25); }
+}
+.cg .sv-jumps { display: flex; gap: 6px; padding: 6px; border-radius: 20px; background: rgba(8,12,30,.7); backdrop-filter: blur(14px); box-shadow: inset 0 0 0 1px rgba(233,199,121,.3); }
+.cg .sv-jumps button { min-width: 40px; height: 40px; padding: 0 14px; border-radius: 15px; font-size: 13.5px; font-weight: 800; color: #9fb0dc; transition: .25s; }
+.cg .sv-jumps button:hover { color: #fff; background: rgba(255,255,255,.06); }
+.cg .sv-jumps button.on { color: #fff; background: linear-gradient(135deg, rgba(255,196,94,.32), rgba(255,255,255,.05)); box-shadow: 0 0 28px -8px #ffc45e, inset 0 1px 0 rgba(255,255,255,.2); }
+.cg .sv-all { display: inline-flex; align-items: center; gap: 12px; padding: 9px 20px 9px 16px; border: 0; border-radius: 20px; text-align: left; color: #ffe29a; cursor: pointer; background: linear-gradient(135deg, rgba(255,196,94,.3), rgba(124,92,255,.1)), rgba(8,12,30,.75); backdrop-filter: blur(14px); box-shadow: inset 0 0 0 1px rgba(233,199,121,.55), 0 0 30px -10px #ffc45e, inset 0 1px 0 rgba(255,255,255,.2); transition: .25s; }
+.cg .sv-all span { display: grid; }
+.cg .sv-all b { font-size: 15px; font-weight: 800; color: #fff; }
+.cg .sv-all small { font-size: 12px; font-weight: 700; color: #e9c779; }
+.cg .sv-all:hover:not(:disabled) { transform: translateY(-2px); box-shadow: inset 0 0 0 1px #ffe29a, 0 0 38px -6px #ffc45e, inset 0 1px 0 rgba(255,255,255,.3); }
+.cg .sv-all:disabled { opacity: .5; cursor: default; filter: saturate(.5); }
