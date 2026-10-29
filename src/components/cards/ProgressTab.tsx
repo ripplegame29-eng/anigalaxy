@@ -61,8 +61,16 @@ export function ProgressTab({ s }: { s: CardsState }) {
               const today = p.streak.claimedToday ? day === cycle : day === cycle + 1;
               return (
                 <div key={day} role="listitem" className={`pg-day ${done ? "done" : ""} ${today ? "today" : ""}`}>
-                  <small>День {day}</small>
-                  <Ico name={done ? "check" : "gift"} size={18} />
+                  <span className="pg-dn">{day}</span>
+                  {done && (
+                    <span className="pg-ck" aria-hidden>
+                      <Ico name="check" size={11} />
+                    </span>
+                  )}
+                  <span className="pg-dico" aria-hidden>
+                    <Ico name="gift" size={20} />
+                  </span>
+                  <small>{done ? "Получено" : today ? "Сегодня" : `День ${day}`}</small>
                 </div>
               );
             })}

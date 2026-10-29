@@ -995,3 +995,24 @@
 .cg .cg-bt .lb-rec { margin-top: 2px; font-size: 12px; color: #8d98b4; letter-spacing: .02em; }
 .cg .cg-bt .lb-pod.me .lb-medal::after { content: " · ВЫ"; color: #22d3ee; }
 .cg .cg-bt .lb-top { color: #fff; }
+
+/* --- Серия входов: календарь как в окне ежедневного входа на сайте (номер, галочка, иконка, подпись) --- */
+.cg .cg-pg .pg-days { gap: 8px; margin: 12px 0 14px; }
+.cg .cg-pg .pg-day, .cg .cg-pg .pg-day.done, .cg .cg-pg .pg-day.today.done, .cg .cg-pg .pg-day.today:not(.done) { position: relative; display: grid; justify-items: center; align-content: center; gap: 6px; min-height: 92px; padding: 22px 6px 10px; border: 1px solid rgba(96,150,255,.18); border-radius: 14px; transform: none; animation: none; color: #8d98b4; background: linear-gradient(180deg, rgba(20,32,66,.7), rgba(8,13,26,.85)); box-shadow: inset 0 1px 0 rgba(255,255,255,.04); }
+.cg .cg-pg .pg-dn { position: absolute; left: 10px; top: 8px; font: 800 12px/1 var(--font-display, inherit); color: #aab4cc; }
+.cg .cg-pg .pg-ck { position: absolute; right: 7px; top: 7px; display: grid; place-items: center; width: 17px; height: 17px; border-radius: 50%; color: #fff; background: #2b7fff; box-shadow: 0 0 10px rgba(43,127,255,.6); }
+.cg .cg-pg .pg-dico { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; color: #7fb0ff; background: rgba(43,127,255,.1); box-shadow: inset 0 0 0 1.5px rgba(96,150,255,.4); }
+.cg .cg-pg .pg-day small { font: 700 10.5px/1 var(--font-body, inherit); letter-spacing: .04em; text-transform: none; color: #8d98b4; }
+.cg .cg-pg .pg-day.done { border-color: rgba(96,150,255,.3); background: linear-gradient(180deg, rgba(36,58,120,.55), rgba(10,16,38,.9)); }
+.cg .cg-pg .pg-day.done .pg-dico { color: #9cc4ff; opacity: .85; }
+.cg .cg-pg .pg-day.done small { color: #9cc4ff; }
+.cg .cg-pg .pg-day.today:not(.done) { border-color: #5ec8ff; background: linear-gradient(180deg, rgba(43,127,255,.28), rgba(8,13,26,.9)); box-shadow: 0 0 22px -4px rgba(43,170,255,.65), inset 0 1px 0 rgba(255,255,255,.12); }
+.cg .cg-pg .pg-day.today:not(.done) .pg-dico { color: #fff; background: rgba(34,211,238,.18); box-shadow: inset 0 0 0 1.5px #5ec8ff, 0 0 16px -2px rgba(34,211,238,.7); }
+.cg .cg-pg .pg-day.today:not(.done) small, .cg .cg-pg .pg-day.today:not(.done) .pg-dn { color: #fff; }
+.cg .cg-pg .pg-m { position: relative; padding: 14px 14px 12px; border: 1px solid rgba(155,134,255,.4); border-radius: 14px; background: linear-gradient(180deg, rgba(64,52,140,.38), rgba(10,14,36,.92)); box-shadow: inset 0 1px 0 rgba(255,255,255,.06); }
+.cg .cg-pg .pg-m b { font: 800 15px/1 var(--font-display, inherit); color: #fff; }
+.cg .cg-pg .pg-m.ready { border-color: #5ec8ff; box-shadow: 0 0 22px -6px rgba(43,170,255,.7), inset 0 1px 0 rgba(255,255,255,.08); }
+.cg .cg-pg .pg-m.claimed { opacity: 1; border-color: rgba(96,150,255,.25); background: linear-gradient(180deg, rgba(20,32,66,.6), rgba(8,13,26,.9)); }
+.cg .cg-pg .pg-m.claimed b::after { content: ""; position: absolute; right: 10px; top: 10px; width: 17px; height: 17px; border-radius: 50%; background: #2b7fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12l5 5 9-10'/%3E%3C/svg%3E") center / 11px no-repeat; box-shadow: 0 0 10px rgba(43,127,255,.6); }
+.cg .cg-pg .pg-m .pg-rw-i, .cg .cg-pg .pg-m .pg-rw-i.d, .cg .cg-pg .pg-m .pg-rw-i.u, .cg .cg-pg .pg-m .pg-rw-i.s, .cg .cg-pg .pg-m .pg-rw-i.p { background: rgba(255,255,255,.07); box-shadow: inset 0 0 0 1px rgba(255,255,255,.12); color: #e4e9f7; }
+@media (max-width: 560px) { .cg .cg-pg .pg-days { gap: 5px; } .cg .cg-pg .pg-day { min-height: 80px; padding: 20px 2px 8px; } .cg .cg-pg .pg-dico { width: 32px; height: 32px; } .cg .cg-pg .pg-day small { font-size: 9px; } }
