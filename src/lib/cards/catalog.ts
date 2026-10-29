@@ -285,6 +285,134 @@ const RAW = `
 4|Карс|Kars|Невероятные приключения ДжоДжо|d|m
 4|Гатс|Guts|Берсерк|d|w
 4|Гриффит|Griffith|Берсерк|l|m
+0|Такемити Ханагаки|Takemichi Hanagaki|Токийские мстители|f|w
+3|Манджиро Сано|Manjirou Sano|Токийские мстители|l|w
+1|Кэн Рюгудзи|Ken Ryuuguuji|Токийские мстители|f|t
+0|Хината Тачибана|Hinata Tachibana|Токийские мстители|w|s
+1|Кэйскэ Баджи|Keisuke Baji|Токийские мстители|d|a
+0|Тифую Мацуно|Chifuyu Matsuno|Токийские мстители|a|w
+0|Ацуси Сэндо|Atsushi Sendou|Токийские мстители|e|t
+1|Кадзутора Ханемия|Kazutora Hanemiya|Токийские мстители|a|a
+2|Идзана Курокава|Izana Kurokawa|Токийские мстители|d|a
+0|Наото Тачибана|Naoto Tachibana|Токийские мстители|w|s
+1|Ёити Исаги|Yoichi Isagi|Синяя тюрьма|l|w
+1|Мэгуру Бачира|Meguru Bachira|Синяя тюрьма|a|a
+1|Сэйсиро Наги|Seishirou Nagi|Синяя тюрьма|l|m
+2|Рин Итоси|Rin Itoshi|Синяя тюрьма|d|a
+1|Сёэй Бароу|Shouei Barou|Синяя тюрьма|e|w
+0|Рэо Микагэ|Reo Mikage|Синяя тюрьма|w|s
+2|Дзинпачи Эго|Jinpachi Ego|Синяя тюрьма|d|s
+0|Анри Тэиэри|Anri Teieri|Синяя тюрьма|l|s
+2|Саэ Итоси|Sae Itoshi|Синяя тюрьма|d|m
+0|Рэнсукэ Кунигами|Rensuke Kunigami|Синяя тюрьма|e|t
+0|Хёма Тигири|Hyouma Chigiri|Синяя тюрьма|f|a
+2|Майкл Кайзер|Michael Kaiser|Синяя тюрьма|a|m
+1|Синра Кусакабэ|Shinra Kusakabe|Пламенная бригада|f|w
+0|Артур Бойл|Arthur Boyle|Пламенная бригада|l|w
+0|Маки Озе|Maki Oze|Пламенная бригада|f|a
+0|Тамаки Котацу|Tamaki Kotatsu|Пламенная бригада|f|t
+1|Сё Кусакабэ|Sho Kusakabe|Пламенная бригада|a|a
+0|Хибана|Hibana|Пламенная бригада|f|m
+1|Такэхиса Хинава|Takehisa Hinawa|Пламенная бригада|a|w
+1|Вулкан Джозеф|Vulcan Joseph|Пламенная бригада|e|s
+1|Бенимару Синмон|Benimaru Shinmon|Пламенная бригада|f|t
+1|Рэкка Хосимия|Rekka Hoshimiya|Пламенная бригада|f|w
+1|Тобио Кагэяма|Tobio Kageyama|Волейбол!!|a|m
+0|Кэй Цукисима|Kei Tsukishima|Волейбол!!|l|t
+1|Косси Сугавара|Koushi Sugawara|Волейбол!!|w|s
+0|Дайти Савамура|Daichi Sawamura|Волейбол!!|e|t
+0|Ю Нисиноя|Yuu Nishinoya|Волейбол!!|a|t
+1|Тэцуро Куроо|Tetsurou Kuroo|Волейбол!!|d|t
+0|Кэнма Козумэ|Kenma Kozume|Волейбол!!|d|m
+2|Тоору Ойкава|Tooru Oikawa|Волейбол!!|w|m
+2|Котаро Бокуто|Koutarou Bokuto|Волейбол!!|l|w
+0|Хитока Ячи|Hitoka Yachi|Волейбол!!|l|s
+1|Киёко Симидзу|Kiyoko Shimizu|Волейбол!!|w|s
+2|Кушина Удзумаки|Kushina Uzumaki|Наруто|f|s
+0|Сидзунэ|Shizune|Наруто|w|s
+1|Чиё|Chiyo|Наруто|d|s
+1|Хаку|Haku|Наруто|w|s
+2|Кисамэ Хосигаки|Kisame Hoshigaki|Наруто|w|t
+2|Какудзу|Kakuzu|Наруто|d|t
+1|Джуго|Jugo|Наруто|e|t
+0|Карин|Karin|Наруто|f|s
+3|Ямато|Yamato|Наруто|e|s
+2|Мэй Тэруми|Mei Terumi|Наруто|f|m
+2|Макаров Дреяр|Makarov Dreyar|Хвост Феи|l|t
+2|Мавис Вермилион|Mavis Vermilion|Хвост Феи|l|s
+2|Гилдартс Клайв|Gildarts Clive|Хвост Феи|e|t
+1|Лаксус Дреяр|Laxus Dreyar|Хвост Феи|a|w
+1|Мираджейн Штраусс|Mirajane Strauss|Хвост Феи|w|m
+0|Джувия Локсар|Juvia Lockser|Хвост Феи|w|m
+1|Гажил Редфокс|Gajeel Redfox|Хвост Феи|a|t
+0|Эльфман Штраусс|Elfman Strauss|Хвост Феи|e|t
+0|Лиссана Штраусс|Lisanna Strauss|Хвост Феи|w|s
+2|Джеллал Фернандес|Jellal Fernandes|Хвост Феи|l|m
+1|Дайан|Diane|Семь смертных грехов|e|t
+1|Бан|Ban|Семь смертных грехов|d|w
+1|Говер|Gowther|Семь смертных грехов|a|m
+2|Мерлин|Merlin|Семь смертных грехов|a|m
+2|Элизабет Лионес|Elizabeth Liones|Семь смертных грехов|a|s
+0|Хок|Hawk|Семь смертных грехов|e|t
+2|Зелдрис|Zeldris|Семь смертных грехов|d|a
+0|Гилтандер|Gilthunder|Семь смертных грехов|a|w
+2|Дзёсукэ Хигасиката|Josuke Higashikata|Невероятные приключения ДжоДжо|a|s
+1|Мухаммед Абдул|Muhammad Avdol|Невероятные приключения ДжоДжо|f|t
+1|Норияки Какёин|Noriaki Kakyoin|Невероятные приключения ДжоДжо|e|m
+1|Жан-Пьер Польнарефф|Jean Pierre Polnareff|Невероятные приключения ДжоДжо|a|w
+2|Джозеф Джостар|Joseph Joestar|Невероятные приключения ДжоДжо|a|a
+0|Джонатан Джостар|Jonathan Joestar|Невероятные приключения ДжоДжо|l|w
+0|Гвидо Миста|Guido Mista|Невероятные приключения ДжоДжо|f|a
+0|Наранча Гирга|Narancia Ghirga|Невероятные приключения ДжоДжо|f|a
+0|Чарми Паппиттсон|Charmy Pappitson|Чёрный клевер|e|s
+0|Мимоза Вермилион|Mimosa Vermillion|Чёрный клевер|l|s
+2|Ями Сукэхиро|Yami Sukehiro|Чёрный клевер|d|w
+2|Юлиус Новахрон|Julius Novachrono|Чёрный клевер|l|m
+0|Ноэлль Сильва|Noelle Silva|Чёрный клевер|w|m
+1|Фуэгон Вермилион|Fuegoleon Vermillion|Чёрный клевер|f|w
+1|Нозель Сильва|Nozel Silva|Чёрный клевер|w|t
+0|Магна Суинг|Magna Swing|Чёрный клевер|f|w
+1|Лак Вольтия|Luck Voltia|Чёрный клевер|a|a
+1|Секре Свэллоутейл|Secre Swallowtail|Чёрный клевер|d|s
+1|Мереолеона Вермилион|Mereoleona Vermillion|Чёрный клевер|f|w
+0|Ванесса Энотека|Vanessa Enoteca|Чёрный клевер|w|m
+0|Зора Идеале|Zora Ideale|Чёрный клевер|e|a
+0|Видель|Videl|Драгонболл|w|w
+0|Ямча|Yamcha|Драгонболл|a|w
+0|Руи|Rui|Истребитель демонов|w|m
+0|Кёгай|Kyougai|Истребитель демонов|d|m
+0|Дэнки Каминари|Denki Kaminari|Моя геройская академия|l|m
+0|Тенсинхан|Tenshinhan|Драгонболл|a|a
+0|Фумикагэ Токоями|Fumikage Tokoyami|Моя геройская академия|d|a
+0|Маес Хьюз|Maes Hughes|Стальной алхимик|a|a
+1|Рангику Мацумото|Rangiku Matsumoto|Блич|f|m
+1|Маюри Куроцути|Mayuri Kurotsuchi|Блич|a|m
+1|Стейн|Stain|Моя геройская академия|a|a
+1|Дзюдзо Судзуя|Juuzou Suzuya|Токийский гуль|a|a
+1|Лан Фан|Lan Fan|Стальной алхимик|w|a
+1|Сёко Иэири|Shoko Ieiri|Магическая битва|l|s
+2|Грид|Greed|Стальной алхимик|e|t
+2|Кинджи Хакари|Kinji Hakari|Магическая битва|a|t
+2|Маджин Буу|Majin Buu|Драгонболл|f|t
+2|Рецу Унохана|Retsu Unohana|Блич|a|s
+2|Аллука Золдик|Alluka Zoldyck|Охотник х Охотник|d|s
+2|Дзюсиро Укитакэ|Juushirou Ukitake|Блич|l|s
+3|Отец|Father|Стальной алхимик|d|m
+3|Баррагану Луизенбарн|Barragan Luisenbarn|Блич|d|t
+3|Акихико Каяба|Akihiko Kayaba|Мастера Меча Онлайн|l|t
+3|Сильва Золдик|Silva Zoldyck|Охотник х Охотник|e|t
+3|Хит|Hit|Драгонболл|a|a
+3|Цюаньси|Quanxi|Человек-бензопила|a|a
+3|Кенни Аккерман|Kenny Ackerman|Атака титанов|e|a
+3|Сасори|Sasori|Наруто|e|a
+3|Жанна д'Арк|Jeanne d'Arc|Судьба|l|s
+3|Медея|Medea|Судьба|d|s
+3|Илиясфиль фон Айнцберн|Illyasviel von Einzbern|Судьба|l|s
+4|Бласт|Blast|Ванпанчмен|e|w
+4|Зереф Драгнил|Zeref Dragneel|Хвост Феи|w|m
+4|Почита|Pochita|Человек-бензопила|f|t
+4|Уис|Whis|Драгонболл|a|s
+4|Вальтер К. Дорнез|Walter C. Dornez|Хеллсинг|d|a
 `;
 
 const BASE: Record<number, [number, number, number, number]> = {

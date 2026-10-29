@@ -805,4 +805,84 @@ export const MIGRATIONS: Migration[] = [
       ALTER TABLE card_inv ADD COLUMN evo INTEGER NOT NULL DEFAULT 0;
     `,
   },
+  {
+    version: 26,
+    name: "clan-card-war",
+    sql: `
+      -- Клановая карточная война: очередь поиска, война, снимки защиты, атаки.
+      CREATE TABLE clan_cw_queue (
+        clan_id INTEGER PRIMARY KEY REFERENCES clans(id) ON DELETE CASCADE,
+        size INTEGER NOT NULL,
+        trophies INTEGER NOT NULL DEFAULT 0,
+        created_at INTEGER NOT NULL
+      );
+      CREATE TABLE clan_cw (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        clan_a INTEGER NOT NULL REFERENCES clans(id) ON DELETE CASCADE,
+        clan_b INTEGER NOT NULL DEFAULT 0,
+        bot_name TEXT NOT NULL DEFAULT '',
+        size INTEGER NOT NULL,
+        status TEXT NOT NULL DEFAULT 'prep',
+        prep_until INTEGER NOT NULL,
+        ends_at INTEGER NOT NULL,
+        score_a INTEGER NOT NULL DEFAULT 0,
+        score_b INTEGER NOT NULL DEFAULT 0,
+        stars_a INTEGER NOT NULL DEFAULT 0,
+        stars_b INTEGER NOT NULL DEFAULT 0,
+        winner INTEGER NOT NULL DEFAULT 0,
+        created_at INTEGER NOT NULL,
+        settled_at INTEGER NOT NULL DEFAULT 0
+      );
+      CREATE INDEX idx_clan_cw_a ON clan_cw(clan_a, status);
+      CREATE INDEX idx_clan_cw_b ON clan_cw(clan_b, status);
+      CREATE TABLE clan_cw_slots (
+        war_id INTEGER NOT NULL REFERENCES clan_cw(id) ON DELETE CASCADE,
+        clan_id INTEGER NOT NULL,
+        pos INTEGER NOT NULL,
+        user_id INTEGER NOT NULL DEFAULT 0,
+        nick TEXT NOT NULL,
+        power INTEGER NOT NULL DEFAULT 0,
+        units TEXT NOT NULL,
+        attacks INTEGER NOT NULL DEFAULT 0,
+        PRIMARY KEY (war_id, clan_id, pos)
+      );
+      CREATE TABLE clan_cw_attacks (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        war_id INTEGER NOT NULL REFERENCES clan_cw(id) ON DELETE CASCADE,
+        clan_id INTEGER NOT NULL,
+        user_id INTEGER NOT NULL,
+        nick TEXT NOT NULL,
+        target_pos INTEGER NOT NULL,
+        stars INTEGER NOT NULL DEFAULT 0,
+        win INTEGER NOT NULL DEFAULT 0,
+        rounds INTEGER NOT NULL DEFAULT 0,
+        created_at INTEGER NOT NULL
+      );
+      CREATE INDEX idx_clan_cw_attacks ON clan_cw_attacks(war_id, id DESC);
+      -- Донат карт: запросы соклановцев и счётчик отданного.
+      CREATE TABLE clan_requests (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        clan_id INTEGER NOT NULL REFERENCES clans(id) ON DELETE CASCADE,
+        user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        card_id TEXT NOT NULL,
+        want INTEGER NOT NULL,
+        got INTEGER NOT NULL DEFAULT 0,
+        status TEXT NOT NULL DEFAULT 'open',
+        created_at INTEGER NOT NULL,
+        expires_at INTEGER NOT NULL
+      );
+      CREATE INDEX idx_clan_requests ON clan_requests(clan_id, status, id DESC);
+      CREATE TABLE clan_donations (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        clan_id INTEGER NOT NULL,
+        request_id INTEGER NOT NULL,
+        donor_id INTEGER NOT NULL,
+        taker_id INTEGER NOT NULL,
+        card_id TEXT NOT NULL,
+        created_at INTEGER NOT NULL
+      );
+      CREATE INDEX idx_clan_donations ON clan_donations(clan_id, created_at DESC);
+      CREATE INDEX idx_clan_donations_donor ON clan_donations(donor_id, created_at DESC);
+    `,
+  },
 ];

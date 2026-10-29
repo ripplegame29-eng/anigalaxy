@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { MangaReader, posKey, type ReaderMode, type ReaderWidth, type SeekTarget } from "./MangaReader";
 import { ReaderBar } from "./ReaderBar";
-import { noteChapter as noteMangaChapter } from "@/lib/clan2/store";
 
 const PREFS = "mr-prefs";
 
@@ -98,13 +97,6 @@ export function ReaderShell({
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, [mode]);
-
-  // Глава засчитывается клану один раз: повторное открытие того же тайтла
-  // и главы ничего не приносит. Именно на этом строится защита от накрутки
-  // клановых заданий — перечитать 100 глав ради очков нельзя.
-  useEffect(() => {
-    noteMangaChapter(mangaId, chapterLabel);
-  }, [mangaId, chapterLabel]);
 
   return (
     <div className="min-h-dvh bg-ink pb-32">

@@ -110,7 +110,7 @@ export function botSquad(rating: number, rng: Rng): Unit[] {
   return out;
 }
 
-function deckUnits(db: Database, userId: number, side: "a" | "b"): Unit[] | null {
+export function deckUnits(db: Database, userId: number, side: "a" | "b"): Unit[] | null {
   const w = getWallet(db, userId, undefined, false);
   const inv = new Map(listInventory(db, userId).map((c) => [c.id, c]));
   const units: Unit[] = [];

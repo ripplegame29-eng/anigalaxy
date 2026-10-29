@@ -39,7 +39,7 @@ function give(db, uid, cardId, n = 1, extra = {}) {
 test("каталог: уникальные id, все ранги заполнены, статы растут с рангом", () => {
   const ids = new Set(CATALOG.map((c) => c.id));
   assert.equal(ids.size, CATALOG.length);
-  assert.ok(CATALOG.length >= 250);
+  assert.ok(CATALOG.length >= 380);
   for (let r = 0; r < 5; r += 1) assert.ok(cardsOfRank(r).length >= 8, `ранг ${r}`);
   assert.ok(cardsOfRank(4)[0].atk > cardsOfRank(0)[0].atk * 3);
 });
