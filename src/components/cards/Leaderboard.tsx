@@ -48,9 +48,8 @@ export function Leaderboard({
 }) {
   const mine = me.trim().toLowerCase();
   const isMe = (r: TopRow) => mine !== "" && r.nick.toLowerCase() === mine;
-  const topRating = Math.max(1, rows[0]?.rating ?? 1);
   const podium = rows.slice(0, 3);
-  const rest = rows.slice(3, 20);
+  const rest = rows.slice(0, 20);
   const inList = rows.some(isMe);
   // Подиум читается 2-1-3: победитель по центру и выше остальных
   const order = [1, 0, 2];
@@ -64,9 +63,12 @@ export function Leaderboard({
           <h3 id="lb-title">Лидеры сезона</h3>
           <p>Лучшие стратеги арены. Рейтинг растёт с победами в рейтинговых боях и обновляется после каждого боя.</p>
         </div>
-        <div className="lb-me">
+        <div className="lb-badges">
+          <span className="lb-top">TOP 20</span>
+          <div className="lb-me">
           <small>Ваш рейтинг</small>
           <b>{fmt(myRating)}</b>
+        </div>
         </div>
       </header>
 
@@ -123,40 +125,43 @@ export function Leaderboard({
               <li className="lb-cols" aria-hidden>
                 <span>Место</span>
                 <span>Игрок</span>
-                <span>Рейтинг</span>
-                <span>Бои</span>
+                <span>Лига</span>
+                <span>Победы</span>
+                <span>Пораж.</span>
+                <span>Винрейт</span>
               </li>
               {rest.map((r, k) => (
                 <li key={r.nick} style={{ ["--d" as string]: `${k * 35}ms` }}>
                   <button
                     type="button"
-                    className={`lb-row${isMe(r) ? " me" : ""}`}
-                    style={{ "--lg": leagueOf(r.rating).color } as CSSProperties}
+                    className={`lb-row${isMe(r) ? " me" : ""}${k < 3 ? ` top t${k + 1}` : ""}`}
+                    style={{ "--lg": leagueOf(r.rating).color, "--m": MEDAL[k] ?? "transparent" } as CSSProperties}
                     onClick={() => onOpen(r.nick)}
                   >
-                    <span className="lb-pl">{r.place}</span>
+                    <span className="lb-pl">{k < 3 ? <Ico name={k === 0 ? "crown" : "trophy"} size={16} /> : r.place}</span>
                     <span className="lb-who">
                       <Who r={r} size="xs" />
                       <span className="lb-wt">
                         <b>
                           {r.nick}
+                          {r.clan ? <em>[{r.clan}]</em> : null}
                           {isMe(r) && <u>Вы</u>}
                         </b>
-                        <small>
-                          <i aria-hidden />
-                          {leagueOf(r.rating).name}
-                          {r.clan ? ` · [${r.clan}]` : ""}
-                        </small>
+                        <small>{r.wins + r.losses} боёв</small>
                       </span>
                     </span>
                     <span className="lb-rt">
-                      <b>{fmt(r.rating)}</b>
-                      <span className="lb-bar"><i style={{ width: `${Math.max(6, (r.rating / topRating) * 100)}%` }} /></span>
+                      <b>{leagueOf(r.rating).name}</b>
+                      <small>
+                        <i aria-hidden />
+                        {fmt(r.rating)}
+                      </small>
                     </span>
-                    <span className="lb-rc">
-                      <b>{r.wins}</b>
-                      <small>/ {r.losses}</small>
+                    <span className="lb-w">{fmt(r.wins)}</span>
+                    <span className="lb-l">{fmt(r.losses)}</span>
+                    <span className="lb-wr">
                       <em>{winRate(r)}%</em>
+                      <span className="lb-bar"><i style={{ width: `${Math.max(4, winRate(r))}%` }} /></span>
                     </span>
                   </button>
                 </li>
