@@ -6,7 +6,8 @@
  */
 
 import "../../app/clans-aaa.css";
-import { useCallback, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import { createPortal } from "react-dom";
+import { useCallback, useMemo, useState, useSyncExternalStore } from "react";
 import { leagueOf, type ClanRole } from "@/lib/clan-rules";
 import { clanAct, useClanDonate, useClanWar, useMyClan } from "@/lib/clans/client";
 import { useAccount } from "@/lib/use-account";
@@ -32,6 +33,7 @@ const IDS = TABS.map((t) => t.id) as string[];
 const LS_KEY = "animehub:clans:tab:v1";
 
 /* Вкладка = хэш URL (приоритет) → localStorage → «Обзор» */
+let flashTimer: ReturnType<typeof setTimeout> | null = null;
 const tabSubs = new Set<() => void>();
 function readTab(): TabId {
   try {
@@ -75,12 +77,11 @@ export function ClanApp() {
   const { me, ready, reload } = useMyClan();
   const tab = useSyncExternalStore(subscribeTab, readTab, () => "overview" as TabId);
   const [flash, setFlash] = useState<{ kind: "ok" | "err"; text: string; key: number } | null>(null);
-  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const notify = useCallback((kind: "ok" | "err", text: string) => {
-    if (timer.current) clearTimeout(timer.current);
+    if (flashTimer) clearTimeout(flashTimer);
     setFlash({ kind, text, key: Date.now() });
-    timer.current = setTimeout(() => setFlash(null), kind === "err" ? 7000 : 3200);
+    flashTimer = setTimeout(() => setFlash(null), kind === "err" ? 7000 : 3200);
   }, []);
   const go = useCallback((id: TabId) => {
     writeTab(id);
@@ -104,14 +105,15 @@ export function ClanApp() {
     [me, clan, role, go, act, notify, reload],
   );
 
-  const flashEl = flash && (
+  const flashEl = flash && createPortal(
     <div key={flash.key} className={`ca-toast ca-toast-${flash.kind}`} role={flash.kind === "err" ? "alert" : "status"}>
       <Ico n={flash.kind === "err" ? "alert" : "check"} size={18} />
       <span>{flash.text}</span>
       <button type="button" onClick={() => setFlash(null)} aria-label="Закрыть">
         <Ico n="x" size={16} />
       </button>
-    </div>
+    </div>,
+    document.body,
   );
 
   if (!ready && account) {
@@ -162,7 +164,15 @@ export function ClanApp() {
 }
 
 /** Верхняя рейка вкладок (десктоп) и нижняя панель (мобильный) — один и тот же <nav> */
+const mobileSubs = (cb: () => void) => {
+  const mq = window.matchMedia("(max-width: 900px)");
+  mq.addEventListener("change", cb);
+  return () => mq.removeEventListener("change", cb);
+};
 function Rail({ tab, onPick }: { tab: TabId; onPick: (t: TabId) => void }) {
+  const mobile = useSyncExternalStore(mobileSubs, () => window.matchMedia("(max-width: 900px)").matches, () => false);
+  const { me: mc } = useMyClan();
+  const lcol = leagueOf(mc?.clan?.league ?? 0);
   const { me } = useMyClan();
   const { war } = useClanWar();
   const { donate } = useClanDonate();
@@ -176,8 +186,8 @@ function Rail({ tab, onPick }: { tab: TabId; onPick: (t: TabId) => void }) {
     const n = g.reached.filter((t) => !g.claimed.includes(t)).length;
     if (n) badges.overview = n;
   }
-  return (
-    <nav className="ca-rail" aria-label="Разделы клана">
+  const nav = (
+    <nav className="ca-rail" aria-label="Разделы клана" style={{ ["--lc" as string]: lcol.color }}>
       <div className="ca-rail-in" role="tablist">
         {TABS.map((t) => (
           <button
@@ -196,4 +206,6 @@ function Rail({ tab, onPick }: { tab: TabId; onPick: (t: TabId) => void }) {
       </div>
     </nav>
   );
+  /* У страницы есть transform-анимация (.page-in): fixed внутри неё липнет к странице, а не к экрану — на мобильном выносим панель в body */
+  return mobile ? createPortal(nav, document.body) : nav;
 }

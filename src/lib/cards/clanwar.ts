@@ -142,5 +142,7 @@ export interface DonateState {
   /** Когда можно создать следующий запрос (0 — сейчас) */
   nextRequestAt: number;
   eligible: boolean;
+  /** Когда откроется донат для новичка (мс); 0 — уже открыт */
+  eligibleAt: number;
   top: { nick: string; count: number }[];
 }

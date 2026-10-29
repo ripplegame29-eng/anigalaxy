@@ -39,6 +39,12 @@ export function shortLeft(ms: number): string {
   return h > 0 ? `${h}ч ${p2(m)}м` : `${p2(m)}:${p2(s % 60)}`;
 }
 
+export function plural(n: number, f: [string, string, string]): string {
+  const a = Math.abs(n) % 100;
+  const b = a % 10;
+  return a > 10 && a < 20 ? f[2] : b === 1 ? f[0] : b >= 2 && b <= 4 ? f[1] : f[2];
+}
+
 export function agoText(at: number, now: number): string {
   const m = Math.max(0, Math.floor((now - at) / 60_000));
   if (m < 1) return "только что";
@@ -53,11 +59,12 @@ export { useNow as useNowTick } from "@/components/cards/common";
 /* ------------------------------- арт героев ------------------------------- */
 
 /** Подгружает список имеющихся артов (общий с /cards) и перерисовывает компонент, когда он готов */
-export function useCardArt(): void {
-  useCards();
+export function useCardArt(): ReturnType<typeof useCards> {
+  const snap = useCards();
   useEffect(() => {
     ensureLoaded();
   }, []);
+  return snap;
 }
 
 /** Крупная миниатюра героя для списков: арт, цвет ранга, уровень */
@@ -90,7 +97,7 @@ const hue = (s: string): number => {
 /** Герб клана: щит с тегом. Цвет — от тега, сторона задаёт кайму */
 export function Crest({ tag, size = 64, side = "mine", bot = false }: { tag: string; size?: number; side?: "mine" | "foe"; bot?: boolean }) {
   const h = hue(tag || "?");
-  const style = { "--cr-h": h, width: size, height: size * 1.12 } as CSSProperties;
+  const style = { "--cr-h": h, "--cr-s": `${size}px`, "--cr-k": tag.length > 3 ? 0.2 : 0.26, width: size, height: size * 1.12 } as CSSProperties;
   return (
     <span className={`cw-crest ${side} ${bot ? "bot" : ""}`} style={style} aria-hidden>
       <svg viewBox="0 0 100 112" width="100%" height="100%">
@@ -98,7 +105,7 @@ export function Crest({ tag, size = 64, side = "mine", bot = false }: { tag: str
         <path d="M50 11 L82 23 V55 C82 77 67 91 50 99 C33 91 18 77 18 55 V23Z" className="cw-crest-in" />
         <path d="M50 3 L90 17 V40 L50 28 L10 40 V17Z" className="cw-crest-top" />
       </svg>
-      <b style={{ fontSize: Math.max(10, size * (tag.length > 3 ? 0.2 : 0.26)) }}>{bot ? "★" : tag}</b>
+      <b>{bot ? "★" : tag}</b>
     </span>
   );
 }
@@ -200,12 +207,18 @@ export function useToast(): [ReactNode, (text: string, err?: boolean) => void] {
     setT({ id: Date.now(), text, err });
     timer.current = setTimeout(() => setT(null), 3800);
   }, []);
-  const node = t ? (
-    <div key={t.id} className={`cw-toast ${t.err ? "err" : ""}`} role="status" aria-live="polite">
-      <Ico name={t.err ? "ban" : "check"} size={18} />
-      <span>{t.text}</span>
-    </div>
-  ) : null;
+  const node =
+    t && typeof document !== "undefined"
+      ? createPortal(
+          <div className="cg cw-portal">
+            <div key={t.id} className={`cw-toast ${t.err ? "err" : ""}`} role="status" aria-live="polite">
+              <Ico name={t.err ? "ban" : "check"} size={18} />
+              <span>{t.text}</span>
+            </div>
+          </div>,
+          document.body,
+        )
+      : null;
   return [node, push];
 }
 

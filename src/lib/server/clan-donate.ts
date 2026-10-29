@@ -123,6 +123,7 @@ export function donateState(db: Database, userId: number, now = Date.now()): Don
     dailyLimit: DONATE.dailyLimit,
     nextRequestAt: open ? now + 1 : last && now - last < REQUEST_COOLDOWN_MS ? last + REQUEST_COOLDOWN_MS : 0,
     eligible: now - m.joinedAt >= DONATE.minMemberMs,
+    eligibleAt: now - m.joinedAt >= DONATE.minMemberMs ? 0 : m.joinedAt + DONATE.minMemberMs,
     top,
   };
 }

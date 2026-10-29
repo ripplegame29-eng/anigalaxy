@@ -77,21 +77,20 @@ export function WarBattle({ war, onOpen }: { war: CwWarView; onOpen: (pos: numbe
         </div>
       </section>
 
-      <div className="cw-rosters">
         <details className="cw-card cw-fold" open={false}>
-          <summary>
-            <h3 className="cw-h3 mine">Наша защита</h3>
-            <span className="cw-note">
-              соперник взял {war.mine.slots.reduce((a, s) => a + s.stars, 0)}★
-            </span>
-            <Ico name="down" size={18} />
-          </summary>
-          <div className="cw-bases">
-            {war.mine.slots.map((s) => (
-              <BaseCard key={s.pos} slot={s} side="mine" showStars />
-            ))}
-          </div>
-        </details>
+        <summary>
+          <h3 className="cw-h3 mine">Наша защита</h3>
+          <span className="cw-note">
+            соперник взял {war.mine.slots.reduce((a, s) => a + s.stars, 0)}★
+          </span>
+          <Ico name="down" size={18} />
+        </summary>
+        <div className="cw-bases">
+          {war.mine.slots.map((s) => (
+            <BaseCard key={s.pos} slot={s} side="mine" showStars />
+          ))}
+        </div>
+      </details>
 
         <section className="cw-card" aria-label="Лента атак">
           <div className="cw-card-head">
@@ -122,7 +121,6 @@ export function WarBattle({ war, onOpen }: { war: CwWarView; onOpen: (pos: numbe
             <p className="cw-note pad">Пока никто не нападал. Первая атака задаёт тон войне.</p>
           )}
         </section>
-      </div>
     </>
   );
 }
