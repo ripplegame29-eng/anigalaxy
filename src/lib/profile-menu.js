@@ -35,6 +35,7 @@
     gear:'<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/>',
     levels:'<path d="M12 3l2.6 5.3 5.9.9-4.2 4.1 1 5.8L12 16.4 6.7 19.1l1-5.8L3.5 9.2l5.9-.9z"/>',
     crown:'<path d="M3 8l4 4 5-7 5 7 4-4-2 11H5z"/>',
+    cards:'<rect x="8" y="3" width="12" height="16" rx="2.5"/><path d="M5 7.5v11A2.5 2.5 0 0 0 7.5 21H16M13.5 8.5l1.1 2.3 2.4.3-1.8 1.7.5 2.4-2.2-1.2-2.2 1.2.5-2.4-1.8-1.7 2.4-.3z"/>',
     shield:'<path d="M12 3l8 3v6c0 4.5-3.2 7.8-8 9-4.8-1.2-8-4.5-8-9V6zM9 12l2.2 2.2L15.5 10"/>',
     spark:'<path d="M11 3l2 5.8L19 11l-6 2.2L11 19l-2-5.8L3 11l6-2.2zM19 16l.8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8z"/>',
     out:'<path d="M10 4H5v16h5M15 8l4 4-4 4M19 12H9"/>'
@@ -49,6 +50,7 @@
     {id:'levels',label:'Уровни',icon:'levels',group:'Прогресс'},
     {id:'quests',label:'Квесты',icon:'bulb',group:'Прогресс'},
     {id:'shop',label:'Магазин',icon:'store',group:'Прогресс'},
+    {id:'gacha',label:'Гача',icon:'cards',group:'Прогресс'},
     /* Пункт «Подарки Premium» заменён на «Ивенты»: подарки ушли из меню */
     {id:'assistant',label:'ИИ-ассистент',icon:'spark',group:'Ещё'},
     {id:'events',label:'Ивенты',icon:'event',group:'Ещё'},
