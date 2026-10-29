@@ -81,13 +81,34 @@ function variants(name) {
   }
   return [...set];
 }
+/** Второй источник — MyAnimeList через Jikan: выручает, когда AniList не находит персонажа */
+async function findJikan(name) {
+  for (const v of variants(name).slice(0, 3)) {
+    try {
+      const res = await fetch(`https://api.jikan.moe/v4/characters?q=${encodeURIComponent(v)}&order_by=favorites&sort=desc&limit=1`, { headers: { Accept: "application/json" } });
+      if (res.status === 429) {
+        await sleep(2500);
+        continue;
+      }
+      if (!res.ok) continue;
+      const json = await res.json();
+      const url = json?.data?.[0]?.images?.jpg?.image_url;
+      if (url && !url.includes("questionmark")) return url;
+    } catch {
+      /* сеть недоступна — пробуем следующий вариант */
+    }
+    await sleep(500);
+  }
+  return null;
+}
+
 async function findAny(name) {
   for (const v of variants(name)) {
     const url = await find(v);
     if (url && !url.includes("default.jpg")) return url;
     await sleep(400);
   }
-  return null;
+  return findJikan(name);
 }
 
 let ok = 0;
