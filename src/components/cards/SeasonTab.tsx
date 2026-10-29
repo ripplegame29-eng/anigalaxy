@@ -1,5 +1,6 @@
 "use client";
 
+import type { CSSProperties } from "react";
 /**
  * Сезонный пасс карточной игры («Сезонный свод»): герб сезона и веер ближайших наград,
  * золотая карточка премиума, дорожка из наградных карт на светящейся тропе уровней
@@ -210,7 +211,7 @@ export function SeasonTab({ s }: { s: CardsState }) {
         <i className="sv-sea" aria-hidden />
         <i className="sv-art" aria-hidden />
 
-        <div className="sv-crest" aria-label={`Уровень ${p.level} из ${PASS.levels}`}>
+        <div className="sv-crest" style={{ "--p": Math.round((p.level / PASS.levels) * 100) } as CSSProperties} aria-label={`Уровень ${p.level} из ${PASS.levels}`}>
           <div className="sv-hex">
             <div className="sv-hex-in">
               <small>Уровень</small>
