@@ -507,10 +507,10 @@
   position: relative;
   text-align: center;
   display: grid;
-  align-content: space-between;
+  align-content: center;
   justify-items: center;
-  gap: 10px;
-  padding: 18px 16px 18px;
+  gap: 14px;
+  padding: 30px 16px 20px;
   border: 0;
   color: var(--cg-text);
   cursor: pointer;
@@ -531,13 +531,18 @@
 }
 .cg-offer .art {
   width: 100%;
-  height: 168px;
+  height: auto;
+  max-height: 190px;
+  aspect-ratio: 3 / 2;
   object-fit: contain;
   display: block;
-  margin-top: 8px;
-  mix-blend-mode: screen;
-  -webkit-mask-image: radial-gradient(closest-side, #000 55%, transparent 100%);
-  mask-image: radial-gradient(closest-side, #000 55%, transparent 100%);
+  margin: 6px 0 0;
+  mix-blend-mode: lighten;
+  /* мягкий край только у рамки картинки, сами паки не затрагиваются */
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent), linear-gradient(180deg, transparent, #000 9%, #000 91%, transparent);
+  -webkit-mask-composite: source-in;
+  mask-image: linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent), linear-gradient(180deg, transparent, #000 9%, #000 91%, transparent);
+  mask-composite: intersect;
   pointer-events: none;
   user-select: none;
 }
@@ -632,13 +637,15 @@
   .cg-offer {
     min-height: 0;
     grid-template-columns: 120px 1fr;
+    align-content: stretch;
     justify-items: stretch;
     align-items: center;
     text-align: left;
     padding: 16px 16px 16px 12px;
   }
   .cg-offer .art {
-    height: 100px;
+    height: auto;
+    max-height: 100px;
     margin: 0;
   }
   .cg-offer .body,
