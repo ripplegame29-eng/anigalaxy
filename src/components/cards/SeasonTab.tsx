@@ -71,16 +71,6 @@ const SPARKS: CSSProperties[] = Array.from({ length: 26 }, (_, i) => ({
   animationDuration: `${12 + rnd(i, 10) * 14}s`,
 }));
 
-
-const SQUARES: CSSProperties[] = Array.from({ length: 22 }, (_, i) => ({
-  left: `${rnd(i, 11) * 100}%`,
-  top: `${6 + rnd(i, 12) * 70}%`,
-  width: 8 + rnd(i, 13) * 20,
-  height: 8 + rnd(i, 13) * 20,
-  animationDelay: `${-rnd(i, 14) * 20}s`,
-  animationDuration: `${14 + rnd(i, 15) * 18}s`,
-}));
-
 const RewardCard = memo(function RewardCard({
   level,
   track,
@@ -242,7 +232,6 @@ export function SeasonTab({ s }: { s: CardsState }) {
   return (
     <div className="sv">
       <div className="sv-bg" aria-hidden>
-        <i className="sv-scene" />
         <i className="sv-aur" />
         <i className="sv-rays" />
         <svg className="sv-compass" viewBox="0 0 800 800" fill="none">
@@ -264,10 +253,6 @@ export function SeasonTab({ s }: { s: CardsState }) {
         ))}
         <i className="sv-bg-fog" />
         <i className="sv-bg-fog f2" />
-        <i className="sv-grid" />
-        {SQUARES.map((x, i) => (
-          <i key={`q${i}`} className={`sv-sq${i % 3 === 0 ? " fill" : ""}`} style={x} />
-        ))}
         <i className="sv-vig" />
         {SPARKS.map((x, i) => (
           <i key={`p${i}`} className="sv-sp" style={x} />

@@ -1076,24 +1076,3 @@
 .cg .sv-card .sv-gem .sv-face { width: 86%; height: 86%; border-radius: 50%; object-fit: cover; object-position: 50% 18%; display: block; pointer-events: none; box-shadow: 0 0 0 1px rgba(255, 200, 100, 0.55), 0 2px 8px rgba(0, 0, 0, 0.5); }
 .cg .sv-card .sv-gem { display: grid; place-items: center; }
 .cg .sv-card:has(.sv-face) .sv-val, .cg .sv-card.premium:has(.sv-face) .sv-val { font-size: 19px; }
-
-/* Фон сезона v5 (по референсу): полноэкранный арт сезона за шапкой, затемнён слева под текст и уходит в тёмный фон вниз */
-.cg .sv-bg { -webkit-mask-image: linear-gradient(180deg, #000 calc(100% - 70px), transparent); mask-image: linear-gradient(180deg, #000 calc(100% - 70px), transparent); }
-.cg .sv-bg > .sv-scene { left: 0; top: 0; width: 100%; height: min(1000px, 62vw); background:
-  linear-gradient(90deg, #03060f 0%, rgba(3,7,20,.9) 24%, rgba(3,7,20,.55) 46%, rgba(3,7,20,0) 66%),
-  linear-gradient(180deg, rgba(3,7,20,.2) 0%, rgba(3,7,20,0) 24%, rgba(3,7,20,.5) 64%, #03060f 100%),
-  url("/banners/season-hero.webp") 100% 0 / auto 100% no-repeat;
-  -webkit-mask-image: linear-gradient(180deg, #000 0, #000 55%, transparent 100%); mask-image: linear-gradient(180deg, #000 0, #000 55%, transparent 100%); }
-.cg .sv-bg > .sv-scene::after { content: none; }
-.cg .sv-bg .sv-compass { top: 62%; opacity: .26; }
-
-/* Фон сезона: арт за страницей приглушён, поверх — сетка из квадратов, парящие квадраты, лучи (как на референсе) */
-.cg .sv-bg > .sv-scene { background-size: 100% 100%, 100% 100%, auto 175%; background-position: 0 0, 0 0, 0 35%; filter: blur(1.5px) saturate(.95); -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 150px, #000 52%, transparent 100%); mask-image: linear-gradient(180deg, transparent 0, #000 150px, #000 52%, transparent 100%); }
-.cg .sv-grid { inset: 0; background-image: linear-gradient(rgba(130,175,255,.075) 1px, transparent 1px), linear-gradient(90deg, rgba(130,175,255,.075) 1px, transparent 1px); background-size: 56px 56px; -webkit-mask-image: radial-gradient(75% 60% at 50% 22%, #000 25%, transparent 78%); mask-image: radial-gradient(75% 60% at 50% 22%, #000 25%, transparent 78%); animation: sv-grid 40s linear infinite; }
-@keyframes sv-grid { to { background-position: 56px 56px, 56px 56px; } }
-.cg .sv-sq { border: 1px solid rgba(255,210,122,.55); border-radius: 3px; opacity: 0; box-shadow: 0 0 14px rgba(255,190,90,.25); animation: sv-sqf 22s linear infinite; }
-.cg .sv-sq.fill { border-color: rgba(120,190,255,.6); background: linear-gradient(135deg, rgba(120,190,255,.22), rgba(120,190,255,0)); box-shadow: 0 0 18px rgba(90,160,255,.3); }
-@keyframes sv-sqf { 0% { opacity: 0; transform: translateY(40px) rotate(0); } 15% { opacity: .85; } 80% { opacity: .55; } 100% { opacity: 0; transform: translateY(-260px) rotate(200deg); } }
-@media (prefers-reduced-motion: reduce) { .cg .sv-grid, .cg .sv-sq { animation: none; } }
-.cg .sv-sq { border-color: rgba(255,214,130,.85); box-shadow: 0 0 18px rgba(255,190,90,.45), inset 0 0 8px rgba(255,200,110,.18); }
-.cg .sv-sq.fill { border-color: rgba(140,200,255,.9); background: linear-gradient(135deg, rgba(120,190,255,.32), rgba(120,190,255,.02)); box-shadow: 0 0 22px rgba(90,160,255,.5); }
