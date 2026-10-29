@@ -1,5 +1,6 @@
 "use client";
 
+import { PSelect } from "@/components/PSelect";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { cardDef } from "@/lib/cards/catalog";
 import { AUCTION, RANKS } from "@/lib/cards/config";
@@ -127,11 +128,11 @@ export function AuctionTab({ s, me }: { s: CardsState; me: string }) {
         <Panel title="Аукцион" hint={`Ставки в алмазах. Комиссия продавцу ${AUCTION.feePct}%. Ставка за последние 2 минуты продлевает торги. Перебитая ставка возвращается сразу.`}>
           <div className="cg-row" style={{ marginBottom: 12 }}>
             <input className="cg-input" placeholder="Имя персонажа или аниме" value={q} onChange={(e) => setQ(e.target.value)} style={{ flex: "1 1 200px" }} />
-            <select className="cg-input" value={sort} onChange={(e) => setSort(e.target.value)} aria-label="Сортировка">
+            <PSelect className="cg-input" value={sort} onChange={(e) => setSort(e.target.value)} aria-label="Сортировка">
               <option value="ending">Скоро закончатся</option>
               <option value="price">Дешевле</option>
               <option value="rank">Ранг выше</option>
-            </select>
+            </PSelect>
           </div>
           <RankFilter value={rank} onChange={setRank} />
           {!data ? (
@@ -220,13 +221,13 @@ function Sell({ s, onDone }: { s: CardsState; onDone: () => void }) {
           </label>
           <label className="cg-row" style={{ fontSize: 13 }}>
             Срок
-            <select className="cg-input" value={hours} onChange={(e) => setHours(Number(e.target.value))}>
+            <PSelect className="cg-input" value={hours} onChange={(e) => setHours(Number(e.target.value))}>
               {[1, 6, 12, 24, 48].map((h) => (
                 <option key={h} value={h}>
                   {h} ч
                 </option>
               ))}
-            </select>
+            </PSelect>
           </label>
           <button type="button" className="cg-btn gold" disabled={busy || !id} onClick={() => void go()}>
             Выставить

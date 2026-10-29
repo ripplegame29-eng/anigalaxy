@@ -1,5 +1,6 @@
 "use client";
 
+import { PSelect } from "@/components/PSelect";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { kindLabel } from "@/lib/anime";
@@ -765,7 +766,7 @@ export function WatchTogetherView() {
                 Озвучка
               </label>
               <div className="relative">
-                <select
+                <PSelect
                   id="wt-dub"
                   value={dub}
                   onChange={(e) => setDub(e.target.value)}
@@ -777,7 +778,7 @@ export function WatchTogetherView() {
                       {option}
                     </option>
                   ))}
-                </select>
+                </PSelect>
                 <Icon
                   d={PATHS.chevronDown}
                   className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted"

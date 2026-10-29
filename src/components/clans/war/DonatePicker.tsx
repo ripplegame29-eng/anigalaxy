@@ -1,5 +1,6 @@
 "use client";
 
+import { PSelect } from "@/components/PSelect";
 import { useMemo, useState } from "react";
 import { CATALOG } from "@/lib/cards/catalog";
 import { CLASSES, ELEMENTS, RANKS, type CardClass, type Element } from "@/lib/cards/config";
@@ -138,14 +139,14 @@ export function DonatePicker({ onClose, onSubmit }: { onClose: () => void; onSub
             </button>
           ))}
         </div>
-        <select className="dn-select" value={series} onChange={(e) => { setSeries(e.target.value); setLimit(PAGE); }} aria-label="Тайтл">
+        <PSelect className="dn-select" value={series} onChange={(e) => { setSeries(e.target.value); setLimit(PAGE); }} aria-label="Тайтл">
           <option value="">Все тайтлы ({seriesList.length})</option>
           {seriesList.map((s) => (
             <option key={s} value={s}>
               {s}
             </option>
           ))}
-        </select>
+        </PSelect>
       </div>
       <div className="dn-count">
         <span>Найдено: {list.length}</span>

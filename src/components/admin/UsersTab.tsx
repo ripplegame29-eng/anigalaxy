@@ -1,5 +1,6 @@
 "use client";
 
+import { PSelect } from "@/components/PSelect";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { adminGet, ago, fmtNum } from "./api";
 import { Empty, Initial, Pill, Segmented } from "./ui";
@@ -61,12 +62,12 @@ export function UsersTab({ onOpen, refreshKey }: { onOpen: (id: number) => void;
           </svg>
           <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Ник, почта или id" aria-label="Поиск игрока" />
         </div>
-        <select value={sort} onChange={(e) => setSort(e.target.value)} aria-label="Сортировка">
+        <PSelect value={sort} onChange={(e) => setSort(e.target.value)} aria-label="Сортировка">
           <option value="new">Новые сверху</option>
           <option value="xp">По опыту</option>
           <option value="ac">По балансу</option>
           <option value="seen">По активности</option>
-        </select>
+        </PSelect>
       </div>
       <Segmented label="Фильтр" value={filter} onChange={setFilter} options={FILTERS.map((f) => ({ id: f.id, label: f.label }))} />
       <p className="adm-count">{rows ? `Найдено: ${fmtNum(total)}` : "Загрузка…"}</p>

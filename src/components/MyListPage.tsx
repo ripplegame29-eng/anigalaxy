@@ -7,6 +7,7 @@
  *
  * Горячие клавиши:  /  — поиск · Esc — закрыть · ←/→ — соседний тайтл в карточке.
  */
+import { PSelect } from "@/components/PSelect";
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import type { CSSProperties, FormEvent, PointerEvent as RPE, ReactNode } from 'react';
@@ -89,7 +90,7 @@ function Poster({ title, poster, children }: { title: string; poster?: string | 
   );
 }
 function Sel({ label, value, onChange, children }: { label?: string; value: string | number; onChange: (v: string) => void; children: ReactNode }) {
-  return <label className="al-fl">{label && <span>{label}</span>}<select value={value} onChange={(e) => onChange(e.target.value)}>{children}</select></label>;
+  return <label className="al-fl">{label && <span>{label}</span>}<PSelect value={value} onChange={(e) => onChange(e.target.value)}>{children}</PSelect></label>;
 }
 function Ring({ pct, c, size = 60 }: { pct: number; c: string; size?: number }) {
   const r = 24, C = 2 * Math.PI * r;

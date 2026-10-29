@@ -1,5 +1,6 @@
 "use client";
 
+import { PSelect } from "@/components/PSelect";
 import Link from "next/link";
 import { useCallback, useMemo, useSyncExternalStore, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
@@ -2346,7 +2347,7 @@ function useStorageStats(): { count: number; bytes: number } {
               ))}
 
               <div className="ag-set-rowform">
-                <select
+                <PSelect
                   className="ag-set-in"
                   value={linkDraft.provider}
                   onChange={(event) =>
@@ -2355,7 +2356,7 @@ function useStorageStats(): { count: number; bytes: number } {
                   aria-label="Сервис"
                 >
                   <option value="google">Google</option>
-                </select>
+                </PSelect>
                 <input
                   value={linkDraft.handle}
                   onChange={(event) => setLinkDraft({ ...linkDraft, handle: event.target.value })}
@@ -2896,7 +2897,7 @@ function useStorageStats(): { count: number; bytes: number } {
                 hint="Свет от видео мягко заливает фон вокруг плеера"
               />
               <SetRow title="Скорость по умолчанию" hint="Применяется ко всем сериям">
-                <select
+                <PSelect
                   className="ag-set-in sm"
                   value={prefs.speed}
                   onChange={(event) => updatePrefs({ speed: event.target.value as Prefs["speed"] })}
@@ -2905,7 +2906,7 @@ function useStorageStats(): { count: number; bytes: number } {
                   {SPEEDS.map((value) => (
                     <option key={value} value={value}>{value === "1" ? "1×" : `${value}×`}</option>
                   ))}
-                </select>
+                </PSelect>
               </SetRow>
             </SetBlock>
 
@@ -3107,7 +3108,7 @@ function useStorageStats(): { count: number; bytes: number } {
                 title="Профиль"
                 hint="Кто может открыть вашу страницу"
               >
-                <select
+                <PSelect
                   className="ag-set-in sm"
                   value={scope}
                   onChange={(event) => setScope(event.target.value as "public" | "friends" | "private")}
@@ -3116,7 +3117,7 @@ function useStorageStats(): { count: number; bytes: number } {
                   <option value="public">Публичный</option>
                   <option value="friends">Только друзья</option>
                   <option value="private">Приватный</option>
-                </select>
+                </PSelect>
               </SetRow>
               <Toggle
                 checked={profile.privacy.profilePublic}

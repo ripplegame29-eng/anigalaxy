@@ -1,5 +1,6 @@
 "use client";
 
+import { PSelect } from "@/components/PSelect";
 import Link from "next/link";
 
 /**
@@ -464,7 +465,7 @@ export function CommentsBlock({ scope }: { scope: CommentsScope }) {
 
         <label className="relative flex items-center gap-2">
           <span className="hidden text-[11px] text-muted sm:inline">Порядок</span>
-          <select
+          <PSelect
             value={sort}
             onChange={(event) => setSort(event.target.value as CommentSort)}
             aria-label="Сортировка комментариев"
@@ -473,7 +474,7 @@ export function CommentsBlock({ scope }: { scope: CommentsScope }) {
             <option value="new">Сначала новые</option>
             <option value="old">Сначала старые</option>
             <option value="top">Сначала популярные</option>
-          </select>
+          </PSelect>
           <ChevronIcon />
         </label>
       </div>

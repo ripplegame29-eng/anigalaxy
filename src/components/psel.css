@@ -1,0 +1,54 @@
+.ps-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  text-align: left;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: none !important;
+  padding-right: 12px;
+}
+.ps-btn:disabled { cursor: not-allowed; opacity: 0.55; }
+.ps-val { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ps-chev { flex: none; opacity: 0.7; transition: transform 0.2s, opacity 0.2s; }
+.ps-btn.is-open .ps-chev { transform: rotate(180deg); opacity: 1; }
+.ps-btn.is-open { box-shadow: 0 0 0 1px rgba(91, 140, 255, 0.55), 0 0 22px -6px rgba(70, 120, 255, 0.6); }
+
+.ps-list {
+  position: fixed;
+  z-index: 2000;
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  overflow-y: auto;
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(22, 26, 52, 0.98), rgba(11, 13, 30, 0.98));
+  border: 1px solid rgba(120, 150, 255, 0.28);
+  box-shadow: 0 24px 60px -12px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.07);
+  backdrop-filter: blur(14px);
+  animation: ps-in 0.14s ease-out;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(120, 150, 255, 0.35) transparent;
+}
+.ps-list.is-up { transform: translateY(-100%); animation-name: ps-in-up; }
+@keyframes ps-in { from { opacity: 0; transform: translateY(-6px) scale(0.98); } }
+@keyframes ps-in-up { from { opacity: 0; transform: translateY(calc(-100% + 6px)) scale(0.98); } }
+.ps-opt {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 11px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #cfd8f5;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+}
+.ps-opt.is-hi { background: rgba(91, 140, 255, 0.16); color: #fff; }
+.ps-opt.is-sel { color: #fff; background: linear-gradient(90deg, rgba(60, 120, 255, 0.34), rgba(140, 92, 255, 0.24)); }
+.ps-opt.is-sel svg { color: #7fb2ff; }
+.ps-opt.is-off { opacity: 0.4; cursor: not-allowed; }

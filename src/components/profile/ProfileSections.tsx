@@ -1,5 +1,6 @@
 ﻿"use client";
 
+import { PSelect } from "@/components/PSelect";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState, type MouseEvent as ReactMouseEvent } from "react";
 import { COLLECTIONS_KEY, FAVORITES_KEY, deleteCollection, toggleFavorite, type Collection } from "@/lib/collections";
@@ -1071,7 +1072,7 @@ function FavoritesSection({ go }: SectionProps) {
               aria-label="Поиск по избранному"
             />
           </label>
-          <select
+          <PSelect
             className="ag-sel"
             value={sort}
             onChange={(event) => setSort(event.target.value as FavSort)}
@@ -1079,7 +1080,7 @@ function FavoritesSection({ go }: SectionProps) {
           >
             <option value="new">Сначала новые</option>
             <option value="name">По алфавиту</option>
-          </select>
+          </PSelect>
         </div>
 
         {favorites.length === 0 ? (
@@ -2434,7 +2435,7 @@ export function ShopSection(_props: { title?: string } = {}) {
           placeholder="Поиск по косметике…"
           aria-label="Поиск по косметике"
         />
-        <select
+        <PSelect
           className="inp"
           value={sort}
           aria-label="Сортировка"
@@ -2443,7 +2444,7 @@ export function ShopSection(_props: { title?: string } = {}) {
           <option value="rar">По редкости</option>
           <option value="asc">Сначала дешёвые</option>
           <option value="desc">Сначала дорогие</option>
-        </select>
+        </PSelect>
       </div>
 
       <div className="layout">
