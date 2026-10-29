@@ -61,6 +61,7 @@ const SECTIONS: { title: string; rows: Row[] }[] = [
     title: "Сообщество",
     rows: [
       { label: "Рейтинг", href: "/leaderboard", icon: "trophy" },
+      { label: "Карточки", href: "/cards", icon: "layers" },
       { label: "Кланы", href: "/clans", icon: "users" },
       { label: "Карта", href: "/map", icon: "compass" },
     ],

@@ -42,6 +42,7 @@ const NAV: Record<string, string> = {
   profile: "/profile",
   list: "/list",
   shop: "/store",
+  gacha: "/cards",
   quests: "/quests",
   achievements: "/profile?tab=achievements",
   levels: "/levels",

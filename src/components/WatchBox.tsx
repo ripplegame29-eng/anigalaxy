@@ -188,9 +188,12 @@ function isAltSource(
 export function WatchBox({
   initialDetail,
   translations,
+  aniStart,
 }: {
   initialDetail: TitleDetail;
   translations: TranslationOption[];
+  /** Тайтл только из AniLiberty (нет в Kodik): стартуем сразу с его релиза */
+  aniStart?: { alias: string; episodesTotal: number | null };
 }) {
   const [detail, setDetail] = useState<TitleDetail>(initialDetail);
   /**
@@ -203,7 +206,7 @@ export function WatchBox({
    */
   const [reloaded, setReloaded] = useState<{ id: string; list: TranslationOption[] } | null>(null);
   const [transId, setTransId] = useState<number | null>(
-    translations.find((t) => t.current)?.id ?? translations[0]?.id ?? null,
+    aniStart ? ANILIBERTY_TR : translations.find((t) => t.current)?.id ?? translations[0]?.id ?? null,
   );
   const [season, setSeason] = useState<number>(initialDetail.seasons[0]?.number ?? 1);
   const [episode, setEpisode] = useState<number>(1);
@@ -213,7 +216,7 @@ export function WatchBox({
   const [menuOpen, setMenuOpen] = useState(false);
   // Источник видео: Kodik (по умолчанию), AniGalaxy (HLS Kodik),
   // AniLiberty, CVH или SameBand
-  const [source, setSource] = useState<PlayerSource>("anigalaxy");
+  const [source, setSource] = useState<PlayerSource>(aniStart ? "anilibria" : "anigalaxy");
   const [sourcePick, setSourcePick] = useState<SourcePick>("auto");
   const [sourceMenuOpen, setSourceMenuOpen] = useState(false);
   const favVoices = useFavVoices();
@@ -221,7 +224,9 @@ export function WatchBox({
    * Релиз AniLiberty, подтверждённый по id Shikimori. Помечен id тайтла:
    * при смене озвучки материал меняется, и старый релиз не подставится.
    */
-  const [aniMatch, setAniMatch] = useState<{ titleId: string; alias: string; episodesTotal: number | null } | null>(null);
+  const [aniMatch, setAniMatch] = useState<{ titleId: string; alias: string; episodesTotal: number | null } | null>(
+    aniStart ? { titleId: initialDetail.card.id, ...aniStart } : null,
+  );
   /** Плейлист CVH: сезоны и студии, ключ — shikimori id */
   const [cvh, setCvh] = useState<{ shikimori: number; playlist: CvhPlaylist } | null>(null);
   /** Подтверждённый тайтл SameBand: поиск идёт по названию/году */
@@ -266,7 +271,7 @@ export function WatchBox({
 
   /* ------------------- Подстраховка списка озвучек --------------------- */
   useEffect(() => {
-    if (translations.length > 1) return;
+    if (translations.length > 1 || aniStart) return;
     let cancelled = false;
     let timer: number | undefined;
     const id = initialDetail.card.id;
@@ -295,7 +300,7 @@ export function WatchBox({
       cancelled = true;
       if (timer) window.clearTimeout(timer);
     };
-  }, [initialDetail.card.id, translations.length]);
+  }, [initialDetail.card.id, translations.length, aniStart]);
 
   /* ------------------- Озвучка AniLiberty: подбор --------------------- */
   /**

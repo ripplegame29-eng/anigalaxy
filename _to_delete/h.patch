@@ -1,0 +1,12 @@
+diff --git a/src/components/site/header-data.ts b/src/components/site/header-data.ts
+index c8257df..60e256d 100644
+--- a/src/components/site/header-data.ts
++++ b/src/components/site/header-data.ts
+@@ -41,7 +41,6 @@ export const NAV_LINKS: NavLink[] = [
+   { label: "AniSwipe", href: "/aniswipe", path: "/aniswipe" },
+   { label: "Расписание", href: "/schedule", path: "/schedule" },
+   { label: "Манга", href: "/manga", path: "/manga" },
+-  { label: "Карточки", href: "/cards", path: "/cards" },
+ ];
+ 
+ /* ----------------------- Мега-меню под «Каталогом» ----------------------- */

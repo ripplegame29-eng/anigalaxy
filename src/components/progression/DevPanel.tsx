@@ -22,6 +22,7 @@
  * сохраняются.
  */
 
+import { PSelect } from "@/components/PSelect";
 import { useCallback, useMemo, useState, useSyncExternalStore } from "react";
 import { PROGRESS_KEY } from "@/lib/progression/doc";
 import { levelInfoFromDoc, useProgress } from "@/lib/progression/events";
@@ -235,7 +236,7 @@ function DevPanelBody() {
               +N к счётчику
             </h3>
             <div className="flex flex-wrap items-center gap-2">
-              <select
+              <PSelect
                 aria-label="Счётчик для подкрутки"
                 value={counterId}
                 onChange={(event) => setCounterId(event.target.value)}
@@ -246,7 +247,7 @@ function DevPanelBody() {
                     {item.label}
                   </option>
                 ))}
-              </select>
+              </PSelect>
               <span className="rounded-md bg-black/40 px-1.5 py-0.5 text-[10px] font-bold text-muted">
                 {preset.metric} = {metrics[preset.metric] ?? 0}
               </span>
@@ -313,7 +314,7 @@ function DevPanelBody() {
             </h3>
             {freeTags.length ? (
               <div className="flex flex-wrap items-center gap-2">
-                <select
+                <PSelect
                   aria-label="Тег для выдачи"
                   value={tagId || freeTags[0].id}
                   onChange={(event) => setTagId(event.target.value)}
@@ -324,7 +325,7 @@ function DevPanelBody() {
                       {tag.name} · {tag.rarity}
                     </option>
                   ))}
-                </select>
+                </PSelect>
                 <button
                   type="button"
                   onClick={giveTag}

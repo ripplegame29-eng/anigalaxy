@@ -15,6 +15,7 @@
  * под фильтр не попадают, а вместо выдуманных чисел показывается прочерк.
  */
 
+import { PSelect } from "@/components/PSelect";
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { openProfileDialog } from "@/lib/profile-dialog";
@@ -169,7 +170,7 @@ export function MyListView() {
                 aria-label="Поиск по списку"
               />
             </label>
-            <select
+            <PSelect
               className="ag-sel"
               value={sort}
               onChange={(event) => setSort(event.target.value as Sort)}
@@ -178,7 +179,7 @@ export function MyListView() {
               <option value="new">Сначала новые</option>
               <option value="name">По названию</option>
               <option value="rating">По рейтингу</option>
-            </select>
+            </PSelect>
           </div>
 
           {/* Фильтры статусов — из сторов статусов, те же значения,
@@ -210,32 +211,32 @@ export function MyListView() {
           <div className="ag-ls-extra">
             <label className="ag-sel-wrap">
               <span className="ag-w-sub">Жанр</span>
-              <select className="ag-sel" value={genre} onChange={(e) => setGenre(e.target.value)}>
+              <PSelect className="ag-sel" value={genre} onChange={(e) => setGenre(e.target.value)}>
                 <option value="">Любой</option>
                 {options.genres.map((g) => (
                   <option key={g} value={g}>{g}</option>
                 ))}
-              </select>
+              </PSelect>
             </label>
 
             <label className="ag-sel-wrap">
               <span className="ag-w-sub">Год от</span>
-              <select className="ag-sel" value={year} onChange={(e) => setYear(e.target.value)}>
+              <PSelect className="ag-sel" value={year} onChange={(e) => setYear(e.target.value)}>
                 <option value="">Любой</option>
                 {options.years.map((y) => (
                   <option key={y} value={String(y)}>{y}</option>
                 ))}
-              </select>
+              </PSelect>
             </label>
 
             <label className="ag-sel-wrap">
               <span className="ag-w-sub">Рейтинг от</span>
-              <select className="ag-sel" value={minRating} onChange={(e) => setMinRating(e.target.value)}>
+              <PSelect className="ag-sel" value={minRating} onChange={(e) => setMinRating(e.target.value)}>
                 <option value="">Любой</option>
                 {[2, 4, 6, 7, 8, 9].map((v) => (
                   <option key={v} value={String(v)}>{v}.0</option>
                 ))}
-              </select>
+              </PSelect>
             </label>
 
             {hasExtraFilters && (

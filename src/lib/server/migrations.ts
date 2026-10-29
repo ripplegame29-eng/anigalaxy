@@ -646,4 +646,243 @@ export const MIGRATIONS: Migration[] = [
       UPDATE watch_rooms SET host_id = state_by WHERE host_id = '';
     `,
   },
+  {
+    version: 21,
+    name: "cards",
+    sql: `
+      -- Карточная система: кошелёк, коллекция, журнал, обмен, аукцион, бои.
+      CREATE TABLE card_wallet (
+        user_id INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+        diamonds INTEGER NOT NULL DEFAULT 0,
+        dust INTEGER NOT NULL DEFAULT 0,
+        packs INTEGER NOT NULL DEFAULT 0,
+        energy INTEGER NOT NULL DEFAULT 10,
+        energy_at INTEGER NOT NULL DEFAULT 0,
+        scrolls TEXT NOT NULL DEFAULT '[0,0,0,0,0]',
+        pity_epic INTEGER NOT NULL DEFAULT 0,
+        pity_legend INTEGER NOT NULL DEFAULT 0,
+        split_day TEXT NOT NULL DEFAULT '',
+        split_count INTEGER NOT NULL DEFAULT 0,
+        exch_day TEXT NOT NULL DEFAULT '',
+        exch_count INTEGER NOT NULL DEFAULT 0,
+        login_day TEXT NOT NULL DEFAULT '',
+        free_pack_day TEXT NOT NULL DEFAULT '',
+        deck TEXT NOT NULL DEFAULT '[]',
+        rating INTEGER NOT NULL DEFAULT 1000,
+        wins INTEGER NOT NULL DEFAULT 0,
+        losses INTEGER NOT NULL DEFAULT 0,
+        mission_day TEXT NOT NULL DEFAULT '',
+        missions TEXT NOT NULL DEFAULT '{}',
+        created_at INTEGER NOT NULL
+      );
+      CREATE TABLE card_inv (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        card_id TEXT NOT NULL,
+        foil INTEGER NOT NULL DEFAULT 0,
+        level INTEGER NOT NULL DEFAULT 1,
+        pity INTEGER NOT NULL DEFAULT 0,
+        locked INTEGER NOT NULL DEFAULT 0,
+        listed INTEGER NOT NULL DEFAULT 0,
+        created_at INTEGER NOT NULL
+      );
+      CREATE INDEX idx_card_inv_user ON card_inv(user_id, card_id);
+      CREATE TABLE card_pending (
+        user_id INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+        offers TEXT NOT NULL,
+        created_at INTEGER NOT NULL
+      );
+      CREATE TABLE card_log (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        kind TEXT NOT NULL,
+        text TEXT NOT NULL,
+        card_id TEXT NOT NULL DEFAULT '',
+        rank INTEGER NOT NULL DEFAULT 0,
+        created_at INTEGER NOT NULL
+      );
+      CREATE INDEX idx_card_log_user ON card_log(user_id, id DESC);
+      CREATE INDEX idx_card_log_kind ON card_log(kind, created_at DESC);
+      CREATE TABLE card_trades (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        from_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        to_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        give TEXT NOT NULL,
+        want TEXT NOT NULL,
+        note TEXT NOT NULL DEFAULT '',
+        status TEXT NOT NULL DEFAULT 'pending',
+        created_at INTEGER NOT NULL,
+        resolved_at INTEGER NOT NULL DEFAULT 0
+      );
+      CREATE INDEX idx_card_trades_to ON card_trades(to_id, status);
+      CREATE INDEX idx_card_trades_from ON card_trades(from_id, status);
+      CREATE TABLE card_auctions (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        seller_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        inv_id INTEGER NOT NULL,
+        card_id TEXT NOT NULL,
+        foil INTEGER NOT NULL DEFAULT 0,
+        level INTEGER NOT NULL DEFAULT 1,
+        rank INTEGER NOT NULL DEFAULT 0,
+        start_price INTEGER NOT NULL,
+        bid INTEGER NOT NULL DEFAULT 0,
+        bidder_id INTEGER NOT NULL DEFAULT 0,
+        bids INTEGER NOT NULL DEFAULT 0,
+        ends_at INTEGER NOT NULL,
+        status TEXT NOT NULL DEFAULT 'active',
+        created_at INTEGER NOT NULL
+      );
+      CREATE INDEX idx_card_auctions_active ON card_auctions(status, ends_at);
+      CREATE TABLE card_bids (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        auction_id INTEGER NOT NULL REFERENCES card_auctions(id) ON DELETE CASCADE,
+        user_id INTEGER NOT NULL,
+        amount INTEGER NOT NULL,
+        created_at INTEGER NOT NULL
+      );
+      CREATE INDEX idx_card_bids ON card_bids(auction_id, id DESC);
+    `,
+  },
+  {
+    version: 22,
+    name: "cards-skills",
+    sql: `
+      -- Умения героев: выбранный игроком набор (id через запятую), пусто = по умолчанию.
+      ALTER TABLE card_inv ADD COLUMN skills TEXT NOT NULL DEFAULT '';
+    `,
+  },
+  {
+    version: 23,
+    name: "cards-depth",
+    sql: `
+      -- Пассивка героя и уровни его умений (JSON: {"id":уровень}).
+      ALTER TABLE card_inv ADD COLUMN passive TEXT NOT NULL DEFAULT '';
+      ALTER TABLE card_inv ADD COLUMN skill_lv TEXT NOT NULL DEFAULT '';
+      -- Расширяемое хранилище прогресса игрока (достижения, серии, кампания, избранное и т.д.).
+      ALTER TABLE card_wallet ADD COLUMN extra TEXT NOT NULL DEFAULT '{}';
+    `,
+  },
+  {
+    version: 24,
+    name: "cards-battles-raid",
+    sql: `
+      -- Журнал боёв с записью для повтора (PvP-нападения, защита, кампания, рейд).
+      CREATE TABLE card_battles (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        kind TEXT NOT NULL,
+        opp TEXT NOT NULL DEFAULT '',
+        win INTEGER NOT NULL DEFAULT 0,
+        delta INTEGER NOT NULL DEFAULT 0,
+        title TEXT NOT NULL DEFAULT '',
+        report TEXT NOT NULL,
+        created_at INTEGER NOT NULL
+      );
+      CREATE INDEX idx_card_battles_user ON card_battles(user_id, id DESC);
+      -- Рейд-босс недели: общий запас здоровья и урон каждого игрока.
+      CREATE TABLE card_raid (
+        week INTEGER PRIMARY KEY,
+        boss TEXT NOT NULL,
+        max_hp INTEGER NOT NULL,
+        hp INTEGER NOT NULL,
+        defeated_at INTEGER NOT NULL DEFAULT 0
+      );
+      CREATE TABLE card_raid_dmg (
+        week INTEGER NOT NULL,
+        user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        damage INTEGER NOT NULL DEFAULT 0,
+        hits INTEGER NOT NULL DEFAULT 0,
+        PRIMARY KEY (week, user_id)
+      );
+      CREATE INDEX idx_card_raid_dmg ON card_raid_dmg(week, damage DESC);
+    `,
+  },
+  {
+    version: 25,
+    name: "cards-evolution",
+    sql: `
+      -- Ступень пробуждения карты (0..2).
+      ALTER TABLE card_inv ADD COLUMN evo INTEGER NOT NULL DEFAULT 0;
+    `,
+  },
+  {
+    version: 26,
+    name: "clan-card-war",
+    sql: `
+      -- Клановая карточная война: очередь поиска, война, снимки защиты, атаки.
+      CREATE TABLE clan_cw_queue (
+        clan_id INTEGER PRIMARY KEY REFERENCES clans(id) ON DELETE CASCADE,
+        size INTEGER NOT NULL,
+        trophies INTEGER NOT NULL DEFAULT 0,
+        created_at INTEGER NOT NULL
+      );
+      CREATE TABLE clan_cw (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        clan_a INTEGER NOT NULL REFERENCES clans(id) ON DELETE CASCADE,
+        clan_b INTEGER NOT NULL DEFAULT 0,
+        bot_name TEXT NOT NULL DEFAULT '',
+        size INTEGER NOT NULL,
+        status TEXT NOT NULL DEFAULT 'prep',
+        prep_until INTEGER NOT NULL,
+        ends_at INTEGER NOT NULL,
+        score_a INTEGER NOT NULL DEFAULT 0,
+        score_b INTEGER NOT NULL DEFAULT 0,
+        stars_a INTEGER NOT NULL DEFAULT 0,
+        stars_b INTEGER NOT NULL DEFAULT 0,
+        winner INTEGER NOT NULL DEFAULT 0,
+        created_at INTEGER NOT NULL,
+        settled_at INTEGER NOT NULL DEFAULT 0
+      );
+      CREATE INDEX idx_clan_cw_a ON clan_cw(clan_a, status);
+      CREATE INDEX idx_clan_cw_b ON clan_cw(clan_b, status);
+      CREATE TABLE clan_cw_slots (
+        war_id INTEGER NOT NULL REFERENCES clan_cw(id) ON DELETE CASCADE,
+        clan_id INTEGER NOT NULL,
+        pos INTEGER NOT NULL,
+        user_id INTEGER NOT NULL DEFAULT 0,
+        nick TEXT NOT NULL,
+        power INTEGER NOT NULL DEFAULT 0,
+        units TEXT NOT NULL,
+        attacks INTEGER NOT NULL DEFAULT 0,
+        PRIMARY KEY (war_id, clan_id, pos)
+      );
+      CREATE TABLE clan_cw_attacks (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        war_id INTEGER NOT NULL REFERENCES clan_cw(id) ON DELETE CASCADE,
+        clan_id INTEGER NOT NULL,
+        user_id INTEGER NOT NULL,
+        nick TEXT NOT NULL,
+        target_pos INTEGER NOT NULL,
+        stars INTEGER NOT NULL DEFAULT 0,
+        win INTEGER NOT NULL DEFAULT 0,
+        rounds INTEGER NOT NULL DEFAULT 0,
+        created_at INTEGER NOT NULL
+      );
+      CREATE INDEX idx_clan_cw_attacks ON clan_cw_attacks(war_id, id DESC);
+      -- Донат карт: запросы соклановцев и счётчик отданного.
+      CREATE TABLE clan_requests (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        clan_id INTEGER NOT NULL REFERENCES clans(id) ON DELETE CASCADE,
+        user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        card_id TEXT NOT NULL,
+        want INTEGER NOT NULL,
+        got INTEGER NOT NULL DEFAULT 0,
+        status TEXT NOT NULL DEFAULT 'open',
+        created_at INTEGER NOT NULL,
+        expires_at INTEGER NOT NULL
+      );
+      CREATE INDEX idx_clan_requests ON clan_requests(clan_id, status, id DESC);
+      CREATE TABLE clan_donations (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        clan_id INTEGER NOT NULL,
+        request_id INTEGER NOT NULL,
+        donor_id INTEGER NOT NULL,
+        taker_id INTEGER NOT NULL,
+        card_id TEXT NOT NULL,
+        created_at INTEGER NOT NULL
+      );
+      CREATE INDEX idx_clan_donations ON clan_donations(clan_id, created_at DESC);
+      CREATE INDEX idx_clan_donations_donor ON clan_donations(donor_id, created_at DESC);
+    `,
+  },
 ];

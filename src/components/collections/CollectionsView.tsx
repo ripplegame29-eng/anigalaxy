@@ -1,5 +1,6 @@
 "use client";
 
+import { PSelect } from "@/components/PSelect";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
@@ -789,7 +790,7 @@ export function CollectionsView({ posters, initialId }: CollectionsViewProps) {
               </button>
             ))}
           </div>
-          <select
+          <PSelect
             className="col-sel"
             value={sort}
             aria-label="Сортировка"
@@ -803,7 +804,7 @@ export function CollectionsView({ posters, initialId }: CollectionsViewProps) {
                 {s.label}
               </option>
             ))}
-          </select>
+          </PSelect>
           <div className="col-seg">
             {(Object.keys(VIEW_ICONS) as View[]).map((v) => (
               <button

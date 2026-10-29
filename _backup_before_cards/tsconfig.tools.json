@@ -1,0 +1,61 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
+    "module": "commonjs",
+    "moduleResolution": "node10",
+    "jsx": "react-jsx",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "types": [
+      "node"
+    ],
+    "rootDir": "src",
+    "outDir": ".tsc-tests",
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ]
+    },
+    "noEmit": false,
+    "declaration": false,
+    "sourceMap": false,
+    "incremental": false
+  },
+  "include": [
+    "src/lib/progression/**/*.ts",
+    "src/lib/battlepass/**/*.ts",
+    "src/lib/mangadex.ts",
+    "src/lib/store.ts",
+    "src/lib/cosmetics.ts",
+    "src/lib/backup.ts",
+    "src/lib/auth.ts",
+    "src/lib/comments.ts",
+    "src/lib/streak-capsule.ts",
+    "src/lib/nickname.ts",
+    "src/lib/anime-map-data.ts",
+    "src/lib/leaderboard-prizes.ts",
+    "src/lib/clan2/data.ts",
+    "src/lib/clan-world.ts",
+    "src/lib/clan2/shop.ts",
+    "src/lib/server/**/*.ts",
+    "src/lib/sync-keys.ts",
+    "src/lib/voice-merge.ts",
+    "src/app/api/account/**/*.ts",
+    "src/app/api/sync/**/*.ts",
+    "src/app/api/leaderboard/**/*.ts",
+    "src/app/api/clans/**/*.ts",
+    "src/app/api/comments/**/*.ts",
+    "src/app/api/friends/**/*.ts",
+    "src/app/api/ratings/**/*.ts",
+    "src/app/api/notifications/**/*.ts",
+    "src/app/api/chat/**/*.ts",
+    "src/app/api/users/**/*.ts"
+  ]
+}

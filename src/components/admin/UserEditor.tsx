@@ -1,5 +1,6 @@
 "use client";
 
+import { PSelect } from "@/components/PSelect";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { AvatarFrame } from "@/components/profile/AvatarFrame";
@@ -536,13 +537,13 @@ function Access({ d, now, me, run, onClose }: { d: Detail; now: number; me: stri
           ) : (
             <>
               <div className="adm-row">
-                <select value={banDays} onChange={(e) => setBanDays(e.target.value)} aria-label="Срок">
+                <PSelect value={banDays} onChange={(e) => setBanDays(e.target.value)} aria-label="Срок">
                   <option value="1">1 день</option>
                   <option value="7">7 дней</option>
                   <option value="30">30 дней</option>
                   <option value="365">1 год</option>
                   <option value="3650">Навсегда</option>
-                </select>
+                </PSelect>
                 <input value={reason} onChange={(e) => setReason(e.target.value)} placeholder="Причина (в журнал)" maxLength={120} />
               </div>
               <button

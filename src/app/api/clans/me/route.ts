@@ -3,6 +3,7 @@ import { ownedItems, donorRub } from "@/lib/server/clan-economy";
 import { currentSeason, memberGains, seasonEnd } from "@/lib/server/clan-points";
 import { goalState, leagueTable, settleSeasons } from "@/lib/server/clan-season";
 import { clanData, clanEvents, clanIdOfUser, clanMembers, getClan } from "@/lib/server/clans";
+import { cwSettle } from "@/lib/server/clan-cardwar";
 import { json, route } from "@/lib/server/http";
 
 export const runtime = "nodejs";
@@ -11,6 +12,7 @@ export const runtime = "nodejs";
 export const GET = route(
   ({ db, user }) => {
     settleSeasons(db);
+    cwSettle(db);
     const clanId = clanIdOfUser(db, user!.id);
     const clan = clanId === null ? null : getClan(db, clanId);
     if (!clan) return json({ clan: null });

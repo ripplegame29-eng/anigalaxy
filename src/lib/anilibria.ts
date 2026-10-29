@@ -40,6 +40,8 @@ interface RawRelease {
   episodes_total?: number | null;
   description?: string | null;
   genres?: unknown;
+  is_ongoing?: boolean | null;
+  average_duration_of_episode?: number | null;
 }
 
 interface RawEpisode {
@@ -129,7 +131,9 @@ export function toAniCard(raw: RawRelease): AniSearchCard {
     ratingSource: raw.shikimori?.rating ? "shikimori" : undefined,
     kind: type ? (KIND_BY_TYPE[type] ?? type.toLowerCase()) : undefined,
     shikimoriId: raw.shikimori?.id ?? raw.mal?.id ?? undefined,
-    genres: [],
+    genres: mapGenres(raw.genres),
+    status: raw.is_ongoing === true ? "ongoing" : raw.is_ongoing === false ? "released" : undefined,
+    duration: raw.average_duration_of_episode ?? undefined,
     episodesTotal: total,
     lastEpisode: total,
     description: raw.description ?? undefined,
@@ -225,7 +229,7 @@ export async function findByQuery(query: string): Promise<AniTitleDetail | null>
 }
 
 function buildDetail(raw: RawRelease): AniTitleDetail | null {
-  const card = toAniCard({ ...raw, genres: mapGenres(raw.genres) });
+  const card = toAniCard(raw);
   if (!card.alias && !card.id) return null;
   const episodesRaw = (raw as { episodes?: RawEpisode[] }).episodes;
   const episodes = (Array.isArray(episodesRaw) ? episodesRaw : [])

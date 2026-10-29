@@ -9,6 +9,7 @@ import { HeroSlider } from "@/components/HeroSlider";
 import { getTitleDetail, row } from "@/lib/kodik";
 import { mangaRow } from "@/lib/senku";
 import { HomePromo } from "@/components/HomePromo";
+import { GachaBanner } from "@/components/GachaBanner";
 import { TelegramCta } from "@/components/TelegramCta";
 import { HomeTopUsers } from "@/components/HomeTopUsers";
 
@@ -185,6 +186,9 @@ export default function HomePage() {
           <HomePromo />
         </section>
 
+        {/* Гача: витрина карточек сразу под Premium-плашками */}
+        <GachaBanner />
+
         {/* Продолжить просмотр — прямо над онгоингами, как в макете. Блок
             клиентский и пуст без истории просмотра: без записей он ничего
             не рисует. */}
@@ -202,6 +206,7 @@ export default function HomePage() {
         <Suspense fallback={<RowSkeleton title="Топ-10" />}>
           <TopAndFilmsSection />
         </Suspense>
+
 
         <Suspense fallback={<RowSkeleton title="Манга" />}>
           <MangaSection />

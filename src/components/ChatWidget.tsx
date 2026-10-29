@@ -11,8 +11,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { levelFromXp } from "@/lib/clan2/data";
-import { useClan2 } from "@/lib/clan2/store";
+import { useMyClan } from "@/lib/clans/client";
 import { useAccount } from "@/lib/use-account";
 import { useProgress } from "@/lib/progression/events";
 import { ChatBody } from "@/components/chat/ChatBody";
@@ -25,30 +24,20 @@ import { markChatRead, unreadChatCount, useChatMessages, useChatRead } from "@/l
  * Подсказка раскрывается влево, чтобы не упираться в правый край экрана.
  */
 function ClanFab() {
-  const clan = useClan2().clan;
+  const clan = useMyClan().me?.clan ?? null;
 
   return (
     <Link
       href="/clans"
-      aria-label={clan ? `Кланы — ${clan.name}, уровень ${levelFromXp(clan.xp)}` : "Кланы"}
-      title={clan ? `${clan.name} [${clan.tag}] · ур. ${levelFromXp(clan.xp)}` : "Кланы"}
+      aria-label={clan ? `Кланы — ${clan.name}, уровень ${clan.level}` : "Кланы"}
+      title={clan ? `${clan.name} [${clan.tag}] · ур. ${clan.level}` : "Кланы"}
       className="ag-fab ag-fab--clan group fixed bottom-4 right-[72px] z-[94] grid h-12 w-12 place-items-center rounded-2xl border border-line bg-surface/90 text-2xl shadow-[0_18px_40px_-16px_rgba(0,0,0,0.9)] backdrop-blur transition hover:scale-105 hover:ring-2 hover:ring-accent/50"
-      style={
-        clan
-          ? {
-              // Эмодзи не наследует `color`, поэтому подкрашиваем фон и рамку
-              borderColor: `color-mix(in oklab, ${clan.color} 55%, transparent)`,
-              background: `radial-gradient(circle at 50% 50%, color-mix(in oklab, ${clan.color} 22%, transparent), rgb(15 17 26 / 92%) 70%)`,
-              boxShadow: `0 18px 40px -16px color-mix(in oklab, ${clan.color} 60%, rgb(0 0 0 / 0.9))`,
-            }
-          : undefined
-      }
     >
-      <span aria-hidden>{clan ? clan.emblem : "🛡"}</span>
+      <span aria-hidden>{clan ? "⚔️" : "🛡"}</span>
 
       {/* Подсказка с названием и уровнем — по наведению */}
       <span className="pointer-events-none absolute right-full top-1/2 mr-2 hidden -translate-y-1/2 whitespace-nowrap rounded-xl border border-line bg-surface/95 px-3 py-1.5 text-xs font-semibold text-white opacity-0 shadow-lg transition group-hover:opacity-100 md:block">
-        {clan ? `${clan.name} · ур. ${levelFromXp(clan.xp)}` : "Кланы"}
+        {clan ? `${clan.name} · ур. ${clan.level}` : "Кланы"}
       </span>
     </Link>
   );
