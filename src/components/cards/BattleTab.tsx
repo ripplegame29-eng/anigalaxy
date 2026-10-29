@@ -82,7 +82,7 @@ export function BattleTab({ s }: { s: CardsState }) {
   const mods = s.mods as { ban: Element; buff: Element };
 
   return (
-    <div style={{ display: "grid", gap: 16 }}>
+    <div className="cg-bt" style={{ display: "grid", gap: 16 }}>
       {report && <Arena report={report} onClose={() => setReport(null)} />}
       {profile && (
         <CollectorModal
