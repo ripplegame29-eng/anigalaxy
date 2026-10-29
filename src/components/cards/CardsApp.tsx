@@ -291,7 +291,8 @@ export function CardsApp() {
 
   return (
     <div className="cg">
-      <section className="cg-hero2 cg-enter">
+      <section className={`cg-hero2 cg-enter${tab === "collection" ? "" : " mini"}`}>
+        {tab === "collection" && (
         <div>
           <span className="cg-eyebrow">ANIGALAXY COLLECTION</span>
           <h1>Коллекция</h1>
@@ -313,6 +314,7 @@ export function CardsApp() {
             </div>
           </div>
         </div>
+        )}
         <div className="cg-hero-r">
           <div className="cg-ledger" aria-label="Кошелёк">
             {tokens.map((t) => (
@@ -331,6 +333,8 @@ export function CardsApp() {
                 <Ico name="gift" size={17} /> Подарок дня
               </button>
             )}
+            {tab === "collection" && (
+              <>
             <button type="button" className="cg-btn" aria-pressed={notify} onClick={() => void toggleNotify()} title="Системные уведомления">
               <Ico name="bell" size={16} /> {notify ? "Уведомления вкл." : "Уведомления"}
             </button>
@@ -342,6 +346,8 @@ export function CardsApp() {
               {s.league.name}
               <small>{fmt(w.rating)}</small>
             </span>
+              </>
+            )}
             <div className="cg-popwrap">
               <button type="button" className="cg-btn" aria-expanded={exOpen} onClick={() => setExOpen((v) => !v)}>
                 <Ico name="swap" size={16} /> AC → <Cur k="diamonds" />
