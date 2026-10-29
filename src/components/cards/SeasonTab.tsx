@@ -9,6 +9,8 @@ import type { CSSProperties } from "react";
 
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { PASS, PASS_XP, PASS_XP_DAILY, PASS_XP_MISSION, passReward, seasonNo, type PassTrack } from "@/lib/cards/season";
+import { cardDef } from "@/lib/cards/catalog";
+import { RANKS } from "@/lib/cards/config";
 import { rewardText, type Reward } from "@/lib/cards/progress";
 import { act, type CardsState } from "@/lib/cards/client";
 import { fmt, fmtLeft, toast, useBusy, useNow } from "./common";
@@ -25,11 +27,13 @@ const XP_ROWS: [string, string, IcoName][] = [
   ["evo", "Пробуждение карты", "dust"],
 ];
 
-type Part = { k: "scroll" | "packs" | "diamonds" | "dust"; n: number; label: string };
+type Part = { k: "scroll" | "packs" | "diamonds" | "dust" | "card"; n: number; label: string; id?: string };
 
 /** Состав награды: главная часть идёт крупно, остальные — строкой под ней */
 function parts(r: Reward): Part[] {
   const list: Part[] = [];
+  const def = r.card ? cardDef(r.card) : undefined;
+  if (def) list.push({ k: "card", n: def.rank, label: def.name, id: def.id });
   if (r.scroll) list.push({ k: "scroll", n: r.scroll, label: "Свиток" });
   if (r.packs) list.push({ k: "packs", n: r.packs, label: "Паки" });
   if (r.diamonds) list.push({ k: "diamonds", n: r.diamonds, label: "Алмазы" });
@@ -37,7 +41,8 @@ function parts(r: Reward): Part[] {
   return list;
 }
 
-function PartIcon({ k, size }: { k: Part["k"]; size: number }) {
+function PartIcon({ k, size, id }: { k: Part["k"]; size: number; id?: string }) {
+  if (k === "card") return <img className="sv-face" src={`/api/cards/art/${id}`} alt="" width={size * 2} height={size * 2} draggable={false} loading="lazy" />;
   return k === "scroll" ? <ScrollArt size={Math.round(size * 1.75)} /> : <Cur k={k} size={size} />;
 }
 
@@ -94,8 +99,8 @@ const RewardCard = memo(function RewardCard({
     >
       {main && (
         <>
-          <span className="sv-gem" aria-hidden><PartIcon k={main.k} size={track === "premium" ? 28 : 26} /></span>
-          <b className="sv-val">+{main.n.toLocaleString("ru-RU")}</b>
+          <span className="sv-gem" aria-hidden><PartIcon k={main.k} size={track === "premium" ? 28 : 26} id={main.id} /></span>
+          <b className="sv-val">{main.k === "card" ? `${RANKS[main.n].short}-ранг` : `+${main.n.toLocaleString("ru-RU")}`}</b>
           <small>{main.label}</small>
         </>
       )}

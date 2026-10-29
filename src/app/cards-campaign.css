@@ -1071,3 +1071,8 @@
 
 /* Награда «можно забрать»: вместо подписи — кнопка, чтобы они не налезали друг на друга */
 .cg .sv-card.can small { visibility: hidden; }
+
+/* Карта-награда: портрет героя в круглой плашке рамки */
+.cg .sv-card .sv-gem .sv-face { width: 86%; height: 86%; border-radius: 50%; object-fit: cover; object-position: 50% 18%; display: block; pointer-events: none; box-shadow: 0 0 0 1px rgba(255, 200, 100, 0.55), 0 2px 8px rgba(0, 0, 0, 0.5); }
+.cg .sv-card .sv-gem { display: grid; place-items: center; }
+.cg .sv-card:has(.sv-face) .sv-val, .cg .sv-card.premium:has(.sv-face) .sv-val { font-size: 19px; }

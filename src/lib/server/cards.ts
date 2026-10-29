@@ -335,6 +335,7 @@ export function grantReward(db: Database, userId: number, r: Reward): void {
   if (r.dust) addMoney(db, userId, "dust", r.dust);
   if (r.packs) addMoney(db, userId, "packs", r.packs);
   if (r.scroll) addScroll(db, userId, Math.max(0, Math.min(4, r.scrollRank ?? 1)), r.scroll);
+  if (r.card && cardDef(r.card)) addCard(db, userId, r.card);
 }
 
 export interface DailyResult {

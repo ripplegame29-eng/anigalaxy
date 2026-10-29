@@ -40,7 +40,18 @@ export const seasonEnd = (season: number): number => (season + 1) * PASS.seasonM
 export type PassTrack = "free" | "premium";
 
 /** Награда за уровень пасса */
+/** Карты-награды: слабые — в бесплатной ветке, легендарная S — финал премиума */
+export const PASS_CARDS: Record<PassTrack, Record<number, string>> = {
+  free: { 12: "usopp", 24: "nami" },
+  premium: { 30: "shanks" },
+};
+
 export function passReward(level: number, track: PassTrack): Reward {
+  const card = PASS_CARDS[track][level];
+  return card ? { ...passBase(level, track), card } : passBase(level, track);
+}
+
+function passBase(level: number, track: PassTrack): Reward {
   const five = level % 5 === 0;
   if (track === "free") {
     if (level === PASS.levels) return { diamonds: 100, scroll: 1, scrollRank: 3 };
