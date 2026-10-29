@@ -580,3 +580,11 @@
 .cg .sv-all small { font-size: 12px; font-weight: 700; color: #e9c779; }
 .cg .sv-all:hover:not(:disabled) { transform: translateY(-2px); box-shadow: inset 0 0 0 1px #ffe29a, 0 0 38px -6px #ffc45e, inset 0 1px 0 rgba(255,255,255,.3); }
 .cg .sv-all:disabled { opacity: .5; cursor: default; filter: saturate(.5); }
+
+/* --- Рамка уровня: подписи строго внутри тёмного поля (между компасом и якорем) --- */
+@media (min-width: 821px) {
+  .cg .sv-crest .sv-hex-in { inset: 32% 6% 25% 6%; padding: 0; align-content: space-between; justify-content: center; justify-items: center; }
+  .cg .sv-hex-in b { font-size: 3.7cqw; line-height: 1; }
+  .cg .sv-hex-in small { font-size: clamp(7px, .66cqw, 11px); letter-spacing: .18em; line-height: 1; white-space: nowrap; }
+}
+@media (min-width: 821px) { .cg .sv-stage .sv-sub { max-width: 27cqw; text-shadow: 0 0 6px rgba(255,255,255,.95), 0 0 14px rgba(255,255,255,.8); } }
