@@ -203,7 +203,6 @@ export default function HomePage() {
           <TopAndFilmsSection />
         </Suspense>
 
-        {/* Гача: плашка между топом и мангой — заметна, но не в самом верху */}
 
         <Suspense fallback={<RowSkeleton title="Манга" />}>
           <MangaSection />
