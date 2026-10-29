@@ -679,7 +679,7 @@
   font-weight: 800;
   letter-spacing: 0.02em;
   background: linear-gradient(135deg, #8a7bff 0%, #5a3df0 38%, #3a22b8 72%, #261481 100%);
-  box-shadow: 0 16px 36px -12px rgba(110, 80, 255, 0.9), 0 0 30px -8px rgba(160, 110, 255, 0.55), inset 0 0 0 1px rgba(200, 185, 255, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.4), inset 0 -14px 22px -14px rgba(20, 6, 90, 0.8);
+  box-shadow: 0 16px 36px -12px rgba(110, 80, 255, 0.9), 0 0 30px -8px rgba(160, 110, 255, 0.55), inset 0 0 0 1px rgba(40, 20, 140, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3), inset 0 -14px 22px -14px rgba(20, 6, 90, 0.8);
   text-shadow: 0 1px 10px rgba(20, 8, 90, 0.7);
 }
 .gb-cta::before {
@@ -698,5 +698,5 @@
 .gb-cta:hover {
   filter: brightness(1.1) saturate(1.1);
   transform: translateY(-2px);
-  box-shadow: 0 20px 42px -12px rgba(120, 90, 255, 1), 0 0 38px -6px rgba(170, 120, 255, 0.7), inset 0 0 0 1px rgba(220, 205, 255, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.5), inset 0 -14px 22px -14px rgba(20, 6, 90, 0.8);
+  box-shadow: 0 20px 42px -12px rgba(120, 90, 255, 1), 0 0 38px -6px rgba(170, 120, 255, 0.7), inset 0 0 0 1px rgba(40, 20, 140, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.4), inset 0 -14px 22px -14px rgba(20, 6, 90, 0.8);
 }
