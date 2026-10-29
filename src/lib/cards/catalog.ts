@@ -267,6 +267,7 @@ const RAW = `
 3|Монки Д. Гарп|Monkey D. Garp|Ван-Пис|e|w
 3|Шарлотта Линлин|Charlotte Linlin|Ван-Пис|d|t
 3|Гин Ичимару|Gin Ichimaru|Блич|d|a
+3|Югрэм Хашвальт|Jugram Haschwalth|Блич|l|m
 3|Имир Фриц|Ymir Fritz|Атака титанов|e|m
 3|Дома|Doma|Истребитель демонов|l|m
 3|Юки Цукумо|Yuki Tsukumo|Магическая битва|l|m
