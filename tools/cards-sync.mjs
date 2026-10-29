@@ -132,6 +132,9 @@ async function find(search, series) {
 }
 
 /** Запасные написания имени: AniList пишет японские имена по-разному (Shouko/Shoko, Jiro/Jirou) */
+/** Точные id персонажей на MyAnimeList (= id на Shikimori) для тех, кого поиск находит неверно */
+const MAL_IDS = { "sung-jinwoo": 174185 };
+
 const OVERRIDES = {
   "Sung Jinwoo": ["Sung Jin-Woo", "Jinwoo Sung"],
   "Shoko Ieiri": ["Shouko Ieiri", "Ieiri Shouko"],
@@ -206,7 +209,25 @@ async function findShikimori(names, series) {
   return null;
 }
 
-async function findAny(name, ru, series) {
+async function findByMalId(id) {
+  for (const host of ["https://shikimori.one", "https://shikimori.io"]) {
+    try {
+      const res = await fetch(`${host}/api/characters/${id}`, { headers: { Accept: "application/json", "User-Agent": "AniGalaxy art sync" }, signal: AbortSignal.timeout(8000) });
+      if (!res.ok) continue;
+      const path = (await res.json())?.image?.original;
+      if (path && !path.includes("missing")) return path.startsWith("http") ? path : `${host}${path}`;
+    } catch {
+      /* пробуем зеркало */
+    }
+  }
+  return null;
+}
+
+async function findAny(name, ru, series, id) {
+  if (MAL_IDS[id]) {
+    const exact = await findByMalId(MAL_IDS[id]);
+    if (exact) return exact;
+  }
   const multi = /\s/.test(name.trim());
   // у одиночных имён (Haku, Ban, Karin) запасные источники не знают аниме и подсунут тёзку
   const fromShiki = multi ? await findShikimori([...variants(name).slice(0, 2), ru].filter(Boolean), series) : null;
@@ -223,7 +244,7 @@ let ok = 0;
 const failed = [];
 for (const [i, c] of todo.entries()) {
   try {
-    const url = await findAny(c.search, c.name, c.series);
+    const url = await findAny(c.search, c.name, c.series, c.id);
     if (!url || url.includes("default.jpg")) throw new Error(`персонаж «${c.search}» не найден на AniList`);
     const img = await fetch(url, { signal: AbortSignal.timeout(15000) });
     if (!img.ok) throw new Error(`HTTP ${img.status}`);
