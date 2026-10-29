@@ -133,6 +133,7 @@ async function find(search, series) {
 
 /** Запасные написания имени: AniList пишет японские имена по-разному (Shouko/Shoko, Jiro/Jirou) */
 const OVERRIDES = {
+  "Sung Jinwoo": ["Sung Jin-Woo", "Jinwoo Sung"],
   "Shoko Ieiri": ["Shouko Ieiri", "Ieiri Shouko"],
   "Barragan Luisenbarn": ["Baraggan Louisenbairn", "Baraggan"],
   "Zeref Dragneel": ["Zeref"],
@@ -168,27 +169,37 @@ async function findJikan(name) {
   return null;
 }
 
-/** Shikimori: работает без VPN, понимает и английские, и русские имена */
-async function findShikimori(names) {
-  for (const n of names) {
+/** Shikimori: работает без VPN, понимает и английские, и русские имена.
+ *  Каждого кандидата проверяем по списку его аниме, иначе вместо героя можно получить тёзку. */
+async function findShikimori(names, series) {
+  const keys = SERIES_KEYS[series];
+  const get = async (path) => {
     for (const host of ["https://shikimori.one", "https://shikimori.io"]) {
       try {
-        const res = await fetch(`${host}/api/characters/search?search=${encodeURIComponent(n)}&limit=1`, {
-          headers: { Accept: "application/json", "User-Agent": "AniGalaxy art sync" },
-          signal: AbortSignal.timeout(8000),
-        });
+        const res = await fetch(`${host}${path}`, { headers: { Accept: "application/json", "User-Agent": "AniGalaxy art sync" }, signal: AbortSignal.timeout(8000) });
         if (res.status === 429) {
           await sleep(1500);
           continue;
         }
-        if (!res.ok) continue;
-        const list = await res.json();
-        const path = list?.[0]?.image?.original;
-        if (path && !path.includes("missing")) return path.startsWith("http") ? path : `${host}${path}`;
-        break;
+        if (res.ok) return { host, data: await res.json() };
       } catch {
         /* хост недоступен — пробуем зеркало */
       }
+    }
+    return null;
+  };
+  for (const n of names) {
+    const found = await get(`/api/characters/search?search=${encodeURIComponent(n)}&limit=4`);
+    for (const cand of (found?.data ?? []).slice(0, 3)) {
+      const path = cand?.image?.original;
+      if (!path || path.includes("missing")) continue;
+      if (keys) {
+        await sleep(250);
+        const detail = await get(`/api/characters/${cand.id}`);
+        const titles = (detail?.data?.animes ?? []).flatMap((a) => [a.name, a.russian]).filter(Boolean).map((t) => t.toLowerCase());
+        if (!titles.some((t) => keys.some((k) => t.includes(k)))) continue;
+      }
+      return path.startsWith("http") ? path : `${found.host}${path}`;
     }
     await sleep(350);
   }
@@ -198,14 +209,14 @@ async function findShikimori(names) {
 async function findAny(name, ru, series) {
   const multi = /\s/.test(name.trim());
   // у одиночных имён (Haku, Ban, Karin) запасные источники не знают аниме и подсунут тёзку
-  const fromShiki = multi ? await findShikimori([...variants(name).slice(0, 2), ru].filter(Boolean)) : null;
+  const fromShiki = multi ? await findShikimori([...variants(name).slice(0, 2), ru].filter(Boolean), series) : null;
   if (fromShiki) return fromShiki;
   for (const v of variants(name)) {
     const url = await find(v, series);
     if (url && !url.includes("default.jpg")) return url;
     await sleep(400);
   }
-  return multi ? findJikan(name) : null;
+  return null;
 }
 
 let ok = 0;
