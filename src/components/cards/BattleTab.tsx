@@ -16,10 +16,10 @@ import { Cur, ELEMENT_ICON, Ico } from "./icons";
 import { CampaignView, DuelPanel, RaidPanel } from "./PveTabs";
 
 const MODES = [
-  ["ladder", "Рейтинг", "trophy"],
-  ["campaign", "Кампания", "flag"],
-  ["raid", "Рейд", "skull"],
-  ["duel", "Дуэли и журнал", "swords"],
+  ["ladder", "Рейтинг", "trophy", "Лига и лидеры"],
+  ["campaign", "Кампания", "flag", "Главы и боссы"],
+  ["raid", "Рейд", "skull", "Босс недели"],
+  ["duel", "Дуэли и журнал", "swords", "Бои с игроками"],
 ] as const;
 type Mode = (typeof MODES)[number][0];
 
@@ -97,9 +97,13 @@ export function BattleTab({ s }: { s: CardsState }) {
       )}
       {editing !== null && deck.find((c) => c.id === editing) && <SkillEditor key={editing} card={deck.find((c) => c.id === editing)!} onClose={() => setEditing(null)} />}
       <div className="bt-modes" role="tablist" aria-label="Режим боёв">
-        {MODES.map(([id, label, ico]) => (
+        {MODES.map(([id, label, ico, sub]) => (
           <button key={id} type="button" role="tab" aria-selected={mode === id} className="bt-mode" onClick={() => setMode(id)}>
-            <Ico name={ico} size={16} /> {label}
+            <Ico name={ico} size={22} />
+            <span>
+              <b>{label}</b>
+              <small>{sub}</small>
+            </span>
           </button>
         ))}
       </div>
