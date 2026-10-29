@@ -11,7 +11,12 @@ import type { AnimeCard, AnimeKind } from "@/lib/types";
  * отражает Origin, поэтому плеер грузит их напрямую через hls.js.
  */
 
-const BASE = "https://anilibria.top/api/v1";
+/**
+ * Часть релизов AniLiberty скрыта для адресов вне России (404 по IP сервера).
+ * Если сайт стоит за рубежом, задайте ANILIBRIA_BASE — адрес зеркала API на российском
+ * сервере (например https://ani-proxy.example.ru/api/v1).
+ */
+const BASE = (process.env.ANILIBRIA_BASE || "https://anilibria.top/api/v1").replace(/\/+$/, "");
 
 /** Таймаут запроса к чужому API */
 const TIMEOUT_MS = 10_000;
