@@ -44,6 +44,28 @@ function PartIcon({ k, size }: { k: Part["k"]; size: number }) {
 type Status = "got" | "can" | "locked";
 
 /** Наградная карта: рамка-фольга по ленте, у вех — голографический блик */
+/** Детерминированный «случайный» разброс частиц фона (без Math.random — одинаково на сервере и в браузере) */
+const rnd = (i: number, k: number): number => {
+  const v = Math.sin(i * 12.9898 + k * 78.233) * 43758.5453;
+  return v - Math.floor(v);
+};
+const STARS: CSSProperties[] = Array.from({ length: 46 }, (_, i) => ({
+  left: `${rnd(i, 1) * 100}%`,
+  top: `${rnd(i, 2) * 42}%`,
+  width: 1.5 + rnd(i, 3) * 2.2,
+  height: 1.5 + rnd(i, 3) * 2.2,
+  animationDelay: `${-rnd(i, 4) * 6}s`,
+  animationDuration: `${3 + rnd(i, 5) * 4}s`,
+}));
+const SPARKS: CSSProperties[] = Array.from({ length: 26 }, (_, i) => ({
+  left: `${rnd(i, 6) * 100}%`,
+  bottom: `${rnd(i, 7) * 20}%`,
+  width: 3 + rnd(i, 8) * 3,
+  height: 3 + rnd(i, 8) * 3,
+  animationDelay: `${-rnd(i, 9) * 18}s`,
+  animationDuration: `${12 + rnd(i, 10) * 14}s`,
+}));
+
 const RewardCard = memo(function RewardCard({
   level,
   track,
@@ -204,6 +226,22 @@ export function SeasonTab({ s }: { s: CardsState }) {
 
   return (
     <div className="sv">
+      <div className="sv-bg" aria-hidden>
+        <i className="sv-moon" />
+        {STARS.map((x, i) => (
+          <i key={`s${i}`} className="sv-st" style={x} />
+        ))}
+        <i className="sv-bg-fog" />
+        <i className="sv-bg-fog f2" />
+        <i className="sv-bg-wheel" />
+        <svg className="sv-bg-ship" viewBox="0 0 120 90"><path d="M8 62h104l-14 18H24z" /><path d="M58 8v54M30 22h28v34H30zM62 14h30v42H62z" /><path d="M58 8l22 6-22 6z" /></svg>
+        <svg className="sv-bg-wave w1" viewBox="0 0 1440 140" preserveAspectRatio="none"><path d="M0 70c120-40 240-40 360 0s240 40 360 0 240-40 360 0 240 40 360 0v70H0z" /></svg>
+        <svg className="sv-bg-wave w3" viewBox="0 0 1440 140" preserveAspectRatio="none"><path d="M0 80c120-30 240-30 360 0s240 30 360 0 240-30 360 0 240 30 360 0v60H0z" /></svg>
+        <svg className="sv-bg-wave w2" viewBox="0 0 1440 140" preserveAspectRatio="none"><path d="M0 60c120 36 240 36 360 0s240-36 360 0 240 36 360 0 240-36 360 0v80H0z" /></svg>
+        {SPARKS.map((x, i) => (
+          <i key={`p${i}`} className="sv-sp" style={x} />
+        ))}
+      </div>
       {/* ------------------------------ Герб сезона ------------------------------ */}
       <div className="sv-stage">
       <section className={`sv-hero${p.bought ? " is-prem" : ""}`}>
