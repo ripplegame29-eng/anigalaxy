@@ -63,6 +63,9 @@ function Gauge({ title, left, now, max, color }: { title: string; left: number; 
   );
 }
 
+/** Цвета рамок наборов: синий, фиолетовый, золотой */
+const OFFER_COLOR = ["#3aa0ff", "#b46bff", "#ffc45e"];
+
 function Thumb({ cardId, rank, name }: { cardId: string; rank: number; name: string }) {
   const initials = name
     .split(/\s+/)
@@ -256,30 +259,30 @@ export function PacksTab({ s }: { s: CardsState }) {
               const l = lackOf(b);
               const saved = b.n - b.pay;
               return (
-                <button key={b.n} type="button" className="cg-offer" aria-pressed={sel === i} disabled={!!pendingOffers || loading} onClick={() => setSel(i)}>
-                  <span className="mark">
-                    <Ico name="check" size={14} />
-                  </span>
-                  {i === bundles.length - 1 && <span className="ribbon">Больше всего выгоды</span>}
-                  <span className="stack" aria-hidden>
-                    {Array.from({ length: [1, 3, 4][i] ?? 1 }).map((_, k) => (
-                      <i key={k} style={{ ["--k" as string]: k }} />
-                    ))}
-                  </span>
-                  <span className="body">
-                    <span className="big">
-                      ×{b.n}
-                      <small>{b.n === 1 ? "пак" : "паков"}</small>
-                    </span>
-                    <span className="meta">
-                      <span className="cost">
-                        {fmt(costOf(b))} <Cur k={PAY_CUR[effectivePay]} size={16} />
+                <div key={b.n} className="cg-offer-w" data-on={sel === i ? "1" : undefined} style={{ ["--oc" as string]: OFFER_COLOR[i] ?? OFFER_COLOR[0] }}>
+                  <div className="cg-offer-f">
+                    <button type="button" className="cg-offer" aria-pressed={sel === i} disabled={!!pendingOffers || loading} onClick={() => setSel(i)}>
+                      <span className="mark">
+                        <Ico name="check" size={14} />
                       </span>
-                      {saved > 0 && <span className="save">−{saved} {saved < 5 ? "пак" : "паков"} в подарок</span>}
-                    </span>
-                    {l > 0 && <span className="lack">Не хватает {fmt(l)} {unit}</span>}
-                  </span>
-                </button>
+                      {i === bundles.length - 1 && <span className="ribbon">Больше всего выгоды</span>}
+                      <img className="art" src={`/cards/offers/${Math.min(i, 2) + 1}.webp`} alt="" draggable={false} loading="lazy" />
+                      <span className="body">
+                        <span className="big">
+                          ×{b.n}
+                          <small>{b.n === 1 ? "пак" : "паков"}</small>
+                        </span>
+                        <span className="meta">
+                          <span className="cost">
+                            {fmt(costOf(b))} <Cur k={PAY_CUR[effectivePay]} size={16} />
+                          </span>
+                          {saved > 0 && <span className="save">−{saved} {saved < 5 ? "пак" : "паков"} в подарок</span>}
+                        </span>
+                        {l > 0 && <span className="lack">Не хватает {fmt(l)} {unit}</span>}
+                      </span>
+                    </button>
+                  </div>
+                </div>
               );
             })}
           </div>
