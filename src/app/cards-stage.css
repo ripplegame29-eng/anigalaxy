@@ -161,7 +161,6 @@
   border: 0;
   background: none;
   cursor: pointer;
-  transform-style: preserve-3d;
   transform: rotateX(var(--rx)) rotateY(var(--ry));
   transition: transform 0.18s ease-out;
   animation: pk-float 5.2s ease-in-out infinite;
@@ -227,11 +226,10 @@
 }
 .pk-sheen {
   position: absolute;
-  inset: 6% 0;
+  inset: 6% 8%;
   pointer-events: none;
   border-radius: 8px;
-  background: radial-gradient(circle at var(--mx) var(--my), rgba(255, 255, 255, 0.35), transparent 46%);
-  mix-blend-mode: soft-light;
+  background: radial-gradient(circle at var(--mx) var(--my), rgba(255, 255, 255, 0.2), transparent 42%);
   opacity: 0;
   transition: opacity 0.25s;
 }
