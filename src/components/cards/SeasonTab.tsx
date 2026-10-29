@@ -227,17 +227,28 @@ export function SeasonTab({ s }: { s: CardsState }) {
   return (
     <div className="sv">
       <div className="sv-bg" aria-hidden>
-        <i className="sv-moon" />
+        <i className="sv-aur" />
+        <i className="sv-rays" />
+        <svg className="sv-compass" viewBox="0 0 800 800" fill="none">
+          <g className="sv-c-out">
+            <circle cx="400" cy="400" r="392" />
+            <circle cx="400" cy="400" r="372" strokeDasharray="1.5 15.5" strokeWidth="9" />
+            <circle cx="400" cy="400" r="340" />
+          </g>
+          <g className="sv-c-in">
+            <circle cx="400" cy="400" r="270" strokeDasharray="3 9" />
+            <circle cx="400" cy="400" r="210" />
+            <path d="M400 20v760M20 400h760" />
+            <path d="M400 70l34 296 296 34-296 34-34 296-34-296-296-34 296-34z" />
+            <path d="M131 131l138 138M669 131L531 269M131 669l138-138M669 669L531 531" />
+          </g>
+        </svg>
         {STARS.map((x, i) => (
           <i key={`s${i}`} className="sv-st" style={x} />
         ))}
         <i className="sv-bg-fog" />
         <i className="sv-bg-fog f2" />
-        <i className="sv-bg-wheel" />
-        <svg className="sv-bg-ship" viewBox="0 0 120 90"><path d="M8 62h104l-14 18H24z" /><path d="M58 8v54M30 22h28v34H30zM62 14h30v42H62z" /><path d="M58 8l22 6-22 6z" /></svg>
-        <svg className="sv-bg-wave w1" viewBox="0 0 1440 140" preserveAspectRatio="none"><path d="M0 70c120-40 240-40 360 0s240 40 360 0 240-40 360 0 240 40 360 0v70H0z" /></svg>
-        <svg className="sv-bg-wave w3" viewBox="0 0 1440 140" preserveAspectRatio="none"><path d="M0 80c120-30 240-30 360 0s240 30 360 0 240-30 360 0 240 30 360 0v60H0z" /></svg>
-        <svg className="sv-bg-wave w2" viewBox="0 0 1440 140" preserveAspectRatio="none"><path d="M0 60c120 36 240 36 360 0s240-36 360 0 240 36 360 0 240-36 360 0v80H0z" /></svg>
+        <i className="sv-vig" />
         {SPARKS.map((x, i) => (
           <i key={`p${i}`} className="sv-sp" style={x} />
         ))}
