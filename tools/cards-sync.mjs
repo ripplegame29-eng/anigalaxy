@@ -37,7 +37,7 @@ const only = args.filter((a) => !a.startsWith("--"));
 const todo = cards.filter((c) => (only.length ? only.includes(c.id) : true) && (force || !existsSync(path.join(outDir, `${c.id}.jpg`))));
 console.log(`Карт в каталоге: ${cards.length}, к загрузке: ${todo.length}`);
 
-const QUERY = `query ($q: String) { Character(search: $q, sort: FAVOURITES_DESC) { id image { large } } }`;
+const QUERY = `query ($q: String) { Page(page: 1, perPage: 1) { characters(search: $q, sort: FAVOURITES_DESC) { id image { large } } } }`;
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 async function find(search) {
@@ -51,10 +51,16 @@ async function find(search) {
       await sleep(Number(res.headers.get("retry-after") ?? 30) * 1000 + 500);
       continue;
     }
-    if (res.status === 404) return null; // AniList отвечает 404, если персонаж не найден
-    if (!res.ok) throw new Error(`AniList вернул HTTP ${res.status}`);
-    const json = await res.json();
-    return json?.data?.Character?.image?.large ?? null;
+    const text = await res.text();
+    if (!res.ok) throw new Error(`AniList вернул HTTP ${res.status}: ${text.replace(/\s+/g, " ").slice(0, 160)}`);
+    let json;
+    try {
+      json = JSON.parse(text);
+    } catch {
+      throw new Error(`AniList вернул не JSON: ${text.replace(/\s+/g, " ").slice(0, 160)}`);
+    }
+    if (json?.errors?.length) throw new Error(`AniList: ${json.errors[0].message}`);
+    return json?.data?.Page?.characters?.[0]?.image?.large ?? null;
   }
   throw new Error("AniList ограничил запросы (HTTP 429) — подождите несколько минут и запустите снова");
 }
