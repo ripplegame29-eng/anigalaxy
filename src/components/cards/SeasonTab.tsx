@@ -71,6 +71,161 @@ const SPARKS: CSSProperties[] = Array.from({ length: 26 }, (_, i) => ({
   animationDuration: `${12 + rnd(i, 10) * 14}s`,
 }));
 
+
+/** Фоновая сцена сезона: ночное море, луна, силуэт корабля, гирлянда фонарей (рисуется один раз, стили `sv-scene`) */
+const SceneArt = memo(function SceneArt() {
+  return (
+    <svg className="sv-scene" viewBox="0 0 1920 900" preserveAspectRatio="xMidYMin slice" aria-hidden>
+      <defs>
+        <linearGradient id="svSky" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#02040c" />
+          <stop offset=".42" stopColor="#0a1a44" />
+          <stop offset=".66" stopColor="#23396f" />
+          <stop offset=".72" stopColor="#8a6a48" />
+          <stop offset=".735" stopColor="#1b2d63" />
+          <stop offset="1" stopColor="#050c24" />
+        </linearGradient>
+        <radialGradient id="svMoon" cx=".42" cy=".38" r=".75">
+          <stop offset="0" stopColor="#fffaf0" />
+          <stop offset=".6" stopColor="#f6dc9c" />
+          <stop offset="1" stopColor="#d9b36a" />
+        </radialGradient>
+        <radialGradient id="svHalo" cx=".5" cy=".5" r=".5">
+          <stop offset="0" stopColor="#ffd98a" stopOpacity=".55" />
+          <stop offset=".35" stopColor="#ffc15e" stopOpacity=".18" />
+          <stop offset="1" stopColor="#ffc15e" stopOpacity="0" />
+        </radialGradient>
+        <radialGradient id="svLg" cx=".5" cy=".5" r=".5">
+          <stop offset="0" stopColor="#ffb84a" stopOpacity=".75" />
+          <stop offset="1" stopColor="#ff9a2a" stopOpacity="0" />
+        </radialGradient>
+        <linearGradient id="svLb" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#ffd88a" />
+          <stop offset="1" stopColor="#e8822a" />
+        </linearGradient>
+        <linearGradient id="svSea" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#1c3a78" />
+          <stop offset=".5" stopColor="#0a2150" />
+          <stop offset="1" stopColor="#040b20" />
+        </linearGradient>
+      </defs>
+      <rect width="1920" height="900" fill="url(#svSky)" />
+      <circle cx="1560" cy="240" r="430" fill="url(#svHalo)" />
+      <circle cx="1560" cy="240" r="104" fill="url(#svMoon)" />
+      <g fill="#c79c52" opacity=".22">
+        <circle cx="1528" cy="212" r="18" />
+        <circle cx="1596" cy="268" r="24" />
+        <circle cx="1548" cy="276" r="9" />
+      </g>
+      <g className="sv-cl" fill="#0d1d4a">
+        <ellipse cx="1380" cy="300" rx="260" ry="26" opacity=".7" />
+        <ellipse cx="1760" cy="196" rx="220" ry="20" opacity=".55" />
+        <ellipse cx="520" cy="360" rx="320" ry="30" opacity=".55" />
+        <ellipse cx="900" cy="160" rx="240" ry="18" opacity=".4" />
+      </g>
+      <g className="sv-star-field" fill="#dfe9ff">
+        {[[140, 90, 2], [260, 150, 1.5], [420, 70, 2], [610, 130, 1.6], [790, 60, 1.8], [980, 110, 1.4], [1130, 52, 2], [1290, 140, 1.5], [1880, 130, 1.8], [1700, 80, 1.4], [60, 220, 1.5], [700, 230, 1.3]].map(([x, y, r], i) => (
+          <circle key={i} cx={x} cy={y} r={r} opacity=".85" />
+        ))}
+      </g>
+      
+        <path className="sv-bird" style={{ animationDelay: "0.0s" }} transform="translate(1180 170) scale(1)" d="M-14 0q7 -9 14 0q7 -9 14 0" />
+        <path className="sv-bird" style={{ animationDelay: "-0.9s" }} transform="translate(1235 205) scale(0.8)" d="M-14 0q7 -9 14 0q7 -9 14 0" />
+        <path className="sv-bird" style={{ animationDelay: "-1.8s" }} transform="translate(1120 215) scale(0.7)" d="M-14 0q7 -9 14 0q7 -9 14 0" />
+        <path className="sv-bird" style={{ animationDelay: "-2.7s" }} transform="translate(330 250) scale(0.9)" d="M-14 0q7 -9 14 0q7 -9 14 0" />
+        <path className="sv-bird" style={{ animationDelay: "-3.6s" }} transform="translate(390 280) scale(0.65)" d="M-14 0q7 -9 14 0q7 -9 14 0" />
+      <path d="M0 640 L0 560 Q120 520 230 552 Q330 470 450 548 Q560 500 660 560 Q760 530 840 580 L840 640Z" fill="#0a1636" opacity=".9" />
+      <path d="M1180 640 L1180 580 Q1290 520 1380 570 Q1450 540 1540 590 Q1700 520 1820 580 Q1880 560 1920 580 L1920 640Z" fill="#0a1636" opacity=".9" />
+      <rect y="606" width="1920" height="34" fill="#ffcf8a" opacity=".13" />
+      <rect y="640" width="1920" height="260" fill="url(#svSea)" />
+      <path d="M0 640H1920" stroke="#f3d48a" strokeOpacity=".4" />
+      <g className="sv-glit" fill="#ffe3a0"><rect x="1538" y="612" width="14" height="2" rx="1" /><rect x="1542" y="622" width="21" height="2" rx="1" /><rect x="1545" y="633" width="28" height="2" rx="1" /><rect x="1548" y="644" width="35" height="2" rx="1" /><rect x="1552" y="654" width="42" height="2" rx="1" /><rect x="1526" y="664" width="49" height="2" rx="1" /><rect x="1529" y="675" width="56" height="2" rx="1" /><rect x="1556" y="686" width="17" height="2" rx="1" /><rect x="1559" y="696" width="24" height="2" rx="1" /><rect x="1532" y="706" width="31" height="2" rx="1" /><rect x="1536" y="717" width="38" height="2" rx="1" /><rect x="1540" y="728" width="45" height="2" rx="1" /><rect x="1543" y="738" width="52" height="2" rx="1" /><rect x="1516" y="748" width="59" height="2" rx="1" /><rect x="1543" y="759" width="20" height="2" rx="1" /><rect x="1546" y="770" width="27" height="2" rx="1" /><rect x="1550" y="780" width="34" height="2" rx="1" /><rect x="1554" y="790" width="41" height="2" rx="1" /><rect x="1527" y="801" width="48" height="2" rx="1" /><rect x="1530" y="812" width="55" height="2" rx="1" /><rect x="1557" y="822" width="16" height="2" rx="1" /><rect x="1560" y="832" width="23" height="2" rx="1" /><rect x="1534" y="843" width="30" height="2" rx="1" /><rect x="1538" y="854" width="37" height="2" rx="1" /><rect x="1541" y="864" width="44" height="2" rx="1" /><rect x="1544" y="874" width="51" height="2" rx="1" /></g>
+      <g className="sv-ship" transform="translate(300 400)">
+        <path d="M-150 196 Q-70 238 90 224 Q170 216 206 176 L196 170 Q150 200 76 196 Q-40 200 -126 176Z" fill="#030816" stroke="#e9c779" strokeOpacity=".55" strokeWidth="1.4" />
+        <path d="M-6 190V10M-86 188V58M92 186V74" stroke="#030816" strokeWidth="5" />
+        <path d="M-70 48Q-30 70 -6 62V150Q-40 170 -78 154Z M10 24Q50 46 80 38V138Q40 158 10 146Z M-2 -6L-2 -34L26 -22L-2 -14Z" fill="#050d24" stroke="#e9c779" strokeOpacity=".5" strokeWidth="1.2" />
+        <path d="M102 82Q128 96 150 90V150Q128 156 102 146Z" fill="#050d24" stroke="#e9c779" strokeOpacity=".4" strokeWidth="1" />
+        <path d="M-150 196L-182 168L-130 176Z" fill="#030816" />
+      </g>
+      <g className="sv-lanterns">
+        <path d="M-20 14Q320 74 700 14M1220 14Q1560 74 1940 14" fill="none" stroke="#3b2a12" strokeWidth="2" opacity=".8" />
+        <g className="sv-lan" style={{ animationDelay: "0.0s" }} transform="translate(70 0)">
+          <line x1="0" y1="0" x2="0" y2="120" className="sv-lan-str" />
+          <circle cx="0" cy="154" r="60" fill="url(#svLg)" className="sv-lan-glow" />
+          <rect x="-15" y="120" width="30" height="5" rx="2" fill="#6b4a1f" />
+          <rect x="-17" y="125" width="34" height="46" rx="14" fill="url(#svLb)" stroke="#f3d48a" strokeWidth="1.2" />
+          <path d="M-17 142h34M-9 128v40M9 128v40" stroke="#8a5a18" strokeWidth=".8" opacity=".7" />
+          <rect x="-12" y="171" width="24" height="4" rx="2" fill="#6b4a1f" />
+          <path d="M-5 175v14M0 175v18M5 175v14" stroke="#f3d48a" strokeWidth="1.2" />
+        </g>
+        <g className="sv-lan" style={{ animationDelay: "-1.3s" }} transform="translate(190 0)">
+          <line x1="0" y1="0" x2="0" y2="70" className="sv-lan-str" />
+          <circle cx="0" cy="104" r="60" fill="url(#svLg)" className="sv-lan-glow" />
+          <rect x="-15" y="70" width="30" height="5" rx="2" fill="#6b4a1f" />
+          <rect x="-17" y="75" width="34" height="46" rx="14" fill="url(#svLb)" stroke="#f3d48a" strokeWidth="1.2" />
+          <path d="M-17 92h34M-9 78v40M9 78v40" stroke="#8a5a18" strokeWidth=".8" opacity=".7" />
+          <rect x="-12" y="121" width="24" height="4" rx="2" fill="#6b4a1f" />
+          <path d="M-5 125v14M0 125v18M5 125v14" stroke="#f3d48a" strokeWidth="1.2" />
+        </g>
+        <g className="sv-lan" style={{ animationDelay: "-2.6s" }} transform="translate(330 0)">
+          <line x1="0" y1="0" x2="0" y2="150" className="sv-lan-str" />
+          <circle cx="0" cy="184" r="60" fill="url(#svLg)" className="sv-lan-glow" />
+          <rect x="-15" y="150" width="30" height="5" rx="2" fill="#6b4a1f" />
+          <rect x="-17" y="155" width="34" height="46" rx="14" fill="url(#svLb)" stroke="#f3d48a" strokeWidth="1.2" />
+          <path d="M-17 172h34M-9 158v40M9 158v40" stroke="#8a5a18" strokeWidth=".8" opacity=".7" />
+          <rect x="-12" y="201" width="24" height="4" rx="2" fill="#6b4a1f" />
+          <path d="M-5 205v14M0 205v18M5 205v14" stroke="#f3d48a" strokeWidth="1.2" />
+        </g>
+        <g className="sv-lan" style={{ animationDelay: "-3.9s" }} transform="translate(470 0)">
+          <line x1="0" y1="0" x2="0" y2="60" className="sv-lan-str" />
+          <circle cx="0" cy="94" r="60" fill="url(#svLg)" className="sv-lan-glow" />
+          <rect x="-15" y="60" width="30" height="5" rx="2" fill="#6b4a1f" />
+          <rect x="-17" y="65" width="34" height="46" rx="14" fill="url(#svLb)" stroke="#f3d48a" strokeWidth="1.2" />
+          <path d="M-17 82h34M-9 68v40M9 68v40" stroke="#8a5a18" strokeWidth=".8" opacity=".7" />
+          <rect x="-12" y="111" width="24" height="4" rx="2" fill="#6b4a1f" />
+          <path d="M-5 115v14M0 115v18M5 115v14" stroke="#f3d48a" strokeWidth="1.2" />
+        </g>
+        <g className="sv-lan" style={{ animationDelay: "-5.2s" }} transform="translate(1450 0)">
+          <line x1="0" y1="0" x2="0" y2="70" className="sv-lan-str" />
+          <circle cx="0" cy="104" r="60" fill="url(#svLg)" className="sv-lan-glow" />
+          <rect x="-15" y="70" width="30" height="5" rx="2" fill="#6b4a1f" />
+          <rect x="-17" y="75" width="34" height="46" rx="14" fill="url(#svLb)" stroke="#f3d48a" strokeWidth="1.2" />
+          <path d="M-17 92h34M-9 78v40M9 78v40" stroke="#8a5a18" strokeWidth=".8" opacity=".7" />
+          <rect x="-12" y="121" width="24" height="4" rx="2" fill="#6b4a1f" />
+          <path d="M-5 125v14M0 125v18M5 125v14" stroke="#f3d48a" strokeWidth="1.2" />
+        </g>
+        <g className="sv-lan" style={{ animationDelay: "-6.5s" }} transform="translate(1590 0)">
+          <line x1="0" y1="0" x2="0" y2="140" className="sv-lan-str" />
+          <circle cx="0" cy="174" r="60" fill="url(#svLg)" className="sv-lan-glow" />
+          <rect x="-15" y="140" width="30" height="5" rx="2" fill="#6b4a1f" />
+          <rect x="-17" y="145" width="34" height="46" rx="14" fill="url(#svLb)" stroke="#f3d48a" strokeWidth="1.2" />
+          <path d="M-17 162h34M-9 148v40M9 148v40" stroke="#8a5a18" strokeWidth=".8" opacity=".7" />
+          <rect x="-12" y="191" width="24" height="4" rx="2" fill="#6b4a1f" />
+          <path d="M-5 195v14M0 195v18M5 195v14" stroke="#f3d48a" strokeWidth="1.2" />
+        </g>
+        <g className="sv-lan" style={{ animationDelay: "-7.8s" }} transform="translate(1730 0)">
+          <line x1="0" y1="0" x2="0" y2="80" className="sv-lan-str" />
+          <circle cx="0" cy="114" r="60" fill="url(#svLg)" className="sv-lan-glow" />
+          <rect x="-15" y="80" width="30" height="5" rx="2" fill="#6b4a1f" />
+          <rect x="-17" y="85" width="34" height="46" rx="14" fill="url(#svLb)" stroke="#f3d48a" strokeWidth="1.2" />
+          <path d="M-17 102h34M-9 88v40M9 88v40" stroke="#8a5a18" strokeWidth=".8" opacity=".7" />
+          <rect x="-12" y="131" width="24" height="4" rx="2" fill="#6b4a1f" />
+          <path d="M-5 135v14M0 135v18M5 135v14" stroke="#f3d48a" strokeWidth="1.2" />
+        </g>
+        <g className="sv-lan" style={{ animationDelay: "-9.1s" }} transform="translate(1850 0)">
+          <line x1="0" y1="0" x2="0" y2="130" className="sv-lan-str" />
+          <circle cx="0" cy="164" r="60" fill="url(#svLg)" className="sv-lan-glow" />
+          <rect x="-15" y="130" width="30" height="5" rx="2" fill="#6b4a1f" />
+          <rect x="-17" y="135" width="34" height="46" rx="14" fill="url(#svLb)" stroke="#f3d48a" strokeWidth="1.2" />
+          <path d="M-17 152h34M-9 138v40M9 138v40" stroke="#8a5a18" strokeWidth=".8" opacity=".7" />
+          <rect x="-12" y="181" width="24" height="4" rx="2" fill="#6b4a1f" />
+          <path d="M-5 185v14M0 185v18M5 185v14" stroke="#f3d48a" strokeWidth="1.2" />
+        </g>
+      </g>
+    </svg>
+  );
+});
+
 const RewardCard = memo(function RewardCard({
   level,
   track,
@@ -232,6 +387,7 @@ export function SeasonTab({ s }: { s: CardsState }) {
   return (
     <div className="sv">
       <div className="sv-bg" aria-hidden>
+        <SceneArt />
         <i className="sv-aur" />
         <i className="sv-rays" />
         <svg className="sv-compass" viewBox="0 0 800 800" fill="none">
