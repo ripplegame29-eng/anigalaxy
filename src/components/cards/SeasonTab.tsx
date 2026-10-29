@@ -8,7 +8,11 @@ import type { CSSProperties } from "react";
  */
 
 import { memo, useCallback, useEffect, useRef, useState } from "react";
-import { PASS, PASS_XP, PASS_XP_DAILY, PASS_XP_MISSION, passReward, seasonNo, type PassTrack } from "@/lib/cards/season";
+import Link from "next/link";
+import { PASS, PASS_CARDS, PASS_XP, PASS_XP_DAILY, PASS_XP_MISSION, passReward, seasonNo, type PassTrack } from "@/lib/cards/season";
+
+/** Цена премиум-ветки сезонного пасса (в рублях) */
+const PREMIUM_PRICE = 1290;
 import { cardDef } from "@/lib/cards/catalog";
 import { RANKS } from "@/lib/cards/config";
 import { rewardText, type Reward } from "@/lib/cards/progress";
@@ -69,6 +73,16 @@ const SPARKS: CSSProperties[] = Array.from({ length: 26 }, (_, i) => ({
   height: 3 + rnd(i, 8) * 3,
   animationDelay: `${-rnd(i, 9) * 18}s`,
   animationDuration: `${12 + rnd(i, 10) * 14}s`,
+}));
+
+/** «Золотая пыль», всплывающая внутри премиум-плашки (детерминированная, как STARS) */
+const OFFER_SPARKS: CSSProperties[] = Array.from({ length: 16 }, (_, i) => ({
+  left: `${rnd(i, 31) * 100}%`,
+  top: `${rnd(i, 32) * 100}%`,
+  width: 2 + rnd(i, 33) * 2.6,
+  height: 2 + rnd(i, 33) * 2.6,
+  animationDelay: `${-rnd(i, 34) * 9}s`,
+  animationDuration: `${5 + rnd(i, 35) * 6}s`,
 }));
 
 const RewardCard = memo(function RewardCard({
@@ -137,11 +151,6 @@ export function SeasonTab({ s }: { s: CardsState }) {
       }),
     [run],
   );
-  const buy = () =>
-    run(async () => {
-      const r = await act("pass-buy");
-      toast(r.ok ? "Премиум-ветка открыта" : r.error, !r.ok);
-    });
 
   const levels = Array.from({ length: PASS.levels }, (_, i) => i + 1);
   const availableFree = levels.filter((l) => l <= p.level && !p.free.includes(l)).length;
@@ -156,6 +165,14 @@ export function SeasonTab({ s }: { s: CardsState }) {
     },
     { diamonds: 0, packs: 0, scroll: 0 },
   );
+  /** Карты сезона (бесплатная ветка + финал премиума) — строка для списка выгод */
+  const cardNames = [...Object.values(PASS_CARDS.free), ...Object.values(PASS_CARDS.premium)]
+    .map((id) => cardDef(id)?.name)
+    .filter((n): n is string => !!n);
+  const cardLine =
+    cardNames.length === 3
+      ? `3 карточки за трек — ${cardNames[0]}, ${cardNames[1]} и легендарный ${cardNames[2]}`
+      : `Карточки за трек — ${cardNames.join(", ")}`;
   const doneCount = p.free.length + p.premium.length;
   const totalCount = PASS.levels * 2;
   const nextBig = levels.find((l) => l > p.level && l % 5 === 0) ?? null;
@@ -342,25 +359,36 @@ export function SeasonTab({ s }: { s: CardsState }) {
       {!p.bought && (
         <section className="sv-offer" id="sv-premium">
           <i className="sv-sweep" aria-hidden />
-          <span className="sv-crown" aria-hidden><Ico name="crown" size={34} /></span>
+          <i className="sv-offer-aur" aria-hidden />
+          {OFFER_SPARKS.map((x, i) => (
+            <i key={`f${i}`} className="sv-offer-spark" style={x} aria-hidden />
+          ))}
           <div className="sv-offer-t">
-            <span className="sv-kick">Премиум-лента</span>
-            <h3>Откройте вторую ленту наград</h3>
+            <span className="sv-kick">Вторая лента наград</span>
+            <h3>Откройте полный трек сезона</h3>
             <ul>
-              <li><Ico name="check" size={14} /> {premSum.diamonds.toLocaleString("ru-RU")} алмазов по ходу трека — выше цены пасса</li>
-              <li><Ico name="check" size={14} /> {premSum.packs} паков и {premSum.scroll} свитков улучшения</li>
-              <li><Ico name="check" size={14} /> Пройденные уровни выдаются сразу</li>
-              <li><Ico name="check" size={14} /> Действует до конца сезона</li>
+              <li><Ico name="diamond" size={19} /> {premSum.diamonds.toLocaleString("ru-RU")} алмазов по ходу трека — выше цены пасса</li>
+              <li><Ico name="pack" size={19} /> {premSum.packs} паков и {premSum.scroll} свитков улучшения</li>
+              <li><Ico name="crown" size={19} /> Пройденные уровни выдаются сразу</li>
+              <li><Ico name="clock" size={19} /> Действует до конца сезона — заберёте, когда удобно</li>
+              <li className="wide"><Ico name="grid" size={19} /> {cardLine}</li>
             </ul>
           </div>
-          <div className="sv-offer-b">
+          <div className="sv-buybox">
+            <small className="sv-buy-cap">Сезонный пропуск · Сезон {seasonNo(p.season)}</small>
             <div className="sv-price">
-              {p.price} <Cur k="diamonds" size={22} />
+              {PREMIUM_PRICE.toLocaleString("ru-RU")} <small>₽</small>
             </div>
-            <button type="button" className="sv-buy" disabled={busy || s.wallet.diamonds < p.price} onClick={() => void buy()}>
+            <div className="sv-off-row">
+              <span>Разовый платёж · весь сезон</span>
+              <span>{p.level > 1 ? `Ур. ${p.level} выдадим сразу` : "Награды сразу"}</span>
+            </div>
+            <Link href="/cards/season/buy" className="sv-buy">
               <Ico name="crown" size={16} /> Открыть премиум
-            </button>
-            <small>{s.wallet.diamonds < p.price ? `Не хватает ${p.price - s.wallet.diamonds} алмазов` : p.level > 1 ? `Уровни до ${p.level} выдадим сразу` : "Награды сразу"}</small>
+            </Link>
+            <Link href="/premium" className="sv-buy ghost">
+              Что даёт Premium
+            </Link>
           </div>
         </section>
       )}
