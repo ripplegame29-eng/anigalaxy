@@ -31,8 +31,9 @@ export function GachaBanner({ variant = "aurora" }: { variant?: GachaVariant }) 
         <div className="gb-bg" aria-hidden />
         <div className="gb-shade" aria-hidden />
         <span className="gb-shine" aria-hidden />
+        <i className="gb-glow" aria-hidden />
         {Array.from({ length: 7 }).map((_, i) => (
-          <i key={i} className="gb-sp" aria-hidden style={{ ["--x" as string]: `${8 + i * 13}%`, ["--d" as string]: `${i * 0.8}s` } as CSSProperties} />
+          <u key={i} className="gb-sp" aria-hidden style={{ ["--x" as string]: `${8 + i * 13}%`, ["--d" as string]: `${i * 0.8}s` } as CSSProperties} />
         ))}
 
         <div className="gb-altar" aria-hidden>
@@ -42,17 +43,17 @@ export function GachaBanner({ variant = "aurora" }: { variant?: GachaVariant }) 
         </div>
 
         <div className="gb-left">
-          <span className="gb-gem">
-            <img className="gb-crystal" src="/banners/gacha-crystal.webp" alt="" width={325} height={328} draggable={false} />
-          </span>
           <div className="gb-text">
-            <p className="gb-eyebrow"><span className="gb-dot" aria-hidden />Коллекция · Бои · Аукцион</p>
+            <p className="gb-eyebrow">Коллекция · Бои · Аукцион</p>
             <h2 className="gb-title">
               Гача <em>AniGalaxy</em>
             </h2>
             <p className="gb-sub">Открой карточки любимых персонажей и собери свою галактику</p>
             <div className="gb-row">
               <Link href="/cards" className="gb-cta">
+                <svg className="gb-spark" viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden>
+                  <path d="M12 1.5l2.2 6.6 6.8 2.2-6.8 2.2L12 19l-2.2-6.5L3 10.3l6.8-2.2L12 1.5z" />
+                </svg>
                 Открыть гачу
                 <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
                   <path d="M5 12h14M13 6l6 6-6 6" />
