@@ -29,7 +29,7 @@ export function AniWatch({
   const hasNext = idx >= 0 && idx + 1 < episodes.length;
 
   return (
-    <div className="space-y-4">
+    <section id="watch" className="scroll-mt-24 space-y-4">
       <div className="wb-shell relative aspect-video w-full overflow-hidden rounded-2xl bg-black ring-1 ring-white/12 shadow-[0_40px_80px_-40px_rgba(0,0,0,1)]">
         <AltPlayer
           key={`${id}:${episode}`}
@@ -70,6 +70,6 @@ export function AniWatch({
           </div>
         </div>
       )}
-    </div>
+    </section>
   );
 }
