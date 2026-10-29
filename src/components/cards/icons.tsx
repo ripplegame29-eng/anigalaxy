@@ -71,55 +71,9 @@ export const CUR: Record<CurKey, { ico: IcoName; color: string; label: string }>
   energy: { ico: "bolt", color: "#ffd84d", label: "Энергия" },
 };
 
-/** Детальный значок валюты: градиенты, грани, блики */
+/** Иллюстрация валюты (прозрачный webp из /public/icons): алмазы, пыль, жетоны паков, энергия */
 export function CurArt({ k, size = 28 }: { k: CurKey; size?: number }) {
-  const id = `cga-${k}`;
-  const common = { width: size, height: size, viewBox: "0 0 32 32", "aria-hidden": true, focusable: false, className: "cur-art", style: { verticalAlign: "-0.22em", flex: "none" } } as const;
-  if (k === "diamonds")
-    return (
-      <svg {...common}>
-        <defs>
-          <linearGradient id={`${id}-a`} x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#e9fbff" /><stop offset=".5" stopColor="#5ec8ff" /><stop offset="1" stopColor="#1f6fe0" /></linearGradient>
-          <linearGradient id={`${id}-b`} x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#7fdcff" /><stop offset="1" stopColor="#1a4fc4" /></linearGradient>
-        </defs>
-        <path d="M16 29.5 3.5 12.2 8.4 4.5h15.2l4.9 7.7z" fill={`url(#${id}-b)`} stroke="#d9f6ff" strokeWidth=".9" strokeLinejoin="round" />
-        <path d="M3.5 12.2h25M8.4 4.5l3.9 7.7L16 4.5l3.7 7.7 3.9-7.7M12.3 12.2 16 29.5l3.7-17.3" fill="none" stroke="#d9f6ff" strokeOpacity=".75" strokeWidth=".8" strokeLinejoin="round" />
-        <path d="M8.4 4.5h7.6l-3.7 7.7H3.5z" fill={`url(#${id}-a)`} opacity=".85" />
-        <path d="M16 4.5h7.6l4.9 7.7h-8.8z" fill="#fff" opacity=".28" />
-      </svg>
-    );
-  if (k === "dust")
-    return (
-      <svg {...common}>
-        <defs>
-          <linearGradient id={`${id}-a`} x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#fbe9ff" /><stop offset=".5" stopColor="#b690ff" /><stop offset="1" stopColor="#6a3fe0" /></linearGradient>
-        </defs>
-        <path d="M16 2.5c.9 7.4 3.9 10.4 11.3 11.5-7.4 1.1-10.4 4.1-11.3 11.5C15.1 18.1 12.1 15.1 4.7 14 12.1 12.9 15.1 9.9 16 2.5z" fill={`url(#${id}-a)`} stroke="#f1dcff" strokeWidth=".8" strokeLinejoin="round" />
-        <path d="M25.5 20.5c.4 3 1.5 4.1 4.5 4.5-3 .4-4.1 1.5-4.5 4.5-.4-3-1.5-4.1-4.5-4.5 3-.4 4.1-1.5 4.5-4.5zM6.5 22c.3 2.2 1.1 3 3.3 3.3-2.2.3-3 1.1-3.3 3.3-.3-2.2-1.1-3-3.3-3.3 2.2-.3 3-1.1 3.3-3.3z" fill="#e6c9ff" />
-        <circle cx="16" cy="14" r="2.2" fill="#fff" opacity=".9" />
-      </svg>
-    );
-  if (k === "packs")
-    return (
-      <svg {...common}>
-        <defs>
-          <linearGradient id={`${id}-a`} x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#fff1c4" /><stop offset=".5" stopColor="#f0b43c" /><stop offset="1" stopColor="#a8630c" /></linearGradient>
-        </defs>
-        <rect x="9.5" y="3.5" width="17" height="23" rx="3" transform="rotate(10 18 15)" fill="#2a1a08" stroke="#a8630c" strokeWidth="1" />
-        <rect x="5.5" y="4.5" width="17" height="23" rx="3" transform="rotate(-6 14 16)" fill="#140e05" stroke={`url(#${id}-a)`} strokeWidth="1.6" />
-        <rect x="8.4" y="7.6" width="11.2" height="17" rx="1.8" transform="rotate(-6 14 16)" fill="none" stroke="#f0b43c" strokeOpacity=".5" strokeWidth=".8" />
-        <path d="m14 11.2 1.5 3.2 3.5.4-2.6 2.4.7 3.5-3.1-1.8-3.1 1.8.7-3.5-2.6-2.4 3.5-.4z" transform="rotate(-6 14 16)" fill={`url(#${id}-a)`} />
-      </svg>
-    );
-  return (
-    <svg {...common}>
-      <defs>
-        <linearGradient id={`${id}-a`} x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#fff6c0" /><stop offset=".55" stopColor="#ffc92e" /><stop offset="1" stopColor="#e07a0a" /></linearGradient>
-      </defs>
-      <path d="M18.8 2 6.5 17.4h7.3L12.2 30l13.3-16.6h-7.6z" fill={`url(#${id}-a)`} stroke="#fff3b8" strokeWidth=".9" strokeLinejoin="round" />
-      <path d="M18.8 2 6.5 17.4h4.6z" fill="#fff" opacity=".45" />
-    </svg>
-  );
+  return <img className="cur-art" src={`/icons/cur-${k}.webp`} width={size} height={size} alt="" draggable={false} />;
 }
 
 /** Значок валюты в тексте */
