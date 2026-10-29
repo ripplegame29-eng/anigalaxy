@@ -91,14 +91,17 @@ export default async function MangaCatalogPage({ searchParams }: PageProps) {
   };
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10">
-      <Breadcrumbs items={[{ label: "Манга" }]} />
+    <div className="cat-page">
+    <div className="cat-wrap">
+      <div className="cat-crumbs">
+        <Breadcrumbs items={[{ label: "Манга" }]} />
+      </div>
 
-      <div className="mb-6">
-        <h1 className="text-2xl font-extrabold tracking-tight sm:text-3xl">
+      <div>
+        <h1 className="cat-h1">
           {query ? `Поиск: ${query}` : "Каталог манги"}
         </h1>
-        <p className="mt-1.5 text-sm text-muted">
+        <p className="cat-found">
           {query ? (
             total > 0 ? (
               <>
@@ -120,7 +123,7 @@ export default async function MangaCatalogPage({ searchParams }: PageProps) {
       </div>
 
       {/* Поиск: обычная форма без JS, поэтому работает и с отключённым скриптом */}
-      <form action="/manga" method="get" role="search" className="mb-6">
+      <form action="/manga" method="get" role="search" className="mb-3.5">
         <input type="hidden" name="sort" value={sort} />
         {genre && <input type="hidden" name="genre" value={genre} />}
         {status && <input type="hidden" name="status" value={status} />}
@@ -256,6 +259,7 @@ export default async function MangaCatalogPage({ searchParams }: PageProps) {
           ) : null}
         </nav>
       )}
+    </div>
     </div>
   );
 }

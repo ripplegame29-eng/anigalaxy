@@ -1,0 +1,87 @@
+diff --git a/src/app/manga/manga-catalog.css b/src/app/manga/manga-catalog.css
+index 787a9db..9bfd9b2 100644
+--- a/src/app/manga/manga-catalog.css
++++ b/src/app/manga/manga-catalog.css
+@@ -5,17 +5,17 @@
+ .mg-sb svg { position: absolute; left: 20px; top: 50%; width: 18px; height: 18px; transform: translateY(-50%); color: #8a8a90; pointer-events: none; }
+ .mg-sb input {
+   width: 100%; height: 52px; padding: 0 20px 0 48px; border: 0; border-radius: 16px; background: #0f0f10; color: #fff;
+-  font: 700 15px/1 inherit; transition: background .2s, box-shadow .2s;
++  font-family: inherit; font-size: 15px; font-weight: 700; transition: background .2s, box-shadow .2s;
+ }
+ .mg-sb input::placeholder { color: #8a8a90; }
+ .mg-sb input:focus { outline: 0; background: #131314; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .22); }
+ .mg-go {
+-  height: 52px; padding: 0 26px; border: 0; border-radius: 16px; background: #fff; color: #0a0a0b; font: 800 14px/1 inherit; cursor: pointer;
++  height: 52px; padding: 0 26px; border: 0; border-radius: 16px; background: #fff; color: #0a0a0b; font-family: inherit; font-size: 14px; font-weight: 800; cursor: pointer;
+   transition: opacity .2s;
+ }
+ .mg-go:hover { opacity: .88; }
+ .mg-reset {
+-  display: inline-flex; align-items: center; height: 52px; padding: 0 20px; border-radius: 16px; background: #171719; color: #a4a4ab; font: 800 14px/1 inherit;
++  display: inline-flex; align-items: center; height: 52px; padding: 0 20px; border-radius: 16px; background: #171719; color: #a4a4ab; font-family: inherit; font-size: 14px; font-weight: 800;
+ }
+ .mg-reset:hover { background: #202023; color: #fff; }
+ 
+@@ -23,13 +23,13 @@
+ .mg-top { display: flex; flex-wrap: wrap; gap: 14px 32px; }
+ .mg-genres { padding-top: 18px; border-top: 1px solid #1a1a1c; }
+ .mg-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+-.mg-lab { flex: none; margin-right: 4px; color: #8a8a90; font: 800 11px/1 inherit; letter-spacing: .09em; text-transform: uppercase; }
++.mg-lab { flex: none; margin-right: 4px; color: #8a8a90; font-family: inherit; font-size: 11px; font-weight: 800; letter-spacing: .09em; text-transform: uppercase; }
+ .mg-genres .mg-lab { width: 100%; margin: 0 0 4px; }
+ .mg-row > a {
+   display: inline-flex; align-items: center; gap: 6px; height: 42px; padding: 0 16px; border-radius: 12px;
+-  background: #171719; color: #a4a4ab; font: 800 13.5px/1 inherit; transition: background .2s, color .2s; touch-action: manipulation;
++  background: #171719; color: #a4a4ab; font-family: inherit; font-size: 14px; font-weight: 800; transition: background .2s, color .2s; touch-action: manipulation;
+ }
+-.mg-row > a small { font: 700 11px/1 inherit; color: #6d6d74; }
++.mg-row > a small { font-family: inherit; font-size: 11px; font-weight: 700; color: #6d6d74; }
+ .mg-row > a:hover { background: #202023; color: #fff; }
+ .mg-row > a.on { background: #fff; color: #0a0a0b; }
+ .mg-row > a.on small { color: #55555c; }
+diff --git a/src/app/manga/page.tsx b/src/app/manga/page.tsx
+index 00c05fa..f13a9fb 100644
+--- a/src/app/manga/page.tsx
++++ b/src/app/manga/page.tsx
+@@ -91,14 +91,17 @@ export default async function MangaCatalogPage({ searchParams }: PageProps) {
+   };
+ 
+   return (
+-    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10">
+-      <Breadcrumbs items={[{ label: "Манга" }]} />
++    <div className="cat-page">
++    <div className="cat-wrap">
++      <div className="cat-crumbs">
++        <Breadcrumbs items={[{ label: "Манга" }]} />
++      </div>
+ 
+-      <div className="mb-6">
+-        <h1 className="text-2xl font-extrabold tracking-tight sm:text-3xl">
++      <div>
++        <h1 className="cat-h1">
+           {query ? `Поиск: ${query}` : "Каталог манги"}
+         </h1>
+-        <p className="mt-1.5 text-sm text-muted">
++        <p className="cat-found">
+           {query ? (
+             total > 0 ? (
+               <>
+@@ -120,7 +123,7 @@ export default async function MangaCatalogPage({ searchParams }: PageProps) {
+       </div>
+ 
+       {/* Поиск: обычная форма без JS, поэтому работает и с отключённым скриптом */}
+-      <form action="/manga" method="get" role="search" className="mb-6">
++      <form action="/manga" method="get" role="search" className="mb-3.5">
+         <input type="hidden" name="sort" value={sort} />
+         {genre && <input type="hidden" name="genre" value={genre} />}
+         {status && <input type="hidden" name="status" value={status} />}
+@@ -257,5 +260,6 @@ export default async function MangaCatalogPage({ searchParams }: PageProps) {
+         </nav>
+       )}
+     </div>
++    </div>
+   );
+-}
+\ No newline at end of file
++}
