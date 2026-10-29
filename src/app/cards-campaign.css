@@ -995,3 +995,21 @@
 .cg .cg-hero2.mini .cg-tok b { font-size: 18px; }
 @media (max-width: 820px) { .cg .cg-hero2 .cg-ledger { display: flex; flex-wrap: wrap; gap: 8px 0; } .cg .cg-hero2 .cg-tok { padding: 2px 14px; } }
 .cg .cg-hero2.mini .cg-tok, .cg .cg-hero2 .cg-tok { border-radius: 0; }
+
+/* --- Подиум v3: одна тонкая градиентная рамка, без «закладок» и лучей, чёткая иерархия внутри --- */
+.cg .cg-bt .lb-pod, .cg .cg-bt .lb-pod.p1 { border: 1px solid transparent; outline: 0; }
+.cg .cg-bt .lb-pod { background: radial-gradient(80% 40% at 50% 0%, color-mix(in srgb, var(--m) 14%, transparent), transparent 75%) padding-box, linear-gradient(180deg, #111a38, #080d1c) padding-box, linear-gradient(180deg, color-mix(in srgb, var(--m) 70%, transparent), rgba(96,150,255,.1) 65%) border-box; }
+.cg .cg-bt .lb-pod.p1 { background: radial-gradient(80% 45% at 50% 0%, rgba(245,183,74,.2), transparent 75%) padding-box, linear-gradient(180deg, #1b1a20, #0a0b12) padding-box, linear-gradient(180deg, rgba(245,200,110,.9), rgba(245,183,74,.08) 70%) border-box; }
+.cg .cg-bt .lb-pod.empty { background: rgba(255,255,255,.02); border-color: rgba(96,150,255,.1); }
+.cg .cg-bt .lb-pod .lb-big, .cg .cg-bt .lb-pod.p1 .lb-ava::before, .cg .cg-bt .lb-sheen { display: none; }
+.cg .cg-bt .lb-pod.empty .lb-big { display: none; }
+.cg .cg-bt .lb-pod::after { left: 34%; right: 34%; }
+.cg .cg-bt .lb-ava { background: radial-gradient(circle, color-mix(in srgb, var(--m) 22%, transparent), transparent 68%); }
+.cg .cg-bt .lb-crown { display: flex; align-items: center; gap: 12px; margin-bottom: 2px; }
+.cg .cg-bt .lb-crown::before, .cg .cg-bt .lb-crown::after { content: ""; width: 38px; height: 1px; background: linear-gradient(90deg, transparent, rgba(245,183,74,.7)); }
+.cg .cg-bt .lb-crown::after { transform: scaleX(-1); }
+.cg .cg-bt .lb-medal { margin-top: 6px; }
+.cg .cg-bt .lb-league { color: #d9c3a6; background: rgba(255,255,255,.05); box-shadow: inset 0 0 0 1px rgba(255,255,255,.12); font: 700 11.5px var(--font-body, inherit); }
+.cg .cg-bt .lb-rate { width: 72%; justify-content: center; margin-top: 10px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,.08); }
+.cg .cg-bt .lb-rec { margin-top: 2px; font-size: 12px; color: #8d98b4; letter-spacing: .02em; }
+.cg .cg-bt .lb-pod.me .lb-medal::after { content: " · ВЫ"; color: #22d3ee; }
