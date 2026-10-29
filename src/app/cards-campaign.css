@@ -1124,3 +1124,9 @@
 .cg .hx-sub, .cg .hx-prog-top { text-shadow: 0 1px 10px rgba(3,7,20,.9), 0 0 3px rgba(3,7,20,.7); }
 .cg .hx-facts { gap: 8px; }
 .cg .hx-facts li { padding: 10px 14px 10px 12px; column-gap: 9px; }
+
+/* Правки шапки: арт на всю ширину без жёсткой кромки сверху и слева, заголовок в одну строку */
+.cg .sv-bg > .sv-scene { background-size: 100% 100%, 100% 100%, cover; background-position: 0 0, 0 0, 78% 0; -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 150px, #000 55%, transparent 100%); mask-image: linear-gradient(180deg, transparent 0, #000 150px, #000 55%, transparent 100%); }
+.cg .hx-main { max-width: 680px; }
+.cg .hx-title { font-size: clamp(30px, 3.6vw, 50px); white-space: nowrap; }
+@media (max-width: 820px) { .cg .hx-title { white-space: normal; font-size: clamp(28px, 8vw, 40px); } }
