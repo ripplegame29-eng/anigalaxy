@@ -131,7 +131,6 @@ export function SeasonTab({ s }: { s: CardsState }) {
   const doneCount = p.free.length + p.premium.length;
   const totalCount = PASS.levels * 2;
   const nextBig = levels.find((l) => l > p.level && l % 5 === 0) ?? null;
-  const fan = levels.filter((l) => l > p.level).slice(0, 3);
 
   const scrollTo = useCallback((level: number, behavior: ScrollBehavior = "smooth") => {
     const rail = railRef.current;
@@ -206,9 +205,10 @@ export function SeasonTab({ s }: { s: CardsState }) {
     <div className="sv">
       {/* ------------------------------ Герб сезона ------------------------------ */}
       <section className={`sv-hero${p.bought ? " is-prem" : ""}`}>
-        <i className="sv-aurora" aria-hidden />
-        <i className="sv-stars" aria-hidden />
-        <b className="sv-wm" aria-hidden>{p.season % 100}</b>
+        <i className="sv-sky" aria-hidden />
+        <i className="sv-clouds" aria-hidden />
+        <i className="sv-sea" aria-hidden />
+        <i className="sv-art" aria-hidden />
 
         <div className="sv-crest" aria-label={`Уровень ${p.level} из ${PASS.levels}`}>
           <div className="sv-hex">
@@ -223,9 +223,9 @@ export function SeasonTab({ s }: { s: CardsState }) {
         <div className="sv-main">
           <span className="cg-eyebrow">Сезон {p.season % 100}</span>
           <h2 className="sv-title">
-            Сезонный <em>пасс</em>
+            Сезонный <em>пропуск</em>
           </h2>
-          <p className="sv-sub">Очки идут за бои, паки, кампанию, рейд, обмены и подарок дня. Две ленты наград: бесплатная и премиум.</p>
+          <p className="sv-sub">Очищай путь за бой, паки, кампанию, рейды, обмены и подарки дня. Две ветки наград: бесплатная и премиум.</p>
 
           <div className="sv-prog">
             <div className="sv-prog-top">
@@ -255,23 +255,6 @@ export function SeasonTab({ s }: { s: CardsState }) {
             </li>
           </ul>
         </div>
-
-        {fan.length > 0 && (
-          <div className="sv-fan" aria-label="Ближайшие награды">
-            {fan.map((l, i) => {
-              const m = parts(passReward(l, "free"))[0];
-              if (!m) return null;
-              return (
-                <div key={l} className={`sv-mini m${i}${l % 5 === 0 ? " big" : ""}`}>
-                  <small>Ур. {l}</small>
-                  <span className="sv-gem" aria-hidden><PartIcon k={m.k} size={26} /></span>
-                  <b>+{m.n}</b>
-                  <small>{m.label}</small>
-                </div>
-              );
-            })}
-          </div>
-        )}
       </section>
 
       {/* --------------------------------- Премиум -------------------------------- */}
