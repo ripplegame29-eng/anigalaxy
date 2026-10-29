@@ -1,15 +1,12 @@
 "use client";
 
 /**
- * Сезонный пасс карточной игры в оформлении боевого пропуска сайта («Hueco Mundo»):
- * та же шапка (`BpHero`), дорожка с колонками уровней, карточка премиум-линии и
- * панель «Как набрать очки». Логика наград прежняя — меняется только вид.
+ * Сезонный пасс карточной игры («Сезонный свод»): герб сезона и веер ближайших наград,
+ * золотая карточка премиума, дорожка из наградных карт на светящейся тропе уровней
+ * и журнал очков. Логика наград прежняя — меняется только вид (стили `sv-*`).
  */
 
 import { memo, useCallback, useEffect, useRef, useState } from "react";
-import { BpHero } from "@/components/battlepass/BpParts";
-import { BpIcon } from "@/components/battlepass/BpIcons";
-import { scrollTrackTo } from "@/components/battlepass/Track";
 import { PASS, PASS_XP, PASS_XP_DAILY, PASS_XP_MISSION, passReward, type PassTrack } from "@/lib/cards/season";
 import { rewardText, type Reward } from "@/lib/cards/progress";
 import { act, type CardsState } from "@/lib/cards/client";
@@ -45,60 +42,53 @@ function PartIcon({ k, size }: { k: Part["k"]; size: number }) {
 
 type Status = "got" | "can" | "locked";
 
-const Cell = memo(function Cell({
+/** Наградная карта: рамка-фольга по ленте, у вех — голографический блик */
+const RewardCard = memo(function RewardCard({
   level,
   track,
   status,
   reward,
-  lockedLine,
   onClaim,
 }: {
   level: number;
   track: PassTrack;
   status: Status;
   reward: Reward;
-  lockedLine: boolean;
   onClaim: (track: PassTrack, level: number) => void;
 }) {
   const list = parts(reward);
   const main = list[0];
   const rest = list.slice(1);
-  const vip = track === "premium";
-  const big = level % 5 === 0;
-  const color = big ? "#ffc45e" : vip ? "#ff6b86" : "#9db4ff";
   return (
-    <div className={`bp-slot ${track} has`}>
-      <button
-        type="button"
-        className={`bp-rw ${status} ${vip ? "vip" : ""}`}
-        style={{ "--c": color } as React.CSSProperties}
-        aria-disabled={status !== "can"}
-        aria-label={`Уровень ${level}, ${vip ? "премиум" : "бесплатная"} награда: ${rewardText(reward)}`}
-        onClick={() => {
-          if (status === "can") onClaim(track, level);
-        }}
-      >
-        {status === "got" && <span className="bp2-lk ok" aria-hidden>✓</span>}
-        {status === "locked" && (lockedLine || vip) && <span className="bp2-lk" aria-hidden><BpIcon name="lock" size={13} /></span>}
-        {main && (
-          <>
-            <span className="bp2-ic" aria-hidden><PartIcon k={main.k} size={26} /></span>
-            <span className={`bp2-v${String(main.n).length > 3 ? " sm" : ""}`}>+{main.n.toLocaleString("ru-RU")}</span>
-            <small>{main.label}</small>
-          </>
-        )}
-        {rest.length > 0 && (
-          <span className="ps-more">
-            {rest.map((x) => (
-              <span key={x.k} title={x.label}>
-                <PartIcon k={x.k} size={12} /> {x.n}
-              </span>
-            ))}
-          </span>
-        )}
-        {status === "can" && <span className="bp2-take">Забрать</span>}
-      </button>
-    </div>
+    <button
+      type="button"
+      className={`sv-card ${track} ${status}${level % 5 === 0 ? " big" : ""}`}
+      aria-disabled={status !== "can"}
+      aria-label={`Уровень ${level}, ${track === "premium" ? "премиум" : "бесплатная"} награда: ${rewardText(reward)}`}
+      onClick={() => {
+        if (status === "can") onClaim(track, level);
+      }}
+    >
+      {main && (
+        <>
+          <span className="sv-gem" aria-hidden><PartIcon k={main.k} size={track === "premium" ? 28 : 26} /></span>
+          <b className="sv-val">+{main.n.toLocaleString("ru-RU")}</b>
+          <small>{main.label}</small>
+        </>
+      )}
+      {rest.length > 0 && (
+        <span className="sv-more">
+          {rest.map((x) => (
+            <span key={x.k} title={x.label}>
+              <PartIcon k={x.k} size={12} /> {x.n}
+            </span>
+          ))}
+        </span>
+      )}
+      {status === "got" && <span className="sv-stamp" aria-hidden><Ico name="check" size={14} /></span>}
+      {status === "locked" && track === "premium" && <span className="sv-lock" aria-hidden><Ico name="lock" size={12} /></span>}
+      {status === "can" && <span className="sv-take">Забрать</span>}
+    </button>
   );
 });
 
@@ -106,10 +96,10 @@ export function SeasonTab({ s }: { s: CardsState }) {
   const p = s.events.pass;
   const [busy, run] = useBusy();
   const now = useNow(60_000);
-  const heroRef = useRef<HTMLElement>(null);
   const railRef = useRef<HTMLDivElement>(null);
   const drag = useRef<{ x: number; left: number; moved: boolean } | null>(null);
   const [label, setLabel] = useState(Math.max(1, p.level));
+  const here = Math.max(1, p.level);
 
   const claim = useCallback(
     (track: PassTrack, level: number) =>
@@ -129,7 +119,8 @@ export function SeasonTab({ s }: { s: CardsState }) {
   const availableFree = levels.filter((l) => l <= p.level && !p.free.includes(l)).length;
   const availablePrem = p.bought ? levels.filter((l) => l <= p.level && !p.premium.includes(l)).length : 0;
   const claimable = availableFree + availablePrem;
-  const fraction = p.level >= PASS.levels ? 1 : Math.min(1, p.into / PASS.xpPerLevel);
+  const maxed = p.level >= PASS.levels;
+  const pct = maxed ? 100 : Math.min(100, (p.into / PASS.xpPerLevel) * 100);
   const premSum = levels.reduce(
     (a, l) => {
       const r = passReward(l, "premium");
@@ -140,12 +131,20 @@ export function SeasonTab({ s }: { s: CardsState }) {
   const doneCount = p.free.length + p.premium.length;
   const totalCount = PASS.levels * 2;
   const nextBig = levels.find((l) => l > p.level && l % 5 === 0) ?? null;
+  const fan = levels.filter((l) => l > p.level).slice(0, 3);
+
+  const scrollTo = useCallback((level: number, behavior: ScrollBehavior = "smooth") => {
+    const rail = railRef.current;
+    const col = rail?.querySelector<HTMLElement>(`[data-l="${Math.min(PASS.levels, Math.max(1, level))}"]`);
+    if (!rail || !col) return;
+    rail.scrollTo({ left: Math.max(0, col.offsetLeft - rail.clientWidth / 2 + col.clientWidth / 2), behavior });
+  }, []);
 
   /* Дорожка: стартуем с текущего уровня; колесо и перетаскивание листают её горизонтально */
   useEffect(() => {
     const rail = railRef.current;
     if (!rail) return;
-    scrollTrackTo(rail, Math.max(1, p.level), "auto");
+    scrollTo(here, "auto");
     const sync = () => {
       const first = rail.firstElementChild as HTMLElement | null;
       const second = first?.nextElementSibling as HTMLElement | null;
@@ -191,7 +190,6 @@ export function SeasonTab({ s }: { s: CardsState }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- стартовая позиция ставится один раз
   }, []);
 
-  const seek = (level: number) => scrollTrackTo(railRef.current, Math.min(PASS.levels, Math.max(1, level)));
   const status = (l: number, track: PassTrack): Status => {
     const done = (track === "free" ? p.free : p.premium).includes(l);
     if (done) return "got";
@@ -205,126 +203,151 @@ export function SeasonTab({ s }: { s: CardsState }) {
   const jumps = [1, 5, 10, 15, 20, 25, 30];
 
   return (
-    <div className="bp-page bp2 bp-season">
-      <BpHero
-        tab="rewards"
-        onTab={() => undefined}
-        level={p.level}
-        maxLevel={PASS.levels}
-        fraction={fraction}
-        into={p.into}
-        need={PASS.xpPerLevel}
-        xpLeftToFinal={0}
-        claimables={claimable}
-        totalCards={totalCount}
-        missionsDone={0}
-        missionsTotal={0}
-        heroRef={heroRef}
-        variant={{
-          kicker: `Сезонный пасс · Сезон ${p.season % 100}`,
-          title: "Сезонный пасс",
-          sub: "Очки идут за бои, паки, кампанию, рейд, обмены и подарок дня. Три десятка уровней, две ленты наград — бесплатная и премиум.",
-          unit: "оч.",
-          endsAt: p.endsAt,
-          tiles: [
-            { icon: <BpIcon name="gift" />, label: "К получению", value: `${claimable} наград`, hot: claimable > 0 },
-            { icon: <BpIcon name="hourglass" />, label: "До конца сезона", value: fmtLeft(p.endsAt - now) },
-            { icon: <BpIcon name={p.bought ? "crown" : "lock"} />, label: "Премиум", value: p.bought ? "Активен" : "Закрыт" },
-          ],
-        }}
-      />
+    <div className="sv">
+      {/* ------------------------------ Герб сезона ------------------------------ */}
+      <section className={`sv-hero${p.bought ? " is-prem" : ""}`}>
+        <i className="sv-aurora" aria-hidden />
+        <i className="sv-stars" aria-hidden />
+        <b className="sv-wm" aria-hidden>{p.season % 100}</b>
 
-      <div className="bp-season-main">
-        {p.bought ? (
-          <div className="bp2-card bp2-offer on">
-            <div>
-              <span className="bp2-gk">Премиум-лента</span>
-              <h2>Премиум активен</h2>
-              <p className="bp2-offer-p">
-                Нижняя лента открыта целиком: {PASS.levels} наградных уровней — {premSum.diamonds.toLocaleString("ru-RU")} алмазов,{" "}
-                {premSum.packs} паков и {premSum.scroll} свитков. Забирайте на дорожке — ничего не сгорит до конца сезона.
-              </p>
+        <div className="sv-crest" aria-label={`Уровень ${p.level} из ${PASS.levels}`}>
+          <div className="sv-hex">
+            <div className="sv-hex-in">
+              <small>Уровень</small>
+              <b>{p.level}</b>
+              <small>из {PASS.levels}</small>
             </div>
           </div>
-        ) : (
-          <div className="bp2-card bp2-offer">
-            <div>
-              <span className="bp2-gk">Вторая лента наград</span>
-              <h2>Откройте полный трек сезона</h2>
-              <div className="bp2-pk">
-                <div>
-                  <i><BpIcon name="gem" size={24} /></i>
-                  <span>{premSum.diamonds.toLocaleString("ru-RU")} алмазов по ходу трека — окупает цену пропуска</span>
-                </div>
-                <div>
-                  <i><BpIcon name="puzzle" size={24} /></i>
-                  <span>{premSum.packs} паков и {premSum.scroll} свитков улучшения сверх бесплатной ленты</span>
-                </div>
-                <div>
-                  <i><BpIcon name="crown" size={24} /></i>
-                  <span>Нижняя лента на всех {PASS.levels} уровнях — пройденные уровни выдаются сразу</span>
-                </div>
-                <div>
-                  <i>⌛</i>
-                  <span>Покупка действует до конца сезона: {fmtLeft(p.endsAt - now)}</span>
-                </div>
-              </div>
-            </div>
-            <div className="bp2-buy">
-              <small>Премиум-лента · сезон {p.season % 100}</small>
-              <div className="bp2-price">
-                {p.price} <small><Cur k="diamonds" size={18} /></small>
-              </div>
-              <div className="bp2-old">
-                <span>Разовая покупка · весь сезон</span>
-                <span>{p.level > 1 ? `Ур. ${p.level} выдадим сразу` : "Награды сразу"}</span>
-              </div>
-              <button type="button" className="bp2-btn gold" disabled={busy || s.wallet.diamonds < p.price} onClick={() => void buy()}>
-                Открыть премиум
-              </button>
-              {s.wallet.diamonds < p.price && <small>Не хватает {p.price - s.wallet.diamonds} алмазов</small>}
-            </div>
-          </div>
-        )}
-
-        <div className="bp2-claimbar">
-          <span>
-            Алмазы <b>{fmt(s.wallet.diamonds)}</b>
-          </span>
-          <button type="button" className="bp2-btn" onClick={claimAll} disabled={busy || claimable === 0}>
-            Забрать все награды <em>{claimable}</em>
-          </button>
         </div>
 
-        <section className="bp2-sec bp-track" aria-labelledby="ps-track-title">
-          <div className="bp2-shd">
-            <div>
-              <h2 id="ps-track-title">Награды сезона</h2>
-              <p>
-                Получено {doneCount} из {totalCount}
-                {nextBig ? ` · следующая крупная награда — уровень ${nextBig}` : ""}
-              </p>
+        <div className="sv-main">
+          <span className="cg-eyebrow">Сезон {p.season % 100}</span>
+          <h2 className="sv-title">
+            Сезонный <em>пасс</em>
+          </h2>
+          <p className="sv-sub">Очки идут за бои, паки, кампанию, рейд, обмены и подарок дня. Две ленты наград: бесплатная и премиум.</p>
+
+          <div className="sv-prog">
+            <div className="sv-prog-top">
+              <span>{maxed ? "Максимальный уровень" : `Уровень ${p.level} → ${p.level + 1}`}</span>
+              <b>{maxed ? `${fmt(p.xp)} оч.` : `${p.into} / ${PASS.xpPerLevel} оч.`}</b>
             </div>
-            <div className="bp2-chips" role="group" aria-label="Быстрый переход по уровням">
-              <button type="button" className={`bp2-pl${label === Math.max(1, p.level) ? " on" : ""}`} onClick={() => seek(Math.max(1, p.level))}>
+            <div className="sv-bar" role="progressbar" aria-valuenow={Math.round(pct)} aria-valuemin={0} aria-valuemax={100}>
+              <i style={{ width: `${pct}%` }} />
+            </div>
+          </div>
+
+          <ul className="sv-facts">
+            <li>
+              <Ico name="clock" size={16} />
+              <span>До конца сезона</span>
+              <b>{fmtLeft(p.endsAt - now)}</b>
+            </li>
+            <li className={claimable > 0 ? "hot" : ""}>
+              <Ico name="gift" size={16} />
+              <span>К получению</span>
+              <b>{claimable}</b>
+            </li>
+            <li className={p.bought ? "gold" : ""}>
+              <Ico name={p.bought ? "crown" : "lock"} size={16} />
+              <span>Премиум</span>
+              <b>{p.bought ? "Активен" : "Закрыт"}</b>
+            </li>
+          </ul>
+        </div>
+
+        {fan.length > 0 && (
+          <div className="sv-fan" aria-label="Ближайшие награды">
+            {fan.map((l, i) => {
+              const m = parts(passReward(l, "free"))[0];
+              if (!m) return null;
+              return (
+                <div key={l} className={`sv-mini m${i}${l % 5 === 0 ? " big" : ""}`}>
+                  <small>Ур. {l}</small>
+                  <span className="sv-gem" aria-hidden><PartIcon k={m.k} size={26} /></span>
+                  <b>+{m.n}</b>
+                  <small>{m.label}</small>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </section>
+
+      {/* --------------------------------- Премиум -------------------------------- */}
+      {p.bought ? (
+        <section className="sv-offer on">
+          <span className="sv-crown" aria-hidden><Ico name="crown" size={26} /></span>
+          <div>
+            <h3>Премиум-лента открыта</h3>
+            <p>
+              Все {PASS.levels} наградных уровней нижней ленты ваши: {premSum.diamonds.toLocaleString("ru-RU")} алмазов, {premSum.packs} паков и {premSum.scroll} свитков.
+              Незабранное не сгорит до конца сезона.
+            </p>
+          </div>
+        </section>
+      ) : (
+        <section className="sv-offer">
+          <i className="sv-sweep" aria-hidden />
+          <span className="sv-crown" aria-hidden><Ico name="crown" size={34} /></span>
+          <div className="sv-offer-t">
+            <span className="sv-kick">Премиум-лента</span>
+            <h3>Откройте вторую ленту наград</h3>
+            <ul>
+              <li><Ico name="check" size={14} /> {premSum.diamonds.toLocaleString("ru-RU")} алмазов по ходу трека — выше цены пасса</li>
+              <li><Ico name="check" size={14} /> {premSum.packs} паков и {premSum.scroll} свитков улучшения</li>
+              <li><Ico name="check" size={14} /> Пройденные уровни выдаются сразу</li>
+              <li><Ico name="check" size={14} /> Действует до конца сезона</li>
+            </ul>
+          </div>
+          <div className="sv-offer-b">
+            <div className="sv-price">
+              {p.price} <Cur k="diamonds" size={22} />
+            </div>
+            <button type="button" className="sv-buy" disabled={busy || s.wallet.diamonds < p.price} onClick={() => void buy()}>
+              <Ico name="crown" size={16} /> Открыть премиум
+            </button>
+            <small>{s.wallet.diamonds < p.price ? `Не хватает ${p.price - s.wallet.diamonds} алмазов` : p.level > 1 ? `Уровни до ${p.level} выдадим сразу` : "Награды сразу"}</small>
+          </div>
+        </section>
+      )}
+
+      {/* ---------------------------------- Дорожка -------------------------------- */}
+      <section className="sv-track" aria-labelledby="sv-track-title">
+        <div className="sv-th">
+          <div>
+            <h3 id="sv-track-title">Награды сезона</h3>
+            <p>
+              Получено {doneCount} из {totalCount}
+              {nextBig ? ` · следующая веха — уровень ${nextBig}` : ""}
+            </p>
+          </div>
+          <div className="sv-th-r">
+            <div className="sv-jumps" role="group" aria-label="Быстрый переход по уровням">
+              <button type="button" className={label === here ? "on" : ""} onClick={() => scrollTo(here)}>
                 Сейчас
               </button>
               {jumps.map((lv) => (
-                <button key={lv} type="button" className={`bp2-pl${label !== Math.max(1, p.level) && Math.abs(label - lv) < 3 ? " on" : ""}`} onClick={() => seek(lv)}>
+                <button key={lv} type="button" className={label !== here && Math.abs(label - lv) < 3 ? "on" : ""} onClick={() => scrollTo(lv)}>
                   {lv}
                 </button>
               ))}
             </div>
+            <button type="button" className="sv-all" onClick={claimAll} disabled={busy || claimable === 0}>
+              Забрать всё <em>{claimable}</em>
+            </button>
           </div>
+        </div>
 
-          <div className="bp2-legend">
-            <span><i />Сверху — бесплатная лента</span>
-            <span><i className="g" />Снизу — премиум-лента{p.bought ? "" : " (откроется после покупки)"}</span>
-            <span><i className="m" />Можно забрать</span>
-          </div>
+        <ul className="sv-legend">
+          <li><i />Бесплатная лента — сверху</li>
+          <li><i className="g" />Премиум-лента — снизу{p.bought ? "" : " (после покупки)"}</li>
+          <li><i className="m" />Можно забрать</li>
+        </ul>
 
+        <div className="sv-railw">
           <div
-            className="bp-sc"
+            className="sv-rail"
             ref={railRef}
             tabIndex={0}
             aria-label="Дорожка наград"
@@ -341,48 +364,41 @@ export function SeasonTab({ s }: { s: CardsState }) {
             }}
             onKeyDown={(e) => {
               const d = { ArrowLeft: -1, ArrowRight: 1 }[e.key];
-              if (d !== undefined) railRef.current?.scrollBy({ left: d * 100, behavior: "smooth" });
+              if (d !== undefined) railRef.current?.scrollBy({ left: d * 120, behavior: "smooth" });
             }}
           >
             {levels.map((l) => (
-              <div
-                key={l}
-                data-l={l}
-                className={`bp-col ${l === p.level ? "cur" : l < p.level ? "past" : ""}${l % 5 === 0 ? " key" : ""}`}
-              >
-                <Cell level={l} track="free" status={status(l, "free")} reward={passReward(l, "free")} lockedLine={false} onClaim={(t, lv) => void claim(t, lv)} />
-                <div className="bp-num"><b>{l}</b></div>
-                <Cell level={l} track="premium" status={status(l, "premium")} reward={passReward(l, "premium")} lockedLine={!p.bought} onClaim={(t, lv) => void claim(t, lv)} />
+              <div key={l} data-l={l} className={`sv-col${l < p.level ? " past" : ""}${l === p.level ? " cur" : ""}${l % 5 === 0 ? " key" : ""}`}>
+                <RewardCard level={l} track="free" status={status(l, "free")} reward={passReward(l, "free")} onClaim={(t, lv) => void claim(t, lv)} />
+                <div className="sv-node"><b><span>{l}</span></b></div>
+                <RewardCard level={l} track="premium" status={status(l, "premium")} reward={passReward(l, "premium")} onClaim={(t, lv) => void claim(t, lv)} />
               </div>
             ))}
           </div>
+          <button type="button" className="sv-arr l" aria-label="Назад" onClick={() => scrollTo(label - 4)}>‹</button>
+          <button type="button" className="sv-arr r" aria-label="Вперёд" onClick={() => scrollTo(label + 4)}>›</button>
+        </div>
+      </section>
 
-          <div className="bp2-arrows">
-            <button type="button" className="bp2-arr" aria-label="Назад" onClick={() => seek(label - 4)}>‹</button>
-            <button type="button" className="bp2-arr" aria-label="Вперёд" onClick={() => seek(label + 4)}>›</button>
-          </div>
-        </section>
-
-        <section className="bp-panel p-4 sm:p-5">
-          <h2 className="font-display text-lg font-black tracking-wide text-white">Как набрать очки</h2>
-          <p className="mt-1 text-sm text-muted">Каждые {PASS.xpPerLevel} очков открывают следующий уровень пасса.</p>
-          <div className="mt-3 grid gap-2.5 sm:grid-cols-2 lg:grid-cols-4">
-            {[
-              { k: "daily", label: "Подарок дня", ico: "gift" as IcoName, n: PASS_XP_DAILY },
-              { k: "mission", label: "Выполненное задание дня", ico: "target" as IcoName, n: PASS_XP_MISSION },
-              ...XP_ROWS.map(([k, label, ico]) => ({ k, label, ico, n: PASS_XP[k] })),
-            ].map((row) => (
-              <div key={row.k} className="ps-src">
-                <span className="ps-src-i"><Ico name={row.ico} size={20} /></span>
-                <p>{row.label}</p>
-                <b>+{row.n}</b>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <p className="bp2-foot">Награды пасса остаются с вами: незабранные не сгорают до конца сезона.</p>
-      </div>
+      {/* ---------------------------------- Журнал -------------------------------- */}
+      <section className="sv-ledger">
+        <h3>Как набрать очки</h3>
+        <p>Каждые {PASS.xpPerLevel} очков открывают следующий уровень.</p>
+        <ul>
+          {[
+            { k: "daily", label: "Подарок дня", ico: "gift" as IcoName, n: PASS_XP_DAILY },
+            { k: "mission", label: "Выполненное задание дня", ico: "target" as IcoName, n: PASS_XP_MISSION },
+            ...XP_ROWS.map(([k, label, ico]) => ({ k, label, ico, n: PASS_XP[k] })),
+          ].map((row) => (
+            <li key={row.k}>
+              <span className="sv-li"><Ico name={row.ico} size={16} /></span>
+              <span>{row.label}</span>
+              <i aria-hidden />
+              <b>+{row.n}</b>
+            </li>
+          ))}
+        </ul>
+      </section>
     </div>
   );
 }

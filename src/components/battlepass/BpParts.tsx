@@ -30,36 +30,23 @@ export interface BpHeroProps {
   missionsDone: number;
   missionsTotal: number;
   heroRef: React.RefObject<HTMLElement | null>;
-  /**
-   * Переопределения для других сезонных пропусков (карточный сезон использует ту же шапку):
-   * без вкладок, свои надпись, единица очков, дата конца и плитки.
-   */
-  variant?: {
-    kicker: string;
-    title: string;
-    sub: string;
-    unit?: string;
-    endsAt?: number;
-    tiles: { icon: React.ReactNode; label: string; value: string; hot?: boolean }[];
-  };
 }
 
 const SEASON = BATTLEPASS.name.split("·").map((part) => part.trim());
 
 export function BpHero(props: BpHeroProps) {
-  const { tab, onTab, level, maxLevel, fraction, into, need, xpLeftToFinal, claimables, totalCards, missionsDone, missionsTotal, heroRef, variant } = props;
-  const unit = variant?.unit ?? "XP";
+  const { tab, onTab, level, maxLevel, fraction, into, need, xpLeftToFinal, claimables, totalCards, missionsDone, missionsTotal, heroRef } = props;
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [daysLeft, setDaysLeft] = useState<number | null>(null);
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
     const t = window.setTimeout(() => {
-      setDaysLeft(Math.max(0, Math.ceil(((variant?.endsAt ?? BATTLEPASS.to) - Date.now()) / 86_400_000)));
+      setDaysLeft(Math.max(0, Math.ceil((BATTLEPASS.to - Date.now()) / 86_400_000)));
       setReady(true);
     }, 250);
     return () => window.clearTimeout(t);
-  }, [variant?.endsAt]);
+  }, []);
 
   /* Песчинки на canvas + параллакс фона от курсора */
   useEffect(() => {
@@ -133,31 +120,29 @@ export function BpHero(props: BpHeroProps) {
   const pct = level >= maxLevel ? 100 : Math.round(fraction * 100);
 
   return (
-    <header className={`bp2-hero${variant ? " bp2-hero--c" : ""}`} ref={heroRef as React.RefObject<HTMLElement>}>
+    <header className="bp2-hero" ref={heroRef as React.RefObject<HTMLElement>}>
       <div className="bp2-bgimg" />
       <div className="bp2-fog" />
       <div className="bp2-fog f2" />
       <div className="bp2-fl" />
       <canvas className="bp2-sand" ref={canvasRef} aria-hidden />
       <div className="bp2-w">
-        {!variant && (
-          <div className="bp2-seg" role="tablist" aria-label="Разделы пропуска">
-            <button type="button" role="tab" aria-selected={tab === "rewards"} className="bp2-sg" onClick={() => onTab("rewards")}>
-              <svg viewBox="0 0 24 24" aria-hidden><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0zM7 6H4v1a3 3 0 0 0 3 3M17 6h3v1a3 3 0 0 1-3 3" /></svg>
-              <span>
-                <b>Награды</b>
-                <small>Уровень {level} из {maxLevel}</small>
-              </span>
-            </button>
-            <button type="button" role="tab" aria-selected={tab === "tasks"} className="bp2-sg" onClick={() => onTab("tasks")}>
-              <svg viewBox="0 0 24 24" aria-hidden><path d="M9 6h11M9 12h11M9 18h11M4 6l1 1 2-2M4 12l1 1 2-2M4 18l1 1 2-2" /></svg>
-              <span>
-                <b>Задания</b>
-                <small>Выполнено {missionsDone} из {missionsTotal}</small>
-              </span>
-            </button>
-          </div>
-        )}
+        <div className="bp2-seg" role="tablist" aria-label="Разделы пропуска">
+          <button type="button" role="tab" aria-selected={tab === "rewards"} className="bp2-sg" onClick={() => onTab("rewards")}>
+            <svg viewBox="0 0 24 24" aria-hidden><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0zM7 6H4v1a3 3 0 0 0 3 3M17 6h3v1a3 3 0 0 1-3 3" /></svg>
+            <span>
+              <b>Награды</b>
+              <small>Уровень {level} из {maxLevel}</small>
+            </span>
+          </button>
+          <button type="button" role="tab" aria-selected={tab === "tasks"} className="bp2-sg" onClick={() => onTab("tasks")}>
+            <svg viewBox="0 0 24 24" aria-hidden><path d="M9 6h11M9 12h11M9 18h11M4 6l1 1 2-2M4 12l1 1 2-2M4 18l1 1 2-2" /></svg>
+            <span>
+              <b>Задания</b>
+              <small>Выполнено {missionsDone} из {missionsTotal}</small>
+            </span>
+          </button>
+        </div>
 
         <div className="bp2-hg">
           <div className="bp2-lv">
@@ -202,11 +187,11 @@ export function BpHero(props: BpHeroProps) {
           </div>
 
           <div className="bp2-hmain">
-            <p className="bp2-kick">{variant?.kicker ?? `Боевой пропуск · ${SEASON[0]}`}</p>
-            <h1>{variant?.title ?? SEASON[1] ?? SEASON[0]}</h1>
+            <p className="bp2-kick">Боевой пропуск · {SEASON[0]}</p>
+            <h1>{SEASON[1] ?? SEASON[0]}</h1>
             <p className="bp2-sub">
-              {variant?.sub ??
-                "Сто уровней, две линии наград — бесплатная и пропуск — и весь XP сайта, который идёт в сезон один в один. Забирай аникойны, титулы и рамки: редкие предметы доступны только в этом сезоне."}
+              Сто уровней, две линии наград — бесплатная и пропуск — и весь XP сайта, который идёт в сезон один в один.
+              Забирай аникойны, титулы и рамки: редкие предметы доступны только в этом сезоне.
             </p>
 
             <div className="bp2-pr">
@@ -214,7 +199,7 @@ export function BpHero(props: BpHeroProps) {
                 <span>
                   {level >= maxLevel
                     ? "Максимальный уровень"
-                    : `${into.toLocaleString("ru-RU")} / ${need.toLocaleString("ru-RU")} ${unit} до уровня ${level + 1}`}
+                    : `${into.toLocaleString("ru-RU")} / ${need.toLocaleString("ru-RU")} XP до уровня ${level + 1}`}
                 </span>
                 <b>{pct}%</b>
               </div>
@@ -224,43 +209,29 @@ export function BpHero(props: BpHeroProps) {
             </div>
 
             <div className="bp2-tiles">
-              {variant ? (
-                variant.tiles.map((tile) => (
-                  <div key={tile.label} className={`bp2-tile${tile.hot ? " hot" : ""}`}>
-                    <span>{tile.icon}</span>
-                    <div>
-                      <small>{tile.label}</small>
-                      <b>{tile.value}</b>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <>
-                  <div className="bp2-tile">
-                    <span><BpIcon name="flag" size={26} /></span>
-                    <div>
-                      <small>До финала</small>
-                      <b>{xpLeftToFinal.toLocaleString("ru-RU")} XP</b>
-                    </div>
-                  </div>
-                  <div className={`bp2-tile${claimables > 0 ? " hot" : ""}`}>
-                    <span><BpIcon name="gift" /></span>
-                    <div>
-                      <small>К получению</small>
-                      <b>
-                        {claimables} {plural(claimables, "награда", "награды", "наград")}
-                      </b>
-                    </div>
-                  </div>
-                  <div className="bp2-tile">
-                    <span><BpIcon name="hourglass" /></span>
-                    <div>
-                      <small>{daysLeft === null ? "Сезон" : "До конца сезона"}</small>
-                      <b>{daysLeft === null ? `${totalCards} наград` : `${daysLeft} дн.`}</b>
-                    </div>
-                  </div>
-                </>
-              )}
+              <div className="bp2-tile">
+                <span><BpIcon name="flag" size={26} /></span>
+                <div>
+                  <small>До финала</small>
+                  <b>{xpLeftToFinal.toLocaleString("ru-RU")} XP</b>
+                </div>
+              </div>
+              <div className={`bp2-tile${claimables > 0 ? " hot" : ""}`}>
+                <span><BpIcon name="gift" /></span>
+                <div>
+                  <small>К получению</small>
+                  <b>
+                    {claimables} {plural(claimables, "награда", "награды", "наград")}
+                  </b>
+                </div>
+              </div>
+              <div className="bp2-tile">
+                <span><BpIcon name="hourglass" /></span>
+                <div>
+                  <small>{daysLeft === null ? "Сезон" : "До конца сезона"}</small>
+                  <b>{daysLeft === null ? `${totalCards} наград` : `${daysLeft} дн.`}</b>
+                </div>
+              </div>
             </div>
           </div>
         </div>
