@@ -348,7 +348,7 @@
 .cg .sv-clouds { position: absolute; inset: 0; z-index: -3; background: radial-gradient(38% 16% at 22% 30%, rgba(255,255,255,.95), transparent 70%), radial-gradient(30% 13% at 48% 20%, rgba(255,255,255,.85), transparent 70%), radial-gradient(34% 14% at 60% 46%, rgba(255,255,255,.8), transparent 70%), radial-gradient(26% 12% at 8% 54%, rgba(255,255,255,.75), transparent 70%); filter: blur(6px); animation: sv-drift 40s ease-in-out infinite alternate; }
 @keyframes sv-drift { to { transform: translateX(3%); } }
 .cg .sv-sea { position: absolute; left: 0; right: 0; bottom: 0; height: 42%; z-index: -2; background: linear-gradient(180deg, transparent, rgba(8,22,60,.75) 55%, #07132f); }
-.cg .sv-art { position: absolute; right: 0; top: 0; bottom: 0; width: 46%; z-index: -1; background: url("/banners/season-art.webp") right bottom / contain no-repeat; -webkit-mask-image: linear-gradient(90deg, transparent, #000 22%); mask-image: linear-gradient(90deg, transparent, #000 22%); }
+.cg .sv-art { position: absolute; right: 0; top: 0; bottom: 0; width: 64%; z-index: -1; background: url("/banners/season-art.webp") right center / cover no-repeat; -webkit-mask-image: linear-gradient(90deg, transparent, #000 38%); mask-image: linear-gradient(90deg, transparent, #000 38%); }
 .cg .sv-crest { filter: drop-shadow(0 6px 22px rgba(5,12,40,.7)); }
 .cg .sv-hex { width: 168px; height: 190px; background: linear-gradient(160deg, #fff3cc, #d9a441 45%, #7a4a0c); }
 .cg .sv-hex-in { inset: 6px; background: radial-gradient(circle at 50% 18%, #1c2a5c, #0a1230 75%); }
