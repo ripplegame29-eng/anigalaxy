@@ -52,11 +52,12 @@ export const PACK = {
     { n: 20, pay: 15 },
   ],
   choices: 3,
-  weights: [600, 270, 95, 30, 5],
+  /** Шансы одной карты в наборе, ‰: C 72%, B 23%, A 4,2%, S 0,7%, SS 0,1% — S и выше выпадают редко */
+  weights: [720, 230, 42, 7, 1],
   /** Гарантия: эпик и выше не позже чем через N паков, легенда — через M */
-  pityEpic: 12,
-  pityLegend: 60,
-  premiumBonusLuck: 1.25,
+  pityEpic: 25,
+  pityLegend: 100,
+  premiumBonusLuck: 1.1,
 } as const;
 
 export const SPLIT = {
