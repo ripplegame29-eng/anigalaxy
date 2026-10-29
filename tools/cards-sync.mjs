@@ -46,6 +46,7 @@ async function find(search) {
       method: "POST",
       headers: { "Content-Type": "application/json", Accept: "application/json" },
       body: JSON.stringify({ query: QUERY, variables: { q: search } }),
+      signal: AbortSignal.timeout(10000),
     });
     if (res.status === 429) {
       await sleep(Number(res.headers.get("retry-after") ?? 30) * 1000 + 500);
@@ -85,7 +86,7 @@ function variants(name) {
 async function findJikan(name) {
   for (const v of variants(name).slice(0, 3)) {
     try {
-      const res = await fetch(`https://api.jikan.moe/v4/characters?q=${encodeURIComponent(v)}&order_by=favorites&sort=desc&limit=1`, { headers: { Accept: "application/json" } });
+      const res = await fetch(`https://api.jikan.moe/v4/characters?q=${encodeURIComponent(v)}&order_by=favorites&sort=desc&limit=1`, { headers: { Accept: "application/json" }, signal: AbortSignal.timeout(8000) });
       if (res.status === 429) {
         await sleep(2500);
         continue;
@@ -117,7 +118,7 @@ for (const [i, c] of todo.entries()) {
   try {
     const url = await findAny(c.search);
     if (!url || url.includes("default.jpg")) throw new Error(`персонаж «${c.search}» не найден на AniList`);
-    const img = await fetch(url);
+    const img = await fetch(url, { signal: AbortSignal.timeout(15000) });
     if (!img.ok) throw new Error(`HTTP ${img.status}`);
     writeFileSync(path.join(outDir, `${c.id}.jpg`), Buffer.from(await img.arrayBuffer()));
     ok += 1;
