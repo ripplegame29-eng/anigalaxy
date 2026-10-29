@@ -32,11 +32,12 @@ import {
 } from "../cards/config";
 import { cardDef, cardsOfRank } from "../cards/catalog";
 import { STREAK, type Reward } from "../cards/progress";
+import { BANNER, EVO, PASS_XP_DAILY, PASS_XP_MISSION, bannerFeatured, evoCost } from "../cards/season";
 import { SKILL_MAX_LEVEL, defaultLoadout, defaultPassive, skillDef, skillPool, skillUpCost, validateLoadout, validatePassive } from "../cards/skills";
 import { PROGRESS_DOC_KEY } from "../sync-keys";
 import { adjustBalance } from "./admin-edit";
 import { dayKey } from "./day";
-import { getExtra, setExtra, touchStreak, track } from "./cards-extra";
+import { addPassXp, getExtra, rollWeek, setExtra, touchStreak, track, weekOf } from "./cards-extra";
 import { getDoc } from "./docs";
 import { num, str, transaction, type Database } from "./sqlite";
 import { findUserById, type UserRow } from "./users";
@@ -168,6 +169,8 @@ export interface InvCard {
   passive: string;
   /** Уровни умений */
   skillLv: Record<string, number>;
+  /** Ступень пробуждения (0..2) */
+  evo: number;
 }
 
 function loadoutFromRow(cardId: string, raw: string): string[] {
@@ -205,6 +208,7 @@ const rowToInv = (r: Record<string, unknown>): InvCard => ({
   skills: loadoutFromRow(str(r.card_id), str(r.skills)),
   passive: passiveFromRow(str(r.card_id), str(r.passive)),
   skillLv: parseLv(str(r.skill_lv)),
+  evo: Math.min(EVO.maxTier, num(r.evo)),
 });
 
 export function listInventory(db: Database, userId: number): InvCard[] {
@@ -233,6 +237,7 @@ function loadOwned(db: Database, userId: number, ids: number[]): InvCard[] | nul
 function checkFree(cards: InvCard[]): string | null {
   if (cards.some((c) => c.locked)) return "Среди карт есть заблокированные";
   if (cards.some((c) => c.listed)) return "Среди карт есть выставленные на аукцион или в обмен";
+  if (cards.some((c) => c.evo > 0)) return "Пробуждённые карты нельзя расходовать";
   return null;
 }
 
@@ -249,8 +254,8 @@ function removeCards(db: Database, userId: number, ids: number[]): void {
 }
 
 /** Сила карты с учётом уровня и фольги */
-export function statMul(c: { level: number; foil: boolean }): number {
-  return 1 + LEVEL_BONUS * (c.level - 1) + (c.foil ? FOIL_BONUS : 0);
+export function statMul(c: { level: number; foil: boolean; evo?: number }): number {
+  return 1 + LEVEL_BONUS * (c.level - 1) + (c.foil ? FOIL_BONUS : 0) + EVO.bonus[Math.min(EVO.maxTier, c.evo ?? 0)];
 }
 
 export function toggleLock(db: Database, userId: number, invId: number): Res<boolean> {
@@ -316,6 +321,7 @@ export function claimMission(db: Database, userId: number, id: string, now = Dat
     if (r.diamonds) addMoney(db, userId, "diamonds", r.diamonds);
     if (r.dust) addMoney(db, userId, "dust", r.dust);
     if (r.scroll) addScroll(db, userId, 1, r.scroll);
+    addPassXp(db, userId, PASS_XP_MISSION, now);
     logEvent(db, userId, "mission", `Задание «${m.text}» выполнено`, "", 0, now);
     return { ok: true, value: { diamonds: r.diamonds ?? 0, dust: r.dust ?? 0, scroll: r.scroll ?? 0 } };
   });
@@ -363,6 +369,7 @@ export function claimDaily(db: Database, userId: number, now = Date.now()): Res<
       x.streak.claimed.push(ms.day);
       setExtra(db, userId, x);
     }
+    addPassXp(db, userId, PASS_XP_DAILY, now);
     logEvent(db, userId, "daily", `Ежедневный подарок (серия ${st.n}): ${gift.diamonds} 💎, ${gift.dust} пыли, ${gift.packs} пак(а)${ms ? ` + бонус за ${ms.day} дн.` : ""}`, "", 0, now);
     return { ok: true, value: { ...gift, streak: { n: st.n, best: st.best, bonusPct: Math.round(bonus * 100), milestone: ms ? ms.reward : null } } };
   });
@@ -436,7 +443,7 @@ const bestIndex = (offers: string[], rng: Rng): number => {
 export function openPacks(
   db: Database,
   userId: number,
-  opts: { count: number; pay: "token" | "diamonds" | "dust"; quick?: boolean },
+  opts: { count: number; pay: "token" | "diamonds" | "dust"; quick?: boolean; banner?: boolean },
   now = Date.now(),
   rng: Rng = Math.random,
 ): Res<{ results: PackResult[]; pending: string[] | null }> {
@@ -456,18 +463,36 @@ export function openPacks(
     const results: PackResult[] = [];
     let pityEpic = w.pityEpic;
     let pityLegend = w.pityLegend;
+    const week = weekOf(now);
+    const featured = bannerFeatured(week);
+    const bx = opts.banner ? rollWeek(getExtra(db, userId), now) : null;
+    const bKey = `b${week}`;
     for (let i = 0; i < bundle.n; i += 1) {
-      const { offers, best } = drawOffers({ ...w, pityEpic, pityLegend }, rng, luck);
+      const drawn = drawOffers({ ...w, pityEpic, pityLegend }, rng, luck);
+      let offers = drawn.offers;
+      let best = drawn.best;
+      if (bx) {
+        const count = bx.banners[bKey] ?? 0;
+        if (!offers.includes(featured) && (count + 1 >= BANNER.guarantee || rng() < BANNER.boost)) {
+          const low = offers.reduce((m, id, k) => (rankOf(id) < rankOf(offers[m]) ? k : m), 0);
+          offers = offers.map((id, k) => (k === low ? featured : id));
+          best = Math.max(...offers.map(rankOf)) as Rank;
+        }
+        bx.banners[bKey] = offers.includes(featured) ? 0 : count + 1;
+      }
       pityEpic = best >= 2 ? 0 : pityEpic + 1;
       pityLegend = best >= 3 ? 0 : pityLegend + 1;
       if (bundle.n === 1 && !opts.quick) {
+        if (bx) setExtra(db, userId, bx);
         db.prepare("INSERT INTO card_pending (user_id, offers, created_at) VALUES (?, ?, ?)").run(userId, JSON.stringify(offers), now);
         db.prepare("UPDATE card_wallet SET pity_epic = ?, pity_legend = ? WHERE user_id = ?").run(pityEpic, pityLegend, userId);
         bumpMission(db, userId, "pack1", 1, now);
         return { ok: true, value: { results: [], pending: offers } };
       }
-      results.push(finishPick(db, userId, offers, bestIndex(offers, rng), now));
+      const fi = bx ? offers.indexOf(featured) : -1;
+      results.push(finishPick(db, userId, offers, fi >= 0 ? fi : bestIndex(offers, rng), now));
     }
+    if (bx) setExtra(db, userId, bx);
     db.prepare("UPDATE card_wallet SET pity_epic = ?, pity_legend = ? WHERE user_id = ?").run(pityEpic, pityLegend, userId);
     bumpMission(db, userId, "pack1", bundle.n, now);
     return { ok: true, value: { results, pending: null } };
@@ -491,6 +516,35 @@ export function pickFromPack(db: Database, userId: number, index: number, now = 
     if (!Number.isInteger(index) || index < 0 || index >= offers.length) return fail("Выберите одну из карт");
     db.prepare("DELETE FROM card_pending WHERE user_id = ?").run(userId);
     return { ok: true, value: finishPick(db, userId, offers, index, now) };
+  });
+}
+
+/* ------------------------------ Пробуждение -------------------------------- */
+
+/** Пробуждение: карта 15 уровня + копии того же героя + пыль → новая ступень (+25% / +55% к характеристикам) */
+export function evolve(db: Database, userId: number, invId: number, fodder: number[], now = Date.now()): Res<{ evo: number; cardId: string }> {
+  return transaction(db, (): Res<{ evo: number; cardId: string }> => {
+    const base = loadOwned(db, userId, [invId]);
+    if (!base) return fail("Карта не найдена");
+    const c = base[0];
+    const def = cardDef(c.cardId);
+    if (!def) return fail("Карта не найдена");
+    if (c.evo >= EVO.maxTier) return fail("Максимальное пробуждение уже достигнуто");
+    if (c.level < MAX_LEVEL) return fail(`Для пробуждения нужен ${MAX_LEVEL} уровень`);
+    if (c.listed) return fail("Карта выставлена на аукцион или в обмен");
+    const need = EVO.copies[c.evo];
+    const list = loadOwned(db, userId, fodder);
+    if (!list) return fail("Выберите свои карты без повторов");
+    if (list.length !== need) return fail(`Нужно ровно ${need} копии этого героя`);
+    if (list.some((f) => f.id === c.id || f.cardId !== c.cardId)) return fail("Нужны копии того же героя");
+    const bad = checkFree(list);
+    if (bad) return fail(bad);
+    if (!addMoney(db, userId, "dust", -evoCost(def.rank, c.evo))) return fail("Не хватает пыли");
+    removeCards(db, userId, list.map((f) => f.id));
+    db.prepare("UPDATE card_inv SET evo = ? WHERE id = ?").run(c.evo + 1, c.id);
+    track(db, userId, "evo", 1, now);
+    logEvent(db, userId, "evolve", `«${def.name}»: ${EVO.names[c.evo + 1]}`, c.cardId, def.rank, now);
+    return { ok: true, value: { evo: c.evo + 1, cardId: c.cardId } };
   });
 }
 

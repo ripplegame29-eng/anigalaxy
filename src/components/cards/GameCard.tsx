@@ -28,6 +28,8 @@ export interface GameCardProps {
   stats?: boolean;
   /** Оживить арт (эпические и выше): дыхание, блики, частицы */
   live?: boolean;
+  /** Ступень пробуждения (0..2) */
+  evo?: number;
   /** Закрыть арт (неоткрытая карта в альбоме) */
   unknown?: boolean;
   onClick?: () => void;
@@ -52,7 +54,7 @@ export function RankMark({ rank }: { rank: number }) {
 }
 
 /** Карточка персонажа: арт + рамка ранга + плашка имени. Размер задаёт родитель (ширина). */
-export function GameCard({ cardId, foil, level = 1, selected, dim, locked, count, stats = true, unknown, live, onClick, className = "", children }: GameCardProps) {
+export function GameCard({ cardId, foil, level = 1, selected, dim, locked, count, stats = true, unknown, live, evo = 0, onClick, className = "", children }: GameCardProps) {
   const def = cardDef(cardId);
   if (!def) return null;
   const rank = RANKS[def.rank];
@@ -68,9 +70,9 @@ export function GameCard({ cardId, foil, level = 1, selected, dim, locked, count
     <Tag
       type={onClick ? "button" : undefined}
       onClick={onClick}
-      className={`gc gc-${rank.key} ${foil ? "gc-foil-on" : ""} ${selected ? "gc-sel" : ""} ${dim ? "gc-dim" : ""} ${unknown ? "gc-unknown" : ""} ${live && def.rank >= 2 ? "gc-live" : ""} ${className}`}
+      className={`gc gc-${rank.key} ${foil ? "gc-foil-on" : ""} ${selected ? "gc-sel" : ""} ${dim ? "gc-dim" : ""} ${unknown ? "gc-unknown" : ""} ${live && def.rank >= 2 ? "gc-live" : ""} ${evo > 0 ? `gc-evo gc-evo${evo}` : ""} ${className}`}
       style={style}
-      aria-label={unknown ? "Неизвестная карта" : `${def.name}, ${rank.name}${foil ? ", анимированная" : ""}`}
+      aria-label={unknown ? "Неизвестная карта" : `${def.name}, ${rank.name}${foil ? ", анимированная" : ""}${evo > 0 ? `, пробуждение ${evo}` : ""}`}
     >
       <div className="gc-art">
         {hasArt(def.id) && !unknown ? (
@@ -116,6 +118,16 @@ export function GameCard({ cardId, foil, level = 1, selected, dim, locked, count
           </div>
           {level > 1 && <div className="gc-lv">+{level - 1}</div>}
           {foil && <div className="gc-foil" aria-hidden />}
+          {evo > 0 && (
+            <>
+              <div className="gc-aura" aria-hidden />
+              <div className="gc-evo-mark" aria-hidden title={`Пробуждение ${evo}`}>
+                {Array.from({ length: evo }).map((_, i) => (
+                  <Ico key={i} name="star" size={11} />
+                ))}
+              </div>
+            </>
+          )}
         </>
       )}
       {locked && <div className="gc-lock" aria-hidden>

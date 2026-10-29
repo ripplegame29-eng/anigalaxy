@@ -118,7 +118,7 @@ export function BattleTab({ s }: { s: CardsState }) {
             {Array.from({ length: DECK_SIZE }).map((_, i) =>
               deck[i] ? (
                 <div key={i} className="bt-slot">
-                  <GameCard cardId={deck[i].cardId} foil={deck[i].foil} level={deck[i].level} onClick={() => toggle(deck[i].id)} />
+                  <GameCard cardId={deck[i].cardId} foil={deck[i].foil} level={deck[i].level} evo={deck[i].evo} onClick={() => toggle(deck[i].id)} />
                   <SkillChips ids={deck[i].skills} />
                   <button type="button" className="cg-btn sm" onClick={() => setEditing(deck[i].id)}>
                     <Ico name="scroll" size={14} /> Умения

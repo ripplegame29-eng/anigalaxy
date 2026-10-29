@@ -106,6 +106,7 @@ export function raidFight(db: Database, userId: number, now = Date.now(), rng: R
     x.raid.hits += 1;
     setExtra(db, userId, x);
     track(db, userId, "raid", dealt, now);
+    track(db, userId, "raidHits", 1, now);
     const name = cardDef(boss.cardId)?.name ?? "Босс";
     const report: BattleReport = {
       outcome,

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { act, ensureLoaded, refresh, useCards } from "@/lib/cards/client";
+import { act, ensureLoaded, refresh, useCards, type CardsState } from "@/lib/cards/client";
 import { CATALOG, visibleCatalog } from "@/lib/cards/catalog";
 import { EXCHANGE, RANKS } from "@/lib/cards/config";
 import { openAuthDialog } from "@/lib/auth-dialog";
@@ -19,6 +19,7 @@ import { CollectionTab } from "./CollectionTab";
 import { ForgeTab } from "./ForgeTab";
 import { PacksTab } from "./PacksTab";
 import { ProgressTab } from "./ProgressTab";
+import { SeasonTab } from "./SeasonTab";
 import { SharpenTab } from "./SharpenTab";
 import { ToastHost, fmt, fmtLeft, toast, useBusy, useNow } from "./common";
 import { CUR, Cur, Ico, type CurKey, type IcoName } from "./icons";
@@ -33,8 +34,46 @@ const TABS: readonly (readonly [string, string, IcoName])[] = [
   ["trade", "Обмен", "swap"],
   ["collection", "Коллекция", "grid"],
   ["progress", "Прогресс", "trophy"],
+  ["season", "Сезон", "crown"],
 ] as const;
-type TabId = "packs" | "forge" | "sharpen" | "battle" | "auction" | "trade" | "collection" | "progress";
+type TabId = "packs" | "forge" | "sharpen" | "battle" | "auction" | "trade" | "collection" | "progress" | "season";
+
+const NOTIFY_KEY = "animehub:cards:notify";
+const canNotify = (): boolean => {
+  try {
+    return typeof Notification !== "undefined" && Notification.permission === "granted" && window.localStorage.getItem(NOTIFY_KEY) === "1";
+  } catch {
+    return false;
+  }
+};
+
+/** Тосты и системные уведомления: энергия восстановлена, нападение на защиту, итоги аукциона, предложение обмена */
+function useGameNotices(s: CardsState | null, enabled: boolean): void {
+  const prev = useRef<{ d: number; a: number; t: number; full: boolean } | null>(null);
+  useEffect(() => {
+    if (!s) return;
+    const n = s.events.notices;
+    const full = s.wallet.energy >= s.wallet.energyMax;
+    const p = prev.current;
+    prev.current = { d: n.defenses, a: n.auctions, t: n.trades, full };
+    if (!p) return;
+    const list: [string, string][] = [];
+    if (n.defenses > p.d) list.push(["На вас напали", "Ваш отряд защищался, пока вы были не в сети — загляните в журнал боёв."]);
+    if (n.auctions > p.a) list.push(["Итоги аукциона", "Один из ваших лотов завершился."]);
+    if (n.trades > p.t) list.push(["Предложение обмена", "Вам прислали карты на обмен."]);
+    if (full && !p.full) list.push(["Энергия восстановлена", "Можно снова идти в бой."]);
+    for (const [title, body] of list) {
+      toast(`${title}. ${body}`);
+      if (enabled && document.hidden) {
+        try {
+          new Notification(`AniGalaxy · ${title}`, { body, tag: `cg-${title}`, icon: "/favicon.ico" });
+        } catch {
+          /* ignore */
+        }
+      }
+    }
+  }, [s, enabled]);
+}
 
 const EX_STEPS = [1, 5, 10, 25, 50, 100];
 
@@ -105,9 +144,25 @@ export function CardsApp() {
   const [exOpen, setExOpen] = useState(false);
   const now = useNow(30_000);
   const tries = useRef(0);
+  const [notify, setNotify] = useState(false);
+  useGameNotices(s, notify);
 
   useEffect(() => {
     if (account) ensureLoaded();
+  }, [account]);
+
+  useEffect(() => {
+    const t = window.setTimeout(() => setNotify(canNotify()), 0);
+    return () => window.clearTimeout(t);
+  }, []);
+
+  /* лёгкий опрос, пока вкладка открыта: энергия, нападения, аукцион */
+  useEffect(() => {
+    if (!account) return;
+    const id = window.setInterval(() => {
+      if (!document.hidden || canNotify()) void refresh();
+    }, 60_000);
+    return () => window.clearInterval(id);
   }, [account]);
 
   useEffect(() => {
@@ -138,7 +193,27 @@ export function CardsApp() {
     return () => window.removeEventListener("keydown", onKey);
   }, [exOpen]);
 
+  const toggleNotify = async () => {
+    try {
+      if (typeof Notification === "undefined") return toast("Браузер не поддерживает уведомления", true);
+      if (notify) {
+        window.localStorage.setItem(NOTIFY_KEY, "0");
+        setNotify(false);
+        return toast("Системные уведомления выключены");
+      }
+      const perm = Notification.permission === "granted" ? "granted" : await Notification.requestPermission();
+      if (perm !== "granted") return toast("Разрешите уведомления в настройках браузера", true);
+      window.localStorage.setItem(NOTIFY_KEY, "1");
+      setNotify(true);
+      toast("Уведомления включены: пока сайт открыт, напомним об энергии, нападениях и аукционе");
+    } catch {
+      toast("Не удалось включить уведомления", true);
+    }
+  };
+
   const pick = (t: TabId) => {
+    if (t === "battle" && s && s.events.notices.defenses > 0) void act("notices-seen", { kind: "defense" });
+    if (t === "auction" && s && s.events.notices.auctions > 0) void act("notices-seen", { kind: "auction" });
     setTab(t);
     try {
       window.history.replaceState(null, "", `#${t}`);
@@ -202,6 +277,8 @@ export function CardsApp() {
       toast(`Подарок дня (серия ${r.result.streak.n}): +${r.result.diamonds} алмазов, +${r.result.dust} пыли, +${r.result.packs} пак(а)${r.result.streak.milestone ? " и бонус за серию" : ""}`);
     });
 
+  const nt = s.events.notices;
+  const badges: Record<string, number> = { battle: nt.defenses, auction: nt.auctions, trade: nt.trades };
   const tokens: { k: CurKey; value: string; note?: string }[] = [
     { k: "diamonds", value: fmt(w.diamonds) },
     { k: "dust", value: fmt(w.dust) },
@@ -251,6 +328,9 @@ export function CardsApp() {
                 <Ico name="gift" size={17} /> Подарок дня
               </button>
             )}
+            <button type="button" className="cg-btn" aria-pressed={notify} onClick={() => void toggleNotify()} title="Системные уведомления">
+              <Ico name="bell" size={16} /> {notify ? "Уведомления вкл." : "Уведомления"}
+            </button>
             <span className="cg-league" style={{ color: s.league.color }}>
               <Ico name="trophy" size={17} />
               {s.league.name}
@@ -272,6 +352,7 @@ export function CardsApp() {
           <button key={id} type="button" role="tab" id={`cg-tab-${id}`} aria-selected={tab === id} tabIndex={tab === id ? 0 : -1} className="cg-tab" onClick={() => pick(id as TabId)} onKeyDown={(e) => onTabKey(e, i)}>
             <Ico name={ico} size={17} />
             {label}
+            {badges[id] ? <span className="cg-badge" aria-label={`Новых: ${badges[id]}`}>{badges[id]}</span> : null}
           </button>
         ))}
       </div>
@@ -285,6 +366,7 @@ export function CardsApp() {
         {tab === "trade" && <TradeTab s={s} />}
         {tab === "collection" && <CollectionTab s={s} />}
         {tab === "progress" && <ProgressTab s={s} />}
+        {tab === "season" && <SeasonTab s={s} />}
       </div>
       <ToastHost />
     </div>

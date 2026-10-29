@@ -11,6 +11,7 @@ import {
   claimMission,
   createAuction,
   disenchant,
+  evolve,
   exchangeAc,
   getWallet,
   grantStarter,
@@ -42,6 +43,7 @@ import {
 import { battleLog, battleReplay, buyEnergy, challenge, fight, ratingTop, setDeck, weekIndexOf } from "./cards-battle";
 import { campaignClaim, campaignFight, campaignState } from "./cards-campaign";
 import { raidClaim, raidFight, raidView } from "./cards-raid";
+import { eventsState, noticesSeen, passBuy, passClaim } from "./cards-season";
 import { claimAchievement, claimSet, claimWeekly, collectorProfile, progressState, setShowcase } from "./cards-progress";
 import { artIds, missingIds, startArtSync } from "./cards-art";
 import type { Database } from "./sqlite";
@@ -75,6 +77,7 @@ export function cardsState(db: Database, userId: number, now = Date.now()) {
     pending: pendingPack(db, userId),
     missions: missionList(db, userId, now),
     progress: progressState(db, userId, now),
+    events: eventsState(db, userId, now),
     split: splitUsage(db, userId, now),
     mods,
     ac: acBalance(db, userId),
@@ -136,7 +139,7 @@ export function cardsAction(db: Database, userId: number, op: string, body: Reco
     case "daily":
       return claimDaily(db, userId, now);
     case "open":
-      return openPacks(db, userId, { count: Number(body.count) || 1, pay: String(body.pay ?? "token") as "token", quick: !!body.quick }, now);
+      return openPacks(db, userId, { count: Number(body.count) || 1, pay: String(body.pay ?? "token") as "token", quick: !!body.quick, banner: !!body.banner }, now);
     case "pick":
       return pickFromPack(db, userId, Number(body.index), now);
     case "melt":
@@ -177,6 +180,14 @@ export function cardsAction(db: Database, userId: number, op: string, body: Reco
       return raidFight(db, userId, now);
     case "raid-claim":
       return raidClaim(db, userId, now);
+    case "evolve":
+      return evolve(db, userId, Math.floor(Number(body.id)), ints(body.ids), now);
+    case "pass-buy":
+      return passBuy(db, userId, now);
+    case "pass-claim":
+      return passClaim(db, userId, String(body.track ?? "free") as "free", Math.floor(Number(body.level)) || 0, now);
+    case "notices-seen":
+      return noticesSeen(db, userId, String(body.kind ?? "all"));
     case "energy":
       return buyEnergy(db, userId, now);
     case "ach-claim":

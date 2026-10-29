@@ -490,3 +490,18 @@ html[data-eco="on"] .gc-live .gc-art::after {
     animation: none;
   }
 }
+
+/* Пробуждение: аура поверх арта, у второй ступени — вращающееся сияние и искры */
+.gc-evo { --evo: #ffd36b; }
+.gc-evo2 { --evo: #ff8be6; }
+.gc-aura { position: absolute; inset: 0; z-index: 3; pointer-events: none; border-radius: inherit; overflow: hidden; mix-blend-mode: screen; }
+.gc-aura::before { content: ""; position: absolute; inset: -40%; background: conic-gradient(from 0deg, transparent 0 62%, color-mix(in srgb, var(--evo) 55%, transparent) 78%, transparent 92%); animation: gc-evo-spin 5.5s linear infinite; }
+.gc-evo1 { box-shadow: 0 0 0 1px color-mix(in srgb, var(--evo) 60%, transparent), 0 0 22px -4px var(--evo); animation: gc-evo-pulse 3s ease-in-out infinite; }
+.gc-evo2 { box-shadow: 0 0 0 1px var(--evo), 0 0 30px -2px var(--evo), 0 0 60px -18px #7c5cff; animation: gc-evo-pulse 2.2s ease-in-out infinite; }
+.gc-evo2 .gc-aura::after { content: ""; position: absolute; inset: 0; background: radial-gradient(circle at 20% 80%, #fff 0 1.5px, transparent 2px), radial-gradient(circle at 75% 60%, #ffd9fb 0 1.5px, transparent 2px), radial-gradient(circle at 45% 25%, #fff 0 1.2px, transparent 2px), radial-gradient(circle at 85% 20%, #ffe9a8 0 1.4px, transparent 2px); background-size: 100% 200%; animation: gc-evo-rise 3.4s linear infinite; }
+.gc-evo-mark { position: absolute; z-index: 4; left: 50%; top: 5px; transform: translateX(-50%); display: flex; gap: 1px; padding: 2px 6px; border-radius: 99px; background: rgba(8, 10, 24, 0.72); color: var(--evo); filter: drop-shadow(0 0 4px var(--evo)); }
+.gc-evo-mark svg { fill: currentColor; }
+@keyframes gc-evo-spin { to { transform: rotate(360deg); } }
+@keyframes gc-evo-pulse { 50% { filter: brightness(1.12) saturate(1.15); } }
+@keyframes gc-evo-rise { from { background-position: 0 0; } to { background-position: 0 -100%; } }
+@media (prefers-reduced-motion: reduce) { .gc-aura::before, .gc-aura::after, .gc-evo1, .gc-evo2 { animation: none !important; } }

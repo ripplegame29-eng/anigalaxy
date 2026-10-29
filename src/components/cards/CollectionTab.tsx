@@ -162,7 +162,7 @@ export function CollectionTab({ s }: { s: CardsState }) {
         <div className="cg-modal" role="dialog" aria-modal="true" aria-label={def.name} onClick={() => setOpen(null)}>
           <div className="cd-modal" onClick={(e) => e.stopPropagation()}>
             <div className="cd-main">
-              <div className="cd-big">{current && <GameCard key={current.id} cardId={current.cardId} foil={current.foil} level={current.level} locked={current.locked} stats={false} live />}</div>
+              <div className="cd-big">{current && <GameCard key={current.id} cardId={current.cardId} foil={current.foil} level={current.level} evo={current.evo} locked={current.locked} stats={false} live />}</div>
               <div className="cd-info">
                 <span className="cg-tag" style={{ color: RANKS[def.rank].color, justifySelf: "start" }}>
                   {RANKS[def.rank].name}
@@ -208,7 +208,7 @@ export function CollectionTab({ s }: { s: CardsState }) {
                 <div className="cd-copies">
                   {copies.map((c) => (
                     <button key={c.id} type="button" className="cg-cell" aria-pressed={current?.id === c.id} onClick={() => setCopy(c.id)} aria-label={`Копия, уровень ${c.level}`}>
-                      <GameCard cardId={c.cardId} foil={c.foil} level={c.level} locked={c.locked} stats={false} selected={current?.id === c.id} />
+                      <GameCard cardId={c.cardId} foil={c.foil} level={c.level} evo={c.evo} locked={c.locked} stats={false} selected={current?.id === c.id} />
                     </button>
                   ))}
                 </div>

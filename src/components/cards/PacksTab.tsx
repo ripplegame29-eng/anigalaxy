@@ -5,6 +5,7 @@ import { cardDef } from "@/lib/cards/catalog";
 import { PACK, RANKS } from "@/lib/cards/config";
 import { act, hasArt, type CardsState, type Pull } from "@/lib/cards/client";
 import { GameCard } from "./GameCard";
+import { BannerCard } from "./BannerCard";
 import { PackStage, type PackPhase } from "./PackStage";
 import { Panel, Reveal, ago, fmt, toast, useBusy, useNow } from "./common";
 import { Cur, Ico, type CurKey } from "./icons";
@@ -179,6 +180,8 @@ export function PacksTab({ s }: { s: CardsState }) {
   const loading = phase !== "idle" || busy;
 
   return (
+    <>
+    <BannerCard s={s} />
     <div className="cg-main">
       <div className="cg-main-l">
         <section className="cg-scene" aria-label="Открытие паков">
@@ -331,5 +334,6 @@ export function PacksTab({ s }: { s: CardsState }) {
         />
       )}
     </div>
+    </>
   );
 }

@@ -797,4 +797,12 @@ export const MIGRATIONS: Migration[] = [
       CREATE INDEX idx_card_raid_dmg ON card_raid_dmg(week, damage DESC);
     `,
   },
+  {
+    version: 25,
+    name: "cards-evolution",
+    sql: `
+      -- Ступень пробуждения карты (0..2).
+      ALTER TABLE card_inv ADD COLUMN evo INTEGER NOT NULL DEFAULT 0;
+    `,
+  },
 ];

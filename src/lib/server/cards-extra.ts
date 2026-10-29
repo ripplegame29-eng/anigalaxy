@@ -4,6 +4,7 @@
  * Зависит только от БД, чтобы им могли пользоваться и cards.ts, и модули выше.
  */
 
+import { PASS, PASS_XP, seasonOf } from "../cards/season";
 import { dayKey } from "./day";
 import { num, str, type Database } from "./sqlite";
 
@@ -23,7 +24,7 @@ export interface Extra {
   /** Рейд: неделя, нанесённый урон, награды */
   raid: { week: number; damage: number; hits: number; claimed: number; defeat: boolean; day: string; dayHits: number };
   /** Сезонный пасс */
-  pass: { season: number; xp: number; free: number[]; premium: number[] };
+  pass: { season: number; xp: number; free: number[]; premium: number[]; bought: boolean };
   /** Гарантии баннеров: id баннера → паки без главного приза */
   banners: Record<string, number>;
   [k: string]: unknown;
@@ -41,7 +42,7 @@ const blank = (): Extra => ({
   weekly: { week: 0, progress: {}, claimed: {} },
   camp: { stars: {}, chapters: {} },
   raid: { week: 0, damage: 0, hits: 0, claimed: 0, defeat: false, day: "", dayHits: 0 },
-  pass: { season: 0, xp: 0, free: [], premium: [] },
+  pass: { season: 0, xp: 0, free: [], premium: [], bought: false },
   banners: {},
 });
 
@@ -73,6 +74,8 @@ export function setExtra(db: Database, userId: number, x: Extra): void {
 export function rollWeek(x: Extra, now: number): Extra {
   const w = weekOf(now);
   if (x.weekly.week !== w) x.weekly = { week: w, progress: {}, claimed: {} };
+  const se = seasonOf(now);
+  if (x.pass.season !== se) x.pass = { season: se, xp: 0, free: [], premium: [], bought: false };
   if (x.raid.week !== w) x.raid = { week: w, damage: 0, hits: 0, claimed: 0, defeat: false, day: "", dayHits: 0 };
   return x;
 }
@@ -83,6 +86,7 @@ export function track(db: Database, userId: number, stat: string, n = 1, now = D
   const x = rollWeek(getExtra(db, userId), now);
   x.stats[stat] = (x.stats[stat] ?? 0) + n;
   x.weekly.progress[stat] = (x.weekly.progress[stat] ?? 0) + n;
+  if (PASS_XP[stat]) x.pass.xp = Math.min(PASS.levels * PASS.xpPerLevel, x.pass.xp + PASS_XP[stat] * n);
   setExtra(db, userId, x);
 }
 
@@ -112,3 +116,11 @@ export function touchStreak(db: Database, userId: number, now: number): { n: num
 }
 
 export const numOf = (v: unknown): number => num(v);
+
+/** Начислить очки сезонного пасса */
+export function addPassXp(db: Database, userId: number, xp: number, now = Date.now()): void {
+  if (!(xp > 0)) return;
+  const x = rollWeek(getExtra(db, userId), now);
+  x.pass.xp = Math.min(PASS.levels * PASS.xpPerLevel, x.pass.xp + xp);
+  setExtra(db, userId, x);
+}

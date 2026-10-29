@@ -125,7 +125,7 @@ export function InvPicker({
         <div className={`cg-cards ${size}`} style={{ maxHeight: 640, overflowY: "auto", padding: 4 }}>
           {list.map((c) => (
             <button key={c.id} type="button" className="cg-cell" onClick={() => onToggle(c.id)} disabled={max > 1 && !selected.includes(c.id) && selected.length >= max} aria-pressed={selected.includes(c.id)}>
-              <GameCard cardId={c.cardId} foil={c.foil} level={c.level} selected={selected.includes(c.id)} locked={c.locked} stats={size !== "xs"} />
+              <GameCard cardId={c.cardId} foil={c.foil} level={c.level} evo={c.evo} selected={selected.includes(c.id)} locked={c.locked} stats={size !== "xs"} />
             </button>
           ))}
         </div>

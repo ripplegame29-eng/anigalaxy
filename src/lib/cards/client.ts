@@ -7,6 +7,7 @@ import { getProgressStore } from "../progression/store";
 import { cardDef, setHidden } from "./catalog";
 import type { Rank } from "./config";
 import type { ProgressState } from "./progress";
+import type { EventsState } from "./season";
 
 export interface InvCard {
   id: number;
@@ -20,6 +21,7 @@ export interface InvCard {
   skills: string[];
   passive: string;
   skillLv: Record<string, number>;
+  evo: number;
 }
 
 export interface CardsState {
@@ -44,6 +46,7 @@ export interface CardsState {
   inventory: InvCard[];
   pending: string[] | null;
   progress: ProgressState;
+  events: EventsState;
   missions: { id: string; text: string; goal: number; progress: number; claimed: boolean; reward: { diamonds?: number; dust?: number; scroll?: number } }[];
   split: { used: number; free: number; max: number; extraCost: number };
   mods: { ban: string; buff: string };

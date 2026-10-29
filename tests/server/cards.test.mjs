@@ -18,6 +18,10 @@ import { campaignFight, campaignState, campaignClaim } from "../../.tsc-tests/li
 import { raidFight, raidView, raidClaim } from "../../.tsc-tests/lib/server/cards-raid.js";
 import { challenge, battleLog, battleReplay } from "../../.tsc-tests/lib/server/cards-battle.js";
 import { CHAPTERS, STAGES } from "../../.tsc-tests/lib/cards/campaign.js";
+import { evolve } from "../../.tsc-tests/lib/server/cards.js";
+import { passView, passBuy, passClaim, noticesOf, noticesSeen, eventsState } from "../../.tsc-tests/lib/server/cards-season.js";
+import { PASS, PASS_XP, passReward, bannerFeatured, BANNER, EVO, evoCost } from "../../.tsc-tests/lib/cards/season.js";
+import { weekOf } from "../../.tsc-tests/lib/server/cards-extra.js";
 import { cardsAction, cardsState } from "../../.tsc-tests/lib/server/cards-state.js";
 import { adjustBalance } from "../../.tsc-tests/lib/server/admin-edit.js";
 import { freshDb, makeUser } from "./helpers.mjs";
@@ -607,4 +611,100 @@ test("рейд: общий запас, 3 попытки в день, табли�
   assert.ok(c.ok);
   assert.ok(getWallet(db, u.id, NOW).diamonds > before);
   assert.equal(raidClaim(db, u.id, NOW + 86_400_000).ok, false, "уже забрано");
+});
+
+test("пробуждение: нужен 15 уровень, копии и пыль; ступень даёт силу, копии тратятся", () => {
+  const db = freshDb();
+  const u = makeUser(db);
+  getWallet(db, u.id, NOW);
+  const id = cardsOfRank(2)[0].id;
+  const [base] = give(db, u.id, id, 1, { level: 14 });
+  const copies = give(db, u.id, id, 2);
+  addMoney(db, u.id, "dust", 100000);
+  assert.equal(evolve(db, u.id, base, copies, NOW).ok, false, "уровень мал");
+  db.prepare("UPDATE card_inv SET level = 15 WHERE id = ?").run(base);
+  assert.equal(evolve(db, u.id, base, [copies[0]], NOW).ok, false, "мало копий");
+  assert.equal(evolve(db, u.id, base, [base, copies[1]], NOW).ok, false, "сама себя");
+  const other = give(db, u.id, cardsOfRank(2)[1].id, 2);
+  assert.equal(evolve(db, u.id, base, other, NOW).ok, false, "другой герой");
+  const dust0 = getWallet(db, u.id, NOW).dust;
+  assert.ok(evolve(db, u.id, base, copies, NOW).ok);
+  assert.equal(getWallet(db, u.id, NOW).dust, dust0 - evoCost(2, 0));
+  assert.equal(cardsState(db, u.id, NOW).inventory.find((c) => c.id === base).evo, 1);
+  assert.equal(cardsState(db, u.id, NOW).inventory.filter((c) => c.cardId === id).length, 1);
+  const a = unitOf({ cardId: id, level: 15, foil: false, evo: 0 }, "a", 0).atk;
+  const b = unitOf({ cardId: id, level: 15, foil: false, evo: 1 }, "a", 0).atk;
+  assert.ok(b > a * 1.1);
+  const more = give(db, u.id, id, 3);
+  assert.ok(evolve(db, u.id, base, more, NOW).ok);
+  assert.equal(evolve(db, u.id, base, give(db, u.id, id, 3), NOW).ok, false, "предел");
+  assert.ok(EVO.bonus[2] > EVO.bonus[1]);
+  // пробуждённую карту нельзя пустить в расход
+  assert.equal(cardsAction(db, u.id, "disenchant", { ids: [base] }, NOW).ok, false);
+});
+
+test("сезонный пасс: очки идут от действий, награды по уровням один раз, премиум-ветка платная, новый сезон сбрасывает", () => {
+  const db = freshDb();
+  const u = makeUser(db);
+  getWallet(db, u.id, NOW);
+  assert.equal(passView(db, u.id, NOW).level, 0);
+  assert.equal(passClaim(db, u.id, "free", 1, NOW).ok, false, "уровень не достигнут");
+  track(db, u.id, "wins", 5, NOW);
+  const v = passView(db, u.id, NOW);
+  assert.equal(v.xp, 5 * PASS_XP.wins);
+  assert.equal(v.level, Math.floor(v.xp / PASS.xpPerLevel));
+  assert.ok(v.level >= 1);
+  const d0 = getWallet(db, u.id, NOW).diamonds;
+  assert.ok(passClaim(db, u.id, "free", 1, NOW).ok);
+  assert.equal(passClaim(db, u.id, "free", 1, NOW).ok, false, "повторно нельзя");
+  assert.equal(passClaim(db, u.id, "premium", 1, NOW).ok, false, "премиум не куплен");
+  addMoney(db, u.id, "diamonds", 1000);
+  assert.ok(passBuy(db, u.id, NOW).ok);
+  assert.equal(passBuy(db, u.id, NOW).ok, false);
+  assert.ok(passClaim(db, u.id, "premium", 0, NOW).ok, "все доступные");
+  assert.equal(passClaim(db, u.id, "premium", 0, NOW).ok, false, "больше нечего");
+  assert.ok(getWallet(db, u.id, NOW).diamonds > d0 + 1000 - PASS.price);
+  track(db, u.id, "wins", 1000, NOW);
+  assert.equal(passView(db, u.id, NOW).level, PASS.levels);
+  assert.ok(passReward(PASS.levels, "premium").packs >= 3);
+  const next = passView(db, u.id, NOW + PASS.seasonMs);
+  assert.equal(next.xp, 0);
+  assert.equal(next.bought, false);
+});
+
+test("баннер недели: герой недели детерминирован, гарантия срабатывает, пак стоит как обычный", () => {
+  const db = freshDb();
+  const u = makeUser(db);
+  getWallet(db, u.id, NOW);
+  const week = weekOf(NOW);
+  const f = bannerFeatured(week);
+  assert.equal(f, bannerFeatured(week));
+  assert.ok(cardsOfRank(3).concat(cardsOfRank(4)).some((c) => c.id === f));
+  assert.equal(eventsState(db, u.id, NOW).banner.featured, f);
+  addMoney(db, u.id, "packs", 500);
+  let got = false;
+  for (let i = 0; i < BANNER.guarantee && !got; i += 1) {
+    const r = openPacks(db, u.id, { count: 1, pay: "token", quick: true, banner: true }, NOW, seeded(100 + i));
+    assert.ok(r.ok);
+    got = r.value.results[0].offers.includes(f);
+    if (r.value.pending) db.prepare("DELETE FROM card_pending WHERE user_id = ?").run(u.id);
+  }
+  assert.ok(got, "герой недели выпал не позже гарантии");
+  assert.equal(eventsState(db, u.id, NOW).banner.counter, 0);
+});
+
+test("уведомления: защита и итоги аукциона считаются, отметка прочитанного сбрасывает", () => {
+  const db = freshDb();
+  const a = makeUser(db, "Attacker2");
+  const d = makeUser(db, "Defender2");
+  getWallet(db, a.id, NOW);
+  getWallet(db, d.id, NOW);
+  assert.deepEqual(noticesOf(db, d.id), { defenses: 0, auctions: 0, trades: 0 });
+  strongDeck(db, a.id);
+  strongDeck(db, d.id, 1);
+  assert.ok(challenge(db, a.id, "Defender2", NOW, seeded(9)).ok);
+  assert.equal(noticesOf(db, d.id).defenses, 1);
+  assert.equal(noticesOf(db, a.id).defenses, 0);
+  noticesSeen(db, d.id);
+  assert.equal(noticesOf(db, d.id).defenses, 0);
 });
