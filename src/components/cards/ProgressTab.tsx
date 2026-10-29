@@ -187,7 +187,7 @@ export function ProgressTab({ s }: { s: CardsState }) {
         </div>
       </Panel>
 
-      <Panel title="Наборы по аниме" hint="Собирайте героев одного аниме: награда за половину набора и за полный набор. Герои без арта в набор не входят.">
+      <Panel title="Наборы по аниме" right={<span className="cg-chip">Собрано полностью: {p.sets.filter((x) => x.owned >= x.size).length} из {p.sets.length}</span>} hint="Собирайте героев одного аниме: награда за половину набора и за полный набор. Герои без арта в набор не входят.">
         <div className="pg-sets">
           {p.sets.map((st) => (
             <article key={st.series} className={`pg-set ${st.owned >= st.size ? "full" : ""}`}>
