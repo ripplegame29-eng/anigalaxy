@@ -51,11 +51,12 @@ async function find(search) {
       await sleep(Number(res.headers.get("retry-after") ?? 30) * 1000 + 500);
       continue;
     }
-    if (!res.ok) return null;
+    if (res.status === 404) return null; // AniList отвечает 404, если персонаж не найден
+    if (!res.ok) throw new Error(`AniList вернул HTTP ${res.status}`);
     const json = await res.json();
     return json?.data?.Character?.image?.large ?? null;
   }
-  return null;
+  throw new Error("AniList ограничил запросы (HTTP 429) — подождите несколько минут и запустите снова");
 }
 
 let ok = 0;
@@ -63,7 +64,7 @@ const failed = [];
 for (const [i, c] of todo.entries()) {
   try {
     const url = await find(c.search);
-    if (!url || url.includes("default.jpg")) throw new Error("нет изображения");
+    if (!url || url.includes("default.jpg")) throw new Error(`персонаж «${c.search}» не найден на AniList`);
     const img = await fetch(url);
     if (!img.ok) throw new Error(`HTTP ${img.status}`);
     writeFileSync(path.join(outDir, `${c.id}.jpg`), Buffer.from(await img.arrayBuffer()));
