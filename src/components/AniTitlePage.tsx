@@ -1,7 +1,7 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
 import { Poster } from "@/components/Poster";
 import { WatchBox } from "@/components/WatchBox";
+import { AniTitleClient } from "@/components/AniTitleClient";
 import { ReadMore } from "@/components/ReadMore";
 import { AnimeRow } from "@/components/AnimeRow";
 import { NextEpisode } from "@/components/NextEpisode";
@@ -39,7 +39,8 @@ function SectionTitle({ id, children }: { id: string; children: React.ReactNode 
  */
 export async function AniTitlePage({ id }: { id: string }) {
   const detail = await getRelease(aniAlias(id)).catch(() => null);
-  if (!detail) notFound();
+  // Сервер релиз не увидел (AniLiberty скрывает часть тайтлов от дата-центров): пусть спросит браузер зрителя
+  if (!detail) return <AniTitleClient id={id} alias={aniAlias(id)} />;
   const { episodes } = detail;
   // id тайтла на сайте — «ani-алиас»: по нему работают избранное, подборки, комментарии и история
   const card = { ...detail.card, id };
