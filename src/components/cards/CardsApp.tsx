@@ -24,7 +24,7 @@ import { SeasonTab } from "./SeasonTab";
 import { SharpenTab } from "./SharpenTab";
 import { setSound, useSoundOn } from "@/lib/cards/sound";
 import { ToastHost, fmt, fmtLeft, toast, useBusy, useNow } from "./common";
-import { CUR, Cur, Ico, type CurKey, type IcoName } from "./icons";
+import { CUR, Cur, CurArt, Ico, type CurKey, type IcoName } from "./icons";
 import { TradeTab } from "./TradeTab";
 
 const TABS: readonly (readonly [string, string, IcoName])[] = [
@@ -320,7 +320,7 @@ export function CardsApp() {
             {tokens.map((t) => (
               <div key={t.k} className="cg-tok" style={{ ["--c" as string]: CUR[t.k].color }} title={CUR[t.k].label}>
                 <span className="cg-tok-ico">
-                  <Ico name={CUR[t.k].ico} size={17} />
+                  <CurArt k={t.k} size={26} />
                 </span>
                 <b>{t.value}</b>
                 <small>{t.note ?? CUR[t.k].label}</small>
