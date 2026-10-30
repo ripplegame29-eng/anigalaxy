@@ -12,7 +12,7 @@ import Link from "next/link";
 import { PASS, PASS_CARDS, PASS_XP, PASS_XP_DAILY, PASS_XP_MISSION, passReward, seasonNo, type PassTrack } from "@/lib/cards/season";
 
 /** Цена премиум-ветки сезонного пасса (в рублях) */
-const PREMIUM_PRICE = 1290;
+const PREMIUM_PRICE = 1190;
 import { cardDef } from "@/lib/cards/catalog";
 import { RANKS } from "@/lib/cards/config";
 import { rewardText, type Reward } from "@/lib/cards/progress";

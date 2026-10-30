@@ -48,10 +48,10 @@ export const PLANS: PremiumPlan[] = [
   {
     id: "year",
     title: "Год",
-    price: 1290,
+    price: 1190,
     oldPrice: 2390,
-    discount: "Выгода 46%",
-    perMonth: "107 ₽/мес",
+    discount: "Выгода 50%",
+    perMonth: "99 ₽/мес",
     days: 365,
     light: true,
   },

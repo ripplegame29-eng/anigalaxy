@@ -15,7 +15,7 @@ import { BATTLEPASS } from "@/lib/battlepass/logic";
 import { plural } from "@/components/battlepass/model";
 
 /** Годовой план подписки — он и открывает сезонный пропуск */
-const SEASON_PRICE = 1290;
+const SEASON_PRICE = 1190;
 
 export interface PassPurchaseProps {
   premium: boolean;

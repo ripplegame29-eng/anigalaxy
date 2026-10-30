@@ -18,7 +18,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 const TF = [
   { n: "Месяц", d: 30, p: 99, t: "1 месяц" },
   { n: "3 месяца", d: 90, p: 249, t: "3 месяца", hit: 1 },
-  { n: "Год", d: 365, p: 1290, t: "1 год" },
+  { n: "Год", d: 365, p: 1190, t: "1 год" },
 ];
 
 const WR = [

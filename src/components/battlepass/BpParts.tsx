@@ -242,7 +242,7 @@ export function BpHero(props: BpHeroProps) {
 
 /* ----------------------------- Предложение ------------------------------ */
 
-const SEASON_PRICE = 1290;
+const SEASON_PRICE = 1190;
 
 export function BpOffer({
   premium,

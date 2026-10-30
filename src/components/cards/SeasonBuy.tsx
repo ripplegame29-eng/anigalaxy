@@ -25,7 +25,7 @@ import { Ico } from "./icons";
 import "../../app/cards-card.css";
 
 /** Цена премиум-ветки — та же, что на плашке сезона */
-const PRICE = 1290;
+const PRICE = 1190;
 
 /** Карты сезона для веера: [уровень, лента]; вторая запись — главная награда в центре */
 const FAN: readonly (readonly [number, PassTrack])[] = [[12, "free"], [30, "premium"], [24, "free"]];

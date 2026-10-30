@@ -27,7 +27,7 @@ import { EXCLUSIVE_CARDS } from "@/components/battlepass/model";
 import { AE_RARITY } from "@/components/progression/AchievementEmblem";
 
 /** Годовой тариф — им открывается сезонный пропуск (см. PassPurchase) */
-const SEASON_PRICE = 1290;
+const SEASON_PRICE = 1190;
 
 function seasonStartLabel(): string {
   return new Date(BATTLEPASS.from).toLocaleDateString("ru-RU", {
