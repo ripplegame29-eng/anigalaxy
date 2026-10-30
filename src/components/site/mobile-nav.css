@@ -269,3 +269,11 @@
   /* последняя нечётная плитка («Обновления») тянется на всю ширину */
   .mnv-grid .mnv-tile:last-child:nth-child(odd){grid-column:1/-1}
 }
+
+/* На узких телефонах поиск-пилюля не помещается и обрезается до «П»:
+   оставляем иконку, aria-label на кнопке сохраняет подпись для скринридера. */
+@media (max-width:430px){
+  .agh .srch{flex:none!important;width:40px!important;min-width:0!important;padding:0!important;justify-content:center}
+  .agh .srch .si{padding:0;justify-content:center}
+  .agh .srch .si span{display:none!important}
+}

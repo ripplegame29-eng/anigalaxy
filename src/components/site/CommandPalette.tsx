@@ -204,6 +204,22 @@ export function CommandPalette({ open, onOpenChange, onPick }: CommandPalettePro
     [onOpenChange, onPick, router],
   );
 
+  /* Отправка формы: на iPhone клавиша «Поиск» приходит как submit, а не
+     keydown. Если строка уже выбрана — открываем её, иначе уходим в каталог
+     с запросом, чтобы поиск начался в любом случае. */
+  const onSubmit = (event: React.FormEvent) => {
+    event.preventDefault();
+    const card = shown[active];
+    if (card) {
+      go(card);
+      return;
+    }
+    if (!term) return;
+    onOpenChange(false);
+    inputRef.current?.blur();
+    router.push(`/catalog?q=${encodeURIComponent(term)}`);
+  };
+
   /* Активная строка всегда попадает в поле зрения */
   useEffect(() => {
     const node = listRef.current?.children[active];
@@ -301,7 +317,7 @@ export function CommandPalette({ open, onOpenChange, onPick }: CommandPalettePro
     >
       <div className="sx__box">
         {/* ------------------------- Поле ------------------------- */}
-        <div className="sx__head">
+        <form className="sx__head" onSubmit={onSubmit}>
           <svg className="icon" viewBox="0 0 24 24" aria-hidden="true">
             <circle cx="11" cy="11" r="7" />
             <path d="M20 20l-4-4" />
@@ -313,6 +329,7 @@ export function CommandPalette({ open, onOpenChange, onPick }: CommandPalettePro
             value={q}
             placeholder="Поиск аниме — название, жанр, студия…"
             autoComplete="off"
+            enterKeyHint="search"
             aria-label="Поиск аниме"
             onChange={(event) => {
               setQ(event.target.value);
@@ -340,7 +357,7 @@ export function CommandPalette({ open, onOpenChange, onPick }: CommandPalettePro
               </svg>
             </button>
           </div>
-        </div>
+        </form>
 
         {/* ------------------------ Фильтры ----------------------- */}
         <div className="sx__filters" role="group" aria-label="Фильтры поиска">

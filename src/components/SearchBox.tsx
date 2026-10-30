@@ -102,7 +102,12 @@ export function SearchBox({ mobile = false }: { mobile?: boolean }) {
       ref={boxRef}
       className={`relative ${mobile ? "w-full" : "w-full max-w-md lg:max-w-lg"}`}
     >
-      <div
+      <form
+        role="search"
+        onSubmit={(event) => {
+          event.preventDefault();
+          submit(cursor >= 0 ? results[cursor] : undefined);
+        }}
         className={`flex items-center gap-2 rounded-xl border border-line bg-white/6 px-3 transition-all duration-200 focus-within:border-accent/60 focus-within:bg-white/10 focus-within:shadow-[0_0_0_4px_rgba(31,123,255,.14)] ${
           mobile ? "h-11" : "h-10"
         }`}
@@ -127,13 +132,14 @@ export function SearchBox({ mobile = false }: { mobile?: boolean }) {
           onKeyDown={onKeyDown}
           placeholder="Поиск аниме…"
           aria-label="Поиск аниме"
+          enterKeyHint="search"
           className="w-full bg-transparent text-sm text-white outline-none placeholder:text-muted/80 [&::-webkit-search-cancel-button]:appearance-none"
         />
 
         {loading && (
           <span className="h-4 w-4 shrink-0 animate-spin-slow rounded-full border-2 border-white/20 border-t-accent" />
         )}
-      </div>
+      </form>
 
       {/* Результаты */}
       {showDropdown && (

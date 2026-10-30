@@ -300,9 +300,25 @@ export function CatalogFilters({ value, meta }: { value: CatalogState; meta: Cat
     activeChips.push({ key: "sort", label, clear: () => update({ sort: "rating" }) });
   }
 
+  /* Enter или «Поиск» на мобильной клавиатуре: форма отправляется сразу,
+     не дожидаясь дебаунса. Иначе на iPhone нажатие клавиши ничего не делало. */
+  const submitSearch = () => {
+    const trimmed = search.trim();
+    searchRef.current?.blur();
+    if (trimmed === (value.q ?? "")) return;
+    router.push(`/catalog${toSearch({ ...value, q: trimmed || undefined })}`);
+  };
+
   return (
     <section className="cat-fp" aria-label="Фильтры каталога">
-      <div className="cat-sb">
+      <form
+        className="cat-sb"
+        role="search"
+        onSubmit={(event) => {
+          event.preventDefault();
+          submitSearch();
+        }}
+      >
         <SearchIcon />
         <input
           ref={searchRef}
@@ -317,6 +333,7 @@ export function CatalogFilters({ value, meta }: { value: CatalogState; meta: Cat
           placeholder="Введите название аниме…"
           aria-label="Поиск по каталогу"
           autoComplete="off"
+          enterKeyHint="search"
         />
         {search && (
           <button
@@ -334,7 +351,7 @@ export function CatalogFilters({ value, meta }: { value: CatalogState; meta: Cat
         <span className="cat-kbd" aria-hidden>
           /
         </span>
-      </div>
+      </form>
 
       <button
         type="button"
