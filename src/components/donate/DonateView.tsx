@@ -287,9 +287,11 @@ useEffect(() => {
   /* ------------------------------- Покупка ------------------------------ */
   const buy = () => {
     openCheckout({
+      productId: `donate-${tier.id}`,
       title: `Поддержка · ${tier.name}`,
       caption: `${nf.format(tier.coins)} AC · ${tier.prem}`,
       price: tier.price,
+      perks: tier.perks,
       onPaid: () => {
         setToast(true);
         burst(window.innerWidth / 2, window.innerHeight / 2, 40, 420);

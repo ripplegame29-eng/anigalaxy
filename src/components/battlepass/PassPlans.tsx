@@ -19,15 +19,16 @@ import Link from "next/link";
 import { AuthTrigger } from "@/components/AuthDialog";
 import { openCheckout } from "@/lib/checkout";
 import { openAuthDialog } from "@/lib/auth-dialog";
-import { activatePremium, formatPremiumUntil, isPremiumActive } from "@/lib/auth";
+import { formatPremiumUntil, isPremiumActive } from "@/lib/auth";
 import { useAccount } from "@/lib/use-account";
 import { BATTLEPASS, bpLineTotals } from "@/lib/battlepass/logic";
+import { PRODUCTS } from "@/lib/payments/catalog";
 import { RewardArt } from "@/components/battlepass/RewardArt";
 import { EXCLUSIVE_CARDS } from "@/components/battlepass/model";
 import { AE_RARITY } from "@/components/progression/AchievementEmblem";
 
 /** Годовой тариф — им открывается сезонный пропуск (см. PassPurchase) */
-const SEASON_PRICE = 1190;
+const SEASON_PRICE = PRODUCTS.battlepass.price;
 
 function seasonStartLabel(): string {
   return new Date(BATTLEPASS.from).toLocaleDateString("ru-RU", {
@@ -87,13 +88,11 @@ export function PassPlans({ daysLeft }: { daysLeft: number }) {
     }
     if (premium || days <= 0) return;
     openCheckout({
+      productId: "battlepass",
       title: "Боевой пропуск",
       caption: "Разовый платёж за сезон",
       price: SEASON_PRICE,
       perks: ["Золотая линия наград сезона", "Эксклюзивная косметика и аникойны", "Награды за пройденные уровни выдаются сразу"],
-      // Подписка с запасом за сезон: остаток считается от «сейчас»,
-      // иначе пропуск мог бы кончиться раньше конца сезона
-      onPaid: () => activatePremium(days + 30),
     });
   }, [account, premium, days]);
 
@@ -131,7 +130,7 @@ export function PassPlans({ daysLeft }: { daysLeft: number }) {
               <div
                 key={card.key}
                 className={`bpb-fc bpb-fc--${i}`}
-                style={{ "--k": AE_RARITY[card.rarity].c } as React.CSSProperties}
+                style={{ "--k": card.kind === "decor" ? "#ff3d62" : AE_RARITY[card.rarity].c } as React.CSSProperties}
               >
                 <i className="c tl" />
                 <i className="c br" />

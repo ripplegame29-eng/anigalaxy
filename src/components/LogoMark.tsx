@@ -3,15 +3,9 @@ import Image from "next/image";
 /**
  * Знак AniGalaxy — маскот.
  *
- * Раньше здесь был нарисованный в SVG знак-монограмма «A» с орбитой и
- * искрой. Теперь это персонаж проекта (публичный/cat-mascot.png):
+ * Персонаж проекта (public/cat-mascot.png):
  * файл прозрачный, рисуется как обычная картинка, размер задаёт
  * вызывающий через className.
- *
- * Кадр: голова, грудка и грива с мягким растворением снизу (без жёсткого
- * среза). Подменять картинку можно без правок кода: достаточно положить свой файл
- * по пути public/cat-mascot.png. Генерируется он скриптом
- * tools/make-mascot.mjs (уменьшение исходника до размера шапки).
  *
  * Пропсы width/height обязательны: без них next/image не может
  * зарезервировать место, и при загрузке шапка прыгает.
@@ -19,10 +13,10 @@ import Image from "next/image";
 export function LogoMark({ className = "" }: { className?: string }) {
   return (
     <Image
-      src="/cat-mascot.png"
+      src="/mascot.png"
       alt=""
-      width={184}
-      height={168}
+      width={200}
+      height={215}
       sizes="48px"
       className={className}
       aria-hidden="true"

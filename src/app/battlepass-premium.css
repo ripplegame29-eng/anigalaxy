@@ -588,17 +588,49 @@
 .pv2-mini-nick{font-size:20px;font-weight:900;background:linear-gradient(180deg,#fff,#ffc2cf);-webkit-background-clip:text;background-clip:text;color:transparent}
 @media(prefers-reduced-motion:reduce){.pv2-mini-bg{animation:none}}
 
-/* арт награды «Оформление профиля» */
-.pv2-art{position:relative;display:grid;place-items:center;width:100%;aspect-ratio:1.5;min-width:84px;border-radius:14px;overflow:hidden;background:url("/bp/scene-torii2.webp") center/cover;box-shadow:inset 0 0 0 1px rgba(255,140,165,.5),0 8px 20px -8px rgba(255,61,98,.7)}
-.pv2-art::before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(13,4,8,.2),rgba(13,4,8,.78))}
-.pv2-art-sm{min-width:64px;aspect-ratio:1.4;border-radius:11px}
-.pv2-art-lg,.pv2-art-xl{min-width:180px}
-.pv2-art b{position:relative;font-size:18px;font-weight:900;letter-spacing:.1em;color:#ffd9a0;text-shadow:0 0 14px rgba(255,61,98,.9)}
-.pv2-art-sm b{font-size:14px}
-.pv2-art-moon{position:absolute;right:-8px;top:-8px;width:44%;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle at 38% 36%,#ffd9d0,#ff4d6d 45%,#7d0b24 78%);box-shadow:0 0 22px 4px rgba(255,61,98,.6)}
-.pv2-art-lamp{position:absolute;left:8%;top:-4px;width:9px;height:18px;border-radius:3px 3px 5px 5px;background:linear-gradient(180deg,#ffb3a0,#ff3d62 60%,#7d0b24);box-shadow:0 0 12px rgba(255,61,98,.9);animation:pv2-sway 4s ease-in-out infinite alternate;transform-origin:50% 0}
-.pv2-art-lamp.b{left:20%;height:13px;animation-delay:-1.5s}
-@media(prefers-reduced-motion:reduce){.pv2-art-lamp{animation:none}}
+/* арт награды «Оформление профиля» (Хуэко Мундо) */
+.pv2-art{position:relative;display:grid;place-items:center;width:100%;aspect-ratio:1.55;border-radius:14px;overflow:hidden;box-shadow:0 0 0 1px rgba(255,140,165,.45),0 12px 28px -8px rgba(255,40,80,.65),0 0 24px -4px rgba(255,60,95,.4);animation:pv2-art-glow 5s ease-in-out infinite alternate}
+@keyframes pv2-art-glow{0%{box-shadow:0 0 0 1px rgba(255,140,165,.45),0 12px 28px -8px rgba(255,40,80,.65),0 0 24px -4px rgba(255,60,95,.4)}100%{box-shadow:0 0 0 1px rgba(255,180,200,.65),0 18px 38px -6px rgba(255,40,80,.85),0 0 36px 2px rgba(255,60,95,.6)}}
+
+.pv2-art-bg{position:absolute;inset:0;background:url("/bp/scene-red2.webp") center 35%/cover no-repeat;filter:saturate(1.2) contrast(1.1);transform:scale(1.05);transition:transform .4s ease}
+.pv2-art:hover .pv2-art-bg{transform:scale(1.1)}
+
+.pv2-art-fog{position:absolute;inset:0;background:radial-gradient(ellipse 90% 70% at 50% 100%,rgba(255,61,98,.3),transparent 72%),linear-gradient(180deg,rgba(10,2,6,.15) 0%,rgba(10,2,6,.45) 55%,rgba(10,2,6,.88) 100%);pointer-events:none}
+
+.pv2-art-crescent{position:absolute;top:10%;right:12%;width:26px;height:26px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#fff 0%,#ff9fb4 55%,#c8142f 85%);-webkit-mask:radial-gradient(circle at 70% 36%,transparent 0 54%,#000 55%);mask:radial-gradient(circle at 70% 36%,transparent 0 54%,#000 55%);filter:drop-shadow(0 0 8px rgba(255,61,98,.9));opacity:.92;pointer-events:none}
+
+.pv2-art-petals{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.pv2-art-petals i{position:absolute;width:4px;height:6px;border-radius:60% 40% 60% 40%;background:linear-gradient(135deg,#fff,#ff3d62 70%);box-shadow:0 0 6px rgba(255,61,98,.9);opacity:0;animation:pv2-art-pt 4.5s ease-in-out infinite}
+.pv2-art-petals i:nth-child(1){left:16%;bottom:12%;animation-delay:0s}
+.pv2-art-petals i:nth-child(2){left:38%;bottom:18%;animation-delay:1.3s;width:3px;height:5px}
+.pv2-art-petals i:nth-child(3){left:64%;bottom:10%;animation-delay:2.4s;width:4px;height:7px}
+.pv2-art-petals i:nth-child(4){left:82%;bottom:16%;animation-delay:.8s;width:3px;height:4px}
+@keyframes pv2-art-pt{0%{transform:translate(0,0) rotate(0deg);opacity:0}25%{opacity:.95}80%{opacity:.6}100%{transform:translate(14px,-38px) rotate(45deg);opacity:0}}
+
+.pv2-art-c{position:absolute;width:9px;height:9px;border:1.5px solid rgba(255,140,165,.75);pointer-events:none;z-index:2}
+.pv2-art-c.tl{top:6px;left:6px;border-right:0;border-bottom:0}
+.pv2-art-c.br{bottom:6px;right:6px;border-left:0;border-top:0}
+
+.pv2-art-badge{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4px 12px;border-radius:99px;background:rgba(14,4,8,.65);border:1px solid rgba(255,120,150,.38);backdrop-filter:blur(4px);box-shadow:0 4px 14px rgba(0,0,0,.5),0 0 16px -2px rgba(255,61,98,.5)}
+.pv2-art-badge b{font-size:15px;font-weight:900;letter-spacing:.22em;padding-left:.22em;line-height:1;background:linear-gradient(180deg,#fff 0%,#ffd0d8 60%,#ff8fa5 100%);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 8px rgba(255,61,98,.85))}
+.pv2-art-badge small{font-size:8px;font-weight:800;letter-spacing:.22em;padding-left:.22em;margin-top:2px;color:#ff9fb4;text-transform:uppercase;line-height:1}
+
+.pv2-art-sm{width:68px;border-radius:10px}
+.pv2-art-sm .pv2-art-crescent{width:16px;height:16px;top:8%;right:10%}
+.pv2-art-sm .pv2-art-c{width:6px;height:6px}
+.pv2-art-sm .pv2-art-badge{padding:2px 8px}
+.pv2-art-sm .pv2-art-badge b{font-size:12px;letter-spacing:.15em;padding-left:.15em}
+
+.pv2-art-md{width:86px;border-radius:12px}
+.pv2-art-lg{width:168px;border-radius:14px}
+.pv2-art-xl{width:210px;border-radius:16px}
+
+/* Контейнер bp-art под прямоугольный арт */
+.bp-art:has(.pv2-art){width:auto;height:auto}
+.bp-art:has(.pv2-art) .inner{width:auto;height:auto;filter:none}
+.bp-art:has(.pv2-art) .aura,.bp-art:has(.pv2-art) .rp{display:none!important}
+
+@media(prefers-reduced-motion:reduce){.pv2-art,.pv2-art-petals i{animation:none!important}}
 
 /* оформление «Хуэко Мундо» в живом профиле */
 .ag-pf-wrap:has(.pv2-decor){position:relative;isolation:isolate}

@@ -334,6 +334,66 @@ async function pull(): Promise<boolean> {
   return changed;
 }
 
+/**
+ * Досылает локальные изменения перед уходом на платёжную страницу.
+ *
+ * Если человек только что играл, а сервер ещё не получил прогресс, после
+ * подтверждения оплаты серверная выдача AC обновила бы документ, и старый
+ * локальный прогресс мог бы уехать поверх неё. Поэтому сначала выгружаем всё.
+ */
+export async function flushBeforePayment(): Promise<void> {
+  if (isViewMode()) return;
+  if (!active) {
+    const me = await call<{ account?: ServerAccount | null }>("/api/account/me");
+    if (!me.data?.account) return;
+    active = true;
+  }
+  let clean = await push();
+  for (let attempt = 0; attempt < 3 && !clean && readMeta().dirty.length > 0; attempt += 1) {
+    clean = await push();
+  }
+  await pushProfile();
+}
+
+/** Подтянуть серверные документы после оплаты (AC, покупки, награды) */
+export async function refreshDocsFromServer(): Promise<boolean> {
+  return pull();
+}
+
+/**
+ * Обновить срок Premium и имя из базы.
+ *
+ * В отличие от входа здесь сервер не «сливается» с локальным значением:
+ * оплата могла продлить подписку, а старый локальный срок не должен перебить
+ * решение сервера.
+ */
+export async function refreshAccountFromServer(): Promise<boolean> {
+  const reply = await call<{ account?: ServerAccount | null }>("/api/account/me");
+  const server = reply.data?.account;
+  if (!server) return false;
+  const prev = readAccount();
+  if (!prev || prev.nickname.toLowerCase() !== server.nickname.toLowerCase()) return false;
+
+  active = true;
+  const meta = readMeta();
+  if (meta.userId !== server.id) {
+    writeMeta({ ...meta, userId: server.id });
+  }
+  const next: Account = {
+    ...prev,
+    nickname: server.nickname,
+    displayName: server.displayName || "",
+    email: server.email,
+    createdAt: server.createdAt,
+    premiumUntil: server.premiumUntil,
+    premiumSince: server.premiumSince,
+    premiumTotalDays: server.premiumTotalDays,
+  };
+  if (JSON.stringify(prev) === JSON.stringify(next)) return false;
+  saveAccount(next);
+  return true;
+}
+
 function wipeSyncedKeys(): void {
   for (const key of syncKeysOnDevice()) {
     try {
@@ -350,14 +410,16 @@ function wipeSyncedKeys(): void {
 /* ------------------------------- Аккаунт -------------------------------- */
 
 function profileSignature(account: Account): string {
-  return JSON.stringify([
-    account.displayName ?? "",
-    account.premiumUntil ?? 0,
-    account.premiumSince ?? 0,
-    account.premiumTotalDays ?? 0,
-  ]);
+  return JSON.stringify([account.displayName ?? ""]);
 }
 
+/**
+ * Отправляет только отображаемое имя.
+ *
+ * Срок Premium — серверное право: его выдают оплата, промо-механики и
+ * администратор. Браузер не может прислать `premiumUntil` и продлить
+ * подписку запросом.
+ */
 async function pushProfile(): Promise<void> {
   if (!active) return;
   const account = readAccount();
@@ -367,26 +429,21 @@ async function pushProfile(): Promise<void> {
   if (meta.profile === signature) return;
   const reply = await call<{ ok?: boolean }>("/api/account/profile", {
     displayName: account.displayName ?? "",
-    premiumUntil: account.premiumUntil ?? 0,
-    premiumSince: account.premiumSince ?? 0,
-    premiumTotalDays: account.premiumTotalDays ?? 0,
   });
   if (reply.data?.ok) writeMeta({ ...readMeta(), profile: signature });
 }
 
-/** Локальная запись об аккаунте по данным сервера (с сохранением купленного локально) */
+/** Локальная запись об аккаунте по данным сервера: срок Premium — только серверный */
 function localFromServer(server: ServerAccount, passHash: string): Account {
-  const prev = readAccount();
-  const same = prev && prev.nickname.toLowerCase() === server.nickname.toLowerCase();
   return {
     nickname: server.nickname,
-    displayName: server.displayName || (same ? prev.displayName : "") || "",
+    displayName: server.displayName || "",
     email: server.email,
     passHash,
     createdAt: server.createdAt,
-    premiumUntil: Math.max(server.premiumUntil, same ? (prev.premiumUntil ?? 0) : 0),
-    premiumSince: server.premiumSince || (same ? (prev.premiumSince ?? 0) : 0),
-    premiumTotalDays: Math.max(server.premiumTotalDays, same ? (prev.premiumTotalDays ?? 0) : 0),
+    premiumUntil: server.premiumUntil,
+    premiumSince: server.premiumSince,
+    premiumTotalDays: server.premiumTotalDays,
   };
 }
 

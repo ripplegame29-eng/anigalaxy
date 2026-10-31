@@ -885,4 +885,38 @@ export const MIGRATIONS: Migration[] = [
       CREATE INDEX idx_clan_donations_donor ON clan_donations(donor_id, created_at DESC);
     `,
   },
+  {
+    version: 27,
+    name: "platega_payment_orders",
+    sql: `
+      -- Заказы AniGalaxy ↔ Platega. Сумма и состав покупки хранятся здесь,
+      -- а не приходят из браузера при подтверждении оплаты.
+      CREATE TABLE payment_orders (
+        id TEXT PRIMARY KEY,
+        user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        product_id TEXT NOT NULL,
+        title TEXT NOT NULL,
+        amount INTEGER NOT NULL,
+        currency TEXT NOT NULL DEFAULT 'RUB',
+        status TEXT NOT NULL DEFAULT 'PENDING',
+        provider TEXT NOT NULL DEFAULT 'platega',
+        transaction_id TEXT,
+        checkout_url TEXT NOT NULL DEFAULT '',
+        payload TEXT NOT NULL DEFAULT '',
+        meta TEXT NOT NULL DEFAULT '{}',
+        deliver_at INTEGER NOT NULL DEFAULT 0,
+        confirmed_at INTEGER NOT NULL DEFAULT 0,
+        granted_at INTEGER NOT NULL DEFAULT 0,
+        created_at INTEGER NOT NULL,
+        updated_at INTEGER NOT NULL
+      );
+      CREATE UNIQUE INDEX idx_payment_orders_tx
+        ON payment_orders(transaction_id)
+        WHERE transaction_id IS NOT NULL AND transaction_id <> '';
+      CREATE INDEX idx_payment_orders_user ON payment_orders(user_id, created_at DESC);
+      CREATE INDEX idx_payment_orders_due
+        ON payment_orders(status, deliver_at)
+        WHERE status = 'CONFIRMED' AND granted_at = 0;
+    `,
+  },
 ];

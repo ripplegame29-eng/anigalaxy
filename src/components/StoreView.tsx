@@ -802,6 +802,7 @@ function CoinPacks() {
                 type="button"
                 onClick={() =>
                   openCheckout({
+                    productId: `coins-${pack.id}`,
                     title: `Пакет AC · ${pack.name}`,
                     caption: `${fmt(pack.amount)} AC${pack.gift ? ` · ${pack.gift}` : ""}`,
                     price: pack.price,

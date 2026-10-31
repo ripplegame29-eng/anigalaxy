@@ -82,7 +82,11 @@ export function RewardArt({
   style,
 }: RewardArtProps) {
   const R = AE_RARITY[card.rarity];
-  const holo = card.rarity === "legendary" || card.rarity === "mythic";
+  const isDecor = card.kind === "decor";
+  const holo = (card.rarity === "legendary" || card.rarity === "mythic") && !isDecor;
+  const colorPrimary = isDecor ? "#ff3d62" : R.c;
+  const colorSecondary = isDecor ? "#ff8fa5" : R.c2;
+  const colorTertiary = isDecor ? "#ffd0d8" : R.c3;
 
   /** Искры: позиции и тайминги из ключа клетки — стабильны между рендерами */
   const sparks = useMemo(() => {
@@ -105,18 +109,18 @@ export function RewardArt({
       className={`bp-art ${SIZE_CLASS[size]} ${holo ? "holo" : ""} ${className}`}
       style={
         {
-          "--c": R.c,
-          "--c2": R.c2,
-          "--c3": R.c3,
+          "--c": colorPrimary,
+          "--c2": colorSecondary,
+          "--c3": colorTertiary,
           "--as": size === "sm" ? "72px" : size === "lg" ? "150px" : size === "xl" ? "200px" : "88px",
           ...style,
         } as CSSProperties
       }
       aria-hidden
     >
-      {live && <i className="aura" />}
-      {live && <i className="rp" style={{ "--d": "0s" } as CSSProperties} />}
-      {live && <i className="rp" style={{ "--d": "1.2s" } as CSSProperties} />}
+      {live && !isDecor && <i className="aura" />}
+      {live && !isDecor && <i className="rp" style={{ "--d": "0s" } as CSSProperties} />}
+      {live && !isDecor && <i className="rp" style={{ "--d": "1.2s" } as CSSProperties} />}
       {sparks.map((spark, index) => (
         <i
           key={index}

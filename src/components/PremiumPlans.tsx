@@ -7,9 +7,12 @@ import { applyPromo, PREMIUM_PERKS } from "@/lib/premium-perks";
 import { openAuthDialog } from "@/lib/auth-dialog";
 import { useAccount } from "@/lib/use-account";
 import { openCheckout } from "@/lib/checkout";
+import { PRODUCTS } from "@/lib/payments/catalog";
 
 export interface PremiumPlan {
   id: "month" | "quarter" | "year";
+  /** Товар в общем каталоге оплаты */
+  productId: string;
   title: string;
   price: number;
   oldPrice: number;
@@ -23,36 +26,40 @@ export interface PremiumPlan {
 
 /**
  * Тарифы и цены — один источник правды для витрины и для продления на
- * странице активной подписки (`PremiumStatus`).
+ * странице активной подписки (`PremiumStatus`). Цена и срок берутся из
+ * каталога оплаты, поэтому витрина не может разойтись с сервером.
  */
 export const PLANS: PremiumPlan[] = [
   {
     id: "month",
+    productId: "premium-month",
     title: "Месяц",
-    price: 99,
-    oldPrice: 149,
+    price: PRODUCTS["premium-month"].price,
+    oldPrice: PRODUCTS["premium-month"].oldPrice ?? PRODUCTS["premium-month"].price,
     discount: "Скидка 33%",
     perMonth: "99 ₽/мес",
-    days: 30,
+    days: PRODUCTS["premium-month"].premiumDays ?? 30,
   },
   {
     id: "quarter",
+    productId: "premium-quarter",
     title: "3 Месяца",
-    price: 249,
-    oldPrice: 447,
+    price: PRODUCTS["premium-quarter"].price,
+    oldPrice: PRODUCTS["premium-quarter"].oldPrice ?? PRODUCTS["premium-quarter"].price,
     discount: "Выгода 44%",
     perMonth: "83 ₽/мес",
-    days: 90,
+    days: PRODUCTS["premium-quarter"].premiumDays ?? 90,
     badge: "ХИТ ПРОДАЖ",
   },
   {
     id: "year",
+    productId: "premium-year",
     title: "Год",
-    price: 1190,
-    oldPrice: 2390,
+    price: PRODUCTS["premium-year"].price,
+    oldPrice: PRODUCTS["premium-year"].oldPrice ?? PRODUCTS["premium-year"].price,
     discount: "Выгода 50%",
     perMonth: "99 ₽/мес",
-    days: 365,
+    days: PRODUCTS["premium-year"].premiumDays ?? 365,
     light: true,
   },
 ];
@@ -96,7 +103,6 @@ function spot(e: React.PointerEvent<HTMLElement>) {
 export function PremiumPlans() {
   const account = useAccount();
   const premium = isPremiumActive(account);
-  const [justActivated, setJustActivated] = useState<string | null>(null);
 
   const statusLabel = useMemo(() => formatPremiumUntil(account), [account]);
 
@@ -108,15 +114,12 @@ export function PremiumPlans() {
       }
       if (premium) return;
       openCheckout({
+        productId: plan.productId,
         title: `Premium · ${plan.title}`,
         caption: plan.perMonth,
         price: plan.price,
         oldPrice: plan.oldPrice,
         perks: ["Без рекламы и приоритетная поддержка", "x2 опыт и ускоренные награды", "Эксклюзивные рамки и эффекты профиля"],
-        onPaid: () => {
-          activatePremium(plan.days);
-          setJustActivated(plan.id);
-        },
       });
     },
     [account, premium],
@@ -207,12 +210,6 @@ export function PremiumPlans() {
                 >
                   {account ? "Оформить подписку" : plan.badge ? "Войти и оформить" : "Войти и выбрать"}
                 </button>
-              )}
-
-              {justActivated === plan.id && (
-                <p className="mt-2.5 text-center text-xs text-mint animate-fade-in">
-                  Подписка активирована.
-                </p>
               )}
             </div>
           </article>

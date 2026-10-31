@@ -818,10 +818,21 @@ export function GiftPremiumDialog({ className, label, recipient }: GiftPremiumDi
                 disabled={payDisabled}
                 onClick={() => {
                   if (payDisabled) return;
+                  const giftProductId = S.t === 0 ? "gift-month" : S.t === 1 ? "gift-quarter" : "gift-year";
+                  const deliverAt = sched ? sched.getTime() : undefined;
+                  close();
                   openCheckout({
+                    productId: giftProductId,
                     title: S.m === "f" ? `Подарок Premium · ${TF[S.t].t}` : `Подарки Premium × ${S.n}`,
                     caption: S.m === "f" ? `Для ${S.to}` : "Случайным зрителям",
                     price: cur,
+                    gift: {
+                      mode: S.m === "f" ? "friend" : "random",
+                      recipient: S.m === "f" ? S.to : undefined,
+                      count: S.m === "r" ? S.n : 1,
+                      promoCode: S.pc || undefined,
+                      deliverAt: Number.isFinite(deliverAt) ? deliverAt : undefined,
+                    },
                     onPaid: () => {
                       set({
                         code: Math.random().toString(36).slice(2, 8).toUpperCase(),

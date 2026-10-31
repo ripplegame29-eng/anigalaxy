@@ -396,17 +396,14 @@ export function PremiumStatus({ account }: { account: Account }) {
     showToast(next ? "Автопродление включено" : "Автопродление выключено");
   };
 
-  /** Продление на выбранный тариф: оплата в общем окне, подписка — после неё */
+  /** Продление на выбранный тариф: оплата в общем окне, срок добавляет сервер */
   const onExtend = () => {
     openCheckout({
+      productId: plan.productId,
       title: `Premium · ${plan.title}`,
       caption: `Продление · ${plan.perMonth}`,
       price: plan.price,
       oldPrice: plan.oldPrice,
-      onPaid: () => {
-        activatePremium(plan.days);
-        showToast(`Подписка продлена на ${plan.days} дн.`);
-      },
     });
   };
 

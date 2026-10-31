@@ -1,9 +1,13 @@
-export async function register() {
-  if (process.env.NEXT_RUNTIME === "nodejs") {
-    const { startEpisodeWatcher } = await import("./lib/server/telegram-bot");
-    startEpisodeWatcher();
-    // Арты карточек докачиваются в фоне, когда у сервера есть интернет
-    const { startArtSync } = await import("./lib/server/cards-art");
-    setTimeout(startArtSync, 8000);
-  }
+/**
+ * Фоновые задачи процесса.
+ *
+ * Next вызывает `register` один раз при старте сервера. Платёжному модулю
+ * нужен таймер для отложенных подарков: заказ подтверждён, а выдача ждёт
+ * `deliver_at`, поэтому её нельзя сделать в момент колбэка.
+ */
+
+export async function register(): Promise<void> {
+  if (process.env.NEXT_RUNTIME !== "nodejs") return;
+  const { startPaymentScheduler } = await import("./lib/server/payment-scheduler");
+  startPaymentScheduler();
 }
