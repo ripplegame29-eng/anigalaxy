@@ -184,6 +184,16 @@
   .bp2-claimbar{margin-top:-18px}
   .bp2-tq{flex-wrap:wrap}
 }
+/* На телефоне карточки эксклюзивов узкие: бейджи «уровень» и «Пропуск»
+   наезжали друг на друга. Сжимаем отступы и шрифт, иконку замка убираем. */
+@media(max-width:600px){
+  .bp2-ix .lv2{top:8px;left:8px;padding:2px 7px;font-size:10.5px}
+  .bp2-ix .lv2 svg{display:none}
+  .bp2-ix .pm{top:8px;right:8px;padding:2px 6px;font-size:9px;letter-spacing:.04em}
+}
+@media(max-width:340px){
+  .bp2-ix .pm{display:none}
+}
 @media(max-width:767px),(hover:none){
   .bp2-bgimg,.bp2-fog,.bp2-lv::before,.bp2-hero h1{animation:none}
   .bp2-fl{display:none}
