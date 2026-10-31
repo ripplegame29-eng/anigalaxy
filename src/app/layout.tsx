@@ -99,7 +99,6 @@ const montserrat = Montserrat({
  * трогались.
  */
 const onest = Onest({
-  weight: ["400", "500", "600", "700", "800", "900"],
   variable: "--font-body",
   subsets: ["latin", "cyrillic"],
   display: "swap",
@@ -111,7 +110,6 @@ const onest = Onest({
  * self-hosted и без внешних запросов в рантайме.
  */
 const unbounded = Unbounded({
-  weight: ["500", "700", "800"],
   variable: "--font-unbounded",
   subsets: ["latin", "cyrillic"],
   display: "swap",
