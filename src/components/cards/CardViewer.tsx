@@ -180,12 +180,17 @@ export function CardViewer({
                 </div>
                 <div className="cv-face back fr" aria-hidden={!flip}>
                   <img className="fr-art" src="/cards/backs/rare.webp" alt="" draggable={false} />
+                  <i className="fr-glow" aria-hidden />
+                  <i className="fr-shine" aria-hidden />
+                  {[0, 1, 2, 3, 4, 5].map((k) => (
+                    <i key={k} className={`fr-sp s${k}`} aria-hidden />
+                  ))}
                   <span className="fr-emb">
                     <RankMark rank={def.rank} />
                     <em>{rank.short}</em>
                   </span>
                   <span className="fr-rank">{rank.name}</span>
-                  <b className="fr-name">{def.name}</b>
+                  <b className="fr-name" style={{ ["--fs" as string]: `${def.name.length <= 8 ? 5.2 : def.name.length <= 11 ? 4.2 : def.name.length <= 14 ? 3.4 : def.name.length <= 18 ? 2.8 : 2.3}cqw` } as CSSProperties}>{def.name}</b>
                   <small className="fr-sub">
                     {def.series} · {CLASSES[def.cls].name}
                   </small>
