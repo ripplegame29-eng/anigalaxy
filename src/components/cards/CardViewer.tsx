@@ -1,11 +1,53 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState, type CSSProperties, type PointerEvent, type ReactNode } from "react";
-import { cardDef } from "@/lib/cards/catalog";
+import { CATALOG, cardDef } from "@/lib/cards/catalog";
 import { CLASSES, ELEMENTS, PACK, RANKS } from "@/lib/cards/config";
 import { GameCard, RankMark } from "./GameCard";
 import { Portal, toast } from "./common";
 import { ELEMENT_ICON, Ico } from "./icons";
+
+const STAT_MAX = { atk: 260, def: 160, hp: 1100, spd: 120 } as const;
+const powerOf = (d: { atk: number; def: number; hp: number; spd: number }) => Math.round(d.atk + d.def * 0.8 + d.hp * 0.15 + d.spd * 2);
+
+/** Лепестковая диаграмма четырёх характеристик: атака сверху, дальше по часовой — защита, здоровье, скорость */
+function Radar({ d, labels = true }: { d: { atk: number; def: number; hp: number; spd: number }; labels?: boolean }) {
+  const vals = [d.atk / STAT_MAX.atk, d.def / STAT_MAX.def, d.hp / STAT_MAX.hp, d.spd / STAT_MAX.spd].map((v) => Math.min(1, Math.max(0.28, Math.sqrt(v) * 0.95)));
+  const dir = [[0, -1], [1, 0], [0, 1], [-1, 0]] as const;
+  const R = 33;
+  const pt = (i: number, k: number) => `${(50 + dir[i][0] * R * k).toFixed(1)},${(50 + dir[i][1] * R * k).toFixed(1)}`;
+  const ring = (k: number) => dir.map((_, i) => pt(i, k)).join(" ");
+  const shape = vals.map((v, i) => pt(i, v)).join(" ");
+  const names = ["АТК", "ЗАЩ", "ЗДР", "СКР"];
+  const nums = [d.atk, d.def, d.hp, d.spd];
+  return (
+    <svg className="cvr" viewBox="0 0 100 100" role="img" aria-label={`Атака ${d.atk}, защита ${d.def}, здоровье ${d.hp}, скорость ${d.spd}`}>
+      <defs>
+        <radialGradient id="cvr-g" cx="50%" cy="50%" r="50%">
+          <stop offset="0" stopColor="var(--c)" stopOpacity=".15" />
+          <stop offset="1" stopColor="var(--c)" stopOpacity=".7" />
+        </radialGradient>
+      </defs>
+      {[1, 0.66, 0.33].map((k) => (
+        <polygon key={k} className="cvr-ring" points={ring(k)} />
+      ))}
+      {dir.map((_, i) => (
+        <line key={i} className="cvr-ax" x1="50" y1="50" x2={pt(i, 1).split(",")[0]} y2={pt(i, 1).split(",")[1]} />
+      ))}
+      <polygon className="cvr-fill" points={shape} fill="url(#cvr-g)" />
+      {vals.map((v, i) => (
+        <circle key={i} className="cvr-dot" cx={pt(i, v).split(",")[0]} cy={pt(i, v).split(",")[1]} r="1.8" />
+      ))}
+      {labels &&
+        dir.map((dd, i) => (
+          <text key={i} className="cvr-t" x={50 + dd[0] * 45} y={50 + dd[1] * 44 + 1.6} textAnchor="middle">
+            <tspan className="cvr-n">{names[i]}</tspan>
+            <tspan className="cvr-v" x={50 + dd[0] * 45} dy="6.2">{nums[i]}</tspan>
+          </text>
+        ))}
+    </svg>
+  );
+}
 
 /** Искры вокруг карты: положение, размер и темп считаются от номера, чтобы рендер был стабильным */
 const SPARKS = Array.from({ length: 22 }, (_, i) => ({
@@ -74,6 +116,11 @@ export function CardViewer({
   if (!def) return null;
   const rank = RANKS[def.rank];
   const chance = (PACK.weights[def.rank] / 10).toFixed(1);
+  const power = powerOf(def);
+  const serial = String(CATALOG.findIndex((c) => c.id === id) + 1).padStart(3, "0");
+  const mates = CATALOG.filter((c) => c.series === def.series);
+  const place = [...mates].sort((x, y) => powerOf(y) - powerOf(x)).findIndex((c) => c.id === id) + 1;
+  const ladder = RANKS.map((r) => r.id);
 
   const move = (e: PointerEvent<HTMLDivElement>) => {
     const el = stage.current;
@@ -137,42 +184,30 @@ export function CardViewer({
                   <i className="cv-bk-c c" />
                   <i className="cv-bk-c d" />
                   <div className="cv-bk-in">
-                    <span className="cv-bk-seal" aria-hidden>
-                      <RankMark rank={def.rank} />
-                      <em>{rank.short}</em>
+                    <span className="cv-bk-top">
+                      <small>№ {serial}</small>
+                      <small>{rank.short}</small>
                     </span>
                     <span className="cv-back-rank">{rank.name}</span>
                     <b className="cv-bk-name">{def.name}</b>
-                    <small className="cv-bk-sub">
-                      {def.series} · {CLASSES[def.cls].name}
-                    </small>
-                    <span className="cv-bk-div" aria-hidden>
-                      <i />
+                    <small className="cv-bk-sub">{def.series}</small>
+                    <span className="cv-bk-med">
+                      <i className="cv-bk-ring" aria-hidden />
+                      <Radar d={def} />
+                      <span className="cv-bk-seal" aria-hidden>
+                        <RankMark rank={def.rank} />
+                      </span>
                     </span>
-                    <ul>
-                      {(
-                        [
-                          ["sword", "Атака", def.atk, 260],
-                          ["shield", "Защита", def.def, 160],
-                          ["heart", "Здоровье", def.hp, 1100],
-                          ["bolt", "Скорость", def.spd, 120],
-                        ] as const
-                      ).map(([ic, k, v, max]) => (
-                        <li key={k}>
-                          <Ico name={ic} size={16} /> {k} <b>{v}</b>
-                          <i style={{ ["--v" as string]: `${Math.min(100, Math.round((v / max) * 100))}%` } as CSSProperties} />
-                        </li>
-                      ))}
-                    </ul>
+                    <span className="cv-bk-pow">
+                      <small>Боевая мощь</small>
+                      <b>{power}</b>
+                    </span>
                     <span className="cv-bk-chips">
                       <span>
                         <Ico name={ELEMENT_ICON[def.element]} size={13} /> {ELEMENTS[def.element].name}
                       </span>
-                      <span>
-                        <Ico name="target" size={13} /> {chance}% в паке
-                      </span>
+                      <span>{CLASSES[def.cls].name}</span>
                     </span>
-                    <p>{def.blurb}</p>
                   </div>
                 </div>
               </div>
@@ -204,38 +239,76 @@ export function CardViewer({
             </header>
 
             <div className="cv-body">
-              <div className="cv-chips">
-                <span className="cv-rank">
-                  <i />
-                  {rank.name}
+              <section className="cv-hero">
+                <i className="cv-hero-ring" aria-hidden />
+                <span className="cv-crest" aria-hidden>
+                  <RankMark rank={def.rank} />
                 </span>
-                <span className="cv-chip">
-                  <Ico name={ELEMENT_ICON[def.element]} size={14} /> {ELEMENTS[def.element].name}
-                </span>
-              </div>
-              <h2>{def.name}</h2>
-              <p className="cv-sub">
-                {def.series} · {CLASSES[def.cls].name}
-              </p>
+                <div className="cv-chips">
+                  <span className="cv-rank">
+                    <i />
+                    {rank.name}
+                  </span>
+                  <span className="cv-chip">
+                    <Ico name={ELEMENT_ICON[def.element]} size={14} /> {ELEMENTS[def.element].name}
+                  </span>
+                  <span className="cv-chip">{CLASSES[def.cls].name}</span>
+                </div>
+                <h2>{def.name}</h2>
+                <p className="cv-sub">{def.series}</p>
+                <small className="cv-serial">
+                  Досье № {serial} · из {CATALOG.length}
+                </small>
+              </section>
 
-              <div className="cv-stats">
-                <span><Ico name="sword" size={15} /><b>{def.atk}</b><small>атака</small></span>
-                <span><Ico name="shield" size={15} /><b>{def.def}</b><small>защита</small></span>
-                <span><Ico name="heart" size={15} /><b>{def.hp}</b><small>здоровье</small></span>
-                <span><Ico name="bolt" size={15} /><b>{def.spd}</b><small>скорость</small></span>
-              </div>
+              <section className="cv-duo">
+                <div className="cv-radar">
+                  <Radar d={def} />
+                </div>
+                <div className="cv-power">
+                  <small>Боевая мощь</small>
+                  <b>{power}</b>
+                  <span className="cv-pw-bar">
+                    <i style={{ width: `${Math.min(100, Math.round((power / 560) * 100))}%` }} />
+                  </span>
+                  <p>{CLASSES[def.cls].hint}</p>
+                </div>
+              </section>
 
-              <div className="cv-rows">
+              <section className="cv-ladder" aria-label="Редкость">
+                <header>
+                  <small>Редкость</small>
+                  <b>
+                    {chance}% <em>шанс в паке</em>
+                  </b>
+                </header>
+                <ol>
+                  {ladder.map((r) => (
+                    <li key={r} className={r === def.rank ? "on" : r < def.rank ? "past" : ""} style={{ ["--rc" as string]: RANKS[r].color } as CSSProperties}>
+                      <i />
+                      <span>{RANKS[r].short}</span>
+                    </li>
+                  ))}
+                </ol>
+              </section>
+
+              <dl className="cv-facts">
                 <div>
-                  <small>Шанс в паке</small>
-                  <b>{chance}%</b>
+                  <dt>В коллекции</dt>
+                  <dd className={owned ? "ok" : ""}>{owned ? "Есть" : "Нет"}</dd>
                 </div>
                 <div>
-                  <small>В коллекции</small>
-                  <b className={owned ? "ok" : ""}>{owned ? "Есть" : "Нет"}</b>
+                  <dt>Героев в серии</dt>
+                  <dd>{mates.length}</dd>
                 </div>
-              </div>
-              <p className="cv-quote">{def.blurb}</p>
+                <div>
+                  <dt>Место по силе в серии</dt>
+                  <dd>
+                    {place} <small>из {mates.length}</small>
+                  </dd>
+                </div>
+              </dl>
+              {def.blurb && <p className="cv-quote">{def.blurb}</p>}
               {children}
             </div>
 

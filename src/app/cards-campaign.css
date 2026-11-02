@@ -2021,3 +2021,79 @@ html[data-eco="on"] .cv-face.back::after, html[data-eco="on"] .cv-bk-seal::befor
 .cv-bk-chips span { font-size: 3cqw; padding: 1.4cqw 3cqw; }
 .cv-face.back p { font-size: 3.2cqw; }
 .cv-bk-in > ul { display: grid; gap: 2cqw; }
+
+/* ===== Окно героя v2: «досье» — герб, лепестковая диаграмма, лестница редкости ===== */
+.cv-panel { background: radial-gradient(90% 40% at 50% 0, color-mix(in oklab, var(--c) 16%, transparent), transparent 70%), linear-gradient(180deg, #0f1730, #090d1c); border: 1px solid transparent; border-radius: 24px;
+  background-clip: padding-box, border-box; background-origin: border-box;
+  background-image: radial-gradient(90% 40% at 50% 0, color-mix(in oklab, var(--c) 16%, transparent), transparent 70%), linear-gradient(180deg, #0f1730, #090d1c), linear-gradient(145deg, color-mix(in oklab, var(--c) 60%, #9bbcff), rgba(110, 150, 255, .08) 40%, color-mix(in oklab, var(--c) 30%, transparent)); }
+.cv-nav { background: rgba(255, 255, 255, .02); border-bottom-color: rgba(110, 160, 255, .12); }
+.cv-body { gap: 16px; padding: 18px 20px 20px; }
+
+.cv-hero { position: relative; isolation: isolate; display: grid; gap: 8px; padding: 20px 20px 18px; border-radius: 20px; overflow: hidden; border: 1px solid rgba(110, 160, 255, .16);
+  background: radial-gradient(80% 120% at 0 0, color-mix(in oklab, var(--c) 28%, transparent), transparent 68%), linear-gradient(180deg, rgba(255, 255, 255, .05), rgba(255, 255, 255, .01)); }
+.cv-hero-ring { position: absolute; z-index: -1; right: -60px; top: -60px; width: 220px; height: 220px; border-radius: 50%; border: 1px dashed color-mix(in oklab, var(--c) 40%, transparent); box-shadow: inset 0 0 0 22px transparent, 0 0 0 26px color-mix(in oklab, var(--c) 6%, transparent); animation: cv-bk-spin 50s linear infinite; }
+.cv-crest { position: absolute; right: 18px; top: 18px; display: grid; place-items: center; width: 46px; height: 46px; border-radius: 50%; color: var(--c); background: radial-gradient(circle at 35% 25%, color-mix(in oklab, var(--c) 40%, transparent), rgba(5, 8, 20, .9) 70%); border: 1px solid color-mix(in oklab, var(--c) 65%, transparent); box-shadow: 0 0 22px -4px var(--c); }
+.cv-crest .gc-mark { width: 22px; height: 22px; filter: drop-shadow(0 0 5px var(--c)); }
+.cv-hero .cv-chips { padding-right: 60px; }
+.cv-hero h2 { background: linear-gradient(180deg, #fff, color-mix(in oklab, var(--c) 35%, #cfe0ff)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.cv-serial { font-size: 11.5px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: color-mix(in oklab, var(--c) 55%, #8fa3cf); }
+
+.cv-duo { display: grid; grid-template-columns: 170px minmax(0, 1fr); gap: 14px; align-items: center; padding: 14px; border-radius: 20px; border: 1px solid rgba(110, 160, 255, .14); background: linear-gradient(180deg, rgba(255, 255, 255, .04), rgba(255, 255, 255, .01)); }
+.cv-radar { aspect-ratio: 1; }
+.cvr { width: 100%; height: 100%; overflow: visible; }
+.cvr-ring { fill: none; stroke: rgba(150, 180, 255, .18); stroke-width: .4; }
+.cvr-ax { stroke: rgba(150, 180, 255, .16); stroke-width: .4; }
+.cvr-fill { stroke: var(--c); stroke-width: .9; stroke-linejoin: round; filter: drop-shadow(0 0 4px color-mix(in oklab, var(--c) 70%, transparent)); animation: cvr-in .9s var(--cg-ease) both; transform-origin: 50px 50px; }
+@keyframes cvr-in { from { transform: scale(.2); opacity: 0; } }
+.cvr-dot { fill: #fff; stroke: var(--c); stroke-width: .8; }
+.cvr-t { font-family: var(--font-body, inherit); fill: #8fa3cf; }
+.cvr-n { font-size: 5.2px; font-weight: 800; letter-spacing: .12em; }
+.cvr-v { font-size: 7px; font-weight: 800; fill: #fff; }
+.cv-power { display: grid; gap: 7px; min-width: 0; }
+.cv-power small { font-size: 11.5px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: var(--cg-mut); }
+.cv-power > b { font: 800 clamp(34px, 4vw, 46px)/1 var(--cg-head); letter-spacing: -.03em; background: linear-gradient(180deg, #fff, color-mix(in oklab, var(--c) 45%, #cfe0ff)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.cv-pw-bar { position: relative; display: block; height: 7px; border-radius: 99px; background: rgba(110, 150, 255, .14); overflow: hidden; }
+.cv-pw-bar i { position: absolute; inset: 0 auto 0 0; border-radius: 99px; background: linear-gradient(90deg, color-mix(in oklab, var(--c) 60%, #3b82ff), var(--c)); box-shadow: 0 0 12px var(--c); animation: cv-bk-fill .9s var(--cg-ease) both; }
+.cv-power p { margin: 0; font-size: 12.5px; line-height: 1.45; color: var(--cg-text2); }
+
+.cv-ladder { display: grid; gap: 12px; padding: 14px 16px 12px; border-radius: 20px; border: 1px solid rgba(110, 160, 255, .14); background: linear-gradient(180deg, rgba(255, 255, 255, .04), rgba(255, 255, 255, .01)); }
+.cv-ladder header { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.cv-ladder header small { font-size: 11.5px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: var(--cg-mut); }
+.cv-ladder header b { font: 800 18px/1 var(--cg-head); color: #fff; }
+.cv-ladder header em { font: 600 12px var(--font-body, inherit); font-style: normal; color: var(--cg-mut); }
+.cv-ladder ol { position: relative; display: flex; justify-content: space-between; margin: 0; padding: 0; list-style: none; }
+.cv-ladder ol::before { content: ""; position: absolute; left: 10%; right: 10%; top: 9px; height: 2px; background: linear-gradient(90deg, rgba(110, 150, 255, .25), rgba(139, 107, 255, .25)); }
+.cv-ladder li { position: relative; display: grid; justify-items: center; gap: 6px; flex: 1; font-size: 11px; font-weight: 800; color: #6f7ea6; }
+.cv-ladder li i { width: 20px; height: 20px; border-radius: 50%; background: #0c1226; border: 2px solid rgba(110, 150, 255, .3); box-sizing: border-box; }
+.cv-ladder li.past i { border-color: color-mix(in oklab, var(--rc) 55%, transparent); background: color-mix(in oklab, var(--rc) 22%, #0c1226); }
+.cv-ladder li.on { color: #fff; }
+.cv-ladder li.on i { border-color: var(--rc); background: var(--rc); box-shadow: 0 0 0 4px color-mix(in oklab, var(--rc) 25%, transparent), 0 0 18px var(--rc); }
+
+.cv-facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 0; }
+.cv-facts div { display: grid; gap: 4px; padding: 12px 14px; border-radius: 16px; border: 1px solid rgba(110, 160, 255, .14); background: rgba(255, 255, 255, .03); }
+.cv-facts dt { font-size: 11.5px; line-height: 1.25; color: var(--cg-mut); }
+.cv-facts dd { margin: 0; font: 800 19px/1.1 var(--cg-head); color: #fff; }
+.cv-facts dd small { font: 600 12px var(--font-body, inherit); color: var(--cg-mut); }
+.cv-facts dd.ok { color: #7ff0d2; }
+.cv-quote { position: relative; margin: 0; padding: 14px 16px 14px 44px; border-radius: 16px; font-size: 13.5px; line-height: 1.55; color: var(--cg-text2); border: 1px solid rgba(110, 160, 255, .12); background: rgba(255, 255, 255, .025); }
+.cv-quote::before { content: "“"; position: absolute; left: 14px; top: 2px; font: 800 38px/1 var(--cg-head); color: color-mix(in oklab, var(--c) 70%, #fff); opacity: .8; }
+.cv-foot { border-top-color: rgba(110, 160, 255, .12); }
+.cv-share { border-color: rgba(120, 170, 255, .3); background: linear-gradient(135deg, rgba(59, 130, 255, .3), rgba(34, 211, 238, .1)); }
+
+/* оборот: медальон с лепестковой диаграммой */
+.cv-bk-top { display: flex; justify-content: space-between; width: 100%; padding: 0 3cqw; }
+.cv-bk-top small { font: 800 3cqw var(--cg-head); letter-spacing: .16em; color: color-mix(in oklab, var(--c) 60%, #9fb4e0); }
+.cv-bk-med { position: relative; display: grid; place-items: center; width: 66cqw; aspect-ratio: 1; }
+.cv-bk-med .cvr { position: relative; z-index: 1; }
+.cv-bk-med .cvr-n { font-size: 4.2px; }
+.cv-bk-med .cvr-v { font-size: 5.8px; }
+.cv-bk-ring { position: absolute; inset: 4%; border-radius: 50%; border: 1px dashed color-mix(in oklab, var(--c) 35%, transparent); background: radial-gradient(closest-side, color-mix(in oklab, var(--c) 18%, transparent), transparent 72%); animation: cv-bk-spin 40s linear infinite; }
+.cv-bk-med .cv-bk-seal { position: absolute; z-index: 2; width: 9cqw; height: 9cqw; margin: 0; }
+.cv-bk-med .cv-bk-seal .gc-mark { width: 4.4cqw; height: 4.4cqw; }
+.cv-bk-pow { display: grid; gap: 1cqw; }
+.cv-bk-pow small { font-size: 2.8cqw; letter-spacing: .22em; text-transform: uppercase; color: var(--cg-mut); }
+.cv-bk-pow b { font: 800 8cqw/1 var(--cg-head); letter-spacing: -.02em; background: linear-gradient(180deg, #fff, color-mix(in oklab, var(--c) 50%, #cfe0ff)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.cv-bk-in { align-content: space-between; gap: 1.2cqw; }
+@media (max-width: 860px) { .cv-duo { grid-template-columns: 140px minmax(0, 1fr); } .cv-facts { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 480px) { .cv-duo { grid-template-columns: minmax(0, 1fr); } .cv-radar { max-width: 220px; margin: 0 auto; width: 100%; } .cv-facts { grid-template-columns: minmax(0, 1fr); } }
+@media (prefers-reduced-motion: reduce) { .cv-hero-ring, .cv-bk-ring, .cvr-fill, .cv-pw-bar i { animation: none; } }
