@@ -1628,3 +1628,51 @@
   .cv-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (prefers-reduced-motion: reduce) { .cv, .cv-wrap, .cv-panel, .cv-body h2, .cv-face.front { animation: none; } .cv-flip { transition: none; } }
+
+/* =====================================================================================
+   Доводка под референс: широкий тяжёлый заголовочный шрифт, глубокий фон со свечениями,
+   сдержанные радиусы (8–12px у кнопок, 18px у больших панелей), цветное свечение «темы» пака.
+   ===================================================================================== */
+@property --oc { syntax: "<color>"; inherits: true; initial-value: #3aa0ff; }
+.cg { --cg-head: var(--font-unbounded), var(--font-display, inherit), sans-serif; }
+
+/* заголовки: Unbounded (уже подключён на сайте), плотный трекинг */
+.cg .pk-hero-l h1, .cg .pk-h, .cg .pk-info h3, .cg .cv-body h2, .cg .bn h3, .cg .cg-hero2 h1 { font-family: var(--cg-head); font-weight: 800; letter-spacing: -.025em; }
+.cg .pk-hero-l h1 { font-size: clamp(25px, 2.8vw, 36px); line-height: 1.12; }
+.cg .pk-h { font-size: clamp(21px, 2.3vw, 28px); line-height: 1.1; }
+.cg .pk-info h3 { font-size: clamp(26px, 3vw, 42px); line-height: 1.06; }
+.cg .cv-body h2 { font-size: clamp(24px, 2.6vw, 34px); line-height: 1.1; }
+.cg .bn h3 { font-size: 24px; }
+.cg .pk-gc .n, .cg .cv-stats b, .cg .cv-rows b, .cg .pk-stock li b, .cg .pk-opt-t b, .cg .cv-face.back li b, .cg .pk-odds b { font-family: var(--cg-head); font-weight: 800; letter-spacing: -.02em; }
+.cg .pk-gc .n { font-size: 34px; }
+.cg .pk-opt-t b { font-size: 15px; }
+.cg .pk-stock li b { font-size: 13.5px; }
+.cg .pk-title h3 { font-family: var(--cg-head); }
+
+/* фон: фиолетовое свечение сверху, индиго справа, лёгкое слева и сетка */
+.cg:not(.cg-portal)::before {
+  background:
+    radial-gradient(70% 50% at 50% -6%, rgba(124, 77, 255, .24), transparent 70%),
+    radial-gradient(38% 40% at 92% 14%, rgba(79, 70, 229, .14), transparent 70%),
+    radial-gradient(44% 38% at 4% 36%, rgba(124, 77, 255, .09), transparent 70%),
+    #0a0910; }
+.cg:not(.cg-portal)::after { background-image: linear-gradient(rgba(124, 77, 255, .08) 1px, transparent 1px), linear-gradient(90deg, rgba(124, 77, 255, .08) 1px, transparent 1px); }
+
+/* кнопки и панели: сдержанные радиусы */
+.cg .pk-page .cg-cta { border-radius: 12px; min-height: 56px; }
+.cg .pk-page .cg-cta .price { border-radius: 8px; }
+.cg .pk-page .cg-btn, .cg .cv-tools button, .cg .cv-nav button, .cg .cv-share { border-radius: 10px; }
+.cg .pk-page .cg-seg { border-radius: 12px; }
+.cg .pk-page .cg-seg button { border-radius: 9px; }
+.cg .pk-shop, .cg .pk-stock, .cg .pk-page .bn { border-radius: 18px; }
+.cg .pk-opt, .cg .pk-gc, .cg .pk-row { border-radius: 12px; }
+.cg .cv-panel { border-radius: 18px; }
+.cg .cv-stats span, .cg .cv-rows div { border-radius: 12px; }
+.cg .pk-shop { background: linear-gradient(180deg, #14111c, #0b0a10); }
+
+/* тема пака: два цветных свечения, плавно меняют цвет при выборе набора */
+.cg .pk-shop { transition: --oc .6s ease; }
+.cg .pk-center { background:
+    radial-gradient(60% 85% at 30% 24%, color-mix(in oklab, var(--oc) 30%, transparent), transparent 65%),
+    radial-gradient(50% 70% at 92% 100%, color-mix(in oklab, var(--oc) 18%, transparent), transparent 70%); }
+.cg .pk-center::after { opacity: .07; }
