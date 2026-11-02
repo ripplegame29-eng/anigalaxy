@@ -139,7 +139,7 @@ function Split({ s, show }: Props) {
           </div>
         </div>
         <div className="cg-forge two">
-          {sel[0] ? (
+          {sel[0] && s.inventory.some((x) => x.id === sel[0]) ? (
             (() => {
               const c = s.inventory.find((x) => x.id === sel[0])!;
               return <GameCard cardId={c.cardId} foil={c.foil} level={c.level} stats={false} onClick={() => setSel([])} />;
