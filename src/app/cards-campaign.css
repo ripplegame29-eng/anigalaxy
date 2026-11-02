@@ -1440,3 +1440,49 @@
     radial-gradient(90% 40% at 50% 100%, rgba(120, 80, 255, .2), transparent 70%); transition: background .4s; }
 .cg .pk-center .cg-stage { filter: drop-shadow(0 0 34px color-mix(in oklab, var(--oc) 45%, transparent)); }
 .cg .pk-stock, .cg .pk-gar .cg-gauge { background: linear-gradient(180deg, rgba(22, 28, 62, .66), rgba(8, 11, 26, .85)); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .06), 0 24px 50px -34px #000; }
+
+/* --- Паки: единый «премиальный» стиль элементов (кнопки, переключатели, чипы, баннер, лента) --- */
+.cg .pk-page { --pk-a: #8a6cff; --pk-b: #4a7dff; --pk-line: rgba(150, 170, 255, .2); --pk-glass: linear-gradient(180deg, rgba(26, 32, 70, .62), rgba(9, 12, 28, .86)); }
+
+/* главная кнопка: фиолетово-синий градиент, световая кромка и блик */
+.cg .pk-page .cg-cta { position: relative; overflow: hidden; isolation: isolate; min-height: 60px; padding: 0 30px 0 26px; border-radius: 18px; border: 1px solid rgba(190, 200, 255, .55); font-weight: 900; font-size: 17px; letter-spacing: -.005em;
+  background: linear-gradient(135deg, var(--pk-a), var(--pk-b)); box-shadow: 0 18px 44px -14px rgba(110, 100, 255, .95), inset 0 1px 0 rgba(255, 255, 255, .45), inset 0 -2px 0 rgba(0, 0, 40, .25); }
+.cg .pk-page .cg-cta::after { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(105deg, transparent 38%, rgba(255, 255, 255, .38) 50%, transparent 62%) -140% 0 / 60% 100% no-repeat; animation: pk-sheen 4.8s ease-in-out infinite; }
+@keyframes pk-sheen { 0%, 55% { background-position: -140% 0; } 100% { background-position: 240% 0; } }
+@media (prefers-reduced-motion: reduce) { .cg .pk-page .cg-cta::after { animation: none; } }
+.cg .pk-page .cg-cta .price { padding: 6px 12px; border-radius: 12px; background: rgba(8, 10, 40, .38); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .22); font-weight: 900; }
+.cg .pk-page .cg-cta:disabled { filter: saturate(.45) brightness(.8); box-shadow: none; }
+
+/* вторичные кнопки: стекло с мягкой подсветкой */
+.cg .pk-page .cg-btn { min-height: 44px; padding: 0 20px; border-radius: 14px; border: 1px solid var(--pk-line); font-weight: 800; color: var(--cg-text); background: linear-gradient(180deg, rgba(40, 50, 104, .55), rgba(16, 20, 46, .8)); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .08), 0 10px 24px -16px rgba(0, 0, 0, .9); transition: transform .16s var(--cg-ease), box-shadow .2s, border-color .2s, filter .2s; }
+.cg .pk-page .cg-btn:hover:not(:disabled) { transform: translateY(-1px); border-color: rgba(190, 200, 255, .5); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .12), 0 14px 30px -14px rgba(124, 92, 255, .8); }
+.cg .pk-page .cg-btn.gold { color: #2a1802; border-color: rgba(255, 226, 150, .6); background: linear-gradient(180deg, #ffe39b, #e0a93c 58%, #b9812a); box-shadow: 0 12px 28px -12px rgba(224, 169, 60, .85), inset 0 1px 0 rgba(255, 255, 255, .55); }
+.cg .pk-page .cg-btn.gold:hover:not(:disabled) { box-shadow: 0 16px 34px -12px rgba(224, 169, 60, 1), inset 0 1px 0 rgba(255, 255, 255, .6); filter: brightness(1.06); }
+
+/* выбор оплаты: стеклянный сегмент с градиентной активной кнопкой */
+.cg .pk-page .cg-seg { padding: 4px; gap: 4px; border-radius: 16px; border: 1px solid var(--pk-line); background: rgba(6, 8, 22, .6); box-shadow: inset 0 2px 8px rgba(0, 0, 0, .4); }
+.cg .pk-page .cg-seg button { border-radius: 12px; border: 1px solid transparent; font-weight: 800; color: var(--cg-text2); background: transparent; transition: background .2s, color .2s, box-shadow .2s; }
+.cg .pk-page .cg-seg button:hover { color: #fff; background: rgba(140, 170, 255, .1); }
+.cg .pk-page .cg-seg button[aria-checked="true"], .cg .pk-page .cg-seg button[aria-pressed="true"] { color: #fff; border-color: rgba(190, 200, 255, .4); background: linear-gradient(135deg, rgba(138, 108, 255, .55), rgba(74, 125, 255, .45)); box-shadow: 0 8px 20px -10px rgba(124, 92, 255, .9), inset 0 1px 0 rgba(255, 255, 255, .25); }
+
+/* переключатель */
+.cg .pk-page .cg-switch { font-weight: 700; color: var(--cg-text2); }
+.cg .pk-page .cg-switch input:checked + i { background: linear-gradient(135deg, var(--pk-a), var(--pk-b)); box-shadow: 0 0 14px rgba(124, 100, 255, .7); }
+
+/* чипы, метки, подсказки */
+.cg .pk-page .cg-chip { border-radius: 99px; border: 1px solid var(--pk-line); background: rgba(140, 170, 255, .08); font-weight: 700; }
+.cg .pk-page .cg-tag { border-radius: 99px; font-weight: 800; letter-spacing: .02em; background: color-mix(in oklab, currentColor 12%, transparent); border-color: color-mix(in oklab, currentColor 55%, transparent); }
+.cg .pk-page .cg-why { border-radius: 12px; border: 1px solid rgba(255, 107, 134, .35); background: rgba(255, 107, 134, .08); }
+.cg .pk-page .cg-empty { border-radius: 16px; border: 1px dashed var(--pk-line); background: rgba(140, 170, 255, .04); }
+
+/* карточки внутри страницы */
+.cg .pk-page .pk-opt, .cg .pk-page .pk-row, .cg .pk-page .pk-stock li, .cg .pk-page .cg-gauge { border-color: var(--pk-line); }
+.cg .pk-page .pk-opt[aria-pressed="true"] { box-shadow: 0 14px 34px -16px var(--oc), 0 0 0 1px color-mix(in oklab, var(--oc) 45%, transparent), inset 0 1px 0 rgba(255, 255, 255, .1); }
+.cg .pk-page .cg-gauge h3 { font-weight: 900; }
+.cg .pk-page .pk-odds span { border-color: var(--pk-line); font-weight: 700; }
+
+/* баннер недели */
+.cg .pk-page .bn { border-radius: 24px; border: 1px solid var(--pk-line); background: radial-gradient(60% 120% at 0% 50%, color-mix(in oklab, var(--c) 22%, transparent), transparent 70%), var(--pk-glass); box-shadow: 0 30px 70px -44px #000, inset 0 1px 0 rgba(255, 255, 255, .07); }
+.cg .pk-page .bn h3 { font-weight: 900; font-size: 28px; letter-spacing: -.02em; }
+.cg .pk-page .bn-gar { height: 9px; background: rgba(255, 255, 255, .07); box-shadow: inset 0 1px 3px rgba(0, 0, 0, .5); }
+.cg .pk-page .bn-gar i { background: linear-gradient(90deg, var(--pk-a), #ff8be6); box-shadow: 0 0 12px rgba(180, 110, 255, .8); }
