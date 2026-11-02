@@ -7,6 +7,7 @@ import { sfx } from "@/lib/cards/sound";
 import { act, hasArt, type CardsState, type Pull } from "@/lib/cards/client";
 import { GameCard } from "./GameCard";
 import { BannerCard } from "./BannerCard";
+import { CardViewer } from "./CardViewer";
 import { PackStage, type PackPhase } from "./PackStage";
 import { Reveal, ago, fmt, toast, useBusy, useNow } from "./common";
 import { Cur, Ico, type CurKey } from "./icons";
@@ -104,6 +105,7 @@ export function PacksTab({ s }: { s: CardsState }) {
   const [sel, setSel] = useState(0);
   const [results, setResults] = useState<PackResult[]>([]);
   const [phase, setPhase] = useState<PackPhase>("idle");
+  const [look, setLook] = useState<number | null>(null);
   const now = useNow(60_000);
   const alive = useRef(true);
   useEffect(() => {
@@ -194,16 +196,27 @@ export function PacksTab({ s }: { s: CardsState }) {
             <Ico name="pack" size={17} /> К магазину паков
           </button>
         </div>
-        <div className="pk-fan" aria-hidden>
+        <div className="pk-fan" role="list" aria-label="Карты коллекции">
           {fan.map((id, i) => {
             const d = cardDef(id);
             const r = d ? RANKS[d.rank] : undefined;
             return (
-              <div key={id} className={`pk-fan-i i${i}`} style={{ ["--c" as string]: r?.color }}>
-                <GameCard cardId={id} stats={false} />
+              <button
+                key={id}
+                type="button"
+                role="listitem"
+                className={`pk-fan-i i${i}`}
+                style={{ ["--c" as string]: r?.color, ["--i" as string]: i }}
+                onClick={() => setLook(i)}
+                aria-label={`${d?.name}, ${r?.name}. Открыть`}
+              >
+                <span className="pk-fan-c">
+                  <GameCard cardId={id} stats={false} />
+                  <i className="pk-fan-g" aria-hidden />
+                </span>
                 <b>{d?.name}</b>
-                <span>{r?.name}</span>
-              </div>
+                <span className="pk-fan-r">{r?.name}</span>
+              </button>
             );
           })}
         </div>
@@ -408,6 +421,10 @@ export function PacksTab({ s }: { s: CardsState }) {
         </h2>
         <BannerCard s={s} />
       </section>
+
+      {look !== null && fan[look] && (
+        <CardViewer ids={fan} index={look} onIndex={setLook} onClose={() => setLook(null)} owned={s.inventory.some((c) => c.cardId === fan[look])} />
+      )}
 
       {chosen.length > 0 && (
         <Reveal

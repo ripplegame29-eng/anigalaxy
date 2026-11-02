@@ -44,6 +44,9 @@ const P: Record<string, string> = {
   volx: "M4 9h4l5-4v14l-5-4H4z M16 9l5 6 M21 9l-5 6",
   eye: "M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6z",
   pin: "M9 4h6l-1 6 3 3H7l3-3z M12 13v8",
+  left: "M15 5l-7 7 7 7",
+  right: "M9 5l7 7-7 7",
+  search: "M10.5 4a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13z M16 16l5 5",
 };
 
 export type IcoName = keyof typeof P;
