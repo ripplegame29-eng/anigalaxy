@@ -1,13 +1,14 @@
 "use client";
 
 /**
- * Таблица лидеров сезона: подиум для тройки лучших и список ниже — аватар с рамкой,
- * лига, тег клана, полоса рейтинга и счёт боёв. Своя строка подсвечена.
+ * Таблица лидеров сезона: подиум с пьедесталом, сводка по топу, поиск и фильтр по лигам,
+ * строки с аватаром, лигой, шкалой рейтинга и кольцом винрейта. Своя строка подсвечена,
+ * в шапке — прогресс до следующей лиги.
  * Данные приходят из `view("top")` (см. `ratingTop`), оформление — стили `lb-*`.
  */
 
-import type { CSSProperties } from "react";
-import { leagueOf } from "@/lib/cards/config";
+import { useMemo, useState, type CSSProperties } from "react";
+import { LEAGUES, leagueOf } from "@/lib/cards/config";
 import { FRAMES } from "@/lib/cosmetics";
 import { AvatarFrame } from "@/components/profile/AvatarFrame";
 import { fmt } from "./common";
@@ -25,7 +26,8 @@ export interface TopRow {
   clan?: string;
 }
 
-const MEDAL = ["#ffc45e", "#c9d4ea", "#d98a52"];
+/** Цвета подиума: лёд, голубовато-сиреневый, фиолет — в гамме сайта, без золота */
+const MEDAL = ["#7fd8ff", "#a9b8ff", "#c58bff"];
 const MEDAL_NAME = ["Чемпион сезона", "Серебро", "Бронза"];
 
 const frameOf = (id?: string) => (id ? FRAMES.find((f) => f.id === id) : undefined);
@@ -46,29 +48,53 @@ export function Leaderboard({
   myRating: number;
   onOpen: (nick: string) => void;
 }) {
+  const [q, setQ] = useState("");
+  const [league, setLeague] = useState<string>("all");
   const mine = me.trim().toLowerCase();
   const isMe = (r: TopRow) => mine !== "" && r.nick.toLowerCase() === mine;
   const podium = rows.slice(0, 3);
-  const rest = rows.slice(0, 20);
+  const top20 = rows.slice(0, 20);
   const inList = rows.some(isMe);
+  const myPlace = rows.find(isMe)?.place;
   // Подиум читается 2-1-3: победитель по центру и выше остальных
   const order = [1, 0, 2];
+
+  const best = rows[0]?.rating ?? 1;
+  const avg = rows.length ? Math.round(rows.reduce((a, r) => a + r.rating, 0) / rows.length) : 0;
+  const fights = rows.reduce((a, r) => a + r.wins + r.losses, 0);
+
+  const cur = leagueOf(myRating);
+  const next = LEAGUES.find((l) => l.from > myRating);
+  const prog = next ? Math.min(100, Math.round(((myRating - cur.from) / (next.from - cur.from)) * 100)) : 100;
+
+  const present = useMemo(() => LEAGUES.filter((l) => top20.some((r) => leagueOf(r.rating).id === l.id)), [top20]);
+  const shown = top20.filter((r) => (league === "all" || leagueOf(r.rating).id === league) && (q.trim() === "" || r.nick.toLowerCase().includes(q.trim().toLowerCase())));
 
   return (
     <section className="lb" aria-labelledby="lb-title">
       <i className="lb-glow" aria-hidden />
+      <i className="lb-grid" aria-hidden />
       <header className="lb-head">
-        <div>
+        <div className="lb-title">
           <span className="cg-eyebrow">Рейтинг боёв</span>
           <h3 id="lb-title">Лидеры сезона</h3>
           <p>Лучшие стратеги арены. Рейтинг растёт с победами в рейтинговых боях и обновляется после каждого боя.</p>
         </div>
-        <div className="lb-badges">
-          <span className="lb-top">TOP 20</span>
-          <div className="lb-me">
-          <small>Ваш рейтинг</small>
-          <b>{fmt(myRating)}</b>
-        </div>
+        <div className="lb-my" style={{ ["--lg" as string]: cur.color }}>
+          <div className="lb-my-top">
+            <span>
+              <small>Ваш рейтинг</small>
+              <b>{fmt(myRating)}</b>
+            </span>
+            <em className="lb-my-lg">{cur.name}</em>
+          </div>
+          <div className="lb-my-bar" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={prog} aria-label="Прогресс до следующей лиги">
+            <i style={{ width: `${prog}%` }} />
+          </div>
+          <small className="lb-my-note">
+            {next ? `До лиги «${next.name}» — ${fmt(next.from - myRating)} очков` : "Вы в высшей лиге"}
+            {myPlace ? ` · место ${myPlace}` : ""}
+          </small>
         </div>
       </header>
 
@@ -76,69 +102,133 @@ export function Leaderboard({
         <div className="cg-empty">Рейтинг появится после первых боёв</div>
       ) : (
         <>
+          <ul className="lb-stats" aria-label="Сводка по топу">
+            <li>
+              <Ico name="user" size={18} />
+              <span>
+                <b>{fmt(rows.length)}</b>
+                <small>игроков в рейтинге</small>
+              </span>
+            </li>
+            <li>
+              <Ico name="crown" size={18} />
+              <span>
+                <b>{fmt(best)}</b>
+                <small>рейтинг лидера</small>
+              </span>
+            </li>
+            <li>
+              <Ico name="trend" size={18} />
+              <span>
+                <b>{fmt(avg)}</b>
+                <small>средний рейтинг</small>
+              </span>
+            </li>
+            <li>
+              <Ico name="swords" size={18} />
+              <span>
+                <b>{fmt(fights)}</b>
+                <small>боёв сыграно топом</small>
+              </span>
+            </li>
+          </ul>
+
           <div className="lb-podium n3">
             {order.map((i) => {
               const r = podium[i];
               const c = MEDAL[i];
               if (!r)
                 return (
-                  <div key={`empty${i}`} className={`lb-pod empty p${i + 1}`} style={{ "--m": c } as CSSProperties}>
-                    <b className="lb-big" aria-hidden>{i + 1}</b>
-                    <span className="lb-vac" aria-hidden><Ico name="trophy" size={34} /></span>
-                    <span className="lb-medal">{MEDAL_NAME[i]}</span>
-                    <span className="lb-name">Место свободно</span>
-                    <span className="lb-rec">Выигрывайте рейтинговые бои, чтобы занять его</span>
+                  <div key={`empty${i}`} className={`lb-col p${i + 1}`} style={{ "--m": c } as CSSProperties}>
+                    <div className="lb-pod empty">
+                      <span className="lb-vac" aria-hidden>
+                        <Ico name="trophy" size={30} />
+                      </span>
+                      <span className="lb-medal">{MEDAL_NAME[i]}</span>
+                      <span className="lb-name">Место свободно</span>
+                      <span className="lb-rec">Выигрывайте рейтинговые бои, чтобы занять его</span>
+                    </div>
+                    <div className="lb-step" aria-hidden>
+                      <b>{i + 1}</b>
+                    </div>
                   </div>
                 );
               return (
-                <button
-                  key={r.nick}
-                  type="button"
-                  className={`lb-pod p${i + 1}${isMe(r) ? " me" : ""}`}
-                  style={{ "--m": c, "--lg": leagueOf(r.rating).color } as CSSProperties}
-                  onClick={() => onOpen(r.nick)}
-                  aria-label={`${i + 1} место: ${r.nick}, рейтинг ${r.rating}`}
-                >
-                  <i className="lb-sheen" aria-hidden />
-                  <b className="lb-big" aria-hidden>{i + 1}</b>
-                  {i === 0 && <span className="lb-crown" aria-hidden><Ico name="crown" size={26} /></span>}
-                  <span className="lb-ava"><Who r={r} size="md" /></span>
-                  <span className="lb-medal">{MEDAL_NAME[i]}</span>
-                  <span className="lb-name">
-                    {r.nick}
-                    {r.clan ? <em>[{r.clan}]</em> : null}
-                  </span>
-                  <span className="lb-league">{leagueOf(r.rating).name}</span>
-                  <span className="lb-rate">
-                    <Ico name="trophy" size={18} /> {fmt(r.rating)}
-                  </span>
-                  <span className="lb-rec">
-                    {r.wins} побед · {r.losses} пораж. · {winRate(r)}%
-                  </span>
-                </button>
+                <div key={r.nick} className={`lb-col p${i + 1}`} style={{ "--m": c, "--lg": leagueOf(r.rating).color } as CSSProperties}>
+                  <button type="button" className={`lb-pod${isMe(r) ? " me" : ""}`} onClick={() => onOpen(r.nick)} aria-label={`${i + 1} место: ${r.nick}, рейтинг ${r.rating}`}>
+                    <i className="lb-sheen" aria-hidden />
+                    {i === 0 && (
+                      <span className="lb-crown" aria-hidden>
+                        <Ico name="crown" size={28} />
+                        <i />
+                        <i />
+                        <i />
+                      </span>
+                    )}
+                    <span className="lb-ava">
+                      <Who r={r} size="md" />
+                    </span>
+                    <span className="lb-medal">{MEDAL_NAME[i]}</span>
+                    <span className="lb-name">
+                      {r.nick}
+                      {r.clan ? <em>[{r.clan}]</em> : null}
+                    </span>
+                    <span className="lb-league">{leagueOf(r.rating).name}</span>
+                    <span className="lb-rate">
+                      <Ico name="trophy" size={18} /> {fmt(r.rating)}
+                    </span>
+                    <span className="lb-rec">
+                      {r.wins} побед · {r.losses} пораж. · {winRate(r)}%
+                    </span>
+                  </button>
+                  <div className="lb-step" aria-hidden>
+                    <b>{i + 1}</b>
+                  </div>
+                </div>
               );
             })}
           </div>
 
-          {rest.length > 0 && (
-            <ul className="lb-list">
-              <li className="lb-cols" aria-hidden>
-                <span>Место</span>
-                <span>Игрок</span>
-                <span>Лига</span>
-                <span>Победы</span>
-                <span>Пораж.</span>
-                <span>Винрейт</span>
-              </li>
-              {rest.map((r, k) => (
+          <div className="lb-tools">
+            <label className="lb-search">
+              <Ico name="search" size={16} />
+              <input type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Найти игрока" aria-label="Найти игрока в рейтинге" />
+            </label>
+            <div className="lb-chips" role="group" aria-label="Фильтр по лиге">
+              <button type="button" aria-pressed={league === "all"} onClick={() => setLeague("all")}>
+                Все
+              </button>
+              {present.map((l) => (
+                <button key={l.id} type="button" aria-pressed={league === l.id} onClick={() => setLeague(l.id)} style={{ ["--lg" as string]: l.color }}>
+                  <i aria-hidden />
+                  {l.name}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <ul className="lb-list">
+            <li className="lb-cols" aria-hidden>
+              <span>Место</span>
+              <span>Игрок</span>
+              <span>Лига и рейтинг</span>
+              <span>Победы</span>
+              <span>Пораж.</span>
+              <span>Винрейт</span>
+            </li>
+            {shown.length === 0 && <li className="lb-none">Никого не нашли — попробуйте другой запрос или лигу</li>}
+            {shown.map((r, k) => {
+              const wr = winRate(r);
+              const lg = leagueOf(r.rating);
+              return (
                 <li key={r.nick} style={{ ["--d" as string]: `${k * 35}ms` }}>
                   <button
                     type="button"
-                    className={`lb-row${isMe(r) ? " me" : ""}${k < 3 ? ` top t${k + 1}` : ""}`}
-                    style={{ "--lg": leagueOf(r.rating).color, "--m": MEDAL[k] ?? "transparent" } as CSSProperties}
+                    className={`lb-row${isMe(r) ? " me" : ""}${r.place <= 3 ? ` top t${r.place}` : ""}`}
+                    style={{ "--lg": lg.color, "--m": MEDAL[r.place - 1] ?? "transparent" } as CSSProperties}
                     onClick={() => onOpen(r.nick)}
                   >
-                    <span className="lb-pl">{k < 3 ? <Ico name={k === 0 ? "crown" : "trophy"} size={16} /> : r.place}</span>
+                    <span className="lb-pl">{r.place <= 3 ? <Ico name={r.place === 1 ? "crown" : "trophy"} size={16} /> : r.place}</span>
                     <span className="lb-who">
                       <Who r={r} size="xs" />
                       <span className="lb-wt">
@@ -151,27 +241,30 @@ export function Leaderboard({
                       </span>
                     </span>
                     <span className="lb-rt">
-                      <b>{leagueOf(r.rating).name}</b>
-                      <small>
-                        <i aria-hidden />
-                        {fmt(r.rating)}
-                      </small>
+                      <span>
+                        <em className="lb-lgname">{lg.name}</em>
+                        <b>{fmt(r.rating)}</b>
+                      </span>
+                      <span className="lb-bar">
+                        <i style={{ width: `${Math.max(6, Math.round((r.rating / best) * 100))}%` }} />
+                      </span>
                     </span>
                     <span className="lb-w">{fmt(r.wins)}</span>
                     <span className="lb-l">{fmt(r.losses)}</span>
-                    <span className="lb-wr">
-                      <em>{winRate(r)}%</em>
-                      <span className="lb-bar"><i style={{ width: `${Math.max(4, winRate(r))}%` }} /></span>
+                    <span className="lb-ring" style={{ ["--p" as string]: wr }} aria-label={`Винрейт ${wr}%`}>
+                      <b>{wr}%</b>
                     </span>
                   </button>
                 </li>
-              ))}
-            </ul>
-          )}
+              );
+            })}
+          </ul>
 
           {!inList && mine !== "" && (
             <div className="lb-you">
-              <span>Вы пока вне двадцатки лидеров</span>
+              <span>
+                Вы пока вне двадцатки лидеров · <small>{cur.name}</small>
+              </span>
               <b>
                 <Ico name="trophy" size={15} /> {fmt(myRating)}
               </b>
