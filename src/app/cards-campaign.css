@@ -1740,4 +1740,6 @@
   .cg .st-pick .st-all { width: 100%; justify-content: center; min-height: 42px; }
 }
 /* луч света не должен выходить за пределы сцены */
-.cg .st-stage .cg-stage { overflow: clip; border-radius: 16px; }
+.cg .st-stage .cg-stage { overflow: visible; }
+.cg .st-stage .pk-beam { top: -38%; height: 140%; width: 190%; background: linear-gradient(180deg, rgba(170, 205, 255, .3), rgba(110, 140, 255, .1) 60%, transparent); -webkit-mask-image: radial-gradient(closest-side at 50% 55%, #000 30%, transparent 100%); mask-image: radial-gradient(closest-side at 50% 55%, #000 30%, transparent 100%); filter: blur(10px); }
+.cg .st-stage .pk-wrap.bundle .pk-beam { top: -30%; height: 130%; width: 150%; }
