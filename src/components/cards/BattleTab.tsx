@@ -152,9 +152,8 @@ export function BattleTab({ s }: { s: CardsState }) {
             <ol>
               {LEAGUES.map((l, i) => (
                 <li key={l.id} className={l.id === league.id ? "cur" : w.rating >= l.from ? "done" : ""} style={{ ["--lc" as string]: l.color, left: `${(i / (LEAGUES.length - 1)) * 100}%` } as CSSProperties}>
-                  <i aria-hidden />
-                  <b>{l.name}</b>
-                  <small>{l.from}</small>
+                  <img src={`/cards/leagues/${l.id}.webp`} alt={l.name} width={100} height={85} draggable={false} />
+                  <small>{l.from} оч.</small>
                 </li>
               ))}
             </ol>

@@ -2303,3 +2303,16 @@ html[data-eco="on"] .cv-fshine, html[data-eco="on"] .cv-frun, html[data-eco="on"
 .cv-fglint { background: linear-gradient(62deg, transparent 45%, rgba(215, 240, 255, .8) 50%, transparent 55%) 0 0 / 320% 100%; animation: fr-sweep 8s ease-in-out infinite reverse; animation-delay: -3s; }
 @media (prefers-reduced-motion: reduce) { .cv-fglow, .cv-fglint { animation: none; opacity: .3; } }
 html[data-eco="on"] .cv-fglow, html[data-eco="on"] .cv-fglint { animation: none; }
+
+/* Лестница лиг: фирменные эмблемы */
+.cg .bt-lg { height: 148px; margin-top: 10px; }
+.cg .bt-lg-bar { top: 44px; z-index: 0; }
+.cg .bt-lg li { z-index: 1; min-width: 96px; gap: 4px; }
+.cg .bt-lg li img { display: block; width: auto; height: 88px; max-width: none; object-fit: contain; filter: grayscale(.85) brightness(.55) saturate(.8); opacity: .8; transition: filter .3s, transform .3s var(--cg-ease), opacity .3s; pointer-events: none; user-select: none; }
+.cg .bt-lg li.done img { filter: none; opacity: 1; }
+.cg .bt-lg li.cur img { height: 112px; margin-top: -12px; filter: drop-shadow(0 0 18px color-mix(in oklab, var(--lc) 70%, transparent)); opacity: 1; animation: bt-emb 3.2s ease-in-out infinite; }
+.cg .bt-lg li.cur small { color: #fff; }
+@keyframes bt-emb { 50% { transform: translateY(-3px) scale(1.03); filter: drop-shadow(0 0 26px var(--lc)); } }
+.cg .bt-lg li small { margin-top: 2px; font-size: 11.5px; font-weight: 700; }
+@media (max-width: 720px) { .cg .bt-lg { height: 112px; } .cg .bt-lg-bar { top: 30px; } .cg .bt-lg li { min-width: 54px; } .cg .bt-lg li img { height: 60px; } .cg .bt-lg li.cur img { height: 76px; margin-top: -8px; } .cg .bt-lg li small { display: none; } }
+@media (prefers-reduced-motion: reduce) { .cg .bt-lg li.cur img { animation: none; } }
