@@ -2262,3 +2262,15 @@ html[data-eco="on"] .cg .bt-go::after, html[data-eco="on"] .cg .bt-lg li.cur i {
 .cg .bt-grid { grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); align-items: start; }
 .cg .bt-sh span { flex: 1; min-width: 0; }
 @media (max-width: 1100px) { .cg .bt-grid { grid-template-columns: minmax(0, 1fr); } }
+
+/* Лицевая рамка карты: свет и блики только по самой рамке */
+.cv-face.front { position: relative; }
+.cv-fshine, .cv-frun, .cv-fsp { position: absolute; pointer-events: none; }
+.cv-fshine, .cv-frun { inset: 0; z-index: 4; mix-blend-mode: screen; -webkit-mask: var(--fr) 0 0 / 100% 100% no-repeat; mask: var(--fr) 0 0 / 100% 100% no-repeat; }
+.cv-fshine { background: linear-gradient(112deg, transparent 40%, rgba(255, 255, 255, .85) 50%, transparent 60%) 0 0 / 280% 100%; animation: fr-sweep 6s ease-in-out infinite; }
+.cv-frun { background: conic-gradient(from var(--frA), transparent 0 70%, color-mix(in oklab, var(--c) 55%, #9fd8ff) 86%, #fff 95%, transparent 100%); animation: fr-orbit 7s linear infinite; opacity: .9; }
+.cv-fsp { z-index: 6; width: 7%; aspect-ratio: 1; background: radial-gradient(circle, #fff 0 12%, transparent 14%), linear-gradient(#fff, #fff) 50% 50% / 8% 100% no-repeat, linear-gradient(#fff, #fff) 50% 50% / 100% 8% no-repeat; filter: drop-shadow(0 0 5px var(--c)); opacity: 0; animation: fr-tw 3.4s ease-in-out infinite; }
+.cv-fsp.s0 { left: 3%; top: 3%; } .cv-fsp.s1 { right: 2%; top: 38%; animation-delay: -1.1s; } .cv-fsp.s2 { left: 1%; bottom: 14%; animation-delay: -2.2s; } .cv-fsp.s3 { right: 6%; bottom: 3%; animation-delay: -.5s; }
+.cv-face.front .gc-frame { image-rendering: auto; filter: contrast(1.04) saturate(1.06); }
+@media (prefers-reduced-motion: reduce) { .cv-fshine, .cv-frun, .cv-fsp { animation: none; } .cv-fsp { opacity: .6; } }
+html[data-eco="on"] .cv-fshine, html[data-eco="on"] .cv-frun, html[data-eco="on"] .cv-fsp { animation: none; }
