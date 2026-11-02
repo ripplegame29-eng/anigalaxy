@@ -1,4 +1,4 @@
-import type { CSSProperties } from "react";
+import { useId, type CSSProperties } from "react";
 
 /** Набор линейных иконок раздела карточек (24×24, stroke = currentColor). */
 const P: Record<string, string> = {
@@ -82,4 +82,69 @@ export function CurArt({ k, size = 28 }: { k: CurKey; size?: number }) {
 /** Значок валюты в тексте */
 export function Cur({ k, size = 15 }: { k: CurKey; size?: number }) {
   return <CurArt k={k} size={Math.round(size * 1.15)} />;
+}
+
+/** Премиальные двухслойные значки вкладок: градиентная заливка + тонкий контур + акцентные искры */
+const TAB_ICO: Record<string, { fill?: string[]; line: string[]; dots?: string[] }> = {
+  packs: {
+    fill: ["M7 5.4h10v13.2H7z"],
+    line: ["M6.4 5.5 7.4 4l1.1 1.5 1.1-1.5 1.1 1.5 1.1-1.5 1.1 1.5 1.1-1.5 1.1 1.5 1.1-1.5 1 1.5", "M6.4 18.5l1 1.5 1.1-1.5 1.1 1.5 1.1-1.5 1.1 1.5 1.1-1.5 1.1 1.5 1.1-1.5 1 1.5", "M7 5.6v12.8 M17 5.6v12.8"],
+    dots: ["M12 8.8l.95 2 2.15.3-1.55 1.5.37 2.15L12 13.7l-1.92 1.05.37-2.15-1.55-1.5 2.15-.3z"],
+  },
+  forge: {
+    fill: ["M3.8 8.2h15.9c-.2 2.7-2.1 4.3-4.7 4.3h-1.3l1.5 3.5H8.6l1.5-3.5H8.2c-2.5 0-4.2-1.6-4.4-4.3z"],
+    line: ["M3.8 8.2h15.9c-.2 2.7-2.1 4.3-4.7 4.3h-1.3l1.5 3.5H8.6l1.5-3.5H8.2c-2.5 0-4.2-1.6-4.4-4.3z", "M7 19.2h10 M3.8 8.2 2 6.6"],
+    dots: ["M19 2.6l.7 1.7 1.7.7-1.7.7L19 7.4l-.7-1.7-1.7-.7 1.7-.7z"],
+  },
+  sharpen: {
+    fill: ["M12 3.2l2.6 5.4 5.9.9-4.3 4.2 1 5.9L12 16.8 6.8 19.6l1-5.9-4.3-4.2 5.9-.9z"],
+    line: ["M12 3.2l2.6 5.4 5.9.9-4.3 4.2 1 5.9L12 16.8 6.8 19.6l1-5.9-4.3-4.2 5.9-.9z", "M12 3.2v13.6 M3.5 9.5l8.5 3.6 8.5-3.6"],
+    dots: ["M19.6 2.2l.5 1.3 1.3.5-1.3.5-.5 1.3-.5-1.3-1.3-.5 1.3-.5z"],
+  },
+  battle: {
+    fill: ["M4.2 4.2h3.4l8.4 8.4-2.2 2.2-9.6-9.6z", "M19.8 4.2h-3.4l-8.4 8.4 2.2 2.2 9.6-9.6z"],
+    line: ["M4.2 4.2h3.4l8.4 8.4-2.2 2.2-9.6-9.6z", "M19.8 4.2h-3.4l-8.4 8.4 2.2 2.2 9.6-9.6z", "M14.4 14.8l2.8 2.8 M9.6 14.8l-2.8 2.8 M17.2 17.6l1.6 1.6 M6.8 17.6l-1.6 1.6"],
+  },
+  auction: {
+    fill: ["M13 3.8l6 6-3.4 3.4-6-6z"],
+    line: ["M13 3.8l6 6-3.4 3.4-6-6z", "M11.4 11.2 4.6 18 M4 20.4h9.5 M14.8 18.6h5.2"],
+  },
+  trade: {
+    fill: ["M12 3.2a8.8 8.8 0 1 0 0 17.6 8.8 8.8 0 0 0 0-17.6z"],
+    line: ["M7 9.2h9.6l-2.4-2.5 M17 14.8H7.4l2.4 2.5"],
+  },
+  collection: {
+    fill: ["M5.2 7.4h10.2a1.6 1.6 0 0 1 1.6 1.6v10a1.6 1.6 0 0 1-1.6 1.6H5.2a1.6 1.6 0 0 1-1.6-1.6V9a1.6 1.6 0 0 1 1.6-1.6z"],
+    line: ["M5.2 7.4h10.2a1.6 1.6 0 0 1 1.6 1.6v10a1.6 1.6 0 0 1-1.6 1.6H5.2a1.6 1.6 0 0 1-1.6-1.6V9a1.6 1.6 0 0 1 1.6-1.6z", "M8 4h10.8A1.2 1.2 0 0 1 20 5.2V16 M7 12h6 M7 15.4h3.6"],
+    dots: ["M14.4 10.2l.45.95 1.05.15-.76.74.18 1.04-.92-.5-.92.5.18-1.04-.76-.74 1.05-.15z"],
+  },
+  progress: {
+    fill: ["M8 4h8v5.2a4 4 0 0 1-8 0z"],
+    line: ["M8 4h8v5.2a4 4 0 0 1-8 0z", "M8 6H5v1.4A2.9 2.9 0 0 0 8 10.3 M16 6h3v1.4a2.9 2.9 0 0 1-3 2.9 M12 13.2v3.2 M9.4 16.4h5.2v3.6H9.4z M7.8 20h8.4"],
+    dots: ["M12 6.2l.8 1.7 1.8.25-1.3 1.25.3 1.8-1.6-.85-1.6.85.3-1.8-1.3-1.25 1.8-.25z"],
+  },
+  season: {
+    fill: ["M3.4 8.2l4.4 3.9L12 5l4.2 7.1 4.4-3.9-1.9 10.4H5.3z"],
+    line: ["M3.4 8.2l4.4 3.9L12 5l4.2 7.1 4.4-3.9-1.9 10.4H5.3z", "M5.6 20.4h12.8"],
+    dots: ["M12 3.2m-.9 0a.9.9 0 1 0 1.8 0 .9.9 0 1 0-1.8 0 M3.4 6.4m-.8 0a.8.8 0 1 0 1.6 0 .8.8 0 1 0-1.6 0 M20.6 6.4m-.8 0a.8.8 0 1 0 1.6 0 .8.8 0 1 0-1.6 0"],
+  },
+};
+
+export function TabIco({ id, size = 22 }: { id: string; size?: number }) {
+  const g = useId().replace(/:/g, "");
+  const d = TAB_ICO[id];
+  if (!d) return null;
+  return (
+    <svg className="ico tab-ico" width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden>
+      <defs>
+        <linearGradient id={g} x1="4" y1="3" x2="20" y2="21" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stopColor="currentColor" stopOpacity=".62" />
+          <stop offset="1" stopColor="currentColor" stopOpacity=".1" />
+        </linearGradient>
+      </defs>
+      {d.fill?.map((p, i) => <path key={`f${i}`} d={p} fill={`url(#${g})`} />)}
+      {d.line.map((p, i) => <path key={`l${i}`} d={p} stroke="currentColor" strokeWidth="1.45" strokeLinecap="round" strokeLinejoin="round" />)}
+      {d.dots?.map((p, i) => <path key={`d${i}`} d={p} fill="currentColor" />)}
+    </svg>
+  );
 }

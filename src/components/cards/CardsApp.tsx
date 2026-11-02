@@ -24,7 +24,7 @@ import { SeasonTab } from "./SeasonTab";
 import { SharpenTab } from "./SharpenTab";
 import { setSound, useSoundOn } from "@/lib/cards/sound";
 import { ToastHost, fmt, fmtLeft, toast, useBusy, useNow } from "./common";
-import { CUR, Cur, CurArt, Ico, type CurKey, type IcoName } from "./icons";
+import { CUR, Cur, CurArt, Ico, TabIco, type CurKey, type IcoName } from "./icons";
 import { TradeTab } from "./TradeTab";
 
 const TABS: readonly (readonly [string, string, IcoName])[] = [
@@ -360,9 +360,9 @@ export function CardsApp() {
       </section>
 
       <div className="cg-nav" role="tablist" aria-label="Разделы карточек">
-        {TABS.map(([id, label, ico], i) => (
+        {TABS.map(([id, label], i) => (
           <button key={id} type="button" role="tab" id={`cg-tab-${id}`} aria-selected={tab === id} tabIndex={tab === id ? 0 : -1} className="cg-tab" onClick={() => pick(id as TabId)} onKeyDown={(e) => onTabKey(e, i)}>
-            <Ico name={ico} size={17} />
+            <TabIco id={id} size={22} />
             {label}
             {badges[id] ? <span className="cg-badge" aria-label={`Новых: ${badges[id]}`}>{badges[id]}</span> : null}
           </button>

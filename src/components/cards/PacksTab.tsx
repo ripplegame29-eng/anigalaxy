@@ -9,7 +9,7 @@ import { GameCard } from "./GameCard";
 import { BannerCard } from "./BannerCard";
 import { CardViewer } from "./CardViewer";
 import { PackStage, type PackPhase } from "./PackStage";
-import { Reveal, ago, fmt, toast, useBusy, useNow } from "./common";
+import { Portal, Reveal, ago, fmt, toast, useBusy, useNow } from "./common";
 import { Cur, Ico, type CurKey } from "./icons";
 
 interface PackResult {
@@ -106,6 +106,7 @@ export function PacksTab({ s }: { s: CardsState }) {
   const [results, setResults] = useState<PackResult[]>([]);
   const [phase, setPhase] = useState<PackPhase>("idle");
   const [look, setLook] = useState<number | null>(null);
+  const [gal, setGal] = useState(false);
   const now = useNow(60_000);
   const alive = useRef(true);
   useEffect(() => {
@@ -114,6 +115,18 @@ export function PacksTab({ s }: { s: CardsState }) {
       alive.current = false;
     };
   }, []);
+
+  useEffect(() => {
+    if (!gal) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setGal(false);
+    window.addEventListener("keydown", onKey);
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prev;
+    };
+  }, [gal]);
 
   const w = s.wallet;
   const bundles = PACK.bundles;
@@ -189,6 +202,50 @@ export function PacksTab({ s }: { s: CardsState }) {
   ] as const;
   const toShop = () => document.getElementById("pk-shop")?.scrollIntoView({ behavior: "smooth", block: "start" });
   const bar = (left: number, max: number) => Math.min(100, ((max - left) / max) * 100);
+
+  const renderTile = (b: (typeof bundles)[number], i: number) => {
+              const l = lackOf(b);
+              const gift = effectivePay === "token" ? 0 : b.n - b.pay;
+              const each = Math.round(costOf(b) / b.n);
+              return (
+                <button
+                  key={b.n}
+                  type="button"
+                  className="st-tile"
+                  aria-pressed={sel === i}
+                  disabled={!!pendingOffers || loading}
+                  style={{ ["--oc" as string]: OFFER_COLOR[i] ?? OFFER_COLOR[0] }}
+                  onClick={() => {
+                    setSel(i);
+                    setGal(false);
+                  }}
+                >
+                  {i === bundles.length - 1 ? <span className="st-rib best">Лучшая выгода</span> : i === 1 ? <span className="st-rib">Популярный</span> : null}
+                  <span className="st-art" aria-hidden>
+                    <i className="st-beam" />
+                    <i className="st-pad" />
+                    <img src={`/cards/offers/${Math.min(i, 2) + 1}.webp`} alt="" draggable={false} loading="lazy" />
+                    {gift > 0 && (
+                      <span className="st-gift">
+                        <Ico name="gift" size={13} />+{gift}
+                      </span>
+                    )}
+                  </span>
+                  <b className="st-n">
+                    ×{b.n} <small>{packWord(b.n)}</small>
+                  </b>
+                  <span className="st-price">
+                    {fmt(costOf(b))} <Cur k={PAY_CUR[effectivePay]} size={17} />
+                  </span>
+                  <span className="st-meta">
+                    {b.n > 1 && effectivePay !== "token" && <span>по {fmt(each)} за пак</span>}
+                    {gift > 0 && <em>−{gift} {packWord(gift)} в подарок</em>}
+                    {(b.n === 1 || effectivePay === "token") && <span>{PACK.choices} карты на выбор в каждом</span>}
+                  </span>
+                  {l > 0 && <span className="st-lack">Не хватает {fmt(l)} {unit}</span>}
+                </button>
+              );
+  };
 
   return (
     <div className="pk-page">
@@ -291,49 +348,6 @@ export function PacksTab({ s }: { s: CardsState }) {
             </label>
           </div>
 
-          <div className="st-tiles" role="group" aria-label="Набор паков">
-            {bundles.map((b, i) => {
-              const l = lackOf(b);
-              const gift = effectivePay === "token" ? 0 : b.n - b.pay;
-              const each = Math.round(costOf(b) / b.n);
-              return (
-                <button
-                  key={b.n}
-                  type="button"
-                  className="st-tile"
-                  aria-pressed={sel === i}
-                  disabled={!!pendingOffers || loading}
-                  style={{ ["--oc" as string]: OFFER_COLOR[i] ?? OFFER_COLOR[0] }}
-                  onClick={() => setSel(i)}
-                >
-                  {i === bundles.length - 1 ? <span className="st-rib best">Лучшая выгода</span> : i === 1 ? <span className="st-rib">Популярный</span> : null}
-                  <span className="st-art" aria-hidden>
-                    <i className="st-beam" />
-                    <i className="st-pad" />
-                    <img src={`/cards/offers/${Math.min(i, 2) + 1}.webp`} alt="" draggable={false} loading="lazy" />
-                    {gift > 0 && (
-                      <span className="st-gift">
-                        <Ico name="gift" size={13} />+{gift}
-                      </span>
-                    )}
-                  </span>
-                  <b className="st-n">
-                    ×{b.n} <small>{packWord(b.n)}</small>
-                  </b>
-                  <span className="st-price">
-                    {fmt(costOf(b))} <Cur k={PAY_CUR[effectivePay]} size={17} />
-                  </span>
-                  <span className="st-meta">
-                    {b.n > 1 && effectivePay !== "token" && <span>по {fmt(each)} за пак</span>}
-                    {gift > 0 && <em>−{gift} {packWord(gift)} в подарок</em>}
-                    {(b.n === 1 || effectivePay === "token") && <span>{PACK.choices} карты на выбор в каждом</span>}
-                  </span>
-                  {l > 0 && <span className="st-lack">Не хватает {fmt(l)} {unit}</span>}
-                </button>
-              );
-            })}
-          </div>
-
           <div className="st-dock" data-pick={pendingOffers ? "1" : undefined}>
             <div className="st-stage">
               {pendingOffers ? (
@@ -345,11 +359,26 @@ export function PacksTab({ s }: { s: CardsState }) {
                   </div>
                 </div>
               ) : (
-                <PackStage phase={phase} blocked={!!reason && !loading} onOpen={() => void open(bundle.n)} />
+                <PackStage phase={phase} blocked={!!reason && !loading} stack={bundle.n === 1 ? 0 : bundle.n <= 6 ? 2 : 4} onOpen={() => void open(bundle.n)} />
               )}
             </div>
 
             <div className="pk-info st-co">
+              {!pendingOffers && (
+                <div className="st-pick">
+                  <button type="button" className="st-all" disabled={loading} onClick={() => setGal(true)}>
+                    <Ico name="grid" size={16} /> Наборы
+                  </button>
+                  <div className="st-chips" role="group" aria-label="Набор паков">
+                    {bundles.map((b, i) => (
+                      <button key={b.n} type="button" className="st-chip" aria-pressed={sel === i} disabled={loading} onClick={() => setSel(i)}>
+                        ×{b.n}
+                        {effectivePay !== "token" && b.n > b.pay && <em>+{b.n - b.pay}</em>}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
               <div className="pk-chips">
                 <span className="cg-eyebrow">Бустер AniGalaxy</span>
                 <span className="cg-chip">{PACK.choices} карты на выбор</span>
@@ -473,6 +502,33 @@ export function PacksTab({ s }: { s: CardsState }) {
         </h2>
         <BannerCard s={s} />
       </section>
+
+      {gal && (
+        <Portal>
+          <div className="st-gal" role="dialog" aria-modal="true" aria-label="Выбор набора" onClick={(e) => e.target === e.currentTarget && setGal(false)}>
+            <div className="st-gal-p" style={{ ["--oc" as string]: OFFER_COLOR[sel] ?? OFFER_COLOR[0] }}>
+              <header>
+                <div>
+                  <span className="cg-eyebrow">Наборы</span>
+                  <h3>Выберите набор паков</h3>
+                  <p>Чем больше набор, тем выгоднее: при оплате алмазами или пылью часть паков достаётся в подарок.</p>
+                </div>
+                <button type="button" className="st-gal-x" aria-label="Закрыть" onClick={() => setGal(false)}>
+                  <Ico name="close" size={18} />
+                </button>
+              </header>
+              <div className="st-tiles" role="group" aria-label="Набор паков">
+                {bundles.map((b, i) => renderTile(b, i))}
+              </div>
+              <footer>
+                <span>
+                  Оплата: <b>{wallets.find((x) => x.id === effectivePay)?.label}</b> · на счету <b>{fmt(haveOf)}</b> <Cur k={PAY_CUR[effectivePay]} size={15} />
+                </span>
+              </footer>
+            </div>
+          </div>
+        </Portal>
+      )}
 
       {look !== null && fan[look] && (
         <CardViewer ids={fan} index={look} onIndex={setLook} onClose={() => setLook(null)} owned={s.inventory.some((c) => c.cardId === fan[look])} />
