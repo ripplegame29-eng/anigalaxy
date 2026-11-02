@@ -208,7 +208,7 @@ export function PacksTab({ s }: { s: CardsState }) {
   const bar = (left: number, max: number) => Math.min(100, ((max - left) / max) * 100);
 
   return (
-    <>
+    <div className="pk-page">
       <section className="pk-hero" aria-label="Паки AniGalaxy">
         <div className="pk-hero-l">
           <span className="cg-eyebrow">Паки AniGalaxy</span>
@@ -266,7 +266,7 @@ export function PacksTab({ s }: { s: CardsState }) {
         <h2 className="pk-h" id="pk-shop-t">
           <Ico name="pack" size={22} /> Магазин паков
         </h2>
-        <div className="pk-shop">
+        <div className="pk-shop" style={{ ["--oc" as string]: OFFER_COLOR[sel] ?? OFFER_COLOR[0] }}>
           <div className="pk-pick">
             <span className="pk-lbl">Выберите набор</span>
             <div className="pk-opts" role="group" aria-label="Набор паков">
@@ -413,6 +413,6 @@ export function PacksTab({ s }: { s: CardsState }) {
           sub={dustBack ? `Остальные карты ушли в пыль: +${fmt(dustBack)}` : undefined}
         />
       )}
-    </>
+    </div>
   );
 }
