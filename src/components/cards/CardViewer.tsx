@@ -95,7 +95,7 @@ export function CardViewer({
       setFlip(false);
       onIndex((index + d + n) % n);
     },
-    [index, n, onIndex],
+    [index, n, onIndex, setFlip],
   );
 
   useEffect(() => {
