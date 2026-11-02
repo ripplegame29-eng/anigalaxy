@@ -39,30 +39,6 @@ const wait = (ms: number) => new Promise<void>((r) => window.setTimeout(r, ms));
 
 const PAY_CUR: Record<Pay, CurKey> = { token: "packs", diamonds: "diamonds", dust: "dust" };
 
-function Gauge({ title, left, now, max, color }: { title: string; left: number; now: number; max: number; color: string }) {
-  const R = 32;
-  const len = 2 * Math.PI * R;
-  const done = Math.min(1, now / max);
-  return (
-    <div className="cg-gauge" style={{ ["--c" as string]: color }}>
-      <div className="cg-ring" role="img" aria-label={`${title}: ${now} из ${max}`}>
-        <svg viewBox="0 0 74 74">
-          <circle className="bg" cx="37" cy="37" r={R} />
-          <circle className="fg" cx="37" cy="37" r={R} style={{ ["--len" as string]: len, ["--off" as string]: len * (1 - done) }} />
-        </svg>
-        <b>{left <= 1 ? "1" : left}</b>
-      </div>
-      <div>
-        <h3>{title}</h3>
-        <p>{left <= 1 ? "Гарантия выпадет в следующем паке" : `Гарантия через ${left} ${left < 5 ? "пака" : "паков"}`}</p>
-        <div className="lbl">
-          Серия без неё: {now} из {max}
-        </div>
-      </div>
-    </div>
-  );
-}
-
 /** Цвета рамок наборов: синий, фиолетовый, золотой */
 const OFFER_COLOR = ["#3aa0ff", "#b46bff", "#ffc45e"];
 
@@ -318,54 +294,41 @@ export function PacksTab({ s }: { s: CardsState }) {
             </div>
           </div>
 
-          <div className="pk-center">
-            <div className="pk-title">
-              <span className="cg-eyebrow">Бустер AniGalaxy</span>
-              <h3>{pendingOffers ? "Выберите одну карту" : "Откройте пак"}</h3>
-              <p>{pendingOffers ? "Остальные две карты превратятся в пыль — вернётся четверть их стоимости." : `В каждом паке ${PACK.choices} карты на выбор.`}</p>
+          <div className="pk-center" data-pick={pendingOffers ? "1" : undefined}>
+            <div className="pk-stagecol">
+              {pendingOffers ? (
+                <div className="cg-pickstage">
+                  <div className="cg-offers">
+                    {pendingOffers.map((id, i) => (
+                      <GameCard key={id} cardId={id} live onClick={() => void pickCard(i)} className="cg-offer-card" />
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <PackStage phase={phase} blocked={!!reason && !loading} onOpen={() => void open(bundle.n)} />
+              )}
             </div>
 
-            {pendingOffers ? (
-              <div className="cg-pickstage">
-                <div className="cg-offers">
-                  {pendingOffers.map((id, i) => (
-                    <GameCard key={id} cardId={id} live onClick={() => void pickCard(i)} className="cg-offer-card" />
-                  ))}
-                </div>
+            <div className="pk-info">
+              <div className="pk-chips">
+                <span className="cg-eyebrow">Бустер AniGalaxy</span>
+                <span className="cg-chip">{PACK.choices} карты на выбор</span>
               </div>
-            ) : (
-              <PackStage phase={phase} blocked={!!reason && !loading} onOpen={() => void open(bundle.n)} />
-            )}
-
-            {!pendingOffers && (
-              <div className="pk-act">
-                <button type="button" className="cg-cta" disabled={loading || !!reason} onClick={() => void open(bundle.n)}>
-                  {loading ? <span className="cg-spin" /> : <Ico name="pack" size={20} />}
-                  {loading ? "Открываем…" : bundle.n === 1 ? "Открыть пак" : `Открыть ×${bundle.n}`}
-                  <span className="price">
-                    {fmt(costOf(bundle))} <Cur k={PAY_CUR[effectivePay]} size={16} />
-                  </span>
-                </button>
-                <label className="cg-switch">
-                  <input type="checkbox" checked={quick} onChange={toggleQuick} />
-                  <i />
-                  Быстрое открытие
-                </label>
-                {reason && !loading && (
-                  <span className="cg-why" role="status">
-                    <Ico name="ban" size={16} />
-                    {reason}
-                  </span>
-                )}
-              </div>
-            )}
-
-            <div className="pk-gar">
-              <span className="pk-lbl">Гарантии</span>
-              <div className="pk-gar-g">
-                <Gauge title="Эпическая и выше" left={epicLeft} now={w.pityEpic} max={PACK.pityEpic} color={RANKS[2].color} />
-                <Gauge title="Легендарная и выше" left={legendLeft} now={w.pityLegend} max={PACK.pityLegend} color={RANKS[3].color} />
-              </div>
+              <h3>{pendingOffers ? "Выберите одну карту" : bundle.n === 1 ? "Один пак" : `Набор ×${bundle.n}`}</h3>
+              <p className="pk-sub">
+                {pendingOffers ? "Остальные две карты превратятся в пыль — вернётся четверть их стоимости." : `${bundle.n} ${packWord(bundle.n)} · ${fmt(costOf(bundle))} ${unit}${bundle.n > bundle.pay ? ` · выгода ${bundle.n - bundle.pay} ${packWord(bundle.n - bundle.pay)}` : ""}`}
+              </p>
+              <ul className="pk-bul">
+                <li>
+                  <Ico name="check" size={15} /> В каждом паке {PACK.choices} карты — оставляете лучшую, остальные уходят в пыль
+                </li>
+                <li>
+                  <Ico name="check" size={15} /> Эпическая карта гарантирована не позже {PACK.pityEpic}-го пака, легендарная — {PACK.pityLegend}-го
+                </li>
+                <li>
+                  <Ico name="check" size={15} /> {s.premium ? "Premium: шансы на редкие карты ×1,25" : "С Premium шансы на редкие карты выше на 25%"}
+                </li>
+              </ul>
               <div className="pk-odds" aria-label="Шансы одной карты">
                 {RANKS.map((r, i) => (
                   <span key={r.id} style={{ ["--c" as string]: r.color }}>
@@ -375,13 +338,54 @@ export function PacksTab({ s }: { s: CardsState }) {
                   </span>
                 ))}
               </div>
-              <p className="pk-note">{s.premium ? "Premium: шансы на редкие карты ×1,25." : "С Premium шансы на редкие карты выше на 25%."}</p>
+              {!pendingOffers && (
+                <div className="pk-act">
+                  <button type="button" className="cg-cta" disabled={loading || !!reason} onClick={() => void open(bundle.n)}>
+                    {loading ? <span className="cg-spin" /> : <Ico name="pack" size={20} />}
+                    {loading ? "Открываем…" : bundle.n === 1 ? "Открыть пак" : `Открыть ×${bundle.n}`}
+                    <span className="price">
+                      {fmt(costOf(bundle))} <Cur k={PAY_CUR[effectivePay]} size={16} />
+                    </span>
+                  </button>
+                  <label className="cg-switch">
+                    <input type="checkbox" checked={quick} onChange={toggleQuick} />
+                    <i />
+                    Быстрое открытие
+                  </label>
+                  {reason && !loading && (
+                    <span className="cg-why" role="status">
+                      <Ico name="ban" size={16} />
+                      {reason}
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
           </div>
 
-          <aside className="pk-side" aria-label="Лента находок">
-            <span className="pk-lbl">Уже нашли · {feed.length}</span>
-            <p className="pk-note">Легендарные и мифические карты, выпавшие игрокам.</p>
+          <aside className="pk-side" aria-label="Гарантии и лента находок">
+            <span className="pk-lbl">Гарантии</span>
+            <div className="pk-gcards">
+              {[
+                { t: "Эпическая и выше", left: epicLeft, now: w.pityEpic, max: PACK.pityEpic, c: RANKS[2].color },
+                { t: "Легендарная и выше", left: legendLeft, now: w.pityLegend, max: PACK.pityLegend, c: RANKS[3].color },
+              ].map((g) => (
+                <div key={g.t} className="pk-gc" style={{ ["--c" as string]: g.c }}>
+                  <b className="n">{g.left}</b>
+                  <div>
+                    <h4>{g.t}</h4>
+                    <span>{g.left <= 1 ? "выпадет в следующем паке" : `${packWord(g.left)} до гарантии`}</span>
+                  </div>
+                  <i role="progressbar" aria-valuemin={0} aria-valuemax={g.max} aria-valuenow={g.now} aria-label={`Серия без ${g.t}`}>
+                    <u style={{ width: `${bar(g.left, g.max)}%` }} />
+                  </i>
+                  <small>
+                    Серия без неё: {g.now} из {g.max}
+                  </small>
+                </div>
+              ))}
+            </div>
+            <span className="pk-lbl pk-lbl-f">Уже нашли · {feed.length}</span>
             {feed.length === 0 ? (
               <div className="cg-empty">
                 <Ico name="trophy" size={22} />
