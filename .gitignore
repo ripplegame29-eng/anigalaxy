@@ -76,3 +76,6 @@ _backup_before_cards/
 
 # playwright-cli artifacts
 .playwright-cli/
+
+# Real-ESRGAN для scripts/upscale-art.ps1
+/tools/realesrgan/
