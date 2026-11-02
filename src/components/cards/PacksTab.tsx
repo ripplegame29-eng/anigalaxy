@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { cardDef } from "@/lib/cards/catalog";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { CATALOG, cardDef, isHidden } from "@/lib/cards/catalog";
 import { PACK, RANKS } from "@/lib/cards/config";
 import { sfx } from "@/lib/cards/sound";
 import { act, hasArt, type CardsState, type Pull } from "@/lib/cards/client";
@@ -77,6 +77,28 @@ function Thumb({ cardId, rank, name }: { cardId: string; rank: number; name: str
       {hasArt(cardId) ? <img src={`/api/cards/art/${cardId}`} alt="" loading="lazy" draggable={false} /> : initials}
     </span>
   );
+}
+
+/** Пять карт для веера: лучшие из коллекции, недостающие — витринные высшего ранга */
+function useFan(s: CardsState): string[] {
+  return useMemo(() => {
+    const own = new Map<string, number>();
+    for (const c of s.inventory) {
+      const d = cardDef(c.cardId);
+      if (d) own.set(c.cardId, Math.max(own.get(c.cardId) ?? 0, d.rank * 1000 + c.level));
+    }
+    const ids = [...own.entries()].sort((a, b) => b[1] - a[1]).map(([id]) => id).slice(0, 5);
+    if (ids.length < 5) {
+      const rest = CATALOG.filter((c) => !isHidden(c.id) && !ids.includes(c.id)).sort((a, b) => b.rank - a.rank);
+      for (const c of rest) {
+        if (ids.length >= 5) break;
+        ids.push(c.id);
+      }
+    }
+    /* лучшая карта в центре, остальные расходятся веером */
+    const [a, b, c, d, e] = ids;
+    return [d, b, a, c, e].filter((x): x is string => !!x);
+  }, [s.inventory]);
 }
 
 function FeedRow({ p, now }: { p: Pull; now: number }) {
@@ -180,10 +202,67 @@ export function PacksTab({ s }: { s: CardsState }) {
   const loading = phase !== "idle" || busy;
 
   const packWord = (n: number) => (n === 1 ? "пак" : n < 5 ? "пака" : "паков");
+  const fan = useFan(s);
+  const feed = [...s.pulls.today, ...s.pulls.yesterday];
+  const toShop = () => document.getElementById("pk-shop")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  const bar = (left: number, max: number) => Math.min(100, ((max - left) / max) * 100);
 
   return (
     <>
-      <section className="pk-sec" aria-labelledby="pk-shop-t">
+      <section className="pk-hero" aria-label="Паки AniGalaxy">
+        <div className="pk-hero-l">
+          <span className="cg-eyebrow">Паки AniGalaxy</span>
+          <h1>Откройте пак, найдите героя</h1>
+          <p>В каждом паке три карты на выбор. Гарантии на эпическую и легендарную копятся, пока вы открываете паки подряд.</p>
+          <button type="button" className="cg-btn" onClick={toShop}>
+            <Ico name="pack" size={17} /> К магазину паков
+          </button>
+        </div>
+        <div className="pk-fan" aria-hidden>
+          {fan.map((id, i) => {
+            const d = cardDef(id);
+            const r = d ? RANKS[d.rank] : undefined;
+            return (
+              <div key={id} className={`pk-fan-i i${i}`} style={{ ["--c" as string]: r?.color }}>
+                <GameCard cardId={id} stats={false} />
+                <b>{d?.name}</b>
+                <span>{r?.name}</span>
+              </div>
+            );
+          })}
+        </div>
+        <aside className="pk-stock" aria-label="Мой запас">
+          <span className="pk-lbl">Мой запас</span>
+          <ul>
+            <li>
+              <Cur k="packs" size={22} /> <span>Жетоны паков</span> <b>{fmt(w.packs)}</b>
+            </li>
+            <li>
+              <Cur k="diamonds" size={22} /> <span>Алмазы</span> <b>{fmt(w.diamonds)}</b>
+            </li>
+            <li>
+              <Cur k="dust" size={22} /> <span>Пыль</span> <b>{fmt(w.dust)}</b>
+            </li>
+          </ul>
+          <span className="pk-lbl">Ближайшие гарантии</span>
+          {[
+            { t: "Эпическая", left: epicLeft, max: PACK.pityEpic, c: RANKS[2].color },
+            { t: "Легендарная", left: legendLeft, max: PACK.pityLegend, c: RANKS[3].color },
+          ].map((g) => (
+            <div key={g.t} className="pk-gbar" style={{ ["--c" as string]: g.c }}>
+              <div>
+                <b>{g.t}</b>
+                <span>{g.left <= 1 ? "в следующем паке" : `через ${g.left} ${packWord(g.left)}`}</span>
+              </div>
+              <i>
+                <u style={{ width: `${bar(g.left, g.max)}%` }} />
+              </i>
+            </div>
+          ))}
+        </aside>
+      </section>
+
+      <section className="pk-sec" id="pk-shop" aria-labelledby="pk-shop-t">
         <h2 className="pk-h" id="pk-shop-t">
           <Ico name="pack" size={22} /> Магазин паков
         </h2>
@@ -243,7 +322,7 @@ export function PacksTab({ s }: { s: CardsState }) {
             <div className="pk-title">
               <span className="cg-eyebrow">Бустер AniGalaxy</span>
               <h3>{pendingOffers ? "Выберите одну карту" : "Откройте пак"}</h3>
-              <p>{pendingOffers ? "Остальные две карты превратятся в пыль — вернётся четверть их стоимости." : `В каждом паке ${PACK.choices} карты на выбор. Гарантии на эпическую и легендарную — справа.`}</p>
+              <p>{pendingOffers ? "Остальные две карты превратятся в пыль — вернётся четверть их стоимости." : `В каждом паке ${PACK.choices} карты на выбор.`}</p>
             </div>
 
             {pendingOffers ? (
@@ -280,32 +359,41 @@ export function PacksTab({ s }: { s: CardsState }) {
                 )}
               </div>
             )}
+
+            <div className="pk-gar">
+              <span className="pk-lbl">Гарантии</span>
+              <div className="pk-gar-g">
+                <Gauge title="Эпическая и выше" left={epicLeft} now={w.pityEpic} max={PACK.pityEpic} color={RANKS[2].color} />
+                <Gauge title="Легендарная и выше" left={legendLeft} now={w.pityLegend} max={PACK.pityLegend} color={RANKS[3].color} />
+              </div>
+              <div className="pk-odds" aria-label="Шансы одной карты">
+                {RANKS.map((r, i) => (
+                  <span key={r.id} style={{ ["--c" as string]: r.color }}>
+                    <i />
+                    {r.name}
+                    <b>{(PACK.weights[i] / 10).toFixed(1)}%</b>
+                  </span>
+                ))}
+              </div>
+              <p className="pk-note">{s.premium ? "Premium: шансы на редкие карты ×1,25." : "С Premium шансы на редкие карты выше на 25%."}</p>
+            </div>
           </div>
 
-          <aside className="pk-side" aria-label="Гарантии и шансы">
-            <span className="pk-lbl">Гарантии</span>
-            <p className="pk-note">Считаются паки подряд без редкой добычи.</p>
-            <div className="cg-guar">
-              <Gauge title="Эпическая и выше" left={epicLeft} now={w.pityEpic} max={PACK.pityEpic} color={RANKS[2].color} />
-              <Gauge title="Легендарная и выше" left={legendLeft} now={w.pityLegend} max={PACK.pityLegend} color={RANKS[3].color} />
-              <div className="cg-odds" aria-label="Шансы одной карты">
-                {RANKS.map((r, i) => {
-                  const pc = PACK.weights[i] / 10;
-                  return (
-                    <div key={r.id} className="cg-odds-row" style={{ ["--c" as string]: r.color }}>
-                      <span>{r.name}</span>
-                      <span className="t">
-                        <i style={{ width: `${Math.min(100, pc * 1.6)}%` }} />
-                      </span>
-                      <em>{pc.toFixed(1)}%</em>
-                    </div>
-                  );
-                })}
+          <aside className="pk-side" aria-label="Лента находок">
+            <span className="pk-lbl">Уже нашли · {feed.length}</span>
+            <p className="pk-note">Легендарные и мифические карты, выпавшие игрокам.</p>
+            {feed.length === 0 ? (
+              <div className="cg-empty">
+                <Ico name="trophy" size={22} />
+                Пока никого — станьте первым.
               </div>
-              <p className="cg-hint" style={{ margin: 0 }}>
-                {s.premium ? "Premium: шансы на редкие карты ×1,25." : "С Premium шансы на редкие карты выше на 25%."}
-              </p>
-            </div>
+            ) : (
+              <ul className="pk-side-l">
+                {feed.map((p, i) => (
+                  <FeedRow key={i} p={p} now={now} />
+                ))}
+              </ul>
+            )}
           </aside>
         </div>
       </section>
@@ -315,32 +403,6 @@ export function PacksTab({ s }: { s: CardsState }) {
           <Ico name="star" size={22} /> Баннер недели
         </h2>
         <BannerCard s={s} />
-      </section>
-
-      <section className="pk-sec" aria-labelledby="pk-feed-t">
-        <h2 className="pk-h" id="pk-feed-t">
-          <Ico name="trophy" size={22} /> Лента находок
-        </h2>
-        <p className="pk-note pk-feed-hint">Легендарные и мифические карты, выпавшие игрокам.</p>
-        <div className="pk-feed">
-          {(["today", "yesterday"] as const).map((k) => (
-            <div key={k} className="pk-day">
-              <h3>{k === "today" ? "Сегодня" : "Вчера"}</h3>
-              {s.pulls[k].length === 0 ? (
-                <div className="cg-empty">
-                  <Ico name="trophy" size={22} />
-                  {k === "today" ? "Пока никого — станьте первым." : "Вчера редких находок не было."}
-                </div>
-              ) : (
-                <ul>
-                  {s.pulls[k].map((p, i) => (
-                    <FeedRow key={i} p={p} now={now} />
-                  ))}
-                </ul>
-              )}
-            </div>
-          ))}
-        </div>
       </section>
 
       {chosen.length > 0 && (
