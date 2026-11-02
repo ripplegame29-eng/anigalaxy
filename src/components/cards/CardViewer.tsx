@@ -178,37 +178,36 @@ export function CardViewer({
                   <i className="cv-rim" aria-hidden />
                   <i className="cv-flare" aria-hidden />
                 </div>
-                <div className="cv-face back" aria-hidden={!flip}>
-                  <i className="cv-bk-c a" />
-                  <i className="cv-bk-c b" />
-                  <i className="cv-bk-c c" />
-                  <i className="cv-bk-c d" />
-                  <div className="cv-bk-in">
-                    <span className="cv-bk-top">
-                      <small>№ {serial}</small>
-                      <small>{rank.short}</small>
+                <div className="cv-face back fr" aria-hidden={!flip}>
+                  <img className="fr-art" src="/cards/backs/rare.webp" alt="" draggable={false} />
+                  <span className="fr-emb">
+                    <RankMark rank={def.rank} />
+                    <em>{rank.short}</em>
+                  </span>
+                  <span className="fr-rank">{rank.name}</span>
+                  <b className="fr-name">{def.name}</b>
+                  <small className="fr-sub">
+                    {def.series} · {CLASSES[def.cls].name}
+                  </small>
+                  {(
+                    [
+                      ["sword", "Атака", def.atk, STAT_MAX.atk],
+                      ["shield", "Защита", def.def, STAT_MAX.def],
+                      ["heart", "Здоровье", def.hp, STAT_MAX.hp],
+                      ["bolt", "Скорость", def.spd, STAT_MAX.spd],
+                    ] as const
+                  ).map(([ic, lb, v, mx], i) => (
+                    <span key={lb} className="fr-row" style={{ ["--i" as string]: i, ["--v" as string]: `${Math.min(100, (v / mx) * 100)}%` } as CSSProperties}>
+                      <Ico name={ic} size={16} />
+                      <small>{lb}</small>
+                      <b>{v}</b>
+                      <i />
                     </span>
-                    <span className="cv-back-rank">{rank.name}</span>
-                    <b className="cv-bk-name">{def.name}</b>
-                    <small className="cv-bk-sub">{def.series}</small>
-                    <span className="cv-bk-med">
-                      <i className="cv-bk-ring" aria-hidden />
-                      <Radar d={def} />
-                      <span className="cv-bk-seal" aria-hidden>
-                        <RankMark rank={def.rank} />
-                      </span>
-                    </span>
-                    <span className="cv-bk-pow">
-                      <small>Боевая мощь</small>
-                      <b>{power}</b>
-                    </span>
-                    <span className="cv-bk-chips">
-                      <span>
-                        <Ico name={ELEMENT_ICON[def.element]} size={13} /> {ELEMENTS[def.element].name}
-                      </span>
-                      <span>{CLASSES[def.cls].name}</span>
-                    </span>
-                  </div>
+                  ))}
+                  <span className="fr-chip l">
+                    <Ico name={ELEMENT_ICON[def.element]} size={13} /> {ELEMENTS[def.element].name}
+                  </span>
+                  <span className="fr-chip r">{chance}% в паке</span>
                 </div>
               </div>
             </div>

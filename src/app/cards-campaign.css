@@ -2097,3 +2097,28 @@ html[data-eco="on"] .cv-face.back::after, html[data-eco="on"] .cv-bk-seal::befor
 @media (max-width: 860px) { .cv-duo { grid-template-columns: 140px minmax(0, 1fr); } .cv-facts { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 @media (max-width: 480px) { .cv-duo { grid-template-columns: minmax(0, 1fr); } .cv-radar { max-width: 220px; margin: 0 auto; width: 100%; } .cv-facts { grid-template-columns: minmax(0, 1fr); } }
 @media (prefers-reduced-motion: reduce) { .cv-hero-ring, .cv-bk-ring, .cvr-fill, .cv-pw-bar i { animation: none; } }
+
+/* ── Рубашка карты: ледяная рамка (окна под данные вырезаны в картинке) ── */
+.cv-face.back.fr { overflow: visible; background: none; box-shadow: none; border: 0; padding: 0; }
+.cv-face.back.fr::before, .cv-face.back.fr::after { display: none; }
+.fr-art { position: absolute; left: -15.8%; top: -8.65%; width: 131.2%; height: 117%; max-width: none; pointer-events: none; user-select: none; filter: drop-shadow(0 22px 28px rgba(0, 8, 40, .55)); }
+.cv[data-rank="common"] .fr-art { filter: grayscale(.85) brightness(.9) drop-shadow(0 22px 28px rgba(0, 8, 40, .55)); }
+.cv[data-rank="epic"] .fr-art { filter: hue-rotate(55deg) drop-shadow(0 22px 28px rgba(0, 8, 40, .55)); }
+.cv[data-rank="legendary"] .fr-art { filter: hue-rotate(-38deg) saturate(1.1) drop-shadow(0 22px 28px rgba(0, 8, 40, .55)); }
+.cv[data-rank="mythic"] .fr-art { filter: hue-rotate(125deg) saturate(1.15) drop-shadow(0 22px 28px rgba(0, 8, 40, .55)); }
+.fr-art ~ * { position: absolute; z-index: 1; box-sizing: border-box; margin: 0; }
+.fr-emb { left: 38.3%; top: 1.6%; width: 23.4%; aspect-ratio: 1; display: grid; place-items: center; border-radius: 50%; color: var(--c); background: radial-gradient(circle at 50% 35%, color-mix(in oklab, var(--c) 45%, #0a1a46), #050c26 75%); box-shadow: inset 0 0 14px color-mix(in oklab, var(--c) 45%, transparent); }
+.fr-emb .gc-mark { width: 52%; height: 52%; margin-top: -8%; filter: drop-shadow(0 0 6px var(--c)); }
+.fr-emb em { position: absolute; bottom: 12%; font: 800 3.2cqw/1 var(--cg-head); font-style: normal; color: #dff0ff; letter-spacing: .06em; }
+.fr-rank { left: 33%; width: 34%; top: 19.4%; height: 3.4%; display: grid; place-items: center; font: 800 3cqw/1 var(--cg-head); letter-spacing: .3em; text-indent: .3em; color: #cfe6ff; text-shadow: 0 0 10px color-mix(in oklab, var(--c) 70%, transparent); }
+.fr-name { left: 26%; width: 48%; top: 23.6%; height: 5.8%; display: grid; place-items: center; font: 800 clamp(12px, 5.4cqw, 24px)/1.05 var(--cg-head); letter-spacing: -.02em; color: #fff; text-align: center; text-shadow: 0 0 16px rgba(120, 190, 255, .55); overflow: hidden; }
+.fr-sub { left: 33%; width: 34%; top: 30.8%; height: 4%; display: grid; place-items: center; font: 600 3cqw/1 var(--font-body, inherit); color: #bcd7ff; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fr-row { left: 16.2%; width: 69%; height: 7.4%; display: grid; grid-template-columns: auto 1fr auto; align-items: center; column-gap: 2.6cqw; padding: 0 3.4cqw; top: calc(42.9% + var(--i) * 10.9%); color: #9fd0ff; }
+.fr-row small { font: 700 3.1cqw/1 var(--font-body, inherit); letter-spacing: .08em; text-transform: uppercase; color: #cfe3ff; }
+.fr-row b { font: 800 4.6cqw/1 var(--cg-head); color: #fff; }
+.fr-row i { grid-column: 1 / -1; position: relative; height: 3px; border-radius: 3px; background: rgba(150, 200, 255, .16); margin-top: -1.8cqw; }
+.fr-row i::after { content: ""; position: absolute; inset: 0 auto 0 0; width: var(--v); border-radius: 3px; background: linear-gradient(90deg, #5fb6ff, #b8e6ff); box-shadow: 0 0 8px #5fb6ff; animation: cv-bk-fill .9s var(--cg-ease) both; animation-delay: calc(var(--i) * .08s); }
+.fr-chip { top: 87.7%; height: 4.6%; display: inline-flex; align-items: center; justify-content: center; gap: 1.4cqw; font: 700 3.1cqw/1 var(--font-body, inherit); color: #d6ebff; white-space: nowrap; }
+.fr-chip.l { left: 15.6%; width: 28.4%; }
+.fr-chip.r { left: 47.5%; width: 38.2%; }
+@media (prefers-reduced-motion: reduce) { .fr-row i::after { animation: none; } }
