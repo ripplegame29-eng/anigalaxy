@@ -2274,3 +2274,14 @@ html[data-eco="on"] .cg .bt-go::after, html[data-eco="on"] .cg .bt-lg li.cur i {
 .cv-face.front .gc-frame { image-rendering: auto; filter: contrast(1.04) saturate(1.06); }
 @media (prefers-reduced-motion: reduce) { .cv-fshine, .cv-frun, .cv-fsp { animation: none; } .cv-fsp { opacity: .6; } }
 html[data-eco="on"] .cv-fshine, html[data-eco="on"] .cv-frun, html[data-eco="on"] .cv-fsp { animation: none; }
+
+/* ── Кнопки гачи: плотные «таблетки» с градиентом и мягким свечением (в нашем синем) ── */
+.cg :is(.cg-btn, .cg-bt .cg-btn, .pk-page .cg-btn) { border-radius: 999px; font-weight: 800; letter-spacing: .01em; color: #e3eeff; border: 1px solid rgba(135, 180, 255, .3); background: linear-gradient(180deg, rgba(110, 150, 255, .2), rgba(60, 90, 200, .14)); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .12), 0 6px 16px -10px rgba(0, 0, 0, .8); transition: transform .16s var(--cg-ease), filter .2s, box-shadow .2s, background .2s; }
+.cg :is(.cg-btn, .cg-bt .cg-btn, .pk-page .cg-btn):hover:not(:disabled) { transform: translateY(-1px); color: #fff; background: linear-gradient(180deg, rgba(130, 170, 255, .3), rgba(70, 105, 220, .22)); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .2), 0 10px 22px -10px rgba(70, 130, 255, .7); }
+.cg :is(.cg-btn, .cg-bt .cg-btn, .pk-page .cg-btn):active:not(:disabled) { transform: translateY(0) scale(.98); }
+.cg :is(.cg-btn.pri, .cg-btn.gold, .cg-bt .cg-btn.pri, .cg-bt .cg-btn.gold, .pk-page .cg-btn.pri, .pk-page .cg-btn.gold) { color: #fff; border: 0; padding-inline: 22px; text-shadow: 0 1px 0 rgba(10, 25, 90, .45); background: linear-gradient(180deg, #78b2ff 0%, #4a7dfb 52%, #3358e0 100%); box-shadow: 0 10px 24px -8px rgba(62, 120, 255, .85), inset 0 1px 0 rgba(255, 255, 255, .45), inset 0 -2px 0 rgba(20, 40, 140, .35); }
+.cg :is(.cg-btn.pri, .cg-btn.gold, .cg-bt .cg-btn.pri, .cg-bt .cg-btn.gold, .pk-page .cg-btn.pri, .pk-page .cg-btn.gold):hover:not(:disabled) { color: #fff; filter: brightness(1.09); background: linear-gradient(180deg, #8bbfff 0%, #5a8aff 52%, #3d63ea 100%); box-shadow: 0 14px 30px -8px rgba(80, 140, 255, 1), inset 0 1px 0 rgba(255, 255, 255, .55), inset 0 -2px 0 rgba(20, 40, 140, .35); }
+.cg :is(.cg-btn, .cg-bt .cg-btn, .pk-page .cg-btn):disabled { opacity: .45; filter: saturate(.5); box-shadow: none; }
+.cg .bt-go { border: 0; border-radius: 999px; background: linear-gradient(180deg, #78b2ff 0%, #4a7dfb 52%, #3358e0 100%); box-shadow: 0 14px 32px -10px rgba(62, 120, 255, .9), inset 0 1px 0 rgba(255, 255, 255, .45), inset 0 -3px 0 rgba(20, 40, 140, .35); padding-inline: 26px 14px; }
+.cg .bt-go em { border-radius: 999px; }
+.cg .bt-go:disabled { filter: saturate(.4) brightness(.75); }
