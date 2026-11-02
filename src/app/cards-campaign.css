@@ -554,7 +554,7 @@
 .cg .cg-bt .cg-h2 { font-family: "Playfair Display", Georgia, "Times New Roman", serif; font-size: 24px; font-weight: 800; letter-spacing: 0; background: linear-gradient(180deg, #fff, #d8e0f7 75%, #f3d48a); -webkit-background-clip: text; background-clip: text; color: transparent; }
 .cg .cg-bt .cg-btn { min-height: 44px; padding: 0 20px; border: 0; border-radius: 15px; font-weight: 800; color: #c9d4f0; background: rgba(8,12,30,.72); backdrop-filter: blur(14px); box-shadow: inset 0 0 0 1px rgba(233,199,121,.28), inset 0 1px 0 rgba(255,255,255,.1); transition: .25s; }
 .cg .cg-bt .cg-btn:hover:not(:disabled) { color: #fff; transform: translateY(-2px); box-shadow: inset 0 0 0 1px rgba(233,199,121,.7), 0 0 26px -8px #ffc45e, inset 0 1px 0 rgba(255,255,255,.18); }
-.cg .cg-bt .cg-btn.gold { color: #2a1a00; background: linear-gradient(180deg, #fff1c4, #e9b94d 60%, #c9922f); box-shadow: 0 10px 26px -10px rgba(255,180,60,.9), inset 0 1px 0 rgba(255,255,255,.6); }
+.cg .cg-bt .cg-btn.gold { color: #fff; background: linear-gradient(180deg, #78b2ff, #4a7dfb 52%, #3358e0); box-shadow: 0 10px 26px -10px rgba(62,120,255,.9), inset 0 1px 0 rgba(255,255,255,.6); }
 .cg .cg-bt .cg-btn.sm { min-height: 34px; padding: 0 14px; border-radius: 12px; font-size: 13px; }
 .cg .cg-bt .cg-btn:disabled { opacity: .5; filter: saturate(.55); cursor: default; }
 .cg .cg-bt .cg-chip { min-height: 38px; padding: 0 16px; border: 0; border-radius: 14px; background: rgba(8,12,30,.7); backdrop-filter: blur(12px); box-shadow: inset 0 0 0 1px rgba(233,199,121,.25); }
@@ -1164,8 +1164,8 @@
 /* вторичные кнопки: стекло с мягкой подсветкой */
 .cg .pk-page .cg-btn { min-height: 44px; padding: 0 20px; border-radius: 14px; border: 1px solid var(--pk-line); font-weight: 800; color: var(--cg-text); background: linear-gradient(180deg, rgba(40, 50, 104, .55), rgba(16, 20, 46, .8)); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .08), 0 10px 24px -16px rgba(0, 0, 0, .9); transition: transform .16s var(--cg-ease), box-shadow .2s, border-color .2s, filter .2s; }
 .cg .pk-page .cg-btn:hover:not(:disabled) { transform: translateY(-1px); border-color: rgba(190, 200, 255, .5); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .12), 0 14px 30px -14px rgba(59, 130, 255, .8); }
-.cg .pk-page .cg-btn.gold { color: #2a1802; border-color: rgba(255, 226, 150, .6); background: linear-gradient(180deg, #ffe39b, #e0a93c 58%, #b9812a); box-shadow: 0 12px 28px -12px rgba(224, 169, 60, .85), inset 0 1px 0 rgba(255, 255, 255, .55); }
-.cg .pk-page .cg-btn.gold:hover:not(:disabled) { box-shadow: 0 16px 34px -12px rgba(224, 169, 60, 1), inset 0 1px 0 rgba(255, 255, 255, .6); filter: brightness(1.06); }
+.cg .pk-page .cg-btn.gold { color: #fff; border-color: transparent; background: linear-gradient(180deg, #78b2ff, #4a7dfb 52%, #3358e0); box-shadow: 0 12px 28px -12px rgba(62, 120, 255, .85), inset 0 1px 0 rgba(255, 255, 255, .45); }
+.cg .pk-page .cg-btn.gold:hover:not(:disabled) { box-shadow: 0 16px 34px -12px rgba(80, 140, 255, 1), inset 0 1px 0 rgba(255, 255, 255, .6); filter: brightness(1.06); }
 
 /* выбор оплаты: стеклянный сегмент с градиентной активной кнопкой */
 .cg .pk-page .cg-seg { padding: 4px; gap: 4px; border-radius: 16px; border: 1px solid var(--pk-line); background: rgba(6, 8, 22, .6); box-shadow: inset 0 2px 8px rgba(0, 0, 0, .4); }
