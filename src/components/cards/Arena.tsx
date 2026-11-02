@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { BattleEvent, BattleOutcome, StatusKind, Unit } from "@/lib/cards/battle";
-import { setSound, sfx, useSoundOn } from "@/lib/cards/sound";
 import { ENERGY, passiveDef, skillDef, type SkillFx } from "@/lib/cards/skills";
 import type { Synergy } from "@/lib/cards/synergy";
 import { GameCard } from "./GameCard";
@@ -110,7 +109,6 @@ const ecoOn = (): boolean => {
 
 export function Arena({ report, onClose }: { report: BattleReport; onClose: () => void }) {
   const events = report.outcome.events;
-  const snd = useSoundOn();
   const all = [...report.you, ...report.foe];
   const info = useRef(new Map(all.map((u) => [u.key, u])));
   const [step, setStep] = useState(0);
@@ -244,7 +242,6 @@ export function Arena({ report, onClose }: { report: BattleReport; onClose: () =
         const ult = !!e.ult;
         const who = nameOf(e.from);
         const nm = sk?.name ?? e.skill;
-        sfx(ult ? "ult" : "cast");
         say(`${who} применяет ${ult ? "УЛЬТИМЕЙТ " : ""}«${nm}»`);
         const lite = calm.current || ecoOn();
         const casterCls = info.current.get(e.from)?.cls;
@@ -286,8 +283,6 @@ export function Arena({ report, onClose }: { report: BattleReport; onClose: () =
         addFloat(e.to, `−${e.dmg - e.absorbed > 0 ? e.dmg - e.absorbed : e.dmg}`, e.crit ? "crit" : "dmg");
         if (e.absorbed > 0) addFloat(e.to, `щит −${e.absorbed}`, "shield");
         shake(e.to, e.crit);
-        sfx(e.crit ? "crit" : "hit");
-        if (e.dead) window.setTimeout(() => sfx("ko"), 220);
         if (!e.skill) {
           act(e.from, "atk", 600);
           burst([e.to], "slash");
@@ -302,7 +297,6 @@ export function Arena({ report, onClose }: { report: BattleReport; onClose: () =
       case "heal":
         patch(e.to, (u) => ({ ...u, hp: e.hp }));
         addFloat(e.to, `+${e.amount}`, "heal");
-        sfx("heal");
         if (!e.skill) {
           act(e.from, "cast", 700);
           burst([e.to], "heal");
@@ -312,7 +306,6 @@ export function Arena({ report, onClose }: { report: BattleReport; onClose: () =
       case "shield":
         patch(e.to, (u) => ({ ...u, sh: e.amount, st: u.st.includes("shield") ? u.st : [...u.st, "shield"] }));
         addFloat(e.to, `щит ${e.amount}`, "shield");
-        sfx("shield");
         return 420;
       case "status":
         patch(e.to, (u) => ({ ...u, st: e.on ? (u.st.includes(e.kind) ? u.st : [...u.st, e.kind]) : u.st.filter((k) => k !== e.kind), sh: e.kind === "shield" && !e.on ? 0 : u.sh }));
@@ -353,15 +346,6 @@ export function Arena({ report, onClose }: { report: BattleReport; onClose: () =
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [step, done, speed]);
 
-  useEffect(() => {
-    if (!done) return;
-    const t = window.setTimeout(() => {
-      if (report.raid) sfx("star");
-      else sfx(report.win ? "win" : "lose");
-    }, 250);
-    return () => window.clearTimeout(t);
-  }, [done, report.win, report.raid]);
-
   const skip = () => {
     const final: Record<string, UV> = {};
     [...report.outcome.a, ...report.outcome.b].forEach((u) => (final[u.key] = { hp: u.hp, sh: 0, st: [], en: 0 }));
@@ -380,6 +364,12 @@ export function Arena({ report, onClose }: { report: BattleReport; onClose: () =
     setFx({});
     setRound(report.outcome.rounds);
     setStep(events.length);
+  };
+
+  const teamHp = (us: Unit[]) => us.reduce((a, u) => a + Math.max(0, uv[u.key]?.hp ?? 0), 0);
+  const teamPct = (us: Unit[]) => {
+    const mx = us.reduce((a, u) => a + u.maxHp, 0);
+    return mx ? Math.max(0, Math.min(100, (teamHp(us) / mx) * 100)) : 0;
   };
 
   const side = (units: Unit[], s: "a" | "b") => (
@@ -457,10 +447,6 @@ export function Arena({ report, onClose }: { report: BattleReport; onClose: () =
           <b className="ar-title">
             {report.title ?? `Вы vs ${report.foeName}`} <small>{report.title ? report.foeName : report.pvp ? "игрок" : "бот"}</small>
           </b>
-          <span className="cg-chip">Раунд {round}</span>
-          <button type="button" className="cg-btn sm" aria-pressed={snd} aria-label={snd ? "Выключить звук" : "Включить звук"} onClick={() => setSound(!snd)}>
-            <Ico name={snd ? "vol" : "volx"} size={15} />
-          </button>
           {!done && (
             <>
               <div className="cg-seg" role="group" aria-label="Скорость">
@@ -475,6 +461,27 @@ export function Arena({ report, onClose }: { report: BattleReport; onClose: () =
               </button>
             </>
           )}
+        </div>
+
+        <div className="ar-hud">
+          <div className="ar-team a">
+            <span className="ar-tn">Ваш отряд</span>
+            <span className="ar-tb">
+              <i style={{ width: `${teamPct(report.you)}%` }} />
+            </span>
+            <em>{teamHp(report.you)}</em>
+          </div>
+          <div className="ar-round">
+            <small>Раунд</small>
+            <b>{round}</b>
+          </div>
+          <div className="ar-team b">
+            <span className="ar-tn">{report.foeName}</span>
+            <span className="ar-tb">
+              <i style={{ width: `${teamPct(report.foe)}%` }} />
+            </span>
+            <em>{teamHp(report.foe)}</em>
+          </div>
         </div>
 
         {((report.youSyn?.length ?? 0) > 0 || (report.foeSyn?.length ?? 0) > 0) && (
@@ -497,7 +504,10 @@ export function Arena({ report, onClose }: { report: BattleReport; onClose: () =
                 {banner.tg && <em className="ar-b-tg">{banner.tg}</em>}
               </div>
             ) : (
-              <div className="ar-vs">VS</div>
+              <div className="ar-vs" aria-hidden>
+                <Ico name="swords" size={30} />
+                <b>VS</b>
+              </div>
             )}
           </div>
           {side(report.foe, "b")}
