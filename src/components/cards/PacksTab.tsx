@@ -511,7 +511,7 @@ export function PacksTab({ s }: { s: CardsState }) {
 
       <section className="pk-sec" aria-labelledby="pk-ban-t">
         <h2 className="pk-h" id="pk-ban-t">
-          <Ico name="star" size={22} /> Баннер недели
+          <Ico name="star" size={22} /> Карта недели
         </h2>
         <BannerCard s={s} />
       </section>

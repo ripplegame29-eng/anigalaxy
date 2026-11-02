@@ -14,7 +14,7 @@ interface PackResult {
   dustBack: number;
 }
 
-/** Баннер недели: герой недели с повышенным шансом и гарантией */
+/** Карта недели: герой недели с повышенным шансом и гарантией */
 export function BannerCard({ s }: { s: CardsState }) {
   const b = s.events.banner;
   const def = cardDef(b.featured);
@@ -42,7 +42,7 @@ export function BannerCard({ s }: { s: CardsState }) {
     </span>
   );
   return (
-    <section className="bn" aria-label="Баннер недели" style={{ ["--c" as string]: RANKS[def.rank].color }}>
+    <section className="bn" aria-label="Карта недели" style={{ ["--c" as string]: RANKS[def.rank].color }}>
       <div className="bn-art">
         <i className="bn-aura" aria-hidden />
         <GameCard cardId={def.id} stats={false} live />
@@ -50,7 +50,7 @@ export function BannerCard({ s }: { s: CardsState }) {
       <div className="bn-body">
         <div className="bn-top">
           <span className="bn-tag">
-            <Ico name="star" size={14} /> Баннер недели
+            <Ico name="star" size={14} /> Карта недели
           </span>
           <span className="bn-time">{fmtLeft(b.endsAt - now)}</span>
         </div>
@@ -90,7 +90,7 @@ export function BannerCard({ s }: { s: CardsState }) {
           </button>
         </div>
       </div>
-      {shown.length > 0 && <Reveal cards={shown} title="Баннер недели" onClose={() => setShown([])} />}
+      {shown.length > 0 && <Reveal cards={shown} title="Карта недели" onClose={() => setShown([])} />}
     </section>
   );
 }
