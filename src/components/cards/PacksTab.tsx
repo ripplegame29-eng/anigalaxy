@@ -41,6 +41,8 @@ const wait = (ms: number) => new Promise<void>((r) => window.setTimeout(r, ms));
 const PAY_CUR: Record<Pay, CurKey> = { token: "packs", diamonds: "diamonds", dust: "dust" };
 
 /** Цвета рамок наборов: синий, фиолетовый, золотой */
+/** Упаковка набора для сцены: у одиночного пака своя анимация открытия, у наборов — общий арт */
+const BUNDLE_ART: ({ src: string; ar: number } | undefined)[] = [undefined, { src: "/cards/offers/2.webp", ar: 880 / 598 }, { src: "/cards/offers/3.webp", ar: 880 / 738 }];
 const OFFER_COLOR = ["#3aa0ff", "#b46bff", "#4fe3ff"];
 
 function Thumb({ cardId, rank, name }: { cardId: string; rank: number; name: string }) {
@@ -359,7 +361,7 @@ export function PacksTab({ s }: { s: CardsState }) {
                   </div>
                 </div>
               ) : (
-                <PackStage phase={phase} blocked={!!reason && !loading} stack={bundle.n === 1 ? 0 : bundle.n <= 6 ? 2 : 4} onOpen={() => void open(bundle.n)} />
+                <PackStage phase={phase} blocked={!!reason && !loading} art={BUNDLE_ART[sel]} onOpen={() => void open(bundle.n)} />
               )}
             </div>
 

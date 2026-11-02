@@ -30,33 +30,25 @@ const STARS = [
   { x: 92, y: 4, d: 0.4 },
 ];
 
-/** Позиции «стопки» за главным паком: чем больше набор, тем шире веер */
-const ghostStyle = (k: number): CSSProperties => {
-  const side = k % 2 ? -1 : 1;
-  const lvl = Math.ceil(k / 2);
-  return {
-    ["--gx" as string]: `${side * lvl * 24}%`,
-    ["--gy" as string]: `${lvl * 3.5}%`,
-    ["--gr" as string]: `${side * lvl * 7}deg`,
-    ["--gs" as string]: `${1 - lvl * 0.06}`,
-    ["--gb" as string]: `${0.82 - lvl * 0.1}`,
-    ["--gd" as string]: `${-k * 0.7}s`,
-  };
-};
+/** Арт набора вместо одиночного пака: картинка и её пропорции (ширина / высота) */
+export interface BundleArt {
+  src: string;
+  ar: number;
+}
 
 export function PackStage({
   phase,
   blocked,
   dim,
-  stack = 0,
+  art,
   onOpen,
   children,
 }: {
   phase: PackPhase;
   blocked?: boolean;
   dim?: boolean;
-  /** Сколько паков-«призраков» показать за главным (0, 2, 4) — наглядно показывает размер набора */
-  stack?: number;
+  /** Упаковка набора (веер, стопка): показывается вместо одиночного пака */
+  art?: BundleArt;
   onOpen: () => void;
   children?: ReactNode;
 }) {
@@ -86,7 +78,11 @@ export function PackStage({
           <i key={i} style={{ left: `${p.x}%`, width: p.s, height: p.s, animationDelay: `${p.d}s`, animationDuration: `${p.t}s` }} />
         ))}
       </div>
-      <div className="pk-wrap" ref={ref}>
+      <div
+        className={`pk-wrap${art ? " bundle" : ""}`}
+        ref={ref}
+        style={art ? ({ ["--pk-mask" as string]: `url(${art.src})`, aspectRatio: String(art.ar) } as CSSProperties) : undefined}
+      >
         <div className="pk-beam" aria-hidden />
         <div className="pk-halo" aria-hidden />
         <div className="pk-orbit o1" aria-hidden>
@@ -96,11 +92,14 @@ export function PackStage({
           <i />
         </div>
         <div className="pk-pad" aria-hidden />
-        {Array.from({ length: stack }, (_, k) => (
-          <img key={k} className="pk-ghost" src="/cards/pack.webp" alt="" draggable={false} style={ghostStyle(k + 1)} />
-        ))}
         <button type="button" className="pk" onClick={onOpen} onPointerMove={move} onPointerLeave={leave} disabled={phase !== "idle"} aria-label="Открыть пак">
-          <PackArt />
+          {art ? (
+            <div className="pk-art" role="img" aria-label="Набор паков AniGalaxy">
+              <img className="pk-img pk-bundle" src={art.src} alt="" draggable={false} />
+            </div>
+          ) : (
+            <PackArt />
+          )}
           <span className="pk-glint" aria-hidden />
           <span className="pk-holo" aria-hidden />
           <span className="pk-sheen" aria-hidden />
