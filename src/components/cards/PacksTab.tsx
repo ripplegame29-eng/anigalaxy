@@ -41,7 +41,7 @@ const wait = (ms: number) => new Promise<void>((r) => window.setTimeout(r, ms));
 const PAY_CUR: Record<Pay, CurKey> = { token: "packs", diamonds: "diamonds", dust: "dust" };
 
 /** Цвета рамок наборов: синий, фиолетовый, золотой */
-const OFFER_COLOR = ["#3aa0ff", "#b46bff", "#ffc45e"];
+const OFFER_COLOR = ["#3aa0ff", "#b46bff", "#4fe3ff"];
 
 function Thumb({ cardId, rank, name }: { cardId: string; rank: number; name: string }) {
   const initials = name
@@ -307,7 +307,16 @@ export function PacksTab({ s }: { s: CardsState }) {
                   onClick={() => setSel(i)}
                 >
                   {i === bundles.length - 1 ? <span className="st-rib best">Лучшая выгода</span> : i === 1 ? <span className="st-rib">Популярный</span> : null}
-                  <img src={`/cards/offers/${Math.min(i, 2) + 1}.webp`} alt="" draggable={false} loading="lazy" />
+                  <span className="st-art" aria-hidden>
+                    <i className="st-beam" />
+                    <i className="st-pad" />
+                    <img src={`/cards/offers/${Math.min(i, 2) + 1}.webp`} alt="" draggable={false} loading="lazy" />
+                    {gift > 0 && (
+                      <span className="st-gift">
+                        <Ico name="gift" size={13} />+{gift}
+                      </span>
+                    )}
+                  </span>
                   <b className="st-n">
                     ×{b.n} <small>{packWord(b.n)}</small>
                   </b>

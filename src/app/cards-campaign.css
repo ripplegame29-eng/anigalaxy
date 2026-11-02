@@ -1610,9 +1610,7 @@
 .cg .st-tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
 .cg .st-tile { position: relative; display: grid; align-content: start; justify-items: center; gap: 4px; padding: 20px 14px 16px; text-align: center; color: inherit; cursor: pointer; border-radius: 18px; border: 1px solid rgba(255, 255, 255, .08); background: linear-gradient(180deg, rgba(255, 255, 255, .045), rgba(255, 255, 255, .015)); transition: transform .22s var(--cg-ease), border-color .2s, box-shadow .2s, background .2s; }
 .cg .st-tile::before { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: 0; transition: opacity .25s; background: radial-gradient(70% 60% at 50% 30%, color-mix(in oklab, var(--oc) 30%, transparent), transparent 75%); }
-.cg .st-tile > img { position: relative; width: 100%; height: 170px; object-fit: contain; filter: drop-shadow(0 12px 18px rgba(0, 0, 0, .55)) drop-shadow(0 0 18px color-mix(in oklab, var(--oc) 40%, transparent)); transition: transform .3s var(--cg-ease); }
 .cg .st-tile:hover:not(:disabled) { transform: translateY(-3px); border-color: color-mix(in oklab, var(--oc) 55%, transparent); }
-.cg .st-tile:hover:not(:disabled) > img { transform: translateY(-4px) scale(1.04); }
 .cg .st-tile[aria-pressed="true"] { border-color: color-mix(in oklab, var(--oc) 75%, transparent); box-shadow: 0 22px 44px -22px var(--oc), 0 0 0 1px color-mix(in oklab, var(--oc) 40%, transparent), inset 0 1px 0 rgba(255, 255, 255, .12); }
 .cg .st-tile[aria-pressed="true"]::before { opacity: 1; }
 .cg .st-tile:disabled { cursor: default; opacity: .65; }
@@ -1623,7 +1621,7 @@
 .cg .st-meta em { font-style: normal; font-weight: 800; color: var(--cg-ok); }
 .cg .st-lack { position: relative; font-size: 11.5px; color: var(--cg-bad); }
 .cg .st-rib { position: absolute; top: 10px; left: 10px; padding: 3px 9px; border-radius: 99px; font-size: 10.5px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: #cfe0ff; background: rgba(59, 130, 255, .22); border: 1px solid rgba(120, 170, 255, .4); }
-.cg .st-rib.best { color: #2a1c00; background: linear-gradient(135deg, #ffd98a, #ffb23e); border-color: transparent; }
+.cg .st-rib.best { color: #fff; background: linear-gradient(135deg, #873fff, #3b82ff); border-color: rgba(190, 200, 255, .45); box-shadow: 0 8px 20px -8px rgba(80, 120, 255, .9); }
 
 .cg .st-dock { position: relative; display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: 24px; align-items: center; padding: 26px; border-radius: 20px; border: 1px solid rgba(255, 255, 255, .08); background: radial-gradient(56% 70% at 24% 45%, color-mix(in oklab, var(--oc) 30%, transparent), transparent 72%), rgba(255, 255, 255, .02); transition: background .4s; }
 .cg .st-dock[data-pick] { grid-template-columns: minmax(0, 1fr); }
@@ -1664,14 +1662,13 @@
   .cg .st-wal em { grid-column: 1; text-align: center; }
   .cg .st-buy .cg-cta { white-space: nowrap; }
   .cg .st-tiles { grid-template-columns: minmax(0, 1fr); gap: 10px; }
-  .cg .st-tile { grid-template-columns: 96px minmax(0, 1fr); justify-items: start; text-align: left; gap: 2px 14px; padding: 12px 14px; }
-  .cg .st-tile > img { grid-row: 1 / span 4; width: 96px; height: 96px; }
-  .cg .st-rib { top: -9px; left: auto; right: 12px; }
+  .cg .st-tile { grid-template-columns: 104px minmax(0, 1fr); justify-items: start; text-align: left; gap: 2px 14px; padding: 12px 14px; }
+    .cg .st-rib { top: -9px; left: auto; right: 12px; }
   .cg .st-meta { min-height: 0; }
   .cg .st-buy { position: sticky; bottom: 10px; z-index: 3; justify-items: stretch; width: 100%; padding: 8px; border-radius: 16px; background: rgba(11, 10, 16, .88); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, .08); }
   .cg .st-buy .cg-cta { width: 100%; justify-content: center; }
 }
-@media (prefers-reduced-motion: reduce) { .cg .st-tile, .cg .st-tile > img { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .cg .st-tile { transition: none; } .cg .st-art img, .cg .st-gift, .cg .st-art::before, .cg .st-art::after { animation: none !important; } }
 
 /* ============================ Баннер недели ============================ */
 .cg .bn { --gold: #ffcf6e; position: relative; isolation: isolate; display: grid; grid-template-columns: minmax(180px, 230px) minmax(0, 1fr); gap: 34px; align-items: center; padding: 28px 34px 28px 28px; border-radius: 22px; overflow: hidden; border: 1px solid color-mix(in oklab, var(--c) 38%, rgba(255, 255, 255, .08)); background: radial-gradient(55% 120% at 8% 50%, color-mix(in oklab, var(--c) 24%, transparent), transparent 70%), radial-gradient(40% 80% at 100% 0%, rgba(59, 130, 255, .16), transparent 70%), linear-gradient(180deg, #17131f, #0e0c14); box-shadow: 0 34px 80px -46px rgba(0, 0, 0, .95), inset 0 1px 0 rgba(255, 255, 255, .07); }
@@ -1714,3 +1711,29 @@
   .cg .bn-b { padding-left: 16px; }
 }
 @media (prefers-reduced-motion: reduce) { .cg .bn-aura { animation: none; } .cg .bn-art .gc, .cg .bn-b { transition: none; } }
+
+/* витрина набора: прожектор, светящаяся площадка, плавающий арт и значок подарка */
+.cg .st-art { position: relative; isolation: isolate; display: grid; place-items: center; width: 100%; height: 180px; }
+.cg .st-art img { position: relative; z-index: 1; width: 100%; height: 150px; margin-bottom: 14px; object-fit: contain; filter: drop-shadow(0 14px 16px rgba(0, 0, 0, .55)) drop-shadow(0 0 20px color-mix(in oklab, var(--oc) 40%, transparent)); transition: transform .3s var(--cg-ease); }
+.cg .st-beam { position: absolute; z-index: 0; top: -22px; left: 50%; width: 78%; height: 88%; translate: -50% 0; clip-path: polygon(40% 0, 60% 0, 100% 100%, 0 100%); background: linear-gradient(180deg, color-mix(in oklab, var(--oc) 55%, #fff) 0%, color-mix(in oklab, var(--oc) 22%, transparent) 45%, transparent 100%); opacity: .22; filter: blur(5px); transition: opacity .3s; }
+.cg .st-pad { position: absolute; z-index: 0; left: 50%; bottom: 4px; width: 86%; height: 26px; translate: -50% 0; border-radius: 50%; border: 1px solid color-mix(in oklab, var(--oc) 70%, #fff 10%); background: radial-gradient(closest-side, color-mix(in oklab, var(--oc) 55%, transparent), transparent 85%); box-shadow: 0 0 22px color-mix(in oklab, var(--oc) 60%, transparent), inset 0 0 14px color-mix(in oklab, var(--oc) 50%, transparent); opacity: .75; }
+.cg .st-pad::after { content: ""; position: absolute; inset: -7px -14px; border-radius: 50%; border: 1px dashed color-mix(in oklab, var(--oc) 55%, transparent); opacity: .6; }
+.cg .st-art::before, .cg .st-art::after { content: ""; position: absolute; z-index: 2; width: 5px; height: 5px; border-radius: 50%; background: #fff; box-shadow: 0 0 10px 2px var(--oc); opacity: 0; }
+.cg .st-art::before { left: 18%; top: 28%; }
+.cg .st-art::after { right: 16%; top: 46%; }
+.cg .st-gift { position: absolute; z-index: 3; top: 6px; right: 4%; display: inline-flex; align-items: center; gap: 4px; padding: 4px 9px 4px 7px; border-radius: 99px; font: 800 12.5px/1 var(--cg-head); color: #fff; background: linear-gradient(135deg, #873fff, #a56aff); box-shadow: 0 8px 20px -6px rgba(135, 63, 255, .9), inset 0 1px 0 rgba(255, 255, 255, .4); animation: st-bob 3.2s ease-in-out infinite; }
+.cg .st-tile:hover:not(:disabled) .st-art img { transform: translateY(-5px) scale(1.04); }
+.cg .st-tile:hover:not(:disabled) .st-beam, .cg .st-tile[aria-pressed="true"] .st-beam { opacity: .5; }
+.cg .st-tile[aria-pressed="true"] .st-pad { opacity: 1; }
+.cg .st-tile[aria-pressed="true"] .st-art img { animation: st-float 4.2s ease-in-out infinite; }
+.cg .st-tile[aria-pressed="true"] .st-art::before { animation: st-spark 2.8s ease-in-out infinite; }
+.cg .st-tile[aria-pressed="true"] .st-art::after { animation: st-spark 2.8s ease-in-out 1.2s infinite; }
+@keyframes st-float { 50% { transform: translateY(-7px); } }
+@keyframes st-bob { 50% { transform: translateY(-4px) rotate(3deg); } }
+@keyframes st-spark { 0%, 100% { opacity: 0; transform: scale(.4); } 50% { opacity: 1; transform: scale(1); } }
+@media (max-width: 720px) {
+  .cg .st-art { grid-row: 1 / span 4; width: 104px; height: 112px; }
+  .cg .st-art img { height: 84px; margin-bottom: 10px; }
+  .cg .st-pad { height: 16px; bottom: 6px; }
+  .cg .st-gift { top: 0; right: -4px; }
+}
