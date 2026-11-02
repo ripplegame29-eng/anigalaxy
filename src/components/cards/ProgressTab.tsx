@@ -40,9 +40,57 @@ export function ProgressTab({ s }: { s: CardsState }) {
   const readyAch = p.achievements.filter((a) => a.done > a.claimed).length;
   const left = p.weekEndsAt - now;
   const cycle = p.streak.claimedToday ? ((p.streak.n - 1) % 7) + 1 : p.streak.n % 7;
+  const tiersAll = ACHIEVEMENTS.reduce((a, d) => a + d.tiers.length, 0);
+  const tiersGot = p.achievements.reduce((a, v) => a + v.claimed, 0);
+  const tiersPct = tiersAll ? Math.round((tiersGot / tiersAll) * 100) : 0;
+  const readyWeekly = p.weekly.filter((m) => !m.claimed && m.progress >= m.goal).length;
+  const readyMs = p.streak.milestones.filter((m) => !m.claimed && p.streak.n >= m.day).length;
+  const readyAll = readyAch + readyWeekly + readyMs;
+  const setsFull = p.sets.filter((x) => x.owned >= x.size).length;
 
   return (
     <div className="cg-bt cg-pg" style={{ display: "grid", gap: 16 }}>
+      <section className="pgh" aria-label="Сводка прогресса">
+        <i className="pgh-glow" aria-hidden />
+        <div className="pgh-main">
+          <span className="cg-eyebrow">Путь коллекционера</span>
+          <h3>Ваш прогресс</h3>
+          <p>Серия входов, недельные задания, достижения и наборы по аниме. Всё, что вы делаете в игре, копится здесь и превращается в награды.</p>
+          <div className="pgh-badges">
+            <span className={readyAll > 0 ? "hot" : ""}>
+              <Ico name="gift" size={15} /> {readyAll > 0 ? `Наград к получению: ${readyAll}` : "Все награды получены"}
+            </span>
+            <span>
+              <Ico name="fire" size={15} /> Серия {p.streak.n} дн.
+            </span>
+            <span>
+              <Ico name="clock" size={15} /> Недельные задания сбросятся через {fmtLeft(left)}
+            </span>
+          </div>
+        </div>
+        <div className="pgh-ring" style={{ ["--p" as string]: tiersPct }} role="img" aria-label={`Достижения: ${tiersGot} из ${tiersAll} ступеней`}>
+          <b>{tiersPct}%</b>
+          <small>достижений</small>
+        </div>
+        <ul className="pgh-kpi">
+          {(
+            [
+              ["grid", fmt(new Set(inv.map((c) => c.cardId)).size), "героев собрано"],
+              ["trophy", `${tiersGot}/${tiersAll}`, "ступеней достижений"],
+              ["book", `${setsFull}/${p.sets.length}`, "наборов по аниме"],
+              ["pack", fmt(p.stats.packs ?? 0), "паков открыто"],
+            ] as [IcoName, string, string][]
+          ).map(([ic, v, k]) => (
+            <li key={k}>
+              <Ico name={ic} size={18} />
+              <span>
+                <b>{v}</b>
+                <small>{k}</small>
+              </span>
+            </li>
+          ))}
+        </ul>
+      </section>
       <div className="cg-grid2">
         <div style={{ display: "grid", gap: 16, alignContent: "start" }}>
         <Panel
@@ -68,7 +116,7 @@ export function ProgressTab({ s }: { s: CardsState }) {
                     </span>
                   )}
                   <span className="pg-dico" aria-hidden>
-                    <Ico name="gift" size={20} />
+                    <Ico name={day === 7 ? "crown" : "gift"} size={day === 7 ? 24 : 20} />
                   </span>
                   <small>{done ? "Получено" : today ? "Сегодня" : `День ${day}`}</small>
                 </div>
@@ -87,15 +135,20 @@ export function ProgressTab({ s }: { s: CardsState }) {
 
         <Panel title="Статистика">
           <div className="pg-stats">
-            {[
-              ["Героев в коллекции", `${new Set(inv.map((c) => c.cardId)).size}`],
-              ["Побед в боях", fmt(s.wallet.wins)],
-              ["Лучшая серия побед", fmt(p.stats.streak ?? 0)],
-              ["Открыто паков", fmt(p.stats.packs ?? 0)],
-              ["Заточек", fmt(p.stats.sharpen ?? 0)],
-              ["Уровней умений", fmt(p.stats.skillUps ?? 0)],
-            ].map(([k, v]) => (
+            {(
+              [
+                ["grid", "Героев в коллекции", `${new Set(inv.map((c) => c.cardId)).size}`],
+                ["swords", "Побед в боях", fmt(s.wallet.wins)],
+                ["trend", "Лучшая серия побед", fmt(p.stats.streak ?? 0)],
+                ["pack", "Открыто паков", fmt(p.stats.packs ?? 0)],
+                ["anvil", "Заточек", fmt(p.stats.sharpen ?? 0)],
+                ["bolt", "Уровней умений", fmt(p.stats.skillUps ?? 0)],
+              ] as [IcoName, string, string][]
+            ).map(([ic, k, v]) => (
               <div key={k} className="pg-stat">
+                <span className="pg-stat-i" aria-hidden>
+                  <Ico name={ic} size={18} />
+                </span>
                 <b>{v}</b>
                 <small>{k}</small>
               </div>
@@ -105,24 +158,34 @@ export function ProgressTab({ s }: { s: CardsState }) {
         </div>
 
         <Panel title="Недельные задания" right={<span className="cg-chip">Сброс через {fmtLeft(left)}</span>}>
-          <ul className="cg-list">
-            {p.weekly.map((m) => (
-              <li key={m.id}>
-                <span className="pg-wk">
-                  <span>
-                    {m.text} · {fmt(m.progress)}/{fmt(m.goal)}
+          <div className="pg-wq-list">
+            {p.weekly.map((m) => {
+              const ready = !m.claimed && m.progress >= m.goal;
+              const pct = Math.min(100, Math.round((m.progress / m.goal) * 100));
+              return (
+                <article key={m.id} className={`pg-wq${ready ? " ready" : ""}${m.claimed ? " claimed" : ""}`}>
+                  <span className="pg-wq-i" aria-hidden>
+                    <Ico name={m.claimed ? "check" : "target"} size={20} />
                   </span>
-                  <i className="pg-bar">
-                    <b style={{ width: `${(m.progress / m.goal) * 100}%` }} />
-                  </i>
-                  {rewardChips(m.reward)}
-                </span>
-                <button type="button" className="cg-btn sm pri" disabled={busy || m.claimed || m.progress < m.goal} onClick={() => void claim("weekly-claim", { id: m.id }, "Награда получена")}>
-                  {m.claimed ? "Получено" : "Забрать"}
-                </button>
-              </li>
-            ))}
-          </ul>
+                  <div className="pg-wq-t">
+                    <b>{m.text}</b>
+                    <i className="pg-bar">
+                      <b style={{ width: `${pct}%` }} />
+                    </i>
+                    <span className="pg-wq-f">
+                      <span>
+                        {fmt(m.progress)} / {fmt(m.goal)} · {pct}%
+                      </span>
+                      {rewardChips(m.reward)}
+                    </span>
+                  </div>
+                  <button type="button" className="cg-btn sm pri" disabled={busy || m.claimed || m.progress < m.goal} onClick={() => void claim("weekly-claim", { id: m.id }, "Награда получена")}>
+                    {m.claimed ? "Получено" : "Забрать"}
+                  </button>
+                </article>
+              );
+            })}
+          </div>
         </Panel>
       </div>
 
@@ -142,8 +205,10 @@ export function ProgressTab({ s }: { s: CardsState }) {
                 <GameCard cardId={showcase[i].cardId} foil={showcase[i].foil} level={showcase[i].level} live />
               </button>
             ) : (
-              <button key={i} type="button" className="cg-slot" onClick={() => setPicking(true)} style={{ cursor: "pointer" }}>
-                + Карта
+              <button key={i} type="button" className="cg-slot pg-slot" onClick={() => setPicking(true)} style={{ cursor: "pointer" }}>
+                <em>{i + 1}</em>
+                <Ico name="plus" size={20} />
+                <span>Добавить карту</span>
               </button>
             ),
           )}
@@ -171,7 +236,12 @@ export function ProgressTab({ s }: { s: CardsState }) {
                   <Ico name={a.icon as IcoName} size={22} />
                 </span>
                 <div className="pg-a-txt">
-                  <b>{a.name}</b>
+                  <b>
+                    {a.name}
+                    <em>
+                      {v.claimed}/{a.tiers.length}
+                    </em>
+                  </b>
                   <small>{a.desc}</small>
                   <i className="pg-bar">
                     <b style={{ width: `${pct}%` }} />
@@ -203,6 +273,7 @@ export function ProgressTab({ s }: { s: CardsState }) {
                 <b>{st.series}</b>
                 <span>
                   {st.owned}/{st.size}
+                  <em>{Math.round((st.owned / st.size) * 100)}%</em>
                 </span>
               </header>
               <i className="pg-bar">
