@@ -1987,3 +1987,37 @@ html[data-eco="on"] .cv-face.back::after, html[data-eco="on"] .cv-bk-seal::befor
 .cv-face.back { border: 0; background: radial-gradient(80% 45% at 50% 0, color-mix(in oklab, var(--c) 26%, transparent), transparent 70%), repeating-linear-gradient(45deg, rgba(255, 255, 255, .02) 0 2px, transparent 2px 9px), linear-gradient(180deg, #120f22, #07060f); box-shadow: 0 30px 50px -20px rgba(0, 0, 0, .7), inset 0 0 0 1px color-mix(in oklab, var(--c) 28%, transparent); }
 .cv-tools button:focus-visible, .cv-nav button:focus-visible { outline: none; box-shadow: 0 0 0 2px rgba(59, 130, 255, .55); }
 @media (max-width: 760px) { .cg .pgh-slim { padding: 20px 18px; } }
+
+/* оборот карты: компактная раскладка, всё помещается в рамку 5:7 */
+.cv-face.back { display: block; padding: 0; }
+.cv-bk-in { box-sizing: border-box; display: grid; align-content: start; justify-items: center; gap: 1.5cqw; height: 100%; padding: 7% 7% 6%; text-align: center; }
+.cv-bk-in > ul { width: 100%; margin: 0; padding: 0; list-style: none; }
+.cv-bk-seal { width: 14cqw; height: 14cqw; margin-bottom: 1cqw; }
+.cv-bk-seal .gc-mark { width: 6.4cqw; height: 6.4cqw; margin-top: -.6cqw; }
+.cv-bk-seal em { bottom: 1.6cqw; font-size: 2.8cqw; }
+.cv-bk-seal::before { inset: -1.6cqw; }
+.cv-face.back .cv-back-rank { font-size: 2.8cqw; letter-spacing: .26em; }
+.cv-face.back > b.cv-bk-name { font-size: clamp(15px, 6.2cqw, 26px); line-height: 1.12; }
+.cv-bk-sub { font-size: 3cqw; }
+.cv-bk-div { margin: .6cqw 0; }
+.cv-face.back ul { gap: 1.6cqw; }
+.cv-face.back li { gap: 2cqw; padding: 1.8cqw 3cqw 3.2cqw; border-radius: 2.4cqw; font-size: 3.1cqw; }
+.cv-face.back li .ico { width: 3.8cqw; height: 3.8cqw; }
+.cv-face.back li b { font-size: 3.8cqw; }
+.cv-face.back li > i { left: 3cqw; right: 3cqw; bottom: 1.1cqw; height: 2px; }
+.cv-bk-chips { gap: 1.6cqw; margin-top: .6cqw; }
+.cv-bk-chips span { padding: 1.1cqw 2.4cqw; font-size: 2.8cqw; gap: 1.2cqw; }
+.cv-face.back p { margin: 0; font-size: 2.9cqw; line-height: 1.45; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.cv-bk-c { width: 5.5cqw; height: 5.5cqw; }
+.cv-bk-in { align-content: center; gap: 2.6cqw; }
+.cv-bk-seal { width: 17cqw; height: 17cqw; }
+.cv-bk-seal .gc-mark { width: 7.6cqw; height: 7.6cqw; }
+.cv-bk-seal em { font-size: 3.2cqw; bottom: 2cqw; }
+.cv-face.back > b.cv-bk-name { font-size: clamp(16px, 7cqw, 28px); }
+.cv-bk-sub { font-size: 3.3cqw; }
+.cv-face.back li { padding: 2.4cqw 3.4cqw 3.8cqw; font-size: 3.4cqw; }
+.cv-face.back li b { font-size: 4.2cqw; }
+.cv-face.back li .ico { width: 4.4cqw; height: 4.4cqw; }
+.cv-bk-chips span { font-size: 3cqw; padding: 1.4cqw 3cqw; }
+.cv-face.back p { font-size: 3.2cqw; }
+.cv-bk-in > ul { display: grid; gap: 2cqw; }
