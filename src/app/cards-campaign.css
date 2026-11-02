@@ -2367,3 +2367,8 @@ html[data-eco="on"] .cv-fglow, html[data-eco="on"] .cv-fglint { animation: none;
 .ar-result .cg-hint { font-size: 14px; color: #bcd0f5; }
 @media (max-width: 860px) { .ar-hud { grid-template-columns: 1fr 1fr; } .ar-round { grid-column: 1 / -1; grid-row: 1; justify-self: center; } .ar-vs { width: 68px; height: 68px; } .ar-vs .ico { width: 22px; height: 22px; } }
 @media (prefers-reduced-motion: reduce) { .ar-vs { animation: none; } }
+
+/* Эмблемы лиг: без цветного мерцания */
+.cg .bt-lg li.cur img { animation: none; filter: drop-shadow(0 6px 10px rgba(0, 0, 20, .55)); }
+.cg .bt-lg li.done img { filter: drop-shadow(0 6px 10px rgba(0, 0, 20, .45)); }
+.cg .bt-lg li.cur i, .cg .bt-lg li i { animation: none; }
