@@ -568,17 +568,37 @@ export function Arena({ report, onClose }: { report: BattleReport; onClose: () =
             {report.training ? (
               <p className="cg-hint">Тренировка: награды не меняются.</p>
             ) : report.campaign ? (
-              <p className="cg-hint">
-                {report.campaign.newStars > 0 ? `Новых звёзд: ${report.campaign.newStars}` : "Новых звёзд нет"}
-                {report.campaign.reward.diamonds ? <> · {report.campaign.reward.diamonds} <Cur k="diamonds" /></> : null}
-                {report.campaign.reward.dust ? <> · {report.campaign.reward.dust} <Cur k="dust" /></> : null}
-              </p>
+              <div className="ar-rew">
+                <span className="ar-rw">{report.campaign.newStars > 0 ? `Новых звёзд: ${report.campaign.newStars}` : "Новых звёзд нет"}</span>
+                {report.campaign.reward.diamonds ? (
+                  <span className="ar-rw">
+                    <Cur k="diamonds" /> {report.campaign.reward.diamonds}
+                  </span>
+                ) : null}
+                {report.campaign.reward.dust ? (
+                  <span className="ar-rw">
+                    <Cur k="dust" /> {report.campaign.reward.dust}
+                  </span>
+                ) : null}
+              </div>
             ) : report.raid ? null : (
-              <p className="cg-hint">
-                {report.reward.diamonds} <Cur k="diamonds" /> · {report.reward.dust} <Cur k="dust" />
-                {report.reward.scroll ? " · свиток заточки" : ""} · рейтинг {report.reward.rating > 0 ? "+" : ""}
-                {report.reward.rating}
-              </p>
+              <div className="ar-rew">
+                <span className="ar-rw">
+                  <Cur k="diamonds" /> {report.reward.diamonds}
+                </span>
+                <span className="ar-rw">
+                  <Cur k="dust" /> {report.reward.dust}
+                </span>
+                {report.reward.scroll ? (
+                  <span className="ar-rw">
+                    <Ico name="scroll" size={15} /> свиток заточки
+                  </span>
+                ) : null}
+                <span className={`ar-rw rt ${report.reward.rating >= 0 ? "up" : "down"}`}>
+                  <Ico name="trophy" size={15} /> рейтинг {report.reward.rating > 0 ? "+" : ""}
+                  {report.reward.rating}
+                </span>
+              </div>
             )}
             <button type="button" className="cg-btn pri lg" onClick={onClose}>
               Закрыть

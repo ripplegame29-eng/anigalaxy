@@ -2372,3 +2372,34 @@ html[data-eco="on"] .cv-fglow, html[data-eco="on"] .cv-fglint { animation: none;
 .cg .bt-lg li.cur img { animation: none; filter: drop-shadow(0 6px 10px rgba(0, 0, 20, .55)); }
 .cg .bt-lg li.done img { filter: drop-shadow(0 6px 10px rgba(0, 0, 20, .45)); }
 .cg .bt-lg li.cur i, .cg .bt-lg li i { animation: none; }
+
+/* ── Единый стиль кнопок гачи: «Матовый минимал» ── */
+.cg .cg-btn, .cg .cg-btn.pri, .cg .cg-btn.gold, .cg .cg-btn.sm, .cg .cg-btn.lg, .cg .cg-bt .cg-btn, .cg .pk-page .cg-btn, .cg .pk-page .cg-btn.gold, .cg .ar-result .cg-btn.pri, .cg .bt-go, .cg .cg-cta, .cg .st-all {
+  position: relative !important; overflow: hidden; border: 0 !important; border-radius: 10px !important; color: #dbe7ff !important; text-shadow: none !important; font: 500 14px/1 var(--font-body, inherit) !important; letter-spacing: .005em !important;
+  background: #14204a !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .1), inset 0 0 0 1px rgba(120, 160, 255, .16), 0 6px 14px -8px rgba(0, 0, 0, .8) !important;
+  transition: transform .16s var(--cg-ease), background .22s, box-shadow .22s !important;
+}
+.cg .cg-btn::after, .cg .bt-go::after, .cg .cg-cta::after, .cg .st-all::after { content: "" !important; position: absolute !important; inset: auto 18% 0 18% !important; width: auto !important; height: 2px !important; border-radius: 2px !important; background: linear-gradient(90deg, transparent, #6aa8ff, transparent) !important; opacity: .65 !important; transition: .25s !important; animation: none !important; pointer-events: none; }
+.cg .cg-btn:hover:not(:disabled), .cg .bt-go:hover:not(:disabled), .cg .cg-cta:hover:not(:disabled), .cg .st-all:hover:not(:disabled) { background: #1a2a62 !important; filter: none !important; transform: translateY(-2px); }
+.cg .cg-btn:hover:not(:disabled)::after, .cg .bt-go:hover:not(:disabled)::after, .cg .cg-cta:hover:not(:disabled)::after, .cg .st-all:hover:not(:disabled)::after { inset: auto 8% 0 8% !important; opacity: 1 !important; box-shadow: 0 0 12px #6aa8ff; }
+.cg .cg-btn:active:not(:disabled), .cg .bt-go:active:not(:disabled) { transform: translateY(0) scale(.985); }
+.cg .cg-btn:focus-visible, .cg .bt-go:focus-visible { outline: 2px solid #8fd0ff; outline-offset: 3px; }
+.cg .cg-btn:disabled, .cg .bt-go:disabled { opacity: .45 !important; filter: saturate(.4) !important; cursor: default; transform: none !important; }
+.cg .cg-btn:disabled::after, .cg .bt-go:disabled::after { opacity: .2 !important; }
+/* главное действие чуть заметнее: ярче фон и постоянный свет снизу */
+.cg .cg-btn.pri, .cg .cg-btn.gold, .cg .bt-go { background: #193070 !important; color: #fff !important; font-weight: 600 !important; }
+.cg .cg-btn.pri::after, .cg .cg-btn.gold::after, .cg .bt-go::after { opacity: .95 !important; }
+.cg .cg-btn.pri:hover:not(:disabled), .cg .cg-btn.gold:hover:not(:disabled), .cg .bt-go:hover:not(:disabled) { background: #20398a !important; }
+.cg .cg-btn.danger { color: #ffc2d4 !important; }
+.cg .cg-btn.danger::after { background: linear-gradient(90deg, transparent, #ff6f9c, transparent) !important; }
+.cg .bt-go { min-height: 60px; border-radius: 12px !important; }
+.cg .bt-go b { font-weight: 600; }
+.cg .bt-go > .ico { background: rgba(120, 170, 255, .14); }
+.cg .bt-go em { background: rgba(6, 14, 50, .55); }
+
+/* Итог боя: награды чипами */
+.ar-rew { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: 4px 0 6px; }
+.ar-rw { display: inline-flex; align-items: center; gap: 7px; padding: 8px 14px; border-radius: 12px; font: 600 14px/1 var(--font-body, inherit); color: #dbe7ff; background: rgba(90, 140, 255, .12); box-shadow: inset 0 0 0 1px rgba(130, 170, 255, .2); }
+.ar-rw.rt.up { color: #9cf0ff; background: rgba(40, 210, 240, .12); box-shadow: inset 0 0 0 1px rgba(90, 220, 250, .3); }
+.ar-rw.rt.down { color: #ffb3c9; background: rgba(255, 80, 130, .12); box-shadow: inset 0 0 0 1px rgba(255, 120, 160, .3); }
