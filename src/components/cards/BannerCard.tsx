@@ -14,9 +14,6 @@ interface PackResult {
   dustBack: number;
 }
 
-/** Герои с вырезанным артом (без фона): в баннере они выходят за рамку карточки */
-const CUT = new Set(["jugram-haschwalth"]);
-
 /** Баннер недели: герой недели с повышенным шансом и гарантией */
 export function BannerCard({ s }: { s: CardsState }) {
   const b = s.events.banner;
@@ -48,10 +45,7 @@ export function BannerCard({ s }: { s: CardsState }) {
     <section className="bn" aria-label="Баннер недели" style={{ ["--c" as string]: RANKS[def.rank].color }}>
       <div className="bn-art">
         <i className="bn-aura" aria-hidden />
-        <div className={`bn-card${CUT.has(def.id) ? " cut" : ""}`}>
-          <GameCard cardId={def.id} stats={false} live />
-          {CUT.has(def.id) && <img className="bn-cut" src={`/cards/cut/${def.id}.webp`} alt="" draggable={false} />}
-        </div>
+        <GameCard cardId={def.id} stats={false} live />
       </div>
       <div className="bn-body">
         <div className="bn-top">

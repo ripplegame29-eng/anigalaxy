@@ -1743,13 +1743,3 @@
 .cg .st-stage .cg-stage { overflow: visible; }
 .cg .st-stage .pk-beam { top: -38%; height: 140%; width: 190%; background: linear-gradient(180deg, rgba(170, 205, 255, .3), rgba(110, 140, 255, .1) 60%, transparent); -webkit-mask-image: radial-gradient(closest-side at 50% 55%, #000 30%, transparent 100%); mask-image: radial-gradient(closest-side at 50% 55%, #000 30%, transparent 100%); filter: blur(10px); }
 .cg .st-stage .pk-wrap.bundle .pk-beam { top: -30%; height: 130%; width: 150%; }
-
-/* вырезанный герой выходит за рамку карточки */
-.cg .bn-card { position: relative; width: 100%; transform: rotate(-3deg); transition: transform .35s var(--cg-ease); }
-.cg .bn-art .bn-card .gc { transform: none; }
-.cg .bn:hover .bn-card { transform: rotate(0) translateY(-4px); }
-.cg .bn-card.cut { margin-top: 12%; }
-.cg .bn-card.cut .gc-art { background: radial-gradient(70% 60% at 50% 45%, color-mix(in oklab, var(--c) 55%, #0a0f1f), #070b18 80%); }
-.cg .bn-card.cut .gc-art img { opacity: 0; }
-.cg .bn-cut { position: absolute; z-index: 3; left: 50%; bottom: 30%; width: 74%; translate: -50% 0; pointer-events: none; filter: drop-shadow(0 10px 14px rgba(0, 0, 0, .55)) drop-shadow(0 0 18px color-mix(in oklab, var(--c) 50%, transparent)); transition: transform .45s var(--cg-ease); }
-.cg .bn:hover .bn-cut { transform: translateY(-3%) scale(1.04); }
