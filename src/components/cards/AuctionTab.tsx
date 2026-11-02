@@ -8,6 +8,7 @@ import { act, view, type CardsState } from "@/lib/cards/client";
 import { GameCard } from "./GameCard";
 import { InvPicker, Panel, RankFilter, Stepper, fmt, fmtLeft, toast, useBusy, useNow } from "./common";
 import { Cur, Ico } from "./icons";
+import { TabHero } from "./TabHero";
 
 interface Lot {
   id: number;
@@ -109,7 +110,22 @@ export function AuctionTab({ s, me }: { s: CardsState; me: string }) {
   };
 
   return (
-    <div>
+    <div className="cg-hx">
+      <TabHero
+        eyebrow="Торговая площадка"
+        title="Аукцион героев"
+        text="Выставляйте карты на торги и боритесь за чужие лоты. Ставки в алмазах, последняя минута продлевается, если кто-то ставит в самый конец."
+        badges={[
+          { icon: "clock", text: `Срок лота: ${AUCTION.minHours}–${AUCTION.maxHours} ч`, hot: true },
+          { icon: "lock", text: "Карта на торгах заморожена" },
+        ]}
+        kpi={[
+          { icon: "diamond", value: fmt(s.wallet.diamonds), label: "алмазов на счёте" },
+          { icon: "tag", value: `${AUCTION.feePct}%`, label: "комиссия продавцу" },
+          { icon: "trend", value: `от ${AUCTION.minPrice}`, label: "минимальная цена" },
+          { icon: "grid", value: `${AUCTION.maxActive}`, label: "активных лотов у игрока" },
+        ]}
+      />
       <div className="cg-sub" role="group">
         {(
           [

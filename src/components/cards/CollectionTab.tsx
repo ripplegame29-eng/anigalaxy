@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { cardDef, visibleCatalog } from "@/lib/cards/catalog";
-import { CLASSES, DUST_VALUE, ELEMENTS, type CardClass, type Element } from "@/lib/cards/config";
+import { CLASSES, DUST_VALUE, ELEMENTS, RANKS, type CardClass, type Element } from "@/lib/cards/config";
 import { act, view, type CardsState, type InvCard } from "@/lib/cards/client";
 import { GameCard } from "./GameCard";
 import { Panel, RankFilter, fmt, toast, useBusy } from "./common";
@@ -10,6 +10,7 @@ import { ELEMENT_ICON, Ico } from "./icons";
 import { SkillChips, SkillEditor } from "./skillui";
 import { CompareModal } from "./compare";
 import { CardViewer } from "./CardViewer";
+import { TabHero } from "./TabHero";
 
 type Own = "all" | "have" | "miss";
 
@@ -43,6 +44,12 @@ export function CollectionTab({ s }: { s: CardsState }) {
   }, [s.inventory]);
   const CATALOG = useMemo(() => visibleCatalog(new Set(byCard.keys())), [byCard]);
   const have = CATALOG.filter((c) => byCard.has(c.id)).length;
+  const inv = s.inventory;
+  const heroCount = byCard.size;
+  const total = CATALOG.length;
+  const foilCount = inv.filter((c) => c.foil).length;
+  const dist = RANKS.map((r) => [...byCard.keys()].filter((id) => cardDef(id)?.rank === r.id).length);
+  const topCount = dist[3] + dist[4];
   const needle = q.trim().toLowerCase();
   const best = useMemo(() => {
     const m = new Map<string, InvCard>();
@@ -64,7 +71,38 @@ export function CollectionTab({ s }: { s: CardsState }) {
   })();
 
   return (
-    <div style={{ display: "grid", gap: 16 }}>
+    <div className="cg-hx" style={{ display: "grid", gap: 16 }}>
+      <TabHero
+        eyebrow="Ваш архив"
+        title="Коллекция героев"
+        text="Все ваши карты в одном месте: фильтруйте по рангу, классу и стихии, сравнивайте героев, открывайте умения и копии."
+        badges={[
+          { icon: "grid", text: `Открыто ${heroCount} из ${total} героев`, hot: true },
+          { icon: "dust", text: `Фольга: ${foilCount}` },
+        ]}
+        kpi={[
+          { icon: "grid", value: fmt(inv.length), label: "карт в коллекции" },
+          { icon: "user", value: fmt(heroCount), label: "разных героев" },
+          { icon: "crown", value: fmt(topCount), label: "ранга S и SS" },
+          { icon: "star", value: `${Math.round((heroCount / Math.max(1, total)) * 100)}%`, label: "альбом заполнен" },
+        ]}
+        extra={
+          <div className="hx-dist" role="img" aria-label="Распределение карт по рангам">
+            <div className="hx-dist-bar">
+              {RANKS.map((r) => (
+                <i key={r.id} style={{ flexGrow: Math.max(0, dist[r.id]), background: r.color }} title={`${r.name}: ${dist[r.id]}`} />
+              ))}
+            </div>
+            <div className="hx-dist-lg">
+              {RANKS.map((r) => (
+                <span key={r.id} style={{ ["--c" as string]: r.color }}>
+                  <i /> {r.short} · {dist[r.id]}
+                </span>
+              ))}
+            </div>
+          </div>
+        }
+      />
       <Panel
         title="Альбом"
         right={

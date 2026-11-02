@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState, type CSSProperties, type PointerEvent, type ReactNode } from "react";
 import { cardDef } from "@/lib/cards/catalog";
 import { CLASSES, ELEMENTS, PACK, RANKS } from "@/lib/cards/config";
-import { GameCard } from "./GameCard";
+import { GameCard, RankMark } from "./GameCard";
 import { Portal, toast } from "./common";
 import { ELEMENT_ICON, Ico } from "./icons";
 
@@ -132,14 +132,45 @@ export function CardViewer({
                   <i className="cv-flare" aria-hidden />
                 </div>
                 <div className="cv-face back" aria-hidden={!flip}>
+                  <i className="cv-bk-c a" />
+                  <i className="cv-bk-c b" />
+                  <i className="cv-bk-c c" />
+                  <i className="cv-bk-c d" />
+                  <span className="cv-bk-seal" aria-hidden>
+                    <RankMark rank={def.rank} />
+                    <em>{rank.short}</em>
+                  </span>
                   <span className="cv-back-rank">{rank.name}</span>
-                  <b>{def.name}</b>
+                  <b className="cv-bk-name">{def.name}</b>
+                  <small className="cv-bk-sub">
+                    {def.series} · {CLASSES[def.cls].name}
+                  </small>
+                  <span className="cv-bk-div" aria-hidden>
+                    <i />
+                  </span>
                   <ul>
-                    <li><Ico name="sword" size={16} /> Атака <b>{def.atk}</b></li>
-                    <li><Ico name="shield" size={16} /> Защита <b>{def.def}</b></li>
-                    <li><Ico name="heart" size={16} /> Здоровье <b>{def.hp}</b></li>
-                    <li><Ico name="bolt" size={16} /> Скорость <b>{def.spd}</b></li>
+                    {(
+                      [
+                        ["sword", "Атака", def.atk, 260],
+                        ["shield", "Защита", def.def, 160],
+                        ["heart", "Здоровье", def.hp, 1100],
+                        ["bolt", "Скорость", def.spd, 120],
+                      ] as const
+                    ).map(([ic, k, v, max]) => (
+                      <li key={k}>
+                        <Ico name={ic} size={16} /> {k} <b>{v}</b>
+                        <i style={{ ["--v" as string]: `${Math.min(100, Math.round((v / max) * 100))}%` } as CSSProperties} />
+                      </li>
+                    ))}
                   </ul>
+                  <span className="cv-bk-chips">
+                    <span>
+                      <Ico name={ELEMENT_ICON[def.element]} size={13} /> {ELEMENTS[def.element].name}
+                    </span>
+                    <span>
+                      <Ico name="target" size={13} /> {chance}% в паке
+                    </span>
+                  </span>
                   <p>{def.blurb}</p>
                 </div>
               </div>

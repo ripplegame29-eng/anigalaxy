@@ -4,7 +4,8 @@ import { useCallback, useEffect, useState } from "react";
 import { cardDef } from "@/lib/cards/catalog";
 import { act, view, type CardsState, type InvCard } from "@/lib/cards/client";
 import { GameCard } from "./GameCard";
-import { InvPicker, Panel, toast, useBusy } from "./common";
+import { InvPicker, Panel, fmt, toast, useBusy } from "./common";
+import { TabHero } from "./TabHero";
 
 interface Trade {
   id: number;
@@ -85,7 +86,22 @@ export function TradeTab({ s }: { s: CardsState }) {
   );
 
   return (
-    <div>
+    <div className="cg-hx">
+      <TabHero
+        eyebrow="Обмен между игроками"
+        title="Обмен и подарки"
+        text="Договоритесь с игроком о размене картами или просто подарите героя. Отданные карты замораживаются, пока игрок не ответит."
+        badges={[
+          { icon: "swap", text: "До 6 карт с каждой стороны", hot: true },
+          { icon: "gift", text: "Подарок: оставьте правую сторону пустой" },
+        ]}
+        kpi={[
+          { icon: "grid", value: fmt(s.inventory.length), label: "карт для обмена" },
+          { icon: "lock", value: fmt(s.inventory.filter((c) => c.locked).length), label: "заблокировано" },
+          { icon: "diamond", value: fmt(s.wallet.diamonds), label: "алмазов" },
+          { icon: "user", value: "1:1", label: "обмен с игроком по нику" },
+        ]}
+      />
       <div className="cg-sub" role="group">
         {(
           [

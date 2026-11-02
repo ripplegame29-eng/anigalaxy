@@ -6,7 +6,8 @@ import { MAX_LEVEL, MELT, RANKS, SPLIT, UPGRADE } from "@/lib/cards/config";
 import { EVO, evoCost } from "@/lib/cards/season";
 import { act, type CardsState, type InvCard } from "@/lib/cards/client";
 import { GameCard } from "./GameCard";
-import { InvPicker, Panel, RankFilter, Reveal, toast, useBusy } from "./common";
+import { InvPicker, Panel, RankFilter, Reveal, fmt, toast, useBusy } from "./common";
+import { TabHero } from "./TabHero";
 
 type Mode = "melt" | "split" | "upgrade" | "evolve";
 type Shown = { cardId: string; foil?: boolean; level?: number }[];
@@ -18,7 +19,22 @@ export function ForgeTab({ s }: { s: CardsState }) {
   const [mode, setMode] = useState<Mode>("melt");
   const [reveal, setReveal] = useState<{ title: string; cards: Shown } | null>(null);
   return (
-    <div>
+    <div className="cg-hx">
+      <TabHero
+        eyebrow="Мастерская"
+        title="Кузница"
+        text="Переплавляйте лишние карты в новые, раскалывайте их на несколько, улучшайте до анимированных версий и пробуждайте героев."
+        badges={[
+          { icon: "anvil", text: `Бесплатных расколов сегодня: ${Math.max(0, s.split.free - s.split.used)}`, hot: true },
+          { icon: "dust", text: `Пыль: ${fmt(s.wallet.dust)}` },
+        ]}
+        kpi={[
+          { icon: "swap", value: `${MELT.need} → 1`, label: "переплавка" },
+          { icon: "plus", value: "1 → 2", label: "раскол" },
+          { icon: "star", value: `${UPGRADE.need} → ✦`, label: "улучшение до фольги" },
+          { icon: "crown", value: `${EVO.names.length - 1}`, label: "ступени пробуждения" },
+        ]}
+      />
       <div className="cg-sub" role="group" aria-label="Кузница">
         {(
           [
