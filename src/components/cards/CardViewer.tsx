@@ -7,6 +7,15 @@ import { GameCard } from "./GameCard";
 import { Portal, toast } from "./common";
 import { ELEMENT_ICON, Ico } from "./icons";
 
+/** Искры вокруг карты: положение, размер и темп считаются от номера, чтобы рендер был стабильным */
+const SPARKS = Array.from({ length: 22 }, (_, i) => ({
+  x: (i * 37 + 11) % 100,
+  s: 2 + ((i * 5) % 4),
+  d: 6 + ((i * 7) % 7),
+  t: -((i * 13) % 11),
+  w: ((i * 17) % 9) - 4,
+}));
+
 /**
  * Окно героя: крупная карта с наклоном по курсору и бликом, переворот на характеристики,
  * режим «Крупнее», листание по списку (← →) и слот под действия владельца.
@@ -74,6 +83,8 @@ export function CardViewer({
     const py = (e.clientY - r.top) / r.height;
     el.style.setProperty("--rx", `${((0.5 - py) * 14).toFixed(2)}deg`);
     el.style.setProperty("--ry", `${((px - 0.5) * 18).toFixed(2)}deg`);
+    el.style.setProperty("--tx", (px - 0.5).toFixed(3));
+    el.style.setProperty("--ty", (py - 0.5).toFixed(3));
     el.style.setProperty("--mx", `${(px * 100).toFixed(1)}%`);
     el.style.setProperty("--my", `${(py * 100).toFixed(1)}%`);
   };
@@ -82,6 +93,8 @@ export function CardViewer({
     if (!el) return;
     el.style.setProperty("--rx", "0deg");
     el.style.setProperty("--ry", "0deg");
+    el.style.setProperty("--tx", "0");
+    el.style.setProperty("--ty", "0");
   };
 
   const share = async () => {
@@ -100,14 +113,23 @@ export function CardViewer({
 
   return (
     <Portal>
-      <div className="cv" role="dialog" aria-modal="true" aria-label={def.name} onClick={onClose} style={{ ["--c" as string]: rank.color } as CSSProperties}>
+      <div className="cv" data-rank={rank.key} role="dialog" aria-modal="true" aria-label={def.name} onClick={onClose} style={{ ["--c" as string]: rank.color } as CSSProperties}>
         <div className={`cv-wrap${big ? " is-big" : ""}`} onClick={(e) => e.stopPropagation()}>
           <div className="cv-left">
+            <div className="cv-fx" aria-hidden>
+              {SPARKS.map((p, i) => (
+                <i key={i} style={{ ["--x" as string]: `${p.x}%`, ["--s" as string]: `${p.s}px`, ["--d" as string]: `${p.d}s`, ["--t" as string]: `${p.t}s`, ["--w" as string]: `${p.w}%` } as CSSProperties} />
+              ))}
+              <b className="cv-floor" />
+            </div>
             <div ref={stage} className="cv-stage" onPointerMove={move} onPointerLeave={leave}>
               <div className={`cv-flip${flip ? " is-back" : ""}`}>
                 <div className="cv-face front" key={`${id}-${card?.level ?? 0}`}>
                   <GameCard cardId={id} foil={card?.foil} level={card?.level} evo={card?.evo} locked={card?.locked} stats={false} live />
+                  <i className="cv-holo" aria-hidden />
                   <i className="cv-glare" aria-hidden />
+                  <i className="cv-rim" aria-hidden />
+                  <i className="cv-flare" aria-hidden />
                 </div>
                 <div className="cv-face back" aria-hidden={!flip}>
                   <span className="cv-back-rank">{rank.name}</span>

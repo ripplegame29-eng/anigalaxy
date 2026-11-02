@@ -1288,7 +1288,7 @@
 .cv-flip { position: relative; transform-style: preserve-3d; transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)); transition: transform .35s var(--cg-ease); }
 .cv-flip.is-back { transform: rotateX(var(--rx, 0deg)) rotateY(calc(180deg + var(--ry, 0deg))); transition: transform .7s var(--cg-ease); }
 .cv-face { backface-visibility: hidden; -webkit-backface-visibility: hidden; border-radius: 6.4% / 4.57%; }
-.cv-face.front { position: relative; animation: cv-card-in .5s var(--cg-ease); filter: drop-shadow(0 30px 50px rgba(0, 0, 0, .65)) drop-shadow(0 0 40px color-mix(in oklab, var(--c) 45%, transparent)); }
+.cv-face.front { position: relative; animation: cv-card-in .5s var(--cg-ease); filter: drop-shadow(0 34px 44px rgba(0, 0, 0, .7)) drop-shadow(0 0 16px color-mix(in oklab, var(--c) 28%, transparent)); }
 @keyframes cv-card-in { from { opacity: 0; transform: translateX(-16px) scale(.96); } }
 .cv-glare { position: absolute; inset: 0; border-radius: 6.4% / 4.57%; pointer-events: none; mix-blend-mode: soft-light; opacity: .75; background: radial-gradient(circle at var(--mx, 50%) var(--my, 30%), rgba(255, 255, 255, .55), transparent 55%); }
 .cv-face.back { position: absolute; inset: 0; transform: rotateY(180deg); display: grid; align-content: center; justify-items: center; gap: 12px; padding: 12% 10%; text-align: center; container-type: inline-size;
@@ -1743,3 +1743,44 @@
 .cg .st-stage .cg-stage { overflow: visible; }
 .cg .st-stage .pk-beam { top: -38%; height: 140%; width: 190%; background: linear-gradient(180deg, rgba(170, 205, 255, .3), rgba(110, 140, 255, .1) 60%, transparent); -webkit-mask-image: radial-gradient(closest-side at 50% 55%, #000 30%, transparent 100%); mask-image: radial-gradient(closest-side at 50% 55%, #000 30%, transparent 100%); filter: blur(10px); }
 .cg .st-stage .pk-wrap.bundle .pk-beam { top: -30%; height: 130%; width: 150%; }
+
+/* ===== Окно героя: премиальный слой — голо-фольга, глубина, ободок света, искры, отражение ===== */
+@property --hue { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
+.cv-left { position: relative; }
+.cv-stage { position: relative; z-index: 1; }
+.cv-fx { container-type: size; position: absolute; inset: -14% -26% -4%; z-index: 0; pointer-events: none; }
+.cv-fx i { position: absolute; left: var(--x); bottom: 8%; width: var(--s); height: var(--s); border-radius: 50%; background: color-mix(in oklab, var(--c) 55%, #fff); box-shadow: 0 0 calc(var(--s) * 3) var(--c), 0 0 calc(var(--s) * 7) color-mix(in oklab, var(--c) 60%, transparent); opacity: 0; animation: cv-rise var(--d) linear var(--t) infinite; }
+@keyframes cv-rise { 0% { transform: translate3d(0, 0, 0) scale(.6); opacity: 0; } 12% { opacity: .95; } 70% { opacity: .55; } 100% { transform: translate3d(var(--w), -62cqh, 0) scale(1.1); opacity: 0; } }
+.cv-floor { position: absolute; left: 50%; bottom: -2%; width: 78%; height: 8%; translate: -50% 0; border-radius: 50%; background: radial-gradient(closest-side, color-mix(in oklab, var(--c) 55%, transparent), transparent); filter: blur(10px); opacity: .7; animation: cv-floor 5s ease-in-out infinite; }
+@keyframes cv-floor { 50% { opacity: 1; scale: 1.08 1; } }
+
+/* глубина: арт «уезжает» против наклона, значки и плашка — вперёд */
+.cv-stage .gc-art img { scale: 1.05; translate: calc(var(--tx, 0) * -2.6%) calc(var(--ty, 0) * -2.6%); transition: translate .25s var(--cg-ease); }
+.cv-stage .gc-top, .cv-stage .gc-plate { translate: calc(var(--tx, 0) * 1.6cqw) calc(var(--ty, 0) * 1.6cqw); transition: translate .25s var(--cg-ease); }
+.cv-stage .gc-frame { translate: calc(var(--tx, 0) * .5cqw) calc(var(--ty, 0) * .5cqw); transition: translate .25s var(--cg-ease); }
+
+/* голографическая фольга: радужный блик по арту, у высоких рангов ярче */
+.cv-holo { position: absolute; inset: 4.86% 6.8% 4.8%; z-index: 4; border-radius: 5%/3.6%; pointer-events: none; mix-blend-mode: soft-light; opacity: 0; background-image: linear-gradient(115deg, transparent 14%, rgba(127, 216, 255, .55) 30%, rgba(165, 106, 255, .55) 44%, rgba(255, 123, 213, .5) 56%, rgba(127, 255, 212, .5) 70%, transparent 86%), repeating-linear-gradient(60deg, rgba(255, 255, 255, .06) 0 2px, transparent 2px 6px); background-size: 240% 100%, auto; background-position: var(--mx, 50%) 0, 0 0; transition: opacity .35s; animation: cv-holo-idle 7s ease-in-out infinite alternate; }
+@keyframes cv-holo-idle { from { background-position: 20% 0, 0 0; } to { background-position: 80% 0, 0 0; } }
+.cv[data-rank="rare"] .cv-holo { opacity: .35; }
+.cv[data-rank="epic"] .cv-holo { opacity: .6; }
+.cv[data-rank="legendary"] .cv-holo { opacity: .75; }
+.cv[data-rank="mythic"] .cv-holo { opacity: .9; filter: saturate(1.3); }
+.cv-stage:hover .cv-holo { opacity: 1; }
+.cv[data-rank="common"] .cv-holo { display: none; }
+
+/* ободок света: рамка по краю карты подсвечивается там, где курсор */
+.cv-rim { position: absolute; inset: 0; z-index: 5; border-radius: 6.4% / 4.57%; padding: 1.5px; pointer-events: none; background: radial-gradient(circle at var(--mx, 50%) var(--my, 20%), rgba(255, 255, 255, .95), color-mix(in oklab, var(--c) 70%, transparent) 22%, transparent 48%); -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude; opacity: .85; }
+.cv[data-rank="mythic"] .cv-rim, .cv[data-rank="legendary"] .cv-rim { background: conic-gradient(from var(--hue), #7fd8ff, #a56aff, #ff7bd5, #7fffd4, #7fd8ff); animation: cv-hue 6s linear infinite; opacity: .7; }
+@keyframes cv-hue { to { --hue: 360deg; } }
+
+/* разовая вспышка света при появлении карты */
+.cv-flare { position: absolute; inset: 0; z-index: 6; border-radius: 6.4% / 4.57%; pointer-events: none; overflow: hidden; }
+.cv-flare::before { content: ""; position: absolute; inset: -20% auto -20% -60%; width: 45%; background: linear-gradient(100deg, transparent, rgba(255, 255, 255, .55), transparent); transform: skewX(-18deg); animation: cv-flare 1.3s .25s ease-out both; }
+@keyframes cv-flare { to { left: 130%; } }
+
+/* объёмное стекло на всю карту */
+.cv-face.front::after { content: ""; position: absolute; inset: 0; z-index: 7; border-radius: 6.4% / 4.57%; pointer-events: none; background: linear-gradient(160deg, rgba(255, 255, 255, .16), transparent 28%, transparent 72%, rgba(0, 0, 0, .22)); }
+html[data-eco="on"] .cv-fx i, html[data-eco="on"] .cv-holo, html[data-eco="on"] .cv-rim, html[data-eco="on"] .cv-floor, html[data-eco="on"] .cv-flare::before { animation: none; }
+@media (prefers-reduced-motion: reduce) { .cv-fx i, .cv-holo, .cv-rim, .cv-floor, .cv-flare::before { animation: none; } .cv-stage .gc-art img, .cv-stage .gc-top, .cv-stage .gc-plate, .cv-stage .gc-frame { translate: none; transition: none; } }
+@media (max-width: 720px) { .cv-fx i:nth-child(n+12) { display: none; } }
