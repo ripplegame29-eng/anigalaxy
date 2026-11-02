@@ -182,6 +182,11 @@ export function PacksTab({ s }: { s: CardsState }) {
   const packWord = (n: number) => (n === 1 ? "пак" : n < 5 ? "пака" : "паков");
   const fan = useFan(s);
   const feed = [...s.pulls.today, ...s.pulls.yesterday];
+  const wallets = [
+    { id: "token", label: "Жетоны паков", have: w.packs, per: 1, k: "packs" },
+    { id: "diamonds", label: "Алмазы", have: w.diamonds, per: PACK.diamonds, k: "diamonds" },
+    { id: "dust", label: "Пыль", have: w.dust, per: PACK.dust, k: "dust" },
+  ] as const;
   const toShop = () => document.getElementById("pk-shop")?.scrollIntoView({ behavior: "smooth", block: "start" });
   const bar = (left: number, max: number) => Math.min(100, ((max - left) / max) * 100);
 
@@ -255,60 +260,73 @@ export function PacksTab({ s }: { s: CardsState }) {
         <h2 className="pk-h" id="pk-shop-t">
           <Ico name="pack" size={22} /> Магазин паков
         </h2>
-        <div className="pk-shop" style={{ ["--oc" as string]: OFFER_COLOR[sel] ?? OFFER_COLOR[0] }}>
-          <div className="pk-pick">
-            <span className="pk-lbl">Выберите набор</span>
-            <div className="pk-opts" role="group" aria-label="Набор паков">
-              {bundles.map((b, i) => {
-                const l = lackOf(b);
-                const saved = b.n - b.pay;
+        <div className="st" style={{ ["--oc" as string]: OFFER_COLOR[sel] ?? OFFER_COLOR[0] }}>
+          <div className="st-top">
+            <div className="st-wal" role="radiogroup" aria-label="Чем платить">
+              {wallets.map((x) => {
+                const can = Math.floor(x.have / x.per);
                 return (
                   <button
-                    key={b.n}
+                    key={x.id}
                     type="button"
-                    className="pk-opt"
-                    aria-pressed={sel === i}
+                    role="radio"
+                    aria-checked={effectivePay === x.id}
                     disabled={!!pendingOffers || loading}
-                    style={{ ["--oc" as string]: OFFER_COLOR[i] ?? OFFER_COLOR[0] }}
-                    onClick={() => setSel(i)}
+                    onClick={() => setPay(x.id)}
                   >
-                    <img src={`/cards/offers/${Math.min(i, 2) + 1}.webp`} alt="" draggable={false} loading="lazy" />
-                    <span className="pk-opt-t">
-                      <small>{i === bundles.length - 1 ? "Лучшая выгода" : i === 0 ? "Один пак" : "Набор"}</small>
-                      <b>
-                        ×{b.n} {packWord(b.n)}
-                      </b>
-                      <span className="pk-opt-c">
-                        {fmt(costOf(b))} <Cur k={PAY_CUR[effectivePay]} size={15} />
-                        {saved > 0 && <em>−{saved} в подарок</em>}
-                      </span>
-                      {l > 0 && <span className="pk-opt-lack">Не хватает {fmt(l)} {unit}</span>}
+                    <Cur k={x.k} size={26} />
+                    <span>
+                      <small>{x.label}</small>
+                      <b>{fmt(x.have)}</b>
                     </span>
+                    <em>{can > 0 ? `хватит на ${can} ${packWord(can)}` : x.id === "token" && w.packs < 1 ? "нет жетонов" : "не хватает"}</em>
                   </button>
                 );
               })}
             </div>
-            <div className="pk-pay">
-              <span className="pk-lbl">Оплата</span>
-              <div className="cg-seg" role="radiogroup" aria-label="Чем платить">
-                {(
-                  [
-                    ["token", `Жетоны · ${w.packs}`, "packs"],
-                    ["diamonds", `${PACK.diamonds} за пак`, "diamonds"],
-                    ["dust", `${PACK.dust} за пак`, "dust"],
-                  ] as const
-                ).map(([id, label, k]) => (
-                  <button key={id} type="button" role="radio" aria-checked={effectivePay === id} onClick={() => setPay(id)}>
-                    <Cur k={k} size={16} /> {label}
-                  </button>
-                ))}
-              </div>
-              <p className="pk-note">Набор из 6 паков стоит как 5, набор из 20 — как 15. В наборах лучшую карту можно забирать автоматически: включите быстрое открытие.</p>
-            </div>
+            <label className="cg-switch" title="Лучшая карта из тройки забирается сразу, без выбора">
+              <input type="checkbox" checked={quick} onChange={toggleQuick} />
+              <i />
+              Быстрое открытие
+            </label>
           </div>
 
-          <div className="pk-center" data-pick={pendingOffers ? "1" : undefined}>
-            <div className="pk-stagecol">
+          <div className="st-tiles" role="group" aria-label="Набор паков">
+            {bundles.map((b, i) => {
+              const l = lackOf(b);
+              const gift = effectivePay === "token" ? 0 : b.n - b.pay;
+              const each = Math.round(costOf(b) / b.n);
+              return (
+                <button
+                  key={b.n}
+                  type="button"
+                  className="st-tile"
+                  aria-pressed={sel === i}
+                  disabled={!!pendingOffers || loading}
+                  style={{ ["--oc" as string]: OFFER_COLOR[i] ?? OFFER_COLOR[0] }}
+                  onClick={() => setSel(i)}
+                >
+                  {i === bundles.length - 1 ? <span className="st-rib best">Лучшая выгода</span> : i === 1 ? <span className="st-rib">Популярный</span> : null}
+                  <img src={`/cards/offers/${Math.min(i, 2) + 1}.webp`} alt="" draggable={false} loading="lazy" />
+                  <b className="st-n">
+                    ×{b.n} <small>{packWord(b.n)}</small>
+                  </b>
+                  <span className="st-price">
+                    {fmt(costOf(b))} <Cur k={PAY_CUR[effectivePay]} size={17} />
+                  </span>
+                  <span className="st-meta">
+                    {b.n > 1 && <span>по {fmt(each)} за пак</span>}
+                    {gift > 0 && <em>−{gift} {packWord(gift)} в подарок</em>}
+                    {b.n === 1 && <span>{PACK.choices} карты на выбор</span>}
+                  </span>
+                  {l > 0 && <span className="st-lack">Не хватает {fmt(l)} {unit}</span>}
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="st-dock" data-pick={pendingOffers ? "1" : undefined}>
+            <div className="st-stage">
               {pendingOffers ? (
                 <div className="cg-pickstage">
                   <div className="cg-offers">
@@ -322,96 +340,121 @@ export function PacksTab({ s }: { s: CardsState }) {
               )}
             </div>
 
-            <div className="pk-info">
+            <div className="pk-info st-co">
               <div className="pk-chips">
                 <span className="cg-eyebrow">Бустер AniGalaxy</span>
                 <span className="cg-chip">{PACK.choices} карты на выбор</span>
               </div>
               <h3>{pendingOffers ? "Выберите одну карту" : bundle.n === 1 ? "Один пак" : `Набор ×${bundle.n}`}</h3>
-              <p className="pk-sub">
-                {pendingOffers ? "Остальные две карты превратятся в пыль — вернётся четверть их стоимости." : `${bundle.n} ${packWord(bundle.n)} · ${fmt(costOf(bundle))} ${unit}${bundle.n > bundle.pay ? ` · выгода ${bundle.n - bundle.pay} ${packWord(bundle.n - bundle.pay)}` : ""}`}
-              </p>
-              <ul className="pk-bul">
-                <li>
-                  <Ico name="check" size={15} /> В каждом паке {PACK.choices} карты — оставляете лучшую, остальные уходят в пыль
-                </li>
-                <li>
-                  <Ico name="check" size={15} /> Эпическая карта гарантирована не позже {PACK.pityEpic}-го пака, легендарная — {PACK.pityLegend}-го
-                </li>
-                <li>
-                  <Ico name="check" size={15} /> {s.premium ? "Premium: шансы на редкие карты ×1,25" : "С Premium шансы на редкие карты выше на 25%"}
-                </li>
-              </ul>
-              <div className="pk-odds" aria-label="Шансы одной карты">
-                {RANKS.map((r, i) => (
-                  <span key={r.id} style={{ ["--c" as string]: r.color }}>
-                    <i />
-                    {r.name}
-                    <b>{(PACK.weights[i] / 10).toFixed(1)}%</b>
-                  </span>
-                ))}
-              </div>
-              {!pendingOffers && (
-                <div className="pk-act">
-                  <button type="button" className="cg-cta" disabled={loading || !!reason} onClick={() => void open(bundle.n)}>
-                    {loading ? <span className="cg-spin" /> : <Ico name="pack" size={20} />}
-                    {loading ? "Открываем…" : bundle.n === 1 ? "Открыть пак" : `Открыть ×${bundle.n}`}
-                    <span className="price">
-                      {fmt(costOf(bundle))} <Cur k={PAY_CUR[effectivePay]} size={16} />
-                    </span>
-                  </button>
-                  <label className="cg-switch">
-                    <input type="checkbox" checked={quick} onChange={toggleQuick} />
-                    <i />
-                    Быстрое открытие
-                  </label>
-                  {reason && !loading && (
-                    <span className="cg-why" role="status">
-                      <Ico name="ban" size={16} />
-                      {reason}
-                    </span>
-                  )}
-                </div>
+              {pendingOffers ? (
+                <p className="pk-sub">Остальные две карты превратятся в пыль — вернётся четверть их стоимости.</p>
+              ) : (
+                <>
+                  <dl className="st-sum">
+                    <div>
+                      <dt>Вы получите</dt>
+                      <dd>
+                        {bundle.n} {bundle.n === 1 ? "карту" : bundle.n < 5 ? "карты" : "карт"} <small>из {PACK.choices * bundle.n} на выбор</small>
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>Стоимость</dt>
+                      <dd>
+                        {fmt(costOf(bundle))} <Cur k={PAY_CUR[effectivePay]} size={16} />
+                      </dd>
+                    </div>
+                    {effectivePay !== "token" && bundle.n > bundle.pay && (
+                      <div className="ok">
+                        <dt>Экономия</dt>
+                        <dd>
+                          {fmt((bundle.n - bundle.pay) * (effectivePay === "diamonds" ? PACK.diamonds : PACK.dust))} <Cur k={PAY_CUR[effectivePay]} size={16} />
+                        </dd>
+                      </div>
+                    )}
+                    <div className={lack > 0 ? "bad" : undefined}>
+                      <dt>Баланс после</dt>
+                      <dd>
+                        {fmt(haveOf)} <i aria-hidden>→</i> {lack > 0 ? "—" : fmt(haveOf - costOf(bundle))} <Cur k={PAY_CUR[effectivePay]} size={16} />
+                      </dd>
+                    </div>
+                  </dl>
+                  <ul className="pk-bul">
+                    <li>
+                      <Ico name="check" size={15} /> Оставляете лучшую карту, остальные уходят в пыль
+                    </li>
+                    <li>
+                      <Ico name="check" size={15} /> {s.premium ? "Premium: шансы на редкие карты ×1,25" : "С Premium шансы на редкие карты выше на 25%"}
+                    </li>
+                  </ul>
+                  <div className="pk-odds" aria-label="Шансы одной карты">
+                    {RANKS.map((r, i) => (
+                      <span key={r.id} style={{ ["--c" as string]: r.color }}>
+                        <i />
+                        {r.name}
+                        <b>{(PACK.weights[i] / 10).toFixed(1)}%</b>
+                      </span>
+                    ))}
+                  </div>
+                  <div className="pk-act st-buy">
+                    <button type="button" className="cg-cta" disabled={loading || !!reason} onClick={() => void open(bundle.n)}>
+                      {loading ? <span className="cg-spin" /> : <Ico name="pack" size={20} />}
+                      {loading ? "Открываем…" : bundle.n === 1 ? "Открыть пак" : `Открыть ×${bundle.n}`}
+                      <span className="price">
+                        {fmt(costOf(bundle))} <Cur k={PAY_CUR[effectivePay]} size={16} />
+                      </span>
+                    </button>
+                    {reason && !loading && (
+                      <span className="cg-why" role="status">
+                        <Ico name="ban" size={16} />
+                        {reason}
+                      </span>
+                    )}
+                  </div>
+                </>
               )}
             </div>
           </div>
 
-          <aside className="pk-side" aria-label="Гарантии и лента находок">
-            <span className="pk-lbl">Гарантии</span>
-            <div className="pk-gcards">
-              {[
-                { t: "Эпическая и выше", left: epicLeft, now: w.pityEpic, max: PACK.pityEpic, c: RANKS[2].color },
-                { t: "Легендарная и выше", left: legendLeft, now: w.pityLegend, max: PACK.pityLegend, c: RANKS[3].color },
-              ].map((g) => (
-                <div key={g.t} className="pk-gc" style={{ ["--c" as string]: g.c }}>
-                  <b className="n">{g.left}</b>
-                  <div>
-                    <h4>{g.t}</h4>
-                    <span>{g.left <= 1 ? "выпадет в следующем паке" : `${packWord(g.left)} до гарантии`}</span>
+          <div className="st-low">
+            <div className="st-guar">
+              <span className="pk-lbl">Гарантии</span>
+              <div className="pk-gcards">
+                {[
+                  { t: "Эпическая и выше", left: epicLeft, now: w.pityEpic, max: PACK.pityEpic, c: RANKS[2].color },
+                  { t: "Легендарная и выше", left: legendLeft, now: w.pityLegend, max: PACK.pityLegend, c: RANKS[3].color },
+                ].map((g) => (
+                  <div key={g.t} className="pk-gc" style={{ ["--c" as string]: g.c }}>
+                    <b className="n">{g.left}</b>
+                    <div>
+                      <h4>{g.t}</h4>
+                      <span>{g.left <= 1 ? "выпадет в следующем паке" : `${packWord(g.left)} до гарантии`}</span>
+                    </div>
+                    <i role="progressbar" aria-valuemin={0} aria-valuemax={g.max} aria-valuenow={g.now} aria-label={`Серия без ${g.t}`}>
+                      <u style={{ width: `${bar(g.left, g.max)}%` }} />
+                    </i>
+                    <small>
+                      Серия без неё: {g.now} из {g.max}
+                    </small>
                   </div>
-                  <i role="progressbar" aria-valuemin={0} aria-valuemax={g.max} aria-valuenow={g.now} aria-label={`Серия без ${g.t}`}>
-                    <u style={{ width: `${bar(g.left, g.max)}%` }} />
-                  </i>
-                  <small>
-                    Серия без неё: {g.now} из {g.max}
-                  </small>
-                </div>
-              ))}
-            </div>
-            <span className="pk-lbl pk-lbl-f">Уже нашли · {feed.length}</span>
-            {feed.length === 0 ? (
-              <div className="cg-empty">
-                <Ico name="trophy" size={22} />
-                Пока никого — станьте первым.
-              </div>
-            ) : (
-              <ul className="pk-side-l">
-                {feed.map((p, i) => (
-                  <FeedRow key={i} p={p} now={now} />
                 ))}
-              </ul>
-            )}
-          </aside>
+              </div>
+            </div>
+            <div className="st-feed">
+              <span className="pk-lbl">Уже нашли · {feed.length}</span>
+              {feed.length === 0 ? (
+                <div className="cg-empty">
+                  <Ico name="trophy" size={22} />
+                  Пока никого — станьте первым.
+                </div>
+              ) : (
+                <ul className="st-feed-l">
+                  {feed.map((p, i) => (
+                    <FeedRow key={i} p={p} now={now} />
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
         </div>
       </section>
 
