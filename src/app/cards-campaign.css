@@ -1610,7 +1610,7 @@
 .cg .st-tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
 .cg .st-tile { position: relative; display: grid; align-content: start; justify-items: center; gap: 4px; padding: 20px 14px 16px; text-align: center; color: inherit; cursor: pointer; border-radius: 18px; border: 1px solid rgba(255, 255, 255, .08); background: linear-gradient(180deg, rgba(255, 255, 255, .045), rgba(255, 255, 255, .015)); transition: transform .22s var(--cg-ease), border-color .2s, box-shadow .2s, background .2s; }
 .cg .st-tile::before { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: 0; transition: opacity .25s; background: radial-gradient(70% 60% at 50% 30%, color-mix(in oklab, var(--oc) 30%, transparent), transparent 75%); }
-.cg .st-tile > img { position: relative; width: 112px; height: 132px; object-fit: contain; filter: drop-shadow(0 12px 18px rgba(0, 0, 0, .55)); transition: transform .3s var(--cg-ease); }
+.cg .st-tile > img { position: relative; width: 100%; height: 170px; object-fit: contain; filter: drop-shadow(0 12px 18px rgba(0, 0, 0, .55)) drop-shadow(0 0 18px color-mix(in oklab, var(--oc) 40%, transparent)); transition: transform .3s var(--cg-ease); }
 .cg .st-tile:hover:not(:disabled) { transform: translateY(-3px); border-color: color-mix(in oklab, var(--oc) 55%, transparent); }
 .cg .st-tile:hover:not(:disabled) > img { transform: translateY(-4px) scale(1.04); }
 .cg .st-tile[aria-pressed="true"] { border-color: color-mix(in oklab, var(--oc) 75%, transparent); box-shadow: 0 22px 44px -22px var(--oc), 0 0 0 1px color-mix(in oklab, var(--oc) 40%, transparent), inset 0 1px 0 rgba(255, 255, 255, .12); }
@@ -1664,8 +1664,8 @@
   .cg .st-wal em { grid-column: 1; text-align: center; }
   .cg .st-buy .cg-cta { white-space: nowrap; }
   .cg .st-tiles { grid-template-columns: minmax(0, 1fr); gap: 10px; }
-  .cg .st-tile { grid-template-columns: 76px minmax(0, 1fr); justify-items: start; text-align: left; gap: 2px 14px; padding: 12px 14px; }
-  .cg .st-tile > img { grid-row: 1 / span 4; width: 76px; height: 90px; }
+  .cg .st-tile { grid-template-columns: 96px minmax(0, 1fr); justify-items: start; text-align: left; gap: 2px 14px; padding: 12px 14px; }
+  .cg .st-tile > img { grid-row: 1 / span 4; width: 96px; height: 96px; }
   .cg .st-rib { top: -9px; left: auto; right: 12px; }
   .cg .st-meta { min-height: 0; }
   .cg .st-buy { position: sticky; bottom: 10px; z-index: 3; justify-items: stretch; width: 100%; padding: 8px; border-radius: 16px; background: rgba(11, 10, 16, .88); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, .08); }

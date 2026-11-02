@@ -315,9 +315,9 @@ export function PacksTab({ s }: { s: CardsState }) {
                     {fmt(costOf(b))} <Cur k={PAY_CUR[effectivePay]} size={17} />
                   </span>
                   <span className="st-meta">
-                    {b.n > 1 && <span>по {fmt(each)} за пак</span>}
+                    {b.n > 1 && effectivePay !== "token" && <span>по {fmt(each)} за пак</span>}
                     {gift > 0 && <em>−{gift} {packWord(gift)} в подарок</em>}
-                    {b.n === 1 && <span>{PACK.choices} карты на выбор</span>}
+                    {(b.n === 1 || effectivePay === "token") && <span>{PACK.choices} карты на выбор в каждом</span>}
                   </span>
                   {l > 0 && <span className="st-lack">Не хватает {fmt(l)} {unit}</span>}
                 </button>
