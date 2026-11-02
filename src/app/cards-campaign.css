@@ -2122,3 +2122,8 @@ html[data-eco="on"] .cv-face.back::after, html[data-eco="on"] .cv-bk-seal::befor
 .fr-chip.l { left: 15.6%; width: 28.4%; }
 .fr-chip.r { left: 47.5%; width: 38.2%; }
 @media (prefers-reduced-motion: reduce) { .fr-row i::after { animation: none; } }
+
+/* Главные кнопки гачи — синие, без золота */
+.cg .cg-btn.gold, .cg .cg-bt .cg-btn.gold, .cg .pk-page .cg-btn.gold { color: #fff; border: 1px solid rgba(150, 200, 255, .5); background: linear-gradient(180deg, #5aa8ff, #2f6ff0 55%, #2149c4); text-shadow: 0 1px 0 rgba(8, 20, 70, .5); box-shadow: 0 12px 28px -12px rgba(59, 130, 255, .85), inset 0 1px 0 rgba(255, 255, 255, .4); }
+.cg .cg-btn.gold:hover:not(:disabled), .cg .pk-page .cg-btn.gold:hover:not(:disabled) { filter: brightness(1.1); box-shadow: 0 16px 34px -12px rgba(80, 150, 255, 1), inset 0 1px 0 rgba(255, 255, 255, .5); }
+.cg .cg-btn.gold:disabled { filter: saturate(.5) brightness(.8); }
