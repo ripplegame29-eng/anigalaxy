@@ -2289,3 +2289,8 @@ html[data-eco="on"] .cv-fshine, html[data-eco="on"] .cv-frun, html[data-eco="on"
 /* Награды с иконками валют */
 .cg .pg-rw-i { display: inline-flex; align-items: center; gap: 6px; }
 .cg .pg-rw-i .cur-art, .cg .pg-rw-i .scroll-art { flex: none; object-fit: contain; filter: drop-shadow(0 0 6px rgba(120, 170, 255, .45)); }
+
+/* Кнопки гачи: обычное начертание вместо жирного */
+.cg .cg-btn, .cg .cg-btn.gold, .cg .cg-btn.pri, .cg .cg-btn.sm, .cg .cg-bt .cg-btn, .cg .cg-bt .cg-btn.sm, .cg .pk-page .cg-btn, .cg .pk-page .cg-btn.gold, .cg .cg-btn.gold:hover, .cg .st-all, .cg .st-opt { font-weight: 600; letter-spacing: .005em; }
+.cg .bt-go b { font-weight: 700; }
+.cg .bt-act2 .cg-btn, .cg .bt-pow { font-weight: 600; }
