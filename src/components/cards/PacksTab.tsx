@@ -368,21 +368,32 @@ export function PacksTab({ s }: { s: CardsState }) {
             <div className="pk-info st-co">
               {!pendingOffers && (
                 <div className="st-pick">
-                  <button type="button" className="st-all" disabled={loading} onClick={() => setGal(true)}>
-                    <Ico name="grid" size={16} /> Наборы
-                  </button>
-                  <div className="st-chips" role="group" aria-label="Набор паков">
+                  <div className="st-seg" role="group" aria-label="Набор паков">
                     {bundles.map((b, i) => (
-                      <button key={b.n} type="button" className="st-chip" aria-pressed={sel === i} disabled={loading} onClick={() => setSel(i)}>
-                        ×{b.n}
-                        {effectivePay !== "token" && b.n > b.pay && <em>+{b.n - b.pay}</em>}
+                      <button
+                        key={b.n}
+                        type="button"
+                        className="st-opt"
+                        aria-pressed={sel === i}
+                        disabled={loading}
+                        style={{ ["--oc" as string]: OFFER_COLOR[i] ?? OFFER_COLOR[0] }}
+                        onClick={() => setSel(i)}
+                      >
+                        <img src={`/cards/offers/${Math.min(i, 2) + 1}.webp`} alt="" draggable={false} />
+                        <span>
+                          <b>×{b.n}</b>
+                          <small>{i === 0 ? "один пак" : effectivePay !== "token" && b.n > b.pay ? `+${b.n - b.pay} в подарок` : `${b.n} паков`}</small>
+                        </span>
                       </button>
                     ))}
                   </div>
+                  <button type="button" className="st-all" disabled={loading} onClick={() => setGal(true)}>
+                    <Ico name="grid" size={16} /> Все наборы
+                  </button>
                 </div>
               )}
               <div className="pk-chips">
-                <span className="cg-eyebrow">Бустер AniGalaxy</span>
+                <span className="cg-eyebrow">Набор AniGalaxy</span>
                 <span className="cg-chip">{PACK.choices} карты на выбор</span>
               </div>
               <h3>{pendingOffers ? "Выберите одну карту" : bundle.n === 1 ? "Один пак" : `Набор ×${bundle.n}`}</h3>

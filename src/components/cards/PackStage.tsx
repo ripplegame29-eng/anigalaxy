@@ -7,7 +7,7 @@ export type PackPhase = "idle" | "charge" | "burst";
 /** Объект пака: фольга с обжатыми краями и эмблемой галактики. Верхний «клапан» — отдельный слой: при открытии он отрывается */
 export function PackArt() {
   return (
-    <div className="pk-art" role="img" aria-label="Бустер-пак AniGalaxy">
+    <div className="pk-art" role="img" aria-label="Пак AniGalaxy">
       <img className="pk-img pk-body" src="/cards/pack.webp" alt="" draggable={false} />
       <img className="pk-img pk-top" src="/cards/pack.webp" alt="" draggable={false} />
     </div>
