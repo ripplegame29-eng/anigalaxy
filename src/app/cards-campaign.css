@@ -1737,3 +1737,9 @@
   .cg .st-pad { height: 16px; bottom: 6px; }
   .cg .st-gift { top: 0; right: -4px; }
 }
+
+/* главная кнопка паков: наш голубой, шрифт Onest как у кнопок сайта */
+.cg .pk-page .cg-cta { font-family: var(--font-body, inherit); font-weight: 800; font-size: 17px; letter-spacing: 0; background: linear-gradient(135deg, #2f6bff 0%, #3b82ff 45%, #5aa8ff 100%); border-color: rgba(160, 200, 255, .6); box-shadow: 0 16px 38px -14px rgba(59, 130, 255, .95), 0 0 0 1px rgba(59, 130, 255, .25), inset 0 1px 0 rgba(255, 255, 255, .45), inset 0 -2px 0 rgba(10, 30, 110, .35); transition: transform .18s var(--cg-ease), box-shadow .18s, filter .18s; }
+.cg .pk-page .cg-cta:hover:not(:disabled) { transform: translateY(-2px); filter: brightness(1.08); box-shadow: 0 20px 44px -14px rgba(80, 150, 255, 1), 0 0 0 1px rgba(120, 180, 255, .5), inset 0 1px 0 rgba(255, 255, 255, .5), inset 0 -2px 0 rgba(10, 30, 110, .35); }
+.cg .pk-page .cg-cta:active:not(:disabled) { transform: translateY(0); }
+.cg .pk-page .cg-cta .price { font-family: var(--font-body, inherit); font-weight: 800; background: rgba(6, 12, 40, .6); box-shadow: inset 0 0 0 1px rgba(160, 200, 255, .28); }
