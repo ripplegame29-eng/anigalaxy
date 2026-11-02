@@ -36,7 +36,7 @@ export function BannerCard({ s }: { s: CardsState }) {
   const price = (n: number) => (w.packs >= n ? null : PACK.diamonds * (n === 1 ? 1 : 5));
   const pct = Math.min(100, (b.counter / b.guarantee) * 100);
   const chance = String(+(b.boost * 100).toFixed(1)).replace(".", ",");
-  const Price = ({ n }: { n: number }) => (
+  const priceEl = (n: number) => (
     <span className="bn-p">
       {price(n) === null ? <><Cur k="packs" size={17} /> {n}</> : <><Cur k="diamonds" size={17} /> {price(n)}</>}
     </span>
@@ -82,11 +82,11 @@ export function BannerCard({ s }: { s: CardsState }) {
         <div className="bn-buy">
           <button type="button" className="bn-b main" disabled={busy || pending || (price(1) !== null && w.diamonds < price(1)!)} onClick={() => void open(1)}>
             <span>1 пак</span>
-            <Price n={1} />
+            {priceEl(1)}
           </button>
           <button type="button" className="bn-b" disabled={busy || pending || (price(6) !== null && w.diamonds < price(6)!)} onClick={() => void open(6)}>
             <span>6 паков</span>
-            <Price n={6} />
+            {priceEl(6)}
           </button>
         </div>
       </div>
