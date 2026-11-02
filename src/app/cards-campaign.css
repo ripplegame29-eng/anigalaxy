@@ -2285,3 +2285,7 @@ html[data-eco="on"] .cv-fshine, html[data-eco="on"] .cv-frun, html[data-eco="on"
 .cg .bt-go { border: 0; border-radius: 999px; background: linear-gradient(180deg, #78b2ff 0%, #4a7dfb 52%, #3358e0 100%); box-shadow: 0 14px 32px -10px rgba(62, 120, 255, .9), inset 0 1px 0 rgba(255, 255, 255, .45), inset 0 -3px 0 rgba(20, 40, 140, .35); padding-inline: 26px 14px; }
 .cg .bt-go em { border-radius: 999px; }
 .cg .bt-go:disabled { filter: saturate(.4) brightness(.75); }
+
+/* Награды с иконками валют */
+.cg .pg-rw-i { display: inline-flex; align-items: center; gap: 6px; }
+.cg .pg-rw-i .cur-art, .cg .pg-rw-i .scroll-art { flex: none; object-fit: contain; filter: drop-shadow(0 0 6px rgba(120, 170, 255, .45)); }

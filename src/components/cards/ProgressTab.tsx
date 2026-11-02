@@ -5,14 +5,14 @@ import { ACHIEVEMENTS, SHOWCASE_MAX, rewardText, type Reward } from "@/lib/cards
 import { act, type CardsState } from "@/lib/cards/client";
 import { GameCard } from "./GameCard";
 import { InvPicker, Panel, fmt, fmtLeft, toast, useBusy, useNow } from "./common";
-import { Ico, type IcoName } from "./icons";
+import { Cur, Ico, ScrollArt, type IcoName } from "./icons";
 
 const rewardChips = (r: Reward) => (
   <span className="pg-rw">
-    {r.diamonds ? <span className="pg-rw-i d">{fmt(r.diamonds)} алм.</span> : null}
-    {r.dust ? <span className="pg-rw-i u">{fmt(r.dust)} пыли</span> : null}
-    {r.scroll ? <span className="pg-rw-i s">{r.scroll} свиток</span> : null}
-    {r.packs ? <span className="pg-rw-i p">{r.packs} пак{r.packs > 1 ? "а" : ""}</span> : null}
+    {r.diamonds ? <span className="pg-rw-i d"><Cur k="diamonds" size={16} />{fmt(r.diamonds)} алм.</span> : null}
+    {r.dust ? <span className="pg-rw-i u"><Cur k="dust" size={16} />{fmt(r.dust)} пыли</span> : null}
+    {r.scroll ? <span className="pg-rw-i s"><ScrollArt size={18} />{r.scroll} свиток</span> : null}
+    {r.packs ? <span className="pg-rw-i p"><Cur k="packs" size={16} />{r.packs} пак{r.packs > 1 ? "а" : ""}</span> : null}
   </span>
 );
 
