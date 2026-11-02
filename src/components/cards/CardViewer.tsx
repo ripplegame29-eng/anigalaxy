@@ -171,14 +171,15 @@ export function CardViewer({
             </div>
             <div ref={stage} className="cv-stage" onPointerMove={move} onPointerLeave={leave}>
               <div className={`cv-flip${flip ? " is-back" : ""}`}>
-                <div className="cv-face front" key={`${id}-${card?.level ?? 0}`} style={{ ["--fr" as string]: `url(/cards/frames/${rank.key}.webp)` } as CSSProperties}>
+                <div className="cv-face front" key={`${id}-${card?.level ?? 0}`} style={{ ["--fr" as string]: `url(/cards/frames/edge/${rank.key}.webp)` } as CSSProperties}>
                   <GameCard cardId={id} foil={card?.foil} level={card?.level} evo={card?.evo} locked={card?.locked} stats={false} live />
                   <i className="cv-holo" aria-hidden />
                   <i className="cv-glare" aria-hidden />
                   <i className="cv-rim" aria-hidden />
                   <i className="cv-flare" aria-hidden />
                   <i className="cv-fshine" aria-hidden />
-                  <i className="cv-frun" aria-hidden />
+                  <i className="cv-fglow" aria-hidden />
+                  <i className="cv-fglint" aria-hidden />
                   {[0, 1, 2, 3].map((k) => (
                     <i key={k} className={`cv-fsp s${k}`} aria-hidden />
                   ))}

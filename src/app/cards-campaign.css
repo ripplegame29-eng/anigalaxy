@@ -2294,3 +2294,12 @@ html[data-eco="on"] .cv-fshine, html[data-eco="on"] .cv-frun, html[data-eco="on"
 .cg .cg-btn, .cg .cg-btn.gold, .cg .cg-btn.pri, .cg .cg-btn.sm, .cg .cg-bt .cg-btn, .cg .cg-bt .cg-btn.sm, .cg .pk-page .cg-btn, .cg .pk-page .cg-btn.gold, .cg .cg-btn.gold:hover, .cg .st-all, .cg .st-opt { font-weight: 600; letter-spacing: .005em; }
 .cg .bt-go b { font-weight: 700; }
 .cg .bt-act2 .cg-btn, .cg .bt-pow { font-weight: 600; }
+
+/* Лицевая рамка: свет играет внутри самих кристаллов (как на рубашке), без белого контура */
+.cv-frun { display: none; }
+.cv-fshine { background: linear-gradient(112deg, transparent 44%, rgba(255, 255, 255, .7) 50%, transparent 56%) 0 0 / 300% 100%; opacity: .85; }
+.cv-fglow, .cv-fglint { position: absolute; inset: 0; z-index: 4; pointer-events: none; mix-blend-mode: screen; -webkit-mask: var(--fr) 0 0 / 100% 100% no-repeat; mask: var(--fr) 0 0 / 100% 100% no-repeat; }
+.cv-fglow { background: radial-gradient(55% 32% at 28% 22%, rgba(255, 255, 255, .85), transparent 70%), radial-gradient(45% 28% at 74% 80%, rgba(255, 255, 255, .7), transparent 70%); animation: fr-pulse 3.8s ease-in-out infinite; }
+.cv-fglint { background: linear-gradient(62deg, transparent 45%, rgba(215, 240, 255, .8) 50%, transparent 55%) 0 0 / 320% 100%; animation: fr-sweep 8s ease-in-out infinite reverse; animation-delay: -3s; }
+@media (prefers-reduced-motion: reduce) { .cv-fglow, .cv-fglint { animation: none; opacity: .3; } }
+html[data-eco="on"] .cv-fglow, html[data-eco="on"] .cv-fglint { animation: none; }

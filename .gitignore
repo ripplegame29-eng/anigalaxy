@@ -79,3 +79,4 @@ _backup_before_cards/
 
 # Real-ESRGAN для scripts/upscale-art.ps1
 /tools/realesrgan/
+/tools/frames-hd/
