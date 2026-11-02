@@ -1,5 +1,6 @@
 /** Сборка состояния карточек для браузера и разбор действий. */
 
+import { bpGachaSync } from "./cards-bp";
 import { MAX_ENERGY, ENERGY_REGEN_MS, leagueOf, weeklyMods } from "../cards/config";
 import {
   acBalance,
@@ -182,6 +183,8 @@ export function cardsAction(db: Database, userId: number, op: string, body: Reco
       return raidClaim(db, userId, now);
     case "evolve":
       return evolve(db, userId, Math.floor(Number(body.id)), ints(body.ids), now);
+    case "bp-sync":
+      return bpGachaSync(db, userId);
     case "pass-buy":
       return passBuy(db, userId, now);
     case "pass-claim":

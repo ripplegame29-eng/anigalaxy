@@ -6,6 +6,7 @@
  */
 
 import { FRAMES, PROFILE_DECORS, type Rarity as CosmeticsRarity } from "../cosmetics";
+import { rewardText, type Reward as GachaReward } from "../cards/progress";
 import { PROGRESSION_CONFIG } from "../progression/progression.config";
 import type { ProgressionConfig, TagDef } from "../progression/types";
 import {
@@ -128,6 +129,7 @@ export function bpLevelNumbers(cfg: BattlePassConfig = BATTLEPASS): number[] {
 export type BpRarity = CosmeticsRarity;
 
 export type RewardView =
+  | { kind: "gacha"; label: string; reward: GachaReward }
   | { kind: "ac"; amount: number; label: string }
   | { kind: "bpXp"; amount: number; label: string }
   | {
@@ -212,6 +214,8 @@ export function describeReward(
   cfg: ProgressionConfig = PROGRESSION_CONFIG,
 ): RewardView {
   switch (reward.kind) {
+    case "gacha":
+      return { kind: "gacha", reward: reward.reward, label: `Гача: ${gachaText(reward.reward)}` };
     case "ac":
       return { kind: "ac", amount: reward.amount, label: `${reward.amount} AC` };
     case "bpXp":
@@ -395,4 +399,9 @@ export function bpMissionValue(
   if (mission.kind === "bpXp") return bp.xp;
   if (mission.kind === "level") return bpLevelFromXp(bp.xp);
   return bp.claimed.length;
+}
+
+/** Текст награды гачи: «2 пака · 60 пыли · свиток ранга S» */
+export function gachaText(r: GachaReward): string {
+  return rewardText(r) || "награда";
 }

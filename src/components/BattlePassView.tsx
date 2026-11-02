@@ -54,6 +54,7 @@ import {
 import { progressEmit, useProgress } from "@/lib/progression/events";
 import type { BattlepassLine, ProgressEffect } from "@/lib/progression/types";
 import { pushToast } from "@/lib/toasts";
+import { syncBpRewards } from "@/lib/cards/client";
 import { useAccount } from "@/lib/use-account";
 
 type ClaimEffect = Extract<ProgressEffect, { type: "BATTLEPASS_CLAIMED" }>;
@@ -82,6 +83,23 @@ export function BattlePassView() {
     [bp.xp, premium, claimed],
   );
   const claimables = useMemo(() => bpClaimables(statusCtx), [statusCtx]);
+
+  // Награды карточной игры на уровнях выдаёт сервер после того, как забранный уровень
+  // попал в синхронизированный прогресс — пробуем сразу и с повторами
+  const claimedCount = bp.claimed.length;
+  useEffect(() => {
+    if (!account) return;
+    let alive = true;
+    const run = async () => {
+      const res = await syncBpRewards();
+      if (alive && res && res.count > 0) pushToast({ kind: "ac", title: "Награды гачи получены", text: `Начислено наград карточной игры: ${res.count}` });
+    };
+    const timers = [400, 4000, 15000].map((ms) => window.setTimeout(() => void run(), ms));
+    return () => {
+      alive = false;
+      timers.forEach((id) => window.clearTimeout(id));
+    };
+  }, [account, claimedCount]);
 
   const [tab, setTab] = useState<BpTab>("rewards");
   const [scene, setScene] = useState<SceneState | null>(null);

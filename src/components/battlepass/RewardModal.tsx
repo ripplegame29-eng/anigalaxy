@@ -92,6 +92,11 @@ export function RewardModal({ card, status, premium, nickname, onClaim, onClose 
               {vip ? "Premium" : "Free"}
             </b>
           </div>
+          {card.gacha && (
+            <div className="row">
+              Карточная игра<b style={{ color: "#8fd6ff" }}>{card.gacha}</b>
+            </div>
+          )}
           {card.extras.length > 0 && (
             <div className="row">
               В пакете ещё<b>{card.extras.map((view) => view.label).join(" · ")}</b>

@@ -2425,3 +2425,14 @@ html[data-eco="on"] .cv-fglow, html[data-eco="on"] .cv-fglint { animation: none;
   .cg-deal.many > * { flex-basis: calc((100% - 16px) / 3); max-width: none; }
   .cg-deal.many:has(> :nth-child(-n + 3):last-child) > * { flex-basis: 40%; }
 }
+
+/* Вкладка «Сезон»: переключатель «Боевой пропуск / Следующий сезон» */
+.cg .sv-switch { display: flex; gap: 6px; width: fit-content; max-width: 100%; margin: 0 auto 16px; padding: 5px; border-radius: 16px; background: rgba(8, 14, 36, 0.7); border: 1px solid rgba(110, 160, 255, 0.2); overflow-x: auto; }
+.cg .sv-switch button { padding: 10px 18px; border-radius: 12px; border: 0; background: transparent; color: var(--cg-text2, #a9b8e8); font: 600 13.5px var(--font-body, inherit); cursor: pointer; white-space: nowrap; transition: background 0.2s, color 0.2s; }
+.cg .sv-switch button.on { background: linear-gradient(135deg, #2b6bff, #6a4dff); color: #fff; box-shadow: 0 6px 20px rgba(60, 100, 255, 0.35); }
+.cg .sv-switch button:not(.on):hover { background: rgba(110, 160, 255, 0.12); color: #fff; }
+.cg .sv-soon { display: grid; gap: 2px; margin: 0 0 14px; padding: 12px 16px; border-radius: 14px; background: linear-gradient(120deg, rgba(43, 107, 255, 0.18), rgba(122, 77, 255, 0.14)); border: 1px solid rgba(120, 170, 255, 0.28); font-size: 13px; color: var(--cg-text2, #b8c6ee); }
+.cg .sv-soon b { font: 700 14px var(--cg-head, inherit); color: #fff; }
+.cg .sv-bpwrap { border-radius: 22px; }
+/* Пасс следующего сезона — только просмотр: покупка и предложения скрыты */
+.cg .sv-next .sv-offer { display: none; }

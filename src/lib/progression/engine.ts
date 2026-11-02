@@ -836,6 +836,8 @@ function syncSeason(env: Env): void {
 type BpOp =
   | { type: "ac"; amount: number }
   | { type: "bpXp"; amount: number }
+  /** Награда гачи: движок её не выдаёт (её выдаёт сервер карточек по забранному ключу) */
+  | { type: "gacha" }
   | { type: "item"; id: string; kind: "tag" | "frame" | "decor"; duplicate: boolean; dupeAc: number };
 
 /**
@@ -853,6 +855,7 @@ function planReward(
 
   if (reward.kind === "ac") return { type: "ac", amount: reward.amount };
   if (reward.kind === "bpXp") return { type: "bpXp", amount: reward.amount };
+  if (reward.kind === "gacha") return { type: "gacha" };
 
   if (reward.kind === "tag") {
     const tag = cfg.tags.find((item) => item.id === reward.itemId);
@@ -972,6 +975,7 @@ function claimBundle(env: Env, event: Extract<DomainEvent, { type: "BATTLEPASS_C
 
   plan.forEach((op, index) => {
     const baseKey = `${key}:${index}`;
+    if (op.type === "gacha") return;
     if (op.type === "ac") {
       ac += op.amount;
       grant(env, {
@@ -1397,6 +1401,21 @@ function dispatch(env: Env, event: DomainEvent): void {
 
     case "BP_MISSION_CLAIMED": {
       claimBpMission(env, event.missionId);
+      return;
+    }
+
+    case "BP_GACHA_XP": {
+      const { doc } = env;
+      const total = Math.floor(event.total);
+      if (!Number.isFinite(total) || total <= 0 || !Number.isInteger(event.gachaSeason)) return;
+      if (doc.battlepass.season !== BATTLEPASS.seasonId) return;
+      const key = `BP_GACHA_XP:${event.gachaSeason}`;
+      const last = doc.counters[key] ?? 0;
+      // потолок: очки пасса гачи ограничены сезоном (≈3600), лишнее — подделка
+      const capped = Math.min(total, 3600);
+      if (capped <= last) return;
+      doc.battlepass.xp += capped - last;
+      doc.counters[key] = capped;
       return;
     }
   }

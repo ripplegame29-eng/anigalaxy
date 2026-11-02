@@ -3,6 +3,7 @@
 /** Клиентское хранилище карточек: состояние сервера + вызов действий. */
 
 import { useSyncExternalStore } from "react";
+import { progressEmit } from "../progression/events";
 import { getProgressStore } from "../progression/store";
 import { cardDef, setHidden } from "./catalog";
 import type { Rank } from "./config";
@@ -71,11 +72,31 @@ const listeners = new Set<() => void>();
 let artSet = new Set<string>();
 let fetched = false;
 
+/** Очки сезонного пасса гачи → XP основного боевого пропуска (в пропуск идёт только прирост) */
+function bridgeBpXp(state: CardsState): void {
+  const p = state.events?.pass;
+  if (!p || !(p.xp > 0)) return;
+  try {
+    progressEmit({ type: "BP_GACHA_XP", gachaSeason: p.season, total: p.xp });
+  } catch {
+    /* не критично */
+  }
+}
+
+/** Выдать награды гачи за уже забранные уровни боевого пропуска */
+export async function syncBpRewards(): Promise<{ count: number } | null> {
+  const r = await call<{ result: { count: number; reward: Record<string, number> }; state: CardsState }>("/api/cards/bp-sync", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" });
+  if (!r.ok) return null;
+  emit({ state: r.data.state });
+  return { count: r.data.result.count };
+}
+
 function emit(next: Partial<Snapshot>): void {
   snap = { ...snap, ...next };
   if (snap.state) {
     artSet = new Set(snap.state.art);
     setHidden(snap.state.hidden ?? []);
+    if (next.state) bridgeBpXp(snap.state);
   }
   listeners.forEach((l) => l());
 }
