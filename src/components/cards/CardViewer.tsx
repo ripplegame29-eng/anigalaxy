@@ -179,9 +179,12 @@ export function CardViewer({
                   <i className="cv-flare" aria-hidden />
                 </div>
                 <div className="cv-face back fr" aria-hidden={!flip}>
+                  <i className="fr-aura" aria-hidden />
                   <img className="fr-art" src="/cards/backs/rare.webp" alt="" draggable={false} />
                   <i className="fr-glow" aria-hidden />
                   <i className="fr-shine" aria-hidden />
+                  <i className="fr-run" aria-hidden />
+                  <i className="fr-glint" aria-hidden />
                   {[0, 1, 2, 3, 4, 5].map((k) => (
                     <i key={k} className={`fr-sp s${k}`} aria-hidden />
                   ))}
