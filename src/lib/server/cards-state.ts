@@ -44,6 +44,8 @@ import {
 import { battleLog, battleReplay, buyEnergy, challenge, fight, ratingTop, setDeck, weekIndexOf } from "./cards-battle";
 import { campaignClaim, campaignFight, campaignState } from "./cards-campaign";
 import { raidClaim, raidFight, raidView } from "./cards-raid";
+import { buyBooster, claimFreeBooster, equipRelics, gearState, upgradeRelic } from "./cards-gear";
+import { arenaOfDay, dayIndex } from "../cards/gear";
 import { eventsState, noticesSeen, passBuy, passClaim } from "./cards-season";
 import { claimAchievement, claimSet, claimWeekly, collectorProfile, progressState, setShowcase } from "./cards-progress";
 import { artIds, missingIds, startArtSync } from "./cards-art";
@@ -81,6 +83,8 @@ export function cardsState(db: Database, userId: number, now = Date.now()) {
     events: eventsState(db, userId, now),
     split: splitUsage(db, userId, now),
     mods,
+    gear: gearState(db, userId, now),
+    arena: { id: arenaOfDay(dayIndex(now)).id, until: new Date(new Date(now).getFullYear(), new Date(now).getMonth(), new Date(now).getDate() + 1).getTime() },
     ac: acBalance(db, userId),
     art: artIds(),
     hidden: missingIds(),
@@ -170,15 +174,15 @@ export function cardsAction(db: Database, userId: number, op: string, body: Reco
     case "skill-up":
       return upgradeSkill(db, userId, Math.floor(Number(body.id)) || 0, String(body.skill ?? ""), now);
     case "fight":
-      return fight(db, userId, { training: !!body.training }, now);
+      return fight(db, userId, { training: !!body.training, booster: body.booster ? String(body.booster) : undefined }, now);
     case "challenge":
-      return challenge(db, userId, String(body.nick ?? ""), now);
+      return challenge(db, userId, String(body.nick ?? ""), now, Math.random, body.booster ? String(body.booster) : undefined);
     case "camp-fight":
-      return campaignFight(db, userId, Number(body.chapter), Number(body.stage), { training: !!body.training }, now);
+      return campaignFight(db, userId, Number(body.chapter), Number(body.stage), { training: !!body.training, booster: body.booster ? String(body.booster) : undefined }, now);
     case "camp-claim":
       return campaignClaim(db, userId, Number(body.chapter), Number(body.tier), now);
     case "raid-fight":
-      return raidFight(db, userId, now);
+      return raidFight(db, userId, now, Math.random, body.booster ? String(body.booster) : undefined);
     case "raid-claim":
       return raidClaim(db, userId, now);
     case "evolve":
@@ -193,6 +197,14 @@ export function cardsAction(db: Database, userId: number, op: string, body: Reco
       return noticesSeen(db, userId, String(body.kind ?? "all"));
     case "energy":
       return buyEnergy(db, userId, now);
+    case "gear-equip":
+      return equipRelics(db, userId, Array.isArray(body.ids) ? body.ids.map(String) : []);
+    case "relic-up":
+      return upgradeRelic(db, userId, String(body.id ?? ""));
+    case "booster-buy":
+      return buyBooster(db, userId, String(body.id ?? ""), Number(body.n) || 1);
+    case "booster-free":
+      return claimFreeBooster(db, userId, now);
     case "ach-claim":
       return claimAchievement(db, userId, String(body.id ?? ""), now);
     case "set-claim":

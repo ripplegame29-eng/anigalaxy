@@ -18,6 +18,7 @@ import type { Reward } from "../cards/progress";
 import { fail, getWallet, grantReward, listInventory, logEvent, addMoney, type Res, type Rng } from "./cards";
 import { getExtra, setExtra, track } from "./cards-extra";
 import { prepareSides, saveBattle, unitOf, type BattleReport } from "./cards-battle";
+import { commitGear, resolveGear } from "./cards-gear";
 import { transaction, type Database } from "./sqlite";
 
 const hash = (s: string): number => {
@@ -121,7 +122,7 @@ export function campaignFight(
   userId: number,
   chapter: number,
   stage: number,
-  opts: { training?: boolean } = {},
+  opts: { training?: boolean; booster?: string } = {},
   now = Date.now(),
   rng: Rng = Math.random,
 ): Res<BattleReport> {
@@ -144,8 +145,10 @@ export function campaignFight(
     const training = !!opts.training;
     if (!training && w.energy < BATTLE.energyCost) return fail("Нет энергии — подождите или восстановите её");
 
-    const side = prepareSides(mine, stageUnits(ch, st), now, { foeSynergy: false });
-    const outcome = simulate(side.you, side.foe, rng);
+    const gear = resolveGear(db, userId, opts.booster, training);
+    if (!gear.ok) return fail(gear.error);
+    const side = prepareSides(mine, stageUnits(ch, st), now, { foeSynergy: false, you: gear.value.perks });
+    const outcome = simulate(side.you, side.foe, rng, { perks: side.sim });
     const win = outcome.winner === "a" && !outcome.timeout;
     const lost = outcome.a.filter((u) => u.hp <= 0).length;
     const stars = win ? 1 + (outcome.rounds <= FAST_ROUNDS ? 1 : 0) + (lost === 0 ? 1 : 0) : 0;
@@ -174,8 +177,11 @@ export function campaignFight(
       }
     }
     const title = `${CHAPTERS[ch].series} · ${isBoss(st) ? "Босс" : `Этап ${st + 1}`}`;
+    const drops = commitGear(db, userId, { kind: "campaign", win, tier: 2, now, sure: firstClear && isBoss(st), chance: firstClear ? 0.3 : win ? 0.1 : 0 }, gear.value.booster, training);
     const report: BattleReport = {
       outcome,
+      youGear: gear.value.info,
+      drops,
       you: side.you,
       foe: side.foe,
       youSyn: side.youSyn,

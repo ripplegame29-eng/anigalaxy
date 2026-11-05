@@ -15,6 +15,7 @@ import "../../app/cards-skills.css";
 import "../../app/cards-progress.css";
 import "../../app/cards-campaign.css";
 import "../../app/cards-season.css";
+import "../../app/cards-arsenal.css";
 import { AuctionTab } from "./AuctionTab";
 import { BattleTab } from "./BattleTab";
 import { CollectionTab } from "./CollectionTab";

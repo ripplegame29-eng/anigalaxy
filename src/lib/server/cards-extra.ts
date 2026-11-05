@@ -27,6 +27,8 @@ export interface Extra {
   pass: { season: number; xp: number; free: number[]; premium: number[]; bought: boolean };
   /** Гарантии баннеров: id баннера → паки без главного приза */
   banners: Record<string, number>;
+  /** Боевое снаряжение: реликвии (id → уровень), экипировка, бустеры, бесплатный бустер дня */
+  gear: { relics: Record<string, number>; slots: string[]; boost: Record<string, number>; free: string; n: number; pity: number };
   [k: string]: unknown;
 }
 
@@ -44,6 +46,7 @@ const blank = (): Extra => ({
   raid: { week: 0, damage: 0, hits: 0, claimed: 0, defeat: false, day: "", dayHits: 0 },
   pass: { season: 0, xp: 0, free: [], premium: [], bought: false },
   banners: {},
+  gear: { relics: {}, slots: [], boost: {}, free: "", n: 0, pity: 0 },
 });
 
 export function getExtra(db: Database, userId: number): Extra {
@@ -60,6 +63,7 @@ export function getExtra(db: Database, userId: number): Extra {
       camp: { ...base.camp, ...(v.camp ?? {}) },
       raid: { ...base.raid, ...(v.raid ?? {}) },
       pass: { ...base.pass, ...(v.pass ?? {}) },
+      gear: { ...base.gear, ...(v.gear ?? {}) },
     };
   } catch {
     return base;

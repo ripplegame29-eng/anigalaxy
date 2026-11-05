@@ -10,6 +10,7 @@ import { BATTLE, ELEMENTS, type CardClass, type Element } from "./config";
 import { ENERGY, ULTIMATES, levelled, skillDef, type Skill, type SkillFx } from "./skills";
 import { bonusPerMember, type Synergy } from "./synergy";
 import { cardDef } from "./catalog";
+import { mergePerks, type Perks } from "./gear";
 
 export interface Unit {
   key: string;
@@ -42,7 +43,7 @@ export type StatusKind = "stun" | "burn" | "atkUp" | "defDown" | "taunt" | "shie
 export type BattleEvent =
   | { t: "cast"; from: string; skill: string; fx: SkillFx; targets: string[]; round: number; ult?: boolean }
   | { t: "energy"; to: string; en: number; round: number }
-  | { t: "revive"; to: string; hp: number; round: number }
+  | { t: "revive"; to: string; hp: number; round: number; /** Источник: снаряжение (реликвия или бустер) */ src?: "gear" }
   | { t: "hit"; from: string; to: string; dmg: number; crit: boolean; adv: number; round: number; hp: number; dead: boolean; guard?: string; skill?: string; absorbed: number; sh: number }
   | { t: "heal"; from: string; to: string; amount: number; round: number; hp: number; skill?: string }
   | { t: "shield"; from: string; to: string; amount: number; round: number; skill?: string }
@@ -87,6 +88,19 @@ export function applySynergies(units: Unit[]): { units: Unit[]; list: Synergy[] 
   };
 }
 
+/** Статовые бонусы снаряжения (реликвии, бустеры): атака, защита, здоровье, скорость */
+export function applyGearStats(units: Unit[], p: Perks): Unit[] {
+  if (!p.atk && !p.def && !p.hp && !p.spd) return units;
+  return units.map((u) => ({
+    ...u,
+    atk: Math.round(u.atk * (1 + (p.atk ?? 0))),
+    def: Math.round(u.def * (1 + (p.def ?? 0))),
+    spd: Math.round(u.spd * (1 + (p.spd ?? 0))),
+    maxHp: Math.round(u.maxHp * (1 + (p.hp ?? 0))),
+    hp: Math.round(u.hp * (1 + (p.hp ?? 0))),
+  }));
+}
+
 /** Статовые пассивки (поведенческие обрабатывает симуляция) */
 export function applyPassives(units: Unit[]): Unit[] {
   return units.map((u) => {
@@ -128,7 +142,13 @@ interface State {
 
 const EFFECT_TURNS = 3;
 
-export function simulate(aIn: Unit[], bIn: Unit[], rng: () => number, opts: { maxRounds?: number } = {}): BattleOutcome {
+/** Параметры боя: лимит раундов и бонусы снаряжения сторон и правила арены */
+export interface SimOpts {
+  maxRounds?: number;
+  perks?: { a?: Perks; b?: Perks; arena?: Perks };
+}
+
+export function simulate(aIn: Unit[], bIn: Unit[], rng: () => number, opts: SimOpts = {}): BattleOutcome {
   const maxRounds = opts.maxRounds ?? BATTLE.maxRounds;
   const a = aIn.map((u) => ({ ...u }));
   const b = bIn.map((u) => ({ ...u }));
@@ -142,6 +162,11 @@ export function simulate(aIn: Unit[], bIn: Unit[], rng: () => number, opts: { ma
     const sk = skillDef(id);
     return sk ? levelled(sk, u.skillLv?.[id] ?? 1) : undefined;
   };
+  const PK = { a: mergePerks(opts.perks?.a, opts.perks?.arena), b: mergePerks(opts.perks?.b, opts.perks?.arena) };
+  const pk = (u: Unit): Perks => PK[u.side];
+  const foePk = (u: Unit): Perks => PK[u.side === "a" ? "b" : "a"];
+  /** Возрождение от снаряжения: один раз на отряд */
+  const team = { a: { pct: PK.a.revive ?? 0, used: false }, b: { pct: PK.b.revive ?? 0, used: false } };
   const st = new Map<string, State>();
   for (const u of all) {
     const cd = new Map<string, number>();
@@ -151,20 +176,27 @@ export function simulate(aIn: Unit[], bIn: Unit[], rng: () => number, opts: { ma
     }
     st.set(u.key, { cd, stun: 0, atkUp: { n: 0, v: 0 }, defDown: { n: 0, v: 0 }, burn: { n: 0, dmg: 0 }, taunt: 0, shield: 0, shieldN: 0, en: u.passive === "p-swift" ? 30 : 0, revived: false });
   }
-  const gainEnergy = (u: Unit, n: number) => {
+  const gainEnergy = (u: Unit, n: number, flat = 0) => {
     const s = st.get(u.key)!;
     const before = s.en;
-    s.en = Math.min(ENERGY.max, s.en + n);
+    const mul = Math.max(0, 1 + (pk(u).enMul ?? 0) + (foePk(u).foeEnMul ?? 0));
+    s.en = Math.min(ENERGY.max, s.en + Math.round(n * mul) + flat);
     if (s.en !== before) events.push({ t: "energy", to: u.key, en: s.en, round });
   };
-  const canRevive = (u: Unit) => u.hp <= 0 && u.passive === "p-revive" && !st.get(u.key)!.revived;
+  const canRevive = (u: Unit) => u.hp <= 0 && ((u.passive === "p-revive" && !st.get(u.key)!.revived) || (team[u.side].pct > 0 && !team[u.side].used));
   const revive = (u: Unit) => {
-    st.get(u.key)!.revived = true;
-    u.hp = Math.max(1, Math.round(u.maxHp * 0.3));
-    events.push({ t: "revive", to: u.key, hp: u.hp, round });
+    if (u.passive === "p-revive" && !st.get(u.key)!.revived) {
+      st.get(u.key)!.revived = true;
+      u.hp = Math.max(1, Math.round(u.maxHp * 0.3));
+      events.push({ t: "revive", to: u.key, hp: u.hp, round });
+      return;
+    }
+    team[u.side].used = true;
+    u.hp = Math.max(1, Math.round(u.maxHp * team[u.side].pct));
+    events.push({ t: "revive", to: u.key, hp: u.hp, round, src: "gear" });
   };
   const S = (u: Unit) => st.get(u.key)!;
-  const effAtk = (u: Unit) => u.atk * (1 + (S(u).atkUp.n > 0 ? S(u).atkUp.v : 0));
+  const effAtk = (u: Unit) => u.atk * (1 + (S(u).atkUp.n > 0 ? S(u).atkUp.v : 0) + (round <= (pk(u).burstN ?? 0) ? (pk(u).burstAtk ?? 0) : 0));
   const effDef = (u: Unit) => u.def * (1 - (S(u).defDown.n > 0 ? S(u).defDown.v : 0));
   const status = (u: Unit, kind: StatusKind, on: boolean) => events.push({ t: "status", to: u.key, kind, on, round });
 
@@ -178,15 +210,20 @@ export function simulate(aIn: Unit[], bIn: Unit[], rng: () => number, opts: { ma
   };
 
   const strike = (u: Unit, target: Unit, power: number, skill?: Skill, guard?: string): number => {
-    const adv = advantage(u.element, target.element);
-    const critChance = (u.cls === "assassin" ? 0.2 : 0.08) + (u.passive === "p-focus" ? 0.12 : 0);
+    let adv = advantage(u.element, target.element);
+    if (adv > 1) adv += pk(u).advUp ?? 0;
+    else if (adv < 1) adv += pk(u).advDown ?? 0;
+    const critChance = (u.cls === "assassin" ? 0.2 : 0.08) + (u.passive === "p-focus" ? 0.12 : 0) + (pk(u).crit ?? 0);
     const crit = rng() < critChance;
     let raw = effAtk(u) * power * (u.cls === "warrior" ? 1.1 : 1) * (crit ? 1.6 : 1) * adv * (0.9 + rng() * 0.2);
     if (skill?.exec && target.hp / target.maxHp < 0.35) raw *= skill.exec;
+    if (pk(u).exec && target.hp / target.maxHp < 0.35) raw *= 1 + pk(u).exec!;
+    raw *= Math.max(0.2, 1 + (pk(u).dmg ?? 0) + (pk(target).taken ?? 0));
     const dmg = Math.max(1, Math.round((raw * 100) / (100 + effDef(target) * 0.8)));
     const { absorbed } = damage(target, dmg);
     const saved = canRevive(target);
     events.push({ t: "hit", from: u.key, to: target.key, dmg, crit, adv, round, hp: target.hp, dead: target.hp <= 0 && !saved, guard, skill: skill?.id, absorbed, sh: S(target).shield });
+    if (pk(u).vamp && u.hp > 0 && !saved) heal(u, u, dmg * pk(u).vamp!, undefined, "g-vamp", true);
     if (saved) revive(target);
     else if (target.hp <= 0) {
       const s = S(target);
@@ -194,8 +231,9 @@ export function simulate(aIn: Unit[], bIn: Unit[], rng: () => number, opts: { ma
       s.shield = 0;
     } else {
       gainEnergy(target, ENERGY.perHit);
-      if (target.passive === "p-thorns" && u.hp > 0) {
-        const back = Math.max(1, Math.round(dmg * 0.15));
+      const thorns = (target.passive === "p-thorns" ? 0.15 : 0) + (pk(target).thorns ?? 0);
+      if (thorns > 0 && u.hp > 0) {
+        const back = Math.max(1, Math.round(dmg * thorns));
         const r = damage(u, back);
         const sv = canRevive(u);
         events.push({ t: "hit", from: target.key, to: u.key, dmg: back, crit: false, adv: 1, round, hp: u.hp, dead: u.hp <= 0 && !sv, skill: "p-thorns", absorbed: r.absorbed, sh: S(u).shield });
@@ -209,16 +247,16 @@ export function simulate(aIn: Unit[], bIn: Unit[], rng: () => number, opts: { ma
     return dmg;
   };
 
-  const heal = (from: Unit, to: Unit, amount: number, skill?: Skill) => {
-    const real = Math.min(to.maxHp - to.hp, Math.round(amount));
+  const heal = (from: Unit, to: Unit, amount: number, skill?: Skill, id?: string, raw = false) => {
+    const real = Math.min(to.maxHp - to.hp, Math.round(raw ? amount : amount * (1 + (pk(from).heal ?? 0))));
     if (real <= 0) return;
     to.hp += real;
-    events.push({ t: "heal", from: from.key, to: to.key, amount: real, round, hp: to.hp, skill: skill?.id });
+    events.push({ t: "heal", from: from.key, to: to.key, amount: real, round, hp: to.hp, skill: skill?.id ?? id });
   };
 
   const addShield = (from: Unit, to: Unit, amount: number, skill?: Skill) => {
     const s = S(to);
-    s.shield += Math.round(amount);
+    s.shield += Math.round(amount * (1 + (pk(from).shield ?? 0)));
     s.shieldN = EFFECT_TURNS;
     events.push({ t: "shield", from: from.key, to: to.key, amount: s.shield, round, skill: skill?.id });
   };
@@ -271,7 +309,7 @@ export function simulate(aIn: Unit[], bIn: Unit[], rng: () => number, opts: { ma
         status(t, "stun", true);
       }
       if (sk.burn) {
-        ts.burn = { n: EFFECT_TURNS, dmg: Math.max(1, Math.round(effAtk(u) * sk.burn)) };
+        ts.burn = { n: EFFECT_TURNS, dmg: Math.max(1, Math.round(effAtk(u) * sk.burn * (1 + (pk(u).dot ?? 0)))) };
         status(t, "burn", true);
       }
       if (sk.defDown) {
@@ -326,6 +364,13 @@ export function simulate(aIn: Unit[], bIn: Unit[], rng: () => number, opts: { ma
       status(u, "shield", false);
     }
   };
+
+  /* старт боя: энергия и щиты от снаряжения */
+  for (const u of all) {
+    const p = pk(u);
+    if (p.startEn) gainEnergy(u, 0, p.startEn);
+    if (p.startShield) addShield(u, u, u.maxHp * p.startShield);
+  }
 
   while (round < maxRounds && alive(a).length && alive(b).length) {
     round += 1;

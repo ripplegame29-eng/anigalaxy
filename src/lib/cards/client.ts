@@ -51,6 +51,10 @@ export interface CardsState {
   missions: { id: string; text: string; goal: number; progress: number; claimed: boolean; reward: { diamonds?: number; dust?: number; scroll?: number } }[];
   split: { used: number; free: number; max: number; extraCost: number };
   mods: { ban: string; buff: string };
+  /** Снаряжение: реликвии, экипировка, запас бустеров */
+  gear: { relics: { id: string; lv: number }[]; slots: string[]; boosters: Record<string, number>; freeReady: boolean };
+  /** Правило арены на сегодня */
+  arena: { id: string; until: number };
   ac: number;
   art: string[];
   /** Герои без фото на AniList: не выпадают, в альбоме скрыты, если их нет у игрока */

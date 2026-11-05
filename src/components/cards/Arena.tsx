@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { BattleEvent, BattleOutcome, StatusKind, Unit } from "@/lib/cards/battle";
 import { ENERGY, passiveDef, skillDef, type SkillFx } from "@/lib/cards/skills";
 import type { Synergy } from "@/lib/cards/synergy";
@@ -8,6 +8,9 @@ import { GameCard } from "./GameCard";
 import { Portal } from "./common";
 import { SkillGlyph, SynChips, TARGET_LABEL } from "./skillui";
 import { Cur, Ico, type IcoName } from "./icons";
+import { ArenaRule, RelicTile } from "./gearui";
+import { RARITY, boosterDef, relicDef, type Drops, type GearInfo } from "@/lib/cards/gear";
+import { fmt } from "./common";
 
 export interface BattleReport {
   outcome: BattleOutcome;
@@ -25,6 +28,11 @@ export interface BattleReport {
   title?: string;
   campaign?: { chapter: number; stage: number; stars: number; best: number; newStars: number; firstClear: boolean; reward: { diamonds?: number; dust?: number; packs?: number; scroll?: number } };
   raid?: { damage: number; maxPerFight: number; poolHp: number; poolMax: number; hitsLeft: number; defeated: boolean };
+  /** Правило арены дня, снаряжение сторон и добыча (в старых записях нет) */
+  arena?: string;
+  youGear?: GearInfo;
+  foeGear?: GearInfo;
+  drops?: Drops;
 }
 
 interface UV {
@@ -37,7 +45,7 @@ interface Float {
   id: number;
   key: string;
   text: string;
-  kind: "dmg" | "crit" | "heal" | "shield" | "dot" | "info";
+  kind: "dmg" | "crit" | "big" | "heal" | "shield" | "dot" | "info";
 }
 /** Снаряд умения: путь от кастера к цели в координатах поля */
 interface Proj {
@@ -127,6 +135,12 @@ export function Arena({ report, onClose }: { report: BattleReport; onClose: () =
   const [banner, setBanner] = useState<{ who: string; name: string; tg: string; fx: SkillFx; n: number; ult: boolean } | null>(null);
   const [flash, setFlash] = useState<SkillFx | "crit" | "ult" | null>(null);
   const [round, setRound] = useState(1);
+  const [intro, setIntro] = useState(() => !reduced() && !ecoOn() && events.length > 0);
+  const [combo, setCombo] = useState<{ side: "a" | "b"; n: number; id: number } | null>(null);
+  const comboRef = useRef<{ side: "a" | "b"; n: number } | null>(null);
+  const maxCombo = useRef({ a: 0, b: 0 });
+  const [kill, setKill] = useState<{ key: string; n: number; last: boolean } | null>(null);
+  const alive = useRef({ a: report.you.length, b: report.foe.length });
   const [log, setLog] = useState<string[]>([]);
   const counter = useRef(0);
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
@@ -141,6 +155,12 @@ export function Arena({ report, onClose }: { report: BattleReport; onClose: () =
   const later = useCallback((fn: () => void, ms: number) => {
     timers.current.push(setTimeout(fn, ms));
   }, []);
+
+  useEffect(() => {
+    if (!intro) return;
+    const t = setTimeout(() => setIntro(false), 3200);
+    return () => clearTimeout(t);
+  }, [intro]);
 
   const nameOf = (key: string) => info.current.get(key)?.name ?? "?";
   const say = (t: string) => setLog((p) => [...p.slice(-5), t]);
@@ -233,9 +253,29 @@ export function Arena({ report, onClose }: { report: BattleReport; onClose: () =
 
   const patch = (key: string, fn: (u: UV) => UV) => setUv((p) => ({ ...p, [key]: fn(p[key] ?? { hp: 0, sh: 0, st: [], en: 0 }) }));
 
+  const gearReviveLabel = (key: string): string => {
+    const gi = info.current.get(key)?.side === "a" ? report.youGear : report.foeGear;
+    if (gi?.relics.some((r) => r.id === "r-phoenix")) return relicDef("r-phoenix")?.name ?? "Феникс";
+    return boosterDef(gi?.booster ?? "")?.name ?? "Возрождение";
+  };
+  /** Добивание: замедление и «кадр победы»; возвращает длительность события */
+  const knockout = (key: string): number => {
+    const sd = info.current.get(key)?.side ?? "a";
+    alive.current[sd] -= 1;
+    const last = alive.current[sd] <= 0;
+    const n = ++counter.current;
+    setKill({ key, n, last });
+    later(() => setKill((p) => (p?.n === n ? null : p)), last ? 2200 : 1100);
+    if (last) {
+      shakeField("heavy");
+      flashScreen("ult");
+    }
+    return calm.current || ecoOn() ? 600 : last ? 2000 : 1150;
+  };
+
   /** Проигрывает событие, возвращает его длительность (мс) */
   const play = (e: BattleEvent): number => {
-    setRound(e.round);
+    setRound(Math.max(1, e.round));
     switch (e.t) {
       case "cast": {
         const sk = skillDef(e.skill);
@@ -280,8 +320,25 @@ export function Arena({ report, onClose }: { report: BattleReport; onClose: () =
       }
       case "hit": {
         patch(e.to, (u) => ({ ...u, hp: e.hp, sh: e.sh, st: e.dead ? [] : u.st }));
-        addFloat(e.to, `−${e.dmg - e.absorbed > 0 ? e.dmg - e.absorbed : e.dmg}`, e.crit ? "crit" : "dmg");
+        {
+          const maxHp = info.current.get(e.to)?.maxHp ?? 1;
+          addFloat(e.to, `−${e.dmg - e.absorbed > 0 ? e.dmg - e.absorbed : e.dmg}`, e.crit ? "crit" : e.dmg >= maxHp * 0.22 ? "big" : "dmg");
+        }
         if (e.absorbed > 0) addFloat(e.to, `щит −${e.absorbed}`, "shield");
+        if (e.skill !== "p-thorns") {
+          const sd = info.current.get(e.from)?.side;
+          if (sd) {
+            const cur = comboRef.current;
+            const n = cur && cur.side === sd ? cur.n + 1 : 1;
+            comboRef.current = { side: sd, n };
+            maxCombo.current[sd] = Math.max(maxCombo.current[sd], n);
+            const cid = ++counter.current;
+            if (n >= 3) {
+              setCombo({ side: sd, n, id: cid });
+              later(() => setCombo((p) => (p?.id === cid ? null : p)), 2400);
+            } else setCombo(null);
+          }
+        }
         shake(e.to, e.crit);
         if (!e.skill) {
           act(e.from, "atk", 600);
@@ -292,11 +349,13 @@ export function Arena({ report, onClose }: { report: BattleReport; onClose: () =
           shakeField("lite");
         }
         say(`${nameOf(e.from)} → ${nameOf(e.to)}: −${e.dmg}${e.skill === "p-thorns" ? " (шипы)" : ""}${e.crit ? " (крит)" : ""}${e.dead ? ", повержен" : ""}`);
+        if (e.dead) return knockout(e.to);
         return e.skill ? 480 : 720;
       }
       case "heal":
         patch(e.to, (u) => ({ ...u, hp: e.hp }));
         addFloat(e.to, `+${e.amount}`, "heal");
+        if (e.skill === "g-vamp") return 140;
         if (!e.skill) {
           act(e.from, "cast", 700);
           burst([e.to], "heal");
@@ -306,7 +365,7 @@ export function Arena({ report, onClose }: { report: BattleReport; onClose: () =
       case "shield":
         patch(e.to, (u) => ({ ...u, sh: e.amount, st: u.st.includes("shield") ? u.st : [...u.st, "shield"] }));
         addFloat(e.to, `щит ${e.amount}`, "shield");
-        return 420;
+        return e.round === 0 ? 70 : 420;
       case "status":
         patch(e.to, (u) => ({ ...u, st: e.on ? (u.st.includes(e.kind) ? u.st : [...u.st, e.kind]) : u.st.filter((k) => k !== e.kind), sh: e.kind === "shield" && !e.on ? 0 : u.sh }));
         if (e.on) addFloat(e.to, STATUS_ICO[e.kind].label, "info");
@@ -316,16 +375,20 @@ export function Arena({ report, onClose }: { report: BattleReport; onClose: () =
         addFloat(e.to, `−${e.dmg}`, "dot");
         burst([e.to], "fire");
         say(`${nameOf(e.to)} получает урон от горения: −${e.dmg}`);
+        if (e.dead) return knockout(e.to);
         return 560;
       case "energy":
         patch(e.to, (u) => ({ ...u, en: e.en }));
         return 0;
       case "revive": {
         patch(e.to, (u) => ({ ...u, hp: e.hp }));
-        addFloat(e.to, passiveDef("p-revive")?.name ?? "Второе дыхание", "heal");
+        alive.current[info.current.get(e.to)?.side ?? "a"] += 1;
+        const label = e.src === "gear" ? gearReviveLabel(e.to) : passiveDef("p-revive")?.name ?? "Второе дыхание";
+        addFloat(e.to, label, "heal");
         burst([e.to], "heal");
-        say(`${nameOf(e.to)} возвращается в бой: «Второе дыхание»`);
-        return 800;
+        flashScreen("heal");
+        say(`${nameOf(e.to)} возвращается в бой: «${label}»`);
+        return 1000;
       }
       case "skip":
         addFloat(e.from, "Пропуск хода", "info");
@@ -335,7 +398,7 @@ export function Arena({ report, onClose }: { report: BattleReport; onClose: () =
   };
 
   useEffect(() => {
-    if (done) return;
+    if (done || intro) return;
     const t = setTimeout(() => {
       const dur = play(events[step]);
       setDelay(calm.current ? 160 : dur / speed);
@@ -344,7 +407,7 @@ export function Arena({ report, onClose }: { report: BattleReport; onClose: () =
     return () => clearTimeout(t);
     // play зависит только от стабильных колбэков и состояния отображения
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [step, done, speed]);
+  }, [step, done, speed, intro]);
 
   const skip = () => {
     const final: Record<string, UV> = {};
@@ -363,8 +426,55 @@ export function Arena({ report, onClose }: { report: BattleReport; onClose: () =
     setAura({});
     setFx({});
     setRound(report.outcome.rounds);
+    setIntro(false);
+    setKill(null);
+    setCombo(null);
     setStep(events.length);
   };
+
+  const stats = useMemo(() => {
+    const per = new Map<string, { dmg: number; heal: number; crits: number; kills: number; best: number }>();
+    const get = (k: string) => {
+      let v = per.get(k);
+      if (!v) per.set(k, (v = { dmg: 0, heal: 0, crits: 0, kills: 0, best: 0 }));
+      return v;
+    };
+    const side = { a: { dmg: 0, crits: 0, kills: 0, best: 0, heal: 0 }, b: { dmg: 0, crits: 0, kills: 0, best: 0, heal: 0 } };
+    const sideOf = new Map(all.map((u) => [u.key, u.side]));
+    for (const e of events) {
+      if (e.t === "hit") {
+        const sd = sideOf.get(e.from);
+        if (!sd) continue;
+        const v = get(e.from);
+        v.dmg += e.dmg;
+        v.best = Math.max(v.best, e.dmg);
+        side[sd].dmg += e.dmg;
+        side[sd].best = Math.max(side[sd].best, e.dmg);
+        if (e.crit) {
+          v.crits += 1;
+          side[sd].crits += 1;
+        }
+        if (e.dead) {
+          v.kills += 1;
+          side[sd].kills += 1;
+        }
+      } else if (e.t === "heal") {
+        const sd = sideOf.get(e.from);
+        if (!sd) continue;
+        get(e.from).heal += e.amount;
+        side[sd].heal += e.amount;
+      }
+    }
+    let mvp: { key: string; score: number } | null = null;
+    for (const u of report.you) {
+      const v = per.get(u.key);
+      if (!v) continue;
+      const score = v.dmg + v.heal * 0.7 + v.kills * 140;
+      if (!mvp || score > mvp.score) mvp = { key: u.key, score };
+    }
+    return { per, side, mvp: mvp ? { u: report.you.find((u) => u.key === mvp!.key)!, ...per.get(mvp.key)! } : null };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [events]);
 
   const teamHp = (us: Unit[]) => us.reduce((a, u) => a + Math.max(0, uv[u.key]?.hp ?? 0), 0);
   const teamPct = (us: Unit[]) => {
@@ -382,7 +492,7 @@ export function Arena({ report, onClose }: { report: BattleReport; onClose: () =
         const ht = hit[u.key];
         const stc = v.st.map((k) => `st-${k}`).join(" ");
         return (
-          <div key={u.key} className={`ar-unit ${dead ? "dead" : ""} ${acting[u.key] ? `act-${acting[u.key]}` : ""} ${ht ? "hit" : ""} ${ht?.crit ? "crit" : ""} ${v.en >= ENERGY.max && !dead ? "ult-ready" : ""} ${stc}`} style={{ ["--dir" as string]: s === "a" ? 1 : -1 }}>
+          <div key={u.key} className={`ar-unit ${dead ? "dead" : ""} ${acting[u.key] ? `act-${acting[u.key]}` : ""} ${ht ? "hit" : ""} ${ht?.crit ? "crit" : ""} ${v.en >= ENERGY.max && !dead ? "ult-ready" : ""} ${kill?.key === u.key ? "kc" : ""} ${stc}`} style={{ ["--dir" as string]: s === "a" ? 1 : -1 }}>
             <div className="ar-card" data-uk={u.key}>
               {au && !dead && (
                 <span key={au.n} className={`ar-aura fx-c-${au.fx} ${au.ult ? "ult" : ""}`} aria-hidden>
@@ -401,6 +511,11 @@ export function Arena({ report, onClose }: { report: BattleReport; onClose: () =
                 </span>
               )}
               <span key={`h${ht?.n ?? 0}`} className="ar-hitfx" aria-hidden />
+              {kill?.key === u.key && (
+                <span key={kill.n} className="ar-ko" aria-hidden>
+                  K.O.
+                </span>
+              )}
             </div>
             <div className={`ar-hp ${v.hp / u.maxHp < 0.35 ? "low" : ""}`} role="progressbar" aria-valuemin={0} aria-valuemax={u.maxHp} aria-valuenow={v.hp} aria-label={`${u.name}: здоровье`}>
               <i className="gh" style={{ width: `${Math.max(0, (v.hp / u.maxHp) * 100)}%` }} />
@@ -491,7 +606,24 @@ export function Arena({ report, onClose }: { report: BattleReport; onClose: () =
           </div>
         )}
 
-        <div ref={fieldRef} className={`ar-field ${flash ? `flash-${flash}` : ""} ${shk ? `shk-${shk}` : ""} ${cine ? "cine-on" : ""}`}>
+        {(report.arena || report.youGear || report.foeGear) && (
+          <div className="ar-gear">
+            <div className="ag-side a">
+              {(report.youGear?.relics ?? []).map((r) => (
+                <RelicTile key={r.id} id={r.id} lv={r.lv} size="sm" />
+              ))}
+              {report.youGear?.booster && <BoosterBadge id={report.youGear.booster} />}
+            </div>
+            {report.arena && <ArenaRule id={report.arena} compact />}
+            <div className="ag-side b">
+              {(report.foeGear?.relics ?? []).map((r) => (
+                <RelicTile key={r.id} id={r.id} lv={r.lv} size="sm" />
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div ref={fieldRef} className={`ar-field ${flash ? `flash-${flash}` : ""} ${shk ? `shk-${shk}` : ""} ${cine ? "cine-on" : ""} ${kill ? (kill.last ? "kill-on kill-last" : "kill-on") : ""} ${report.arena ? `arena-${report.arena}` : ""}`}>
           {side(report.you, "a")}
           <div className="ar-mid">
             {banner && !done && !banner.ult ? (
@@ -521,6 +653,46 @@ export function Arena({ report, onClose }: { report: BattleReport; onClose: () =
               </span>
             ))}
           </div>
+          {combo && !done && (
+            <div key={combo.id} className={`ar-combo side-${combo.side}`} aria-hidden>
+              <b>{combo.n}</b>
+              <small>удара подряд</small>
+            </div>
+          )}
+          {intro && (
+            <div className="ar-intro" role="button" tabIndex={0} aria-label="Начать бой" onClick={() => setIntro(false)} onKeyDown={(ev) => (ev.key === "Enter" || ev.key === " ") && setIntro(false)}>
+              <i className="in-bg" />
+              <div className="in-side a">
+                <small>Ваш отряд</small>
+                <b>{report.you.map((u) => u.name.split(" ")[0]).join(" · ")}</b>
+                <div className="in-gear">
+                  {(report.youGear?.relics ?? []).map((r) => (
+                    <RelicTile key={r.id} id={r.id} lv={r.lv} size="sm" />
+                  ))}
+                  {report.youGear?.booster && <BoosterBadge id={report.youGear.booster} />}
+                </div>
+              </div>
+              <div className="in-vs">
+                <Ico name="swords" size={38} />
+                <b>VS</b>
+              </div>
+              <div className="in-side b">
+                <small>{report.pvp ? `Игрок${report.foeRating ? ` · ${fmt(report.foeRating)}` : ""}` : "Противник"}</small>
+                <b>{report.foeName}</b>
+                <div className="in-gear">
+                  {(report.foeGear?.relics ?? []).map((r) => (
+                    <RelicTile key={r.id} id={r.id} lv={r.lv} size="sm" />
+                  ))}
+                </div>
+              </div>
+              {report.arena && (
+                <div className="in-rule">
+                  <ArenaRule id={report.arena} />
+                </div>
+              )}
+              <span className="in-hint">Нажмите, чтобы начать</span>
+            </div>
+          )}
           {cine && !done && (
             <div key={cine.n} className={`ar-cine fx-c-${cine.fx} cls-${cine.cls}`} aria-hidden>
               <i className="cn-dim" />
@@ -550,8 +722,63 @@ export function Arena({ report, onClose }: { report: BattleReport; onClose: () =
         </ul>
 
         {done && (
-          <div className={`ar-result ${report.win ? "win" : "lose"}`}>
+          <div className={`ar-result gx-res ${report.win ? "win" : "lose"}`}>
+            <i className="gx-res-rays" aria-hidden />
+            <span className="gx-res-eyebrow">{report.raid ? "Рейд" : report.campaign ? "Кампания" : report.pvp ? "Бой с игроком" : "Бой"}</span>
             <h2>{report.raid ? "Удар по боссу" : report.win ? "Победа" : "Поражение"}</h2>
+            <p className="gx-res-sub">
+              {report.outcome.rounds} раунд. · урон отряда {fmt(stats.side.a.dmg)} · потери {report.outcome.a.filter((u) => u.hp <= 0).length} из {report.outcome.a.length}
+            </p>
+            <div className="gx-res-body">
+              {stats.mvp && (
+                <div className="gx-mvp">
+                  <span className="gx-mvp-tag">
+                    <Ico name="crown" size={14} /> MVP
+                  </span>
+                  <div className="gx-mvp-card">
+                    <GameCard cardId={stats.mvp.u.cardId} foil={stats.mvp.u.foil} level={stats.mvp.u.level} stats={false} />
+                  </div>
+                  <b>{stats.mvp.u.name}</b>
+                  <small>
+                    урон {fmt(stats.mvp.dmg)}
+                    {stats.mvp.heal > 0 ? ` · лечение ${fmt(stats.mvp.heal)}` : ""}
+                    {stats.mvp.kills > 0 ? ` · побед ${stats.mvp.kills}` : ""}
+                  </small>
+                </div>
+              )}
+              <ul className="gx-stats">
+                <li>
+                  <Ico name="swords" size={16} />
+                  <b>{fmt(stats.side.a.dmg)}</b>
+                  <small>урона нанесено</small>
+                </li>
+                <li>
+                  <Ico name="target" size={16} />
+                  <b>{stats.side.a.crits}</b>
+                  <small>критов</small>
+                </li>
+                <li>
+                  <Ico name="bolt" size={16} />
+                  <b>{fmt(stats.side.a.best)}</b>
+                  <small>лучший удар</small>
+                </li>
+                <li>
+                  <Ico name="skull" size={16} />
+                  <b>{stats.side.a.kills}</b>
+                  <small>врагов повержено</small>
+                </li>
+                <li>
+                  <Ico name="fire" size={16} />
+                  <b>×{Math.max(1, maxCombo.current.a)}</b>
+                  <small>лучшая серия</small>
+                </li>
+                <li>
+                  <Ico name="heart" size={16} />
+                  <b>{fmt(stats.side.a.heal)}</b>
+                  <small>вылечено</small>
+                </li>
+              </ul>
+            </div>
             {report.campaign && (
               <div className="ar-stars" aria-label={`Звёзд: ${report.campaign.stars} из 3`}>
                 {[0, 1, 2].map((i) => (
@@ -566,7 +793,7 @@ export function Arena({ report, onClose }: { report: BattleReport; onClose: () =
               </p>
             )}
             {report.training ? (
-              <p className="cg-hint">Тренировка: награды не меняются.</p>
+              <p className="cg-hint">Тренировка: награды не меняются, бустер не потрачен.</p>
             ) : report.campaign ? (
               <div className="ar-rew">
                 <span className="ar-rw">{report.campaign.newStars > 0 ? `Новых звёзд: ${report.campaign.newStars}` : "Новых звёзд нет"}</span>
@@ -600,6 +827,30 @@ export function Arena({ report, onClose }: { report: BattleReport; onClose: () =
                 </span>
               </div>
             )}
+            {(report.drops?.relic || report.drops?.booster) && (
+              <div className="gx-loot">
+                {report.drops.relic && (
+                  <div className={`gx-drop rar-${relicDef(report.drops.relic.id)?.rarity ?? "rare"}`} style={{ ["--rc" as string]: RARITY[relicDef(report.drops.relic.id)?.rarity ?? "rare"].color }}>
+                    <RelicTile id={report.drops.relic.id} lv={report.drops.relic.lv} size="md" label={false} />
+                    <span>
+                      <small>{report.drops.relic.dup ? "Повторная реликвия" : "Новая реликвия!"}</small>
+                      <b>{relicDef(report.drops.relic.id)?.name}</b>
+                      <em>{report.drops.relic.dup ? `обращена в ${report.drops.relic.dust} пыли` : RARITY[relicDef(report.drops.relic.id)?.rarity ?? "rare"].name}</em>
+                    </span>
+                  </div>
+                )}
+                {report.drops.booster && (
+                  <div className="gx-drop bst">
+                    <BoosterBadge id={report.drops.booster} />
+                    <span>
+                      <small>Трофей</small>
+                      <b>{boosterDef(report.drops.booster)?.name}</b>
+                      <em>добавлен в запас</em>
+                    </span>
+                  </div>
+                )}
+              </div>
+            )}
             <button type="button" className="cg-btn pri lg" onClick={onClose}>
               Закрыть
             </button>
@@ -608,5 +859,16 @@ export function Arena({ report, onClose }: { report: BattleReport; onClose: () =
       </div>
     </div>
     </Portal>
+  );
+}
+
+function BoosterBadge({ id }: { id: string }) {
+  const b = boosterDef(id);
+  if (!b) return null;
+  return (
+    <span className="gx-bbadge" title={`${b.name}: ${b.desc}`}>
+      <Ico name={b.ico} size={15} />
+      <b>{b.name}</b>
+    </span>
   );
 }

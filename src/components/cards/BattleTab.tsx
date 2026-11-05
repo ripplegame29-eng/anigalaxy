@@ -15,12 +15,14 @@ import { InvPicker, Panel, RankFilter, fmt, fmtLeft, toast, useBusy, useNow } fr
 import { Cur, ELEMENT_ICON, Ico } from "./icons";
 import { CampaignView, DuelPanel, RaidPanel } from "./PveTabs";
 import { TabHero } from "./TabHero";
+import { Arsenal, PreFight, getPick } from "./gearui";
 
 const MODES = [
   ["ladder", "Рейтинг", "trophy", "Лига и лидеры"],
   ["campaign", "Кампания", "flag", "Главы и боссы"],
   ["raid", "Рейд", "skull", "Босс недели"],
   ["duel", "Дуэли и журнал", "swords", "Бои с игроками"],
+  ["arsenal", "Арсенал", "crown", "Реликвии и бустеры"],
 ] as const;
 type Mode = (typeof MODES)[number][0];
 
@@ -77,7 +79,7 @@ export function BattleTab({ s }: { s: CardsState }) {
   };
   const fight = (training: boolean) =>
     run(async () => {
-      const r = await act<Report>("fight", { training });
+      const r = await act<Report>("fight", { training, booster: getPick() ?? undefined });
       if (!r.ok) return toast(r.error, true);
       setReport(r.result);
     });
@@ -125,9 +127,25 @@ export function BattleTab({ s }: { s: CardsState }) {
           </button>
         ))}
       </div>
-      {mode === "campaign" && <CampaignView s={s} onReport={setReport} />}
-      {mode === "raid" && <RaidPanel s={s} onReport={setReport} />}
-      {mode === "duel" && <DuelPanel s={s} onReport={setReport} onProfile={setProfile} nick={duelNick} setNick={setDuelNick} />}
+      {mode === "arsenal" && <Arsenal s={s} />}
+      {mode === "campaign" && (
+        <>
+          <PreFight s={s} onArsenal={() => setMode("arsenal")} />
+          <CampaignView s={s} onReport={setReport} />
+        </>
+      )}
+      {mode === "raid" && (
+        <>
+          <PreFight s={s} onArsenal={() => setMode("arsenal")} />
+          <RaidPanel s={s} onReport={setReport} />
+        </>
+      )}
+      {mode === "duel" && (
+        <>
+          <PreFight s={s} arena onArsenal={() => setMode("arsenal")} />
+          <DuelPanel s={s} onReport={setReport} onProfile={setProfile} nick={duelNick} setNick={setDuelNick} />
+        </>
+      )}
       {mode === "ladder" && (
       <>
       <TabHero
@@ -212,6 +230,7 @@ export function BattleTab({ s }: { s: CardsState }) {
               <p className="cg-hint">Соберите 2–4 героя из одного аниме, 3–4 одной стихии или по одному герою четырёх разных классов: отряд получит бонусы к характеристикам.</p>
             )}
           </div>
+          <PreFight s={s} arena onArsenal={() => setMode("arsenal")} />
           <div className="bt-act">
             <button type="button" className="bt-go" disabled={busy || deck.length < DECK_SIZE || w.energy < BATTLE.energyCost} onClick={() => void fight(false)}>
               <Ico name="swords" size={20} />

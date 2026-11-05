@@ -9,6 +9,7 @@ import { dayKey } from "./day";
 import { fail, getWallet, grantReward, listInventory, logEvent, type Res, type Rng } from "./cards";
 import { getExtra, rollWeek, setExtra, track, weekOf } from "./cards-extra";
 import { prepareSides, saveBattle, unitOf, type BattleReport } from "./cards-battle";
+import { commitGear, resolveGear } from "./cards-gear";
 import { num, str, transaction, type Database } from "./sqlite";
 
 interface RaidRow {
@@ -72,7 +73,7 @@ export function raidBossUnit(week: number, bossId?: string): Unit | null {
   return { ...u, hp: RAID.fightHp, maxHp: RAID.fightHp, atk: Math.round(u.atk * RAID.atkMul), def: Math.round(u.def * RAID.defMul), passive: "p-flow" };
 }
 
-export function raidFight(db: Database, userId: number, now = Date.now(), rng: Rng = Math.random): Res<BattleReport> {
+export function raidFight(db: Database, userId: number, now = Date.now(), rng: Rng = Math.random, booster?: string): Res<BattleReport> {
   return transaction(db, (): Res<BattleReport> => {
     const r = ensureRaid(db, now);
     const w = getWallet(db, userId, now);
@@ -96,8 +97,10 @@ export function raidFight(db: Database, userId: number, now = Date.now(), rng: R
     const boss = raidBossUnit(r.week, r.boss);
     if (!boss) return fail("Босс недоступен");
 
-    const side = prepareSides(mine, [boss], now);
-    const outcome = simulate(side.you, side.foe, rng, { maxRounds: RAID.rounds });
+    const gear = resolveGear(db, userId, booster, false);
+    if (!gear.ok) return fail(gear.error);
+    const side = prepareSides(mine, [boss], now, { you: gear.value.perks });
+    const outcome = simulate(side.you, side.foe, rng, { maxRounds: RAID.rounds, perks: side.sim });
     const left = Math.max(0, outcome.b[0]?.hp ?? boss.maxHp);
     const dealt = Math.min(r.hp, RAID.fightHp - left);
     const hp = Math.max(0, r.hp - dealt);
@@ -112,8 +115,11 @@ export function raidFight(db: Database, userId: number, now = Date.now(), rng: R
     track(db, userId, "raid", dealt, now);
     track(db, userId, "raidHits", 1, now);
     const name = cardDef(boss.cardId)?.name ?? "Босс";
+    const drops = commitGear(db, userId, { kind: "raid", win: dealt >= RAID.fightHp * 0.5, tier: 2, now }, gear.value.booster, false);
     const report: BattleReport = {
       outcome,
+      youGear: gear.value.info,
+      drops,
       you: side.you,
       foe: side.foe,
       youSyn: side.youSyn,

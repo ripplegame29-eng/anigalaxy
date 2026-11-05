@@ -1,7 +1,8 @@
 /** Карточные бои: колода, лига, соперник (игрок или бот), награды. */
 
 import { looksOf } from "./looks";
-import { applyMods, applyPassives, applySynergies, seeded, simulate, type BattleOutcome, type Unit } from "../cards/battle";
+import { applyGearStats, applyMods, applyPassives, applySynergies, seeded, simulate, type BattleOutcome, type Unit } from "../cards/battle";
+import { arenaDef, arenaOfDay, dayIndex, perksOfGear, type Drops, type GearInfo, type Perks } from "../cards/gear";
 import type { Synergy } from "../cards/synergy";
 import type { Reward } from "../cards/progress";
 import { CATALOG, cardDef, cardsOfRank } from "../cards/catalog";
@@ -22,6 +23,7 @@ import {
   type Rng,
 } from "./cards";
 import { getExtra, setExtra, track, trackFight } from "./cards-extra";
+import { botGear, commitGear, equippedRelics, gearInfo, resolveGear } from "./cards-gear";
 import { num, str, transaction, type Database } from "./sqlite";
 
 /** Дуэли с игроками: награды, лимит и очки защитника */
@@ -142,7 +144,15 @@ export interface BattleReport {
   title?: string;
   campaign?: CampaignResult;
   raid?: RaidResult;
+  /** Правило арены дня (рейтинг и дуэли) */
+  arena?: string;
+  /** Снаряжение сторон и добыча после боя */
+  youGear?: GearInfo;
+  foeGear?: GearInfo;
+  drops?: Drops;
 }
+
+export const leagueIdxOf = (rating: number): number => Math.max(0, ["bronze", "silver", "gold", "platinum", "diamond", "legend"].indexOf(leagueOf(rating).id));
 
 export interface CampaignResult {
   chapter: number;
@@ -178,7 +188,7 @@ function findOpponent(db: Database, userId: number, rating: number, rng: Rng): {
 export function fight(
   db: Database,
   userId: number,
-  opts: { training?: boolean } = {},
+  opts: { training?: boolean; booster?: string } = {},
   now = Date.now(),
   rng: Rng = Math.random,
 ): Res<BattleReport> {
@@ -188,15 +198,18 @@ export function fight(
     if (!mine) return fail(`Соберите колоду из ${DECK_SIZE} карт`);
     const training = !!opts.training;
     if (!training && w.energy < BATTLE.energyCost) return fail("Нет энергии — подождите или восстановите её");
+    const gear = resolveGear(db, userId, opts.booster, training);
+    if (!gear.ok) return fail(gear.error);
 
     const opp = training ? null : findOpponent(db, userId, w.rating, rng);
     const foe = opp ? deckUnits(db, opp.id, "b")! : botSquad(w.rating, rng);
-    const side = prepareSides(mine, foe, now);
+    const foeGear = opp ? gearInfo(equippedRelics(db, opp.id)) : botGear(w.rating, leagueIdxOf(w.rating));
+    const side = prepareSides(mine, foe, now, { arena: true, you: gear.value.perks, foe: perksOfGear(foeGear.relics) });
     const youP = { list: side.youSyn };
     const foeP = { list: side.foeSyn };
     const youU = side.you;
     const foeU = side.foe;
-    const outcome = simulate(youU, foeU, rng);
+    const outcome = simulate(youU, foeU, rng, { perks: side.sim });
     const win = outcome.winner === "a";
 
     const reward = { diamonds: 0, dust: 0, rating: 0, scroll: 0 };
@@ -229,8 +242,13 @@ export function fight(
       }
       logEvent(db, userId, "battle", `${win ? "Победа" : "Поражение"} над ${opp ? opp.nick : "ботом"} (${reward.rating > 0 ? "+" : ""}${reward.rating})`, "", 0, now);
     }
+    const drops = commitGear(db, userId, { kind: "ladder", win, tier: leagueIdxOf(w.rating), now }, gear.value.booster, training);
     const out: BattleReport = {
         outcome,
+        arena: side.arena,
+        youGear: gear.value.info,
+        foeGear,
+        drops,
         you: youU,
         foe: foeU,
         youSyn: youP.list,
@@ -249,7 +267,7 @@ export function fight(
       if (opp) {
         const me = db.prepare("SELECT nickname FROM users WHERE id = ?").get(userId);
         const myNick = str(me?.nickname, "Игрок");
-        saveBattle(db, opp.id, { kind: "defense", opp: myNick, win: !win, delta: win ? -8 : 8, title: `${myNick} напал(а) на ваш отряд`, report: { ...out, win: !win, foeName: myNick, title: `${myNick} напал(а) на ваш отряд · слева нападающий` } }, now);
+        saveBattle(db, opp.id, { kind: "defense", opp: myNick, win: !win, delta: win ? -8 : 8, title: `${myNick} напал(а) на ваш отряд`, report: { ...out, win: !win, drops: undefined, foeName: myNick, title: `${myNick} напал(а) на ваш отряд · слева нападающий` } }, now);
       }
     }
     return { ok: true, value: out };
@@ -257,11 +275,20 @@ export function fight(
 }
 
 /** Усиления перед боем: пассивки, синергии, недельные правила */
-export function prepareSides(mine: Unit[], foe: Unit[], now: number, opts: { foeSynergy?: boolean } = {}) {
+export function prepareSides(mine: Unit[], foe: Unit[], now: number, opts: { foeSynergy?: boolean; arena?: boolean; you?: Perks; foe?: Perks } = {}) {
   const mods = weeklyMods(weekIndexOf(now));
   const youP = applySynergies(applyPassives(mine));
   const foeP = opts.foeSynergy === false ? { units: applyPassives(foe), list: [] } : applySynergies(applyPassives(foe));
-  return { you: applyMods(youP.units, mods), foe: applyMods(foeP.units, mods), youSyn: youP.list, foeSyn: foeP.list };
+  const arena = opts.arena ? arenaOfDay(dayIndex(now)) : null;
+  return {
+    you: applyGearStats(applyMods(youP.units, mods), opts.you ?? {}),
+    foe: applyGearStats(applyMods(foeP.units, mods), opts.foe ?? {}),
+    youSyn: youP.list,
+    foeSyn: foeP.list,
+    arena: arena?.id,
+    /** Бонусы сторон и правило арены для симуляции */
+    sim: { a: opts.you, b: opts.foe, arena: arena ? arenaDef(arena.id)?.perks : undefined },
+  };
 }
 
 /* -------------------------------- Журнал боёв ------------------------------- */
@@ -309,7 +336,7 @@ export function battleReplay(db: Database, userId: number, id: number): Res<unkn
 }
 
 /** Вызов игрока по нику: бой с его сохранённым отрядом («защитой») */
-export function challenge(db: Database, userId: number, nick: string, now = Date.now(), rng: Rng = Math.random): Res<BattleReport> {
+export function challenge(db: Database, userId: number, nick: string, now = Date.now(), rng: Rng = Math.random, booster?: string): Res<BattleReport> {
   return transaction(db, (): Res<BattleReport> => {
     const w = getWallet(db, userId, now);
     const mine = deckUnits(db, userId, "a");
@@ -321,6 +348,9 @@ export function challenge(db: Database, userId: number, nick: string, now = Date
     if (oppId === userId) return fail("Нельзя вызвать самого себя");
     const foeRaw = deckUnits(db, oppId, "b");
     if (!foeRaw) return fail("У этого игрока не собран отряд");
+    const gear = resolveGear(db, userId, booster, false);
+    if (!gear.ok) return fail(gear.error);
+    const foeGear = gearInfo(equippedRelics(db, oppId));
     const x = getExtra(db, userId);
     const key = `duel:${oppId}`;
     const last = x.stats[key] ?? 0;
@@ -328,8 +358,8 @@ export function challenge(db: Database, userId: number, nick: string, now = Date
     x.stats[key] = now;
     setExtra(db, userId, x);
 
-    const side = prepareSides(mine, foeRaw, now);
-    const outcome = simulate(side.you, side.foe, rng);
+    const side = prepareSides(mine, foeRaw, now, { arena: true, you: gear.value.perks, foe: perksOfGear(foeGear.relics) });
+    const outcome = simulate(side.you, side.foe, rng, { perks: side.sim });
     const win = outcome.winner === "a";
     const reward: BattleReport["reward"] = { diamonds: win ? DUEL.win.diamonds : DUEL.lose.diamonds, dust: win ? DUEL.win.dust : DUEL.lose.dust, rating: win ? DUEL.win.rating : DUEL.lose.rating, scroll: 0 };
     const mul = isPremium(db, userId, now) ? 1.25 : 1;
@@ -350,6 +380,7 @@ export function challenge(db: Database, userId: number, nick: string, now = Date
     );
     trackFight(db, userId, win);
     if (win) track(db, userId, "wins", 1, now);
+    const drops = commitGear(db, userId, { kind: "duel", win, tier: leagueIdxOf(w.rating), now }, gear.value.booster, false);
     const oppRating = db.prepare("SELECT rating FROM card_wallet WHERE user_id = ?").get(oppId);
     db.prepare("UPDATE card_wallet SET rating = MAX(0, rating + ?) WHERE user_id = ?").run(win ? DUEL.defLose : DUEL.defWin, oppId);
     const oppNick = str(target.nickname);
@@ -357,6 +388,10 @@ export function challenge(db: Database, userId: number, nick: string, now = Date
     const myNick = str(me?.nickname, "Игрок");
     const report: BattleReport = {
       outcome,
+      arena: side.arena,
+      youGear: gear.value.info,
+      foeGear,
+      drops,
       you: side.you,
       foe: side.foe,
       youSyn: side.youSyn,
@@ -373,7 +408,7 @@ export function challenge(db: Database, userId: number, nick: string, now = Date
     };
     saveBattle(db, userId, { kind: "duel", opp: oppNick, win, delta: reward.rating, title: `Дуэль с ${oppNick}`, report }, now);
     // защитнику — запись «защита» с тем же боем
-    saveBattle(db, oppId, { kind: "defense", opp: myNick, win: !win, delta: win ? DUEL.defLose : DUEL.defWin, title: `${myNick} напал(а) на ваш отряд`, report: { ...report, win: !win, title: `${myNick} напал(а) на ваш отряд · слева нападающий`, foeName: myNick } }, now);
+    saveBattle(db, oppId, { kind: "defense", opp: myNick, win: !win, delta: win ? DUEL.defLose : DUEL.defWin, title: `${myNick} напал(а) на ваш отряд`, report: { ...report, win: !win, drops: undefined, title: `${myNick} напал(а) на ваш отряд · слева нападающий`, foeName: myNick } }, now);
     logEvent(db, oppId, "battle", win ? `${myNick} победил(а) ваш отряд (${DUEL.defLose} рейтинга)` : `Вы отбили вызов ${myNick} (+${DUEL.defWin} рейтинга)`, "", 0, now);
     logEvent(db, userId, "battle", `Дуэль с ${oppNick}: ${win ? "победа" : "поражение"} (${reward.rating > 0 ? "+" : ""}${reward.rating})`, "", 0, now);
     return { ok: true, value: report };
