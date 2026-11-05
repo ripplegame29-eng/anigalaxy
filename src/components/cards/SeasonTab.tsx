@@ -13,6 +13,8 @@ import { PASS, PASS_CARDS, PASS_XP, PASS_XP_DAILY, PASS_XP_MISSION, passReward, 
 
 /** Цена премиум-ветки сезонного пасса (в рублях) */
 const PREMIUM_PRICE = 1190;
+import { BATTLEPASS } from "@/lib/battlepass/config";
+import { BattlePassView } from "@/components/BattlePassView";
 import { cardDef } from "@/lib/cards/catalog";
 import { RANKS } from "@/lib/cards/config";
 import { rewardText, type Reward } from "@/lib/cards/progress";
@@ -134,7 +136,7 @@ const RewardCard = memo(function RewardCard({
   );
 });
 
-export function SeasonTab({ s }: { s: CardsState }) {
+function NextSeasonTab({ s }: { s: CardsState }) {
   const p = s.events.pass;
   const [busy, run] = useBusy();
   const now = useNow(60_000);
@@ -247,7 +249,14 @@ export function SeasonTab({ s }: { s: CardsState }) {
   const jumps = [1, 5, 10, 15, 20, 25, 30];
 
   return (
-    <div className="sv">
+    <div className="sv sv-next">
+      <div className="sv-soon" role="note">
+        <b>Следующий сезон</b>
+        <span>
+          Этот пасс откроется после окончания основного боевого пропуска ({new Date(BATTLEPASS.to).toLocaleDateString("ru-RU", { day: "numeric", month: "long" })}). Пока можно изучить награды,
+          получать их нельзя.
+        </span>
+      </div>
       <div className="sv-bg" aria-hidden>
         <i className="sv-aur" />
         <i className="sv-rays" />
@@ -294,7 +303,7 @@ export function SeasonTab({ s }: { s: CardsState }) {
         </div>
 
         <div className="sv-main">
-          <span className="cg-eyebrow">Сезон {seasonNo(p.season)} · наградной путь</span>
+          <span className="cg-eyebrow">Сезон {seasonNo(p.season) + 1} · наградной путь</span>
           <h2 className="sv-title">
             Сезонный <em>пропуск</em>
           </h2>
@@ -375,7 +384,7 @@ export function SeasonTab({ s }: { s: CardsState }) {
             </ul>
           </div>
           <div className="sv-buybox">
-            <small className="sv-buy-cap">Сезонный пропуск · Сезон {seasonNo(p.season)}</small>
+            <small className="sv-buy-cap">Сезонный пропуск · Сезон {seasonNo(p.season) + 1}</small>
             <div className="sv-price">
               {PREMIUM_PRICE.toLocaleString("ru-RU")} <small>₽</small>
             </div>
@@ -484,6 +493,30 @@ export function SeasonTab({ s }: { s: CardsState }) {
           ))}
         </ul>
       </section>
+    </div>
+  );
+}
+
+/** Вкладка «Сезон»: основной боевой пропуск сайта с наградами гачи; прежний пасс гачи — следующий сезон */
+export function SeasonTab({ s }: { s: CardsState }) {
+  const [view, setView] = useState<"bp" | "next">("bp");
+  return (
+    <div className="sv-switchwrap">
+      <div className="sv-switch" role="tablist" aria-label="Сезон">
+        <button type="button" role="tab" aria-selected={view === "bp"} className={view === "bp" ? "on" : ""} onClick={() => setView("bp")}>
+          Сезон 1 · Боевой пропуск
+        </button>
+        <button type="button" role="tab" aria-selected={view === "next"} className={view === "next" ? "on" : ""} onClick={() => setView("next")}>
+          Следующий сезон
+        </button>
+      </div>
+      {view === "bp" ? (
+        <div className="relative overflow-hidden bp2-page sv-bpwrap">
+          <BattlePassView />
+        </div>
+      ) : (
+        <NextSeasonTab s={s} />
+      )}
     </div>
   );
 }
