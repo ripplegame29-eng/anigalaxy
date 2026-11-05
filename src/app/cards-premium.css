@@ -211,6 +211,26 @@
 .cg .st-stage > * { position: relative; z-index: 1; }
 
 
+/* ══ Прогресс: под-вкладки вместо длинной простыни ══ */
+.cg .cg-pg .pgh { padding: 22px 26px; gap: 16px 24px; }
+.cg .cg-pg .pgh-main p { display: none; }
+.cg .cg-pg .pgh-ring { width: 104px; height: 104px; }
+.cg .cg-pg .pgh-kpi { gap: 10px; }
+.cg .cg-pg .pgh-kpi li { padding: 10px 14px; }
+.cg .pg-sub { display: flex; gap: 4px; padding: 5px; overflow-x: auto; scrollbar-width: none; background: #0e0f13; border: 1px solid rgba(255,255,255,.07); border-radius: 14px; }
+.cg .pg-sub::-webkit-scrollbar { display: none; }
+.cg .pg-sub-b { flex: 1 1 0; min-width: max-content; display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 0 16px; border: 0; border-radius: 10px; background: transparent; color: #8d93a3; font: 600 14px var(--font-body, inherit); cursor: pointer; transition: background .15s, color .15s; }
+.cg .pg-sub-b:hover { color: #fff; background: rgba(255,255,255,.04); }
+.cg .pg-sub-b[aria-selected="true"] { color: #fff; background: #1a1c24; box-shadow: inset 0 -2px 0 var(--pm-blue, #3b6cf6); }
+.cg .pg-sub-b:focus-visible { outline: 2px solid var(--pm-blue, #3b6cf6); outline-offset: 2px; }
+.cg .pg-sub-b em { font: 700 11px/1 var(--font-body, inherit); font-style: normal; min-width: 20px; padding: 4px 6px; border-radius: 99px; background: #3b6cf6; color: #fff; text-align: center; }
+.cg .pg-view { display: grid; gap: 16px; align-content: start; }
+.cg .pg-view .pg-wq-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.cg .pg-view .pg-stats { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+@media (max-width: 1000px) { .cg .pg-view .pg-wq-list { grid-template-columns: 1fr; } .cg .cg-pg .pgh-kpi { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 720px) { .cg .pg-view .pg-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } .cg .cg-pg .pgh { padding: 18px; } }
+
+
 /* ══ Сезон: боевой пропуск остаётся прежним (красный Hueco Mundo) ══ */
 .cg[data-tab="season"] { --cg-head: var(--font-unbounded), var(--font-display, inherit), sans-serif; font-synthesis: weight style; }
 .cg[data-tab="season"] h1, .cg[data-tab="season"] h2, .cg[data-tab="season"] h3, .cg[data-tab="season"] .sv-title {
