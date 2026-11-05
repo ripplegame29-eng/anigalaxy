@@ -31,7 +31,7 @@ function readOn(): boolean {
 }
 
 export function soundOn(): boolean {
-  return typeof window !== "undefined" && readOn();
+  return false;
 }
 
 export function setSound(v: boolean): void {
@@ -122,8 +122,11 @@ const E5 = 659.25;
 const G5 = 783.99;
 const C6 = 1046.5;
 
+/** Звуки в гаче отключены полностью (по решению владельца). Чтобы вернуть — поставьте SOUND_ENABLED = true */
+const SOUND_ENABLED = false;
+
 export function sfx(name: Sfx): void {
-  if (typeof window === "undefined" || !readOn()) return;
+  if (!SOUND_ENABLED || typeof window === "undefined" || !readOn()) return;
   const now = performance.now();
   if (now - (last.get(name) ?? 0) < 35) return;
   last.set(name, now);
