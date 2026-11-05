@@ -79,6 +79,12 @@ const nextConfig: NextConfig = {
         headers: [{ key: "Cache-Control", value: "public, max-age=86400, must-revalidate" }],
       },
       {
+        // Графика гачи (паки, наборы, рамки) обновляется без смены адреса:
+        // сутки кэша оставляли у игроков старые картинки. Теперь — условный запрос, на неизменный файл придёт 304
+        source: "/cards/:path*",
+        headers: [{ key: "Cache-Control", value: "public, max-age=0, must-revalidate" }],
+      },
+      {
         source: "/:path*",
         headers: [
           { key: "X-Content-Type-Options", value: "nosniff" },
