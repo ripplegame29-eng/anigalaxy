@@ -42,7 +42,7 @@ const PAY_CUR: Record<Pay, CurKey> = { token: "packs", diamonds: "diamonds", dus
 
 /** Цвета рамок наборов: синий, фиолетовый, золотой */
 /** Упаковка набора для сцены: у одиночного пака своя анимация открытия, у наборов — общий арт */
-const BUNDLE_ART: ({ src: string; ar: number } | undefined)[] = [undefined, { src: "/cards/offers/2.webp", ar: 778 / 544 }, { src: "/cards/offers/3.webp", ar: 853 / 650 }];
+const BUNDLE_ART: ({ src: string; ar: number } | undefined)[] = [undefined, { src: "/cards/offers/2.webp?v=6", ar: 778 / 544 }, { src: "/cards/offers/3.webp?v=6", ar: 853 / 650 }];
 const OFFER_COLOR = ["#3aa0ff", "#b46bff", "#4fe3ff"];
 
 function Thumb({ cardId, rank, name }: { cardId: string; rank: number; name: string }) {
@@ -212,7 +212,7 @@ export function PacksTab({ s }: { s: CardsState }) {
                   <span className="st-art" aria-hidden>
                     <i className="st-beam" />
                     <i className="st-pad" />
-                    <img src={`/cards/offers/${Math.min(i, 2) + 1}.webp`} alt="" draggable={false} loading="lazy" />
+                    <img src={`/cards/offers/${Math.min(i, 2) + 1}.webp?v=6`} alt="" draggable={false} loading="lazy" />
                     {gift > 0 && (
                       <span className="st-gift">
                         <Ico name="gift" size={13} />+{gift}
@@ -258,7 +258,7 @@ export function PacksTab({ s }: { s: CardsState }) {
                         style={{ ["--oc" as string]: OFFER_COLOR[i] ?? OFFER_COLOR[0] }}
                         onClick={() => setSel(i)}
                       >
-                        <img src={`/cards/offers/${Math.min(i, 2) + 1}.webp`} alt="" draggable={false} />
+                        <img src={`/cards/offers/${Math.min(i, 2) + 1}.webp?v=6`} alt="" draggable={false} />
                         <span>
                           <b>×{b.n}</b>
                           <small>{i === 0 ? "один пак" : effectivePay !== "token" && b.n > b.pay ? `+${b.n - b.pay} в подарок` : `${b.n} паков`}</small>

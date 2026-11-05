@@ -1139,7 +1139,7 @@ html[data-eco="on"] .cg-rays {
 .pk-floor { z-index: 0; }
 .pk-glint, .pk-holo {
   position: absolute; inset: 0; pointer-events: none;
-  -webkit-mask: var(--pk-mask, url(/cards/pack.webp)) center / 100% 100% no-repeat; mask: var(--pk-mask, url(/cards/pack.webp)) center / 100% 100% no-repeat;
+  -webkit-mask: var(--pk-mask, url(/cards/pack.webp?v=6)) center / 100% 100% no-repeat; mask: var(--pk-mask, url(/cards/pack.webp?v=6)) center / 100% 100% no-repeat;
 }
 .pk-glint {
   background: linear-gradient(112deg, transparent 38%, rgba(255, 255, 255, 0.6) 50%, transparent 62%) 130% 0 / 260% 100% no-repeat;

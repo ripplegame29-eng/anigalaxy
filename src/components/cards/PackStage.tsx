@@ -8,8 +8,8 @@ export type PackPhase = "idle" | "charge" | "burst";
 export function PackArt() {
   return (
     <div className="pk-art" role="img" aria-label="Пак AniGalaxy">
-      <img className="pk-img pk-body" src="/cards/pack.webp" alt="" draggable={false} />
-      <img className="pk-img pk-top" src="/cards/pack.webp" alt="" draggable={false} />
+      <img className="pk-img pk-body" src="/cards/pack.webp?v=6" alt="" draggable={false} />
+      <img className="pk-img pk-top" src="/cards/pack.webp?v=6" alt="" draggable={false} />
     </div>
   );
 }
