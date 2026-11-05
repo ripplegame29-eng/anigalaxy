@@ -291,7 +291,7 @@ export function CardsApp() {
   ];
 
   return (
-    <div className="cg">
+    <div className="cg" data-tab={tab}>
       <section className={`cg-hero2 cg-enter${tab === "collection" ? "" : " mini"}`}>
         {tab === "collection" && (
         <div>
