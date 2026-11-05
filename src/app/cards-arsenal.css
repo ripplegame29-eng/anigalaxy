@@ -317,12 +317,8 @@
   box-shadow: inset 0 0 0 1px rgba(110,165,255,.45), 0 0 24px -6px rgba(59,130,255,.55) !important;
 }
 .cg .pk-page { --pk-glass: linear-gradient(180deg, #111217, #0a0b0f); --pk-line: rgba(255, 255, 255, .08); }
-body:has(.cg), body:has(.cg) main { background: #050507 !important; }
 .cg .cg-tok, .cg .pk-cur, .cg .pk-opt, .cg .pk-tier { background: #14151b !important; border-color: rgba(255, 255, 255, .08) !important; }
 .cg .pk-opt.on, .cg .pk-cur.on { box-shadow: inset 0 0 0 1px rgba(110,165,255,.5), 0 0 26px -8px rgba(59,130,255,.6) !important; }
-body:has(.cg)::before, body:has(.cg)::after { display: none !important; }
-.cg::after { display: none !important; }
-.cg::before { background: radial-gradient(60% 40% at 50% -8%, rgba(59, 130, 255, .13), transparent 70%) !important; }
 .cg .st { background: linear-gradient(180deg, #111217, #0a0b0f) !important; border-color: rgba(255,255,255,.08) !important; }
 .cg .st-dock { background: radial-gradient(56% 70% at 24% 45%, rgba(59,130,255,.14), transparent 70%), #0d0e13 !important; }
 
@@ -333,7 +329,6 @@ body:has(.cg)::before, body:has(.cg)::after { display: none !important; }
   font-family: var(--font-body, inherit);
   font-synthesis: none;
 }
-body:has(.cg), body:has(.cg) main { background: #0a0a0a !important; }
 /* заголовки: Dela Gothic One 400, плотный трекинг */
 .cg h1, .cg h2, .cg h3, .cg .cg-title, .cg .sv-title, .cg .cg-hero2 h1 {
   font-family: var(--font-dela), var(--font-body), sans-serif !important;
