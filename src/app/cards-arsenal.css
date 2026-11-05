@@ -334,29 +334,6 @@
 .cg .pgh-kpi small { font-size: 12.5px; color: rgba(205, 215, 245, 0.78); }
 @media (max-width: 480px) { .cg .pgh-kpi .ico { width: 42px; height: 42px; padding: 10px; border-radius: 14px; } .cg .pgh-kpi li { padding: 12px; border-radius: 18px; } }
 
-/* ── Кнопки: стекло в нашем синем (в тон KPI) ── */
-.cg .cg-btn, .cg .cg-btn.sm, .cg .cg-btn.lg, .cg .cg-bt .cg-btn, .cg .pk-page .cg-btn, .cg .st-all {
-  background: linear-gradient(180deg, rgba(90,140,255,.22), rgba(30,50,120,.34)) !important;
-  -webkit-backdrop-filter: blur(14px) saturate(1.6); backdrop-filter: blur(14px) saturate(1.6);
-  color: #e6efff !important; font-weight: 600 !important;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.28), inset 0 0 0 1px rgba(130,175,255,.32), inset 0 -10px 16px -10px rgba(60,110,255,.35), 0 8px 18px -10px rgba(20,50,160,.8) !important;
-}
-.cg .cg-btn.pri, .cg .cg-btn.gold, .cg .pk-page .cg-btn.gold, .cg .ar-result .cg-btn.pri, .cg .bt-go, .cg .cg-cta {
-  background: linear-gradient(180deg, #5b96ff 0%, #3a6df0 52%, #2a4fd0 100%) !important;
-  color: #fff !important; font-weight: 700 !important;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.55), inset 0 0 0 1px rgba(170,205,255,.45), inset 0 -12px 18px -10px rgba(20,40,160,.7), 0 10px 26px -10px rgba(60,120,255,.85) !important;
-}
-.cg .cg-btn::before, .cg .bt-go::before, .cg .cg-cta::before, .cg .st-all::before {
-  content: ""; position: absolute; inset: 0 0 52% 0; border-radius: inherit; pointer-events: none;
-  background: linear-gradient(180deg, rgba(255,255,255,.22), rgba(255,255,255,0));
-}
-.cg .cg-btn:hover:not(:disabled), .cg .st-all:hover:not(:disabled) { background: linear-gradient(180deg, rgba(110,160,255,.32), rgba(40,65,150,.45)) !important; }
-.cg .cg-btn.pri:hover:not(:disabled), .cg .cg-btn.gold:hover:not(:disabled), .cg .bt-go:hover:not(:disabled), .cg .cg-cta:hover:not(:disabled) {
-  background: linear-gradient(180deg, #74a8ff 0%, #4a7cff 52%, #3158e0 100%) !important;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.6), inset 0 0 0 1px rgba(190,220,255,.55), 0 14px 32px -10px rgba(80,140,255,.95) !important;
-}
-.cg .cg-btn.danger { color: #ffd0de !important; background: linear-gradient(180deg, rgba(255,90,140,.22), rgba(120,20,60,.34)) !important; }
-
 /* ── Премиальный фон гачи ── */
 .cg { position: relative; isolation: isolate; }
 .gx-bd { position: sticky; top: 0; z-index: -1; width: 100vw; height: calc(100vh + 48px); margin: -48px calc(50% - 50vw) calc(-100vh - 48px); overflow: hidden; pointer-events: none; background: #060914; }
