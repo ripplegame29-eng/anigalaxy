@@ -315,6 +315,13 @@ export function PacksTab({ s }: { s: CardsState }) {
         </aside>
       </section>
 
+      <section className="pk-sec" aria-labelledby="pk-ban-t">
+        <h2 className="pk-h" id="pk-ban-t">
+          <Ico name="star" size={22} /> Карта недели
+        </h2>
+        <BannerCard s={s} />
+      </section>
+
       <section className="pk-sec" id="pk-shop" aria-labelledby="pk-shop-t">
         <h2 className="pk-h" id="pk-shop-t">
           <Ico name="pack" size={22} /> Магазин паков
@@ -510,13 +517,6 @@ export function PacksTab({ s }: { s: CardsState }) {
             </div>
           </div>
         </div>
-      </section>
-
-      <section className="pk-sec" aria-labelledby="pk-ban-t">
-        <h2 className="pk-h" id="pk-ban-t">
-          <Ico name="star" size={22} /> Карта недели
-        </h2>
-        <BannerCard s={s} />
       </section>
 
       {gal && (
