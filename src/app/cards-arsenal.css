@@ -333,3 +333,15 @@
 .cg .pgh-kpi b { font: 800 clamp(24px, 2.4vw, 30px)/1.05 var(--font-body, inherit); letter-spacing: -0.02em; text-shadow: 0 2px 14px rgba(120, 150, 255, 0.45); }
 .cg .pgh-kpi small { font-size: 12.5px; color: rgba(205, 215, 245, 0.78); }
 @media (max-width: 480px) { .cg .pgh-kpi .ico { width: 42px; height: 42px; padding: 10px; border-radius: 14px; } .cg .pgh-kpi li { padding: 12px; border-radius: 18px; } }
+
+/* ── Кнопки: графитовый полусерый ── */
+.cg .cg-btn, .cg .cg-btn.sm, .cg .cg-btn.lg, .cg .cg-bt .cg-btn, .cg .pk-page .cg-btn, .cg .st-all,
+.cg .cg-btn.pri, .cg .cg-btn.gold, .cg .pk-page .cg-btn.gold, .cg .ar-result .cg-btn.pri, .cg .bt-go, .cg .cg-cta {
+  background: #1d1e26 !important; color: #f2f4fa !important; font-weight: 700 !important;
+  box-shadow: none !important; border-radius: 12px !important;
+}
+.cg .cg-btn::after, .cg .bt-go::after, .cg .cg-cta::after, .cg .st-all::after { display: none !important; }
+.cg .cg-btn:hover:not(:disabled), .cg .cg-btn.pri:hover:not(:disabled), .cg .cg-btn.gold:hover:not(:disabled), .cg .bt-go:hover:not(:disabled), .cg .cg-cta:hover:not(:disabled), .cg .st-all:hover:not(:disabled) {
+  background: #272935 !important; box-shadow: none !important; transform: translateY(-1px);
+}
+.cg .cg-btn.danger { color: #ffb3c9 !important; }
