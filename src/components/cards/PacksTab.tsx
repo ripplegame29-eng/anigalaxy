@@ -42,7 +42,7 @@ const PAY_CUR: Record<Pay, CurKey> = { token: "packs", diamonds: "diamonds", dus
 
 /** Цвета рамок наборов: синий, фиолетовый, золотой */
 /** Упаковка набора для сцены: у одиночного пака своя анимация открытия, у наборов — общий арт */
-const BUNDLE_ART: ({ src: string; ar: number } | undefined)[] = [undefined, { src: "/cards/offers/2.webp", ar: 880 / 598 }, { src: "/cards/offers/3.webp", ar: 880 / 738 }];
+const BUNDLE_ART: ({ src: string; ar: number } | undefined)[] = [undefined, { src: "/cards/offers/2.webp", ar: 880 / 598 }, { src: "/cards/offers/3.webp", ar: 560 / 640 }];
 const OFFER_COLOR = ["#3aa0ff", "#b46bff", "#4fe3ff"];
 
 function Thumb({ cardId, rank, name }: { cardId: string; rank: number; name: string }) {
@@ -273,48 +273,6 @@ export function PacksTab({ s }: { s: CardsState }) {
               )}
     </>
   );
-  const SC_NAME = ["Старт", "Веер", "Ящик"];
-  const showEl = pendingOffers ? null : (
-    <div className="sc" role="group" aria-label="Наборы паков">
-      {bundles.map((b, i) => {
-        const l = lackOf(b);
-        const gift = effectivePay === "token" ? 0 : b.n - b.pay;
-        const last = i === bundles.length - 1;
-        return (
-          <button
-            key={b.n}
-            type="button"
-            className="sc-c"
-            data-i={i}
-            aria-pressed={sel === i}
-            disabled={loading}
-            style={{ ["--oc" as string]: OFFER_COLOR[i] ?? OFFER_COLOR[0] }}
-            onClick={() => setSel(i)}
-          >
-            {last && <span className="sc-pill">Выгоднее всего</span>}
-            <span className="sc-art" aria-hidden>
-              <i className="sc-cone" />
-              <i className="sc-ped" />
-              <img src={`/cards/offers/${Math.min(i, 2) + 1}.webp`} alt="" draggable={false} />
-              {gift > 0 && (
-                <span className="sc-gift">
-                  <Ico name="gift" size={13} />+{gift}
-                </span>
-              )}
-            </span>
-            <b className="sc-n">{SC_NAME[i] ?? `×${b.n}`}</b>
-            <span className="sc-x">
-              ×{b.n} {packWord(b.n)}
-            </span>
-            <span className="sc-price">
-              {fmt(costOf(b))} <Cur k={PAY_CUR[effectivePay]} size={16} />
-            </span>
-            {l > 0 && <span className="sc-lack">Не хватает {fmt(l)} {unit}</span>}
-          </button>
-        );
-      })}
-    </div>
-  );
   const stageEl = (
             <div className="st-stage">
               {pendingOffers ? (
@@ -434,12 +392,11 @@ export function PacksTab({ s }: { s: CardsState }) {
             </label>
           </div>
 
-          {showEl}
-
           <div className="st-dock" data-pick={pendingOffers ? "1" : undefined}>
             {stageEl}
 
             <div className="pk-info st-co">
+              {pickEl}
               <div className="pk-chips">
                 <span className="cg-eyebrow">Набор AniGalaxy</span>
                 <span className="cg-chip">{PACK.choices} карты на выбор</span>
