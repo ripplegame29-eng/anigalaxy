@@ -1366,6 +1366,14 @@ function dispatch(env: Env, event: DomainEvent): void {
       claimBundle(env, event);
       return;
     }
+
+    case "QUIZ_COMPLETED": {
+      // Раунд квиза закрыт: выдаём награду по правилу из конфига
+      // (`QUIZ_COMPLETED`, повтор — раз в сутки). Правило считается
+      // ACTIVITY и уходит в soft-cap, как у просмотра серий.
+      fireRule(env, "QUIZ_COMPLETED", event.quizId);
+      return;
+    }
   }
 }
 

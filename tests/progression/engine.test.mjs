@@ -364,3 +364,24 @@ test("выключение правила (лайки) не платит в ре
   assert.equal(r.doc.progress.xpTotal, 0, "LIKE_GIVEN выключен");
   assert.equal(r.doc.counters.LIKES_GIVEN, undefined, "даже счётчик не растёт");
 });
+
+test("квиз: раунд закрыт — XP/AC по правилу, повтор в тот же день не платит", () => {
+  const first = apply(
+    freshDoc(),
+    { type: "QUIZ_COMPLETED", quizId: "quiz-1", correct: 4, total: 5 },
+    {},
+    at(12, 0),
+  );
+
+  assert.equal(first.doc.progress.xpTotal, 30, "XP за завершённый раунд квиза");
+  assert.equal(first.doc.progress.acBalance, 15, "AC за завершённый раунд квиза");
+  assert.equal(first.doc.daily.counts.QUIZ, 1, "бакет квиза учтён");
+  assert.ok(
+    first.effects.some((e) => e.type === "XP_GAINED" && e.source === "QUIZ_COMPLETED"),
+    "XP_GAINED отдан в эффектах (→ тост)",
+  );
+
+  const again = apply(first.doc, { type: "QUIZ_COMPLETED", quizId: "quiz-2", correct: 5, total: 5 }, {}, at(12, 1));
+  assert.equal(again.doc.progress.xpTotal, 30, "повтор в тот же день не начисляет");
+  assert.equal(again.doc.progress.acBalance, 15);
+});

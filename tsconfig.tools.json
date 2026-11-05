@@ -38,6 +38,9 @@
     "src/lib/clans.social.ts",
     "src/lib/clans.game.ts",
     "src/lib/streak-capsule.ts",
-    "src/lib/nickname.ts"
+    "src/lib/nickname.ts",
+    "src/lib/quiz.ts",
+    "src/lib/anime.ts",
+    "src/lib/types.ts"
   ]
 }

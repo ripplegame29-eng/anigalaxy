@@ -337,12 +337,21 @@ function finalizeTotal(collected: Collected, isCursorPage: boolean): Collected {
   return { ...collected, total: collected.cards.length };
 }
 
-/** Карточки каталога (первый экран или догрузка по курсору) */
+/**
+ * Карточки каталога (первый экран или догрузка по курсору).
+ *
+ * `want` — сколько уникальных тайтлов нужно собрать, `maxPages` — сколько
+ * страниц Kodik максимум прочитать. По умолчанию 24 (экран каталога), но
+ * квизу нужен широкий пул: Kodik склеивает один тайтл десятками озвучек, и
+ * без добору страниц раунды собирались бы из одних и тех же топ-тайтлов.
+ */
 export async function catalog(
   q: CatalogQuery,
+  want = 24,
+  maxPages = MAX_PAGES,
 ): Promise<{ cards: AnimeCard[]; total: number; next: string | null }> {
   const params = catalogParams(q);
-  const key = `catalog:${JSON.stringify(params)}:${q.cursor ?? ""}`;
+  const key = `catalog:${JSON.stringify(params)}:${q.cursor ?? ""}:${want}:${maxPages}`;
 
   return withCache(key, 3 * MINUTE, async () => {
     // Поиск по названию работает только через /search: он отдаёт все
@@ -359,11 +368,11 @@ export async function catalog(
     }
 
     try {
-      return finalizeTotal(await collectUnique(params, q.cursor, 24), Boolean(q.cursor));
+      return finalizeTotal(await collectUnique(params, q.cursor, want, maxPages), Boolean(q.cursor));
     } catch (error) {
       // Протухший или подделанный курсор — Kodik отвечает 400.
       // Вместо 502 отдаём первый экран каталога.
-      if (q.cursor) return finalizeTotal(await collectUnique(params, undefined, 24), false);
+      if (q.cursor) return finalizeTotal(await collectUnique(params, undefined, want, maxPages), false);
       throw error;
     }
   });

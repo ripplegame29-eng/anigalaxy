@@ -181,7 +181,13 @@ export type DomainEvent =
    * Личная награда из сундука сокровищницы. `key` — ключ открытия
    * (`chest:<tier>:<n>`): повторная выдача по тому же ключу отклоняется.
    */
-  | { type: "CLAN_CHEST_REWARD"; key: string; amount: number; at?: number };
+  | { type: "CLAN_CHEST_REWARD"; key: string; amount: number; at?: number }
+  /**
+   * Квиз: раунд завершён (закрыт раунд — все вопросы отвечены).
+   * `correct`/`total` — счёт игрока. Награду начисляет правило
+   * `QUIZ_COMPLETED` из конфига; повтор награды — раз в сутки.
+   */
+  | { type: "QUIZ_COMPLETED"; quizId: string; correct: number; total: number; at?: number };
 
 export type EventType = DomainEvent["type"];
 

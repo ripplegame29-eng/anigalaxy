@@ -236,6 +236,10 @@ export const PROGRESSION_CONFIG = {
       bucket: "PROFILE_FIELD",
     },
     PROFILE_COMPLETE: { ruleClass: "ACTIVITY", xp: 100, repeat: "entity" },
+    // Квиз: награда за завершённый раунд (закрыт раунд — все вопросы
+    // отвечены). Идемпотентность — раз в сутки; bucket «QUIZ» считает
+    // дневные/недельные счётчики в том же духе, что и другие правила.
+    QUIZ_COMPLETED: { ruleClass: "ACTIVITY", xp: 30, ac: 15, repeat: "day", bucket: "QUIZ" },
   },
 
   /* --------------------------- Достижения ------------------------------ */

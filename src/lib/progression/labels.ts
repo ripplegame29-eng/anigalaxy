@@ -27,6 +27,7 @@ const SOURCE_LABELS: Record<string, string> = {
   PROFILE_COMPLETED: "Профиль заполнен",
   ACHIEVEMENT: "Достижение",
   QUEST: "Квест",
+  QUIZ_COMPLETED: "Квиз",
   STREAK_BONUS: "Бонус серии",
   STREAK: "Серия посещений",
   DAILY_LOGIN: "Ежедневный вход",

@@ -30,6 +30,8 @@ let healthy: string | undefined;
 /* --------------------- Отрицательный кэш ошибок ---------------------- */
 
 const memoCache = new Map<string, { at: number; value?: unknown; error?: string }>();
+/** Идущие запросы: квиз параллельно ищет кадр и песню одного тайтла */
+const pending = new Map<string, Promise<unknown>>();
 /** Пока Shikimori лежит — не дёргаем его заново на каждый запрос страницы */
 const NEGATIVE_TTL = 30_000;
 
@@ -42,16 +44,27 @@ async function memo<T>(key: string, ttlMs: number, producer: () => Promise<T>): 
     if (hit.value !== undefined && now - hit.at < ttlMs) return hit.value as T;
   }
 
-  try {
-    const value = await producer();
-    if (memoCache.size > 300) memoCache.clear();
-    memoCache.set(key, { at: now, value });
-    return value;
-  } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    memoCache.set(key, { at: now, error: message });
-    throw error;
-  }
+  // Один и тот же opening нужен и кадру, и песне — не дублируем запрос
+  const inFlight = pending.get(key);
+  if (inFlight) return inFlight as Promise<T>;
+
+  const job = (async (): Promise<T> => {
+    try {
+      const value = await producer();
+      if (memoCache.size > 300) memoCache.clear();
+      memoCache.set(key, { at: Date.now(), value });
+      return value;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      memoCache.set(key, { at: Date.now(), error: message });
+      throw error;
+    } finally {
+      pending.delete(key);
+    }
+  })();
+
+  pending.set(key, job);
+  return job;
 }
 
 /* ---------------------------- HTTP слой ------------------------------ */
@@ -190,15 +203,19 @@ function pickFromVideos(videos: VideoDto[]): Trailer | null {
   };
 }
 
-/* ------------- Запасной путь: поиск трейлера на YouTube --------------- */
-
-async function youtubeSearch(query: string): Promise<Trailer | null> {
+/** YouTube-поиск по запросу; `wanted` — фильтр по названию, `thumb` — имя кадра */
+async function youtubeQuery(
+  query: string,
+  wanted?: (title: string) => boolean,
+  thumb = "hqdefault",
+  timeoutMs = 6_000,
+): Promise<Trailer | null> {
   try {
     const res = await fetch(
       `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`,
       {
         headers: { "User-Agent": USER_AGENT, "Accept-Language": "ru-RU,ru;q=0.9" },
-        signal: AbortSignal.timeout(6_000),
+        signal: AbortSignal.timeout(timeoutMs),
         cache: "no-store",
       },
     );
@@ -211,14 +228,97 @@ async function youtubeSearch(query: string): Promise<Trailer | null> {
 
     for (const match of pairs) {
       const [, id, title] = match;
-      if (!/трейлер|тизер|официальн|\bpv\b/i.test(title)) continue;
-      if (/тон-?[а-я]*трейлер/i.test(title)) continue;
-      return { id, title: title.replace(/\\u0026/g, "&"), poster: `https://i.ytimg.com/vi/${id}/hqdefault.jpg` };
+      const clean = title.replace(/\\u0026/g, "&");
+      if (wanted && !wanted(clean)) continue;
+      return { id, title: clean, poster: `https://i.ytimg.com/vi/${id}/${thumb}.jpg` };
     }
   } catch {
-    /* YouTube не ответил — трейлера просто не будет */
+    /* YouTube не ответил — искомого ролика просто не будет */
   }
   return null;
+}
+
+async function youtubeSearch(query: string): Promise<Trailer | null> {
+  const found = await youtubeQuery(query, (t) => /трейлер|тизер|официальн|\bpv\b/i.test(t));
+  if (!found) return null;
+  if (/тон-?[а-я]*трейлер/i.test(found.title)) return null;
+  return found;
+}
+
+/**
+ * Opening тайтла: YouTube-ролик с «opening» в названии (чаще всего русская
+ * озвучка) — его средний кадр (`i.ytimg.com/vi/<id>/hq2.jpg`) и есть кадр,
+ * по которому строится квиз «Угадай тайтл по opening'у». Именно средний, а не
+ * hqdefault: на стандартном превью часто красуется титульная заставка с
+ * названием тайтла, а это прямой ответ.
+ */
+export async function opening(
+  shikimoriId: number | undefined,
+  title: string,
+): Promise<Trailer | null> {
+  if (!shikimoriId && !title) return null;
+
+  const key = `shikimori:opening:${shikimoriId ?? title}`;
+  try {
+    return await memo(key, 60 * MINUTE, async () => {
+      /** Любой ролик Shikimori: запасной вариант, если OP не нашёлся */
+      let fallback: Trailer | null = null;
+
+      if (shikimoriId) {
+        try {
+          const videos = await api<VideoDto[]>(`/api/animes/${shikimoriId}/videos`);
+          const withId: { v: VideoDto; id: string }[] = [];
+          const seen = new Set<string>();
+          for (const v of videos) {
+            const id = youtubeId(v.url, v.player_url);
+            if (!id || seen.has(id)) continue;
+            seen.add(id);
+            withId.push({ v, id });
+          }
+
+          const bestOf = (rows: { v: VideoDto; id: string }[]): Trailer | null => {
+            if (!rows.length) return null;
+            const best = rows
+              .map((r) => ({ ...r, value: score(r.v.kind ?? "", r.v.name ?? "") }))
+              .sort((a, b) => b.value - a.value)[0];
+            if (!best) return null;
+            return {
+              id: best.id,
+              title: best.v.name?.trim() || "Opening",
+              // hq2 — средний кадр ролика: на нём обычно сама анимация,
+              // а не титульная заставка с названием тайтла
+              poster: `https://i.ytimg.com/vi/${best.id}/hq2.jpg`,
+            };
+          };
+
+          // Настоящий opening: kind/название ролика прямо об этом говорят
+          const openingLike = withId.filter((r) =>
+            /опен|opening|intro|\bop\b/i.test(`${r.v.kind ?? ""} ${r.v.name ?? ""}`),
+          );
+          const found = bestOf(openingLike);
+          if (found) return found;
+
+          fallback = bestOf(withId);
+        } catch {
+          /* Shikimori лёг — уходим на YouTube */
+        }
+      }
+
+      // В базе Shikimori опенингов почти нет — ищем ролик на YouTube
+      const searched = await youtubeQuery(
+        `${title} opening`,
+        (t) => /опен|opening|intro|\bop\b/i.test(t),
+        "hq2",
+        2_500,
+      );
+      if (searched) return searched;
+
+      // Совсем ничего не нашли — сгодится любой кадр из тайтла (PV/трейлер)
+      return fallback;
+    });
+  } catch {
+    return null;
+  }
 }
 
 /**
