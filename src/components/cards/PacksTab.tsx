@@ -351,23 +351,8 @@ export function PacksTab({ s }: { s: CardsState }) {
           </div>
 
           <div className="st-dock" data-pick={pendingOffers ? "1" : undefined}>
-            <div className="st-stage">
-              {pendingOffers ? (
-                <div className="cg-pickstage">
-                  <div className="cg-offers">
-                    {pendingOffers.map((id, i) => (
-                      <GameCard key={id} cardId={id} live onClick={() => void pickCard(i)} className="cg-offer-card" />
-                    ))}
-                  </div>
-                </div>
-              ) : (
-                <PackStage phase={phase} blocked={!!reason && !loading} art={BUNDLE_ART[sel]} onOpen={() => void open(bundle.n)} />
-              )}
-            </div>
-
-            <div className="pk-info st-co">
-              {!pendingOffers && (
-                <div className="st-pick">
+            {!pendingOffers && (
+              <div className="st-pick">
                   <div className="st-seg" role="group" aria-label="Набор паков">
                     {bundles.map((b, i) => (
                       <button
@@ -384,6 +369,9 @@ export function PacksTab({ s }: { s: CardsState }) {
                           <b>×{b.n}</b>
                           <small>{i === 0 ? "один пак" : effectivePay !== "token" && b.n > b.pay ? `+${b.n - b.pay} в подарок` : `${b.n} паков`}</small>
                         </span>
+                        <em className="st-opt-p">
+                          {fmt(costOf(b))} <Cur k={PAY_CUR[effectivePay]} size={14} />
+                        </em>
                       </button>
                     ))}
                   </div>
@@ -392,6 +380,21 @@ export function PacksTab({ s }: { s: CardsState }) {
                   </button>
                 </div>
               )}
+            <div className="st-stage">
+              {pendingOffers ? (
+                <div className="cg-pickstage">
+                  <div className="cg-offers">
+                    {pendingOffers.map((id, i) => (
+                      <GameCard key={id} cardId={id} live onClick={() => void pickCard(i)} className="cg-offer-card" />
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <PackStage phase={phase} blocked={!!reason && !loading} art={BUNDLE_ART[sel]} onOpen={() => void open(bundle.n)} />
+              )}
+            </div>
+
+            <div className="pk-info st-co">
               <div className="pk-chips">
                 <span className="cg-eyebrow">Набор AniGalaxy</span>
                 <span className="cg-chip">{PACK.choices} карты на выбор</span>
