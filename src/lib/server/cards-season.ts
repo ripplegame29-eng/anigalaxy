@@ -2,7 +2,6 @@
 
 import { BANNER, PASS, bannerFeatured, passReward, seasonEnd, seasonOf, type EventsState, type PassTrack, type PassView } from "../cards/season";
 import type { Reward } from "../cards/progress";
-import { BATTLEPASS } from "../battlepass/config";
 import { addMoney, fail, getWallet, grantReward, logEvent, type Res } from "./cards";
 import { getExtra, rollWeek, setExtra, weekOf } from "./cards-extra";
 import { num, transaction, type Database } from "./sqlite";
@@ -23,11 +22,7 @@ export function passView(db: Database, userId: number, now = Date.now()): PassVi
   };
 }
 
-/** Пасс гачи откроется следующим сезоном — после окончания сезона основного боевого пропуска */
-const NEXT_SEASON_MSG = "Этот пасс откроется следующим сезоном — после окончания основного боевого пропуска";
-
 export function passBuy(db: Database, userId: number, now = Date.now()): Res<true> {
-  if (now < BATTLEPASS.to) return fail(NEXT_SEASON_MSG);
   return transaction(db, (): Res<true> => {
     getWallet(db, userId, now);
     const x = rollWeek(getExtra(db, userId), now);
@@ -43,7 +38,6 @@ export function passBuy(db: Database, userId: number, now = Date.now()): Res<tru
 /** Забрать награду уровня; `level` = 0 — все доступные награды выбранной ветки */
 export function passClaim(db: Database, userId: number, track: PassTrack, level: number, now = Date.now()): Res<{ reward: Reward; count: number }> {
   if (track !== "free" && track !== "premium") return fail("Неизвестная ветка");
-  if (now < BATTLEPASS.to) return fail(NEXT_SEASON_MSG);
   return transaction(db, (): Res<{ reward: Reward; count: number }> => {
     getWallet(db, userId, now);
     const x = rollWeek(getExtra(db, userId), now);
