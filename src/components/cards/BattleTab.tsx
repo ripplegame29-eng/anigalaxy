@@ -12,7 +12,7 @@ import { CollectorModal } from "./collector";
 import { Leaderboard, type TopRow } from "./Leaderboard";
 import { useAccount } from "@/lib/use-account";
 import { InvPicker, Panel, RankFilter, fmt, fmtLeft, toast, useBusy, useNow } from "./common";
-import { Cur, ELEMENT_ICON, Ico } from "./icons";
+import { Cur, ELEMENT_ICON, Ico, type IcoName } from "./icons";
 import { CampaignView, DuelPanel, RaidPanel } from "./PveTabs";
 import { TabHero } from "./TabHero";
 import { Arsenal, PreFight, getPick } from "./gearui";
@@ -33,6 +33,12 @@ const HOW: { ico: "bolt" | "fire" | "shield" | "scroll"; t: string; d: string }[
   { ico: "fire", t: "Стихии бьют друг друга", d: "Удар по слабой стихии +30%, по устойчивой −20%." },
   { ico: "shield", t: "Стражи и Хилеры", d: "Стражи прикрывают союзников, Хилеры лечат отряд." },
   { ico: "scroll", t: "Умения по приоритету", d: "Порядок умений героя настраивается кнопкой под картой." },
+];
+
+const LADDER_SUBS: ["fight" | "rules" | "top", string, IcoName][] = [
+  ["fight", "Отряд и бой", "swords"],
+  ["rules", "Правила и задания", "target"],
+  ["top", "Лидеры сезона", "trophy"],
 ];
 
 export function BattleTab({ s }: { s: CardsState }) {
@@ -97,6 +103,8 @@ export function BattleTab({ s }: { s: CardsState }) {
     return sum + (d ? powerOf(d, c.level) : 0);
   }, 0);
   const games = w.wins + w.losses;
+  const [lview, setLview] = useState<"fight" | "rules" | "top">("fight");
+  const missReady = s.missions.filter((m) => !m.claimed && m.progress >= m.goal).length;
   const winRate = games ? Math.round((w.wins / games) * 100) : 0;
   const curIdx = Math.max(0, LEAGUES.findIndex((l) => l.id === league.id));
   const ladderPct = next ? Math.min(100, ((curIdx + (w.rating - league.from) / Math.max(1, next.from - league.from)) / (LEAGUES.length - 1)) * 100) : 100;
@@ -178,6 +186,16 @@ export function BattleTab({ s }: { s: CardsState }) {
           </div>
         }
       />
+      <div className="pg-sub" role="tablist" aria-label="Разделы рейтинговых боёв">
+        {LADDER_SUBS.map(([id, label, ic]) => (
+          <button key={id} type="button" role="tab" aria-selected={lview === id} className="pg-sub-b" onClick={() => setLview(id)}>
+            <Ico name={ic} size={16} />
+            <span>{label}</span>
+            {id === "rules" && missReady > 0 && <em aria-label={`Наград: ${missReady}`}>{missReady}</em>}
+          </button>
+        ))}
+      </div>
+      {lview === "fight" && (
       <div className="cg-grid2 bt-grid">
         <Panel
           title="Ваш отряд"
@@ -319,65 +337,72 @@ export function BattleTab({ s }: { s: CardsState }) {
               </span>
             </div>
           </Panel>
-          <Panel title="Правила недели" hint="Меняются каждую неделю и действуют на все рейтинговые бои.">
-            <div className="bt-rules">
-              <div className="bt-rule bad">
-                <Ico name={ELEMENT_ICON[mods.ban]} size={26} />
-                <span>
-                  <small>Штраф</small>
-                  <b>{ELEMENTS[mods.ban].name}</b>
-                </span>
-                <em>−20% к атаке</em>
-              </div>
-              <div className="bt-rule good">
-                <Ico name={ELEMENT_ICON[mods.buff]} size={26} />
-                <span>
-                  <small>Усиление</small>
-                  <b>{ELEMENTS[mods.buff].name}</b>
-                </span>
-                <em>+15% к атаке</em>
-              </div>
-            </div>
-          </Panel>
-          <Panel title="Задания дня" right={<span className="bt-pow"><b>{s.missions.filter((m) => m.claimed).length}/{s.missions.length}</b> выполнено</span>}>
-            <ul className="bt-miss">
-              {s.missions.map((m) => {
-                const pct = Math.min(100, (m.progress / Math.max(1, m.goal)) * 100);
-                const ready = !m.claimed && m.progress >= m.goal;
-                return (
-                  <li key={m.id} className={m.claimed ? "done" : ready ? "ready" : ""}>
-                    <div className="bt-miss-top">
-                      <span>
-                        <b>{m.text}</b>
-                        <small>
-                          {m.reward.diamonds ? <em><Cur k="diamonds" /> {m.reward.diamonds}</em> : null}
-                          {m.reward.dust ? <em><Cur k="dust" /> {m.reward.dust}</em> : null}
-                          {m.reward.scroll ? <em><Ico name="scroll" size={14} /> {m.reward.scroll}</em> : null}
-                        </small>
-                      </span>
-                      <button
-                        type="button"
-                        className="cg-btn sm pri"
-                        disabled={m.claimed || m.progress < m.goal}
-                        onClick={() => void run(async () => { const r = await act("mission", { id: m.id }); toast(r.ok ? "Награда получена" : r.error, !r.ok); })}
-                      >
-                        {m.claimed ? "Получено" : "Забрать"}
-                      </button>
-                    </div>
-                    <span className="bt-bar">
-                      <i style={{ width: `${pct}%` }} />
-                    </span>
-                    <small className="bt-miss-n">
-                      {m.progress}/{m.goal}
-                    </small>
-                  </li>
-                );
-              })}
-            </ul>
-          </Panel>
         </div>
       </div>
-      <Leaderboard rows={top} me={account?.nickname ?? ""} myRating={w.rating} onOpen={setProfile} />
+      )}
+      {lview === "rules" && (
+        <div className="pg-view bt-two">
+      <Panel title="Правила недели" hint="Меняются каждую неделю и действуют на все рейтинговые бои.">
+        <div className="bt-rules">
+          <div className="bt-rule bad">
+            <Ico name={ELEMENT_ICON[mods.ban]} size={26} />
+            <span>
+              <small>Штраф</small>
+              <b>{ELEMENTS[mods.ban].name}</b>
+            </span>
+            <em>−20% к атаке</em>
+          </div>
+          <div className="bt-rule good">
+            <Ico name={ELEMENT_ICON[mods.buff]} size={26} />
+            <span>
+              <small>Усиление</small>
+              <b>{ELEMENTS[mods.buff].name}</b>
+            </span>
+            <em>+15% к атаке</em>
+          </div>
+        </div>
+      </Panel>
+      <Panel title="Задания дня" right={<span className="bt-pow"><b>{s.missions.filter((m) => m.claimed).length}/{s.missions.length}</b> выполнено</span>}>
+        <ul className="bt-miss">
+          {s.missions.map((m) => {
+            const pct = Math.min(100, (m.progress / Math.max(1, m.goal)) * 100);
+            const ready = !m.claimed && m.progress >= m.goal;
+            return (
+              <li key={m.id} className={m.claimed ? "done" : ready ? "ready" : ""}>
+                <div className="bt-miss-top">
+                  <span>
+                    <b>{m.text}</b>
+                    <small>
+                      {m.reward.diamonds ? <em><Cur k="diamonds" /> {m.reward.diamonds}</em> : null}
+                      {m.reward.dust ? <em><Cur k="dust" /> {m.reward.dust}</em> : null}
+                      {m.reward.scroll ? <em><Ico name="scroll" size={14} /> {m.reward.scroll}</em> : null}
+                    </small>
+                  </span>
+                  <button
+                    type="button"
+                    className="cg-btn sm pri"
+                    disabled={m.claimed || m.progress < m.goal}
+                    onClick={() => void run(async () => { const r = await act("mission", { id: m.id }); toast(r.ok ? "Награда получена" : r.error, !r.ok); })}
+                  >
+                    {m.claimed ? "Получено" : "Забрать"}
+                  </button>
+                </div>
+                <span className="bt-bar">
+                  <i style={{ width: `${pct}%` }} />
+                </span>
+                <small className="bt-miss-n">
+                  {m.progress}/{m.goal}
+                </small>
+              </li>
+            );
+          })}
+        </ul>
+      </Panel>
+        </div>
+      )}
+      {lview === "top" && (
+        <Leaderboard rows={top} me={account?.nickname ?? ""} myRating={w.rating} onOpen={setProfile} />
+      )}
       </>
       )}
     </div>

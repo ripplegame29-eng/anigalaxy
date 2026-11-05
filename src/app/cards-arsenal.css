@@ -288,3 +288,11 @@
 .cg .pg-view .pg-stats { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 @media (max-width: 1000px) { .cg .pg-view .pg-wq-list { grid-template-columns: 1fr; } }
 @media (max-width: 720px) { .cg .pg-view .pg-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* Рейтинговые бои: разделы вместо одной длинной страницы */
+.cg .bt-two { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
+@media (max-width: 900px) { .cg .bt-two { grid-template-columns: 1fr; } }
+.cg .bt-grid { grid-template-columns: minmax(0, 1fr) 320px; align-items: start; }
+@media (max-width: 1000px) { .cg .bt-grid { grid-template-columns: 1fr; } }
+.cg .bt-slots { gap: 14px; }
+.cg .bt-act { margin-top: 18px; }
