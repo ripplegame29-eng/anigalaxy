@@ -2469,3 +2469,8 @@ html[data-eco="on"] .cv-fglow, html[data-eco="on"] .cv-fglint { animation: none;
 .cg[data-tab="season"] .sv-switch button:not(.on):hover { background: rgba(255, 110, 140, 0.14); }
 .cg[data-tab="season"] .sv-soon { background: linear-gradient(120deg, rgba(255, 77, 106, 0.2), rgba(120, 20, 50, 0.16)); border-color: rgba(255, 110, 140, 0.34); }
 .cg[data-tab="season"] .cg-hero2.mini .cg-btn { background: linear-gradient(180deg, rgba(110, 24, 52, 0.85), rgba(46, 10, 24, 0.9)) !important; box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1) !important; }
+/* «Сезон»: нижняя световая черта кнопок и свечение — красные */
+.cg[data-tab="season"] .cg-btn::after { background: linear-gradient(90deg, transparent, #ff5a78, transparent) !important; }
+.cg[data-tab="season"] .cg-btn:hover:not(:disabled)::after { box-shadow: 0 0 12px #ff6f8c !important; }
+.cg[data-tab="season"] .cg-btn:hover:not(:disabled) { box-shadow: 0 8px 26px -8px rgba(255, 70, 110, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.12) !important; border-color: rgba(255, 130, 155, 0.5) !important; }
+.cg[data-tab="season"] .cg-btn:focus-visible { outline-color: #ff6f8c !important; }
