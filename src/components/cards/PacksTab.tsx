@@ -5,6 +5,7 @@ import { CATALOG, cardDef, isHidden } from "@/lib/cards/catalog";
 import { PACK, RANKS } from "@/lib/cards/config";
 import { sfx } from "@/lib/cards/sound";
 import { act, hasArt, type CardsState, type Pull } from "@/lib/cards/client";
+import { useSkin } from "./skin";
 import { GameCard } from "./GameCard";
 import { BannerCard } from "./BannerCard";
 import { CardViewer } from "./CardViewer";
@@ -101,6 +102,7 @@ function FeedRow({ p, now }: { p: Pull; now: number }) {
 }
 
 export function PacksTab({ s }: { s: CardsState }) {
+  const skin = useSkin();
   const [busy, run] = useBusy();
   const [pay, setPay] = useState<Pay>("token");
   const [quick, setQuick] = useState(readQuick);
@@ -249,6 +251,63 @@ export function PacksTab({ s }: { s: CardsState }) {
               );
   };
 
+  const bannerEl = (
+      <section className="pk-sec" aria-labelledby="pk-ban-t">
+        <h2 className="pk-h" id="pk-ban-t">
+          <Ico name="star" size={22} /> Карта недели
+        </h2>
+        <BannerCard s={s} />
+      </section>
+  );
+  const pickEl = (
+    <>
+            {!pendingOffers && (
+              <div className="st-pick">
+                  <div className="st-seg" role="group" aria-label="Набор паков">
+                    {bundles.map((b, i) => (
+                      <button
+                        key={b.n}
+                        type="button"
+                        className="st-opt"
+                        aria-pressed={sel === i}
+                        disabled={loading}
+                        style={{ ["--oc" as string]: OFFER_COLOR[i] ?? OFFER_COLOR[0] }}
+                        onClick={() => setSel(i)}
+                      >
+                        <img src={`/cards/offers/${Math.min(i, 2) + 1}.webp`} alt="" draggable={false} />
+                        <span>
+                          <b>×{b.n}</b>
+                          <small>{i === 0 ? "один пак" : effectivePay !== "token" && b.n > b.pay ? `+${b.n - b.pay} в подарок` : `${b.n} паков`}</small>
+                        </span>
+                        {skin === "new" && <em className="st-opt-p">
+                          {fmt(costOf(b))} <Cur k={PAY_CUR[effectivePay]} size={14} />
+                        </em>}
+                      </button>
+                    ))}
+                  </div>
+                  <button type="button" className="st-all" disabled={loading} onClick={() => setGal(true)}>
+                    <Ico name="grid" size={16} /> Все наборы
+                  </button>
+                </div>
+              )}
+    </>
+  );
+  const stageEl = (
+            <div className="st-stage">
+              {pendingOffers ? (
+                <div className="cg-pickstage">
+                  <div className="cg-offers">
+                    {pendingOffers.map((id, i) => (
+                      <GameCard key={id} cardId={id} live onClick={() => void pickCard(i)} className="cg-offer-card" />
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <PackStage phase={phase} blocked={!!reason && !loading} art={BUNDLE_ART[sel]} onOpen={() => void open(bundle.n)} />
+              )}
+            </div>
+  );
+
   return (
     <div className="pk-page">
       <section className="pk-hero" aria-label="Паки AniGalaxy">
@@ -315,12 +374,7 @@ export function PacksTab({ s }: { s: CardsState }) {
         </aside>
       </section>
 
-      <section className="pk-sec" aria-labelledby="pk-ban-t">
-        <h2 className="pk-h" id="pk-ban-t">
-          <Ico name="star" size={22} /> Карта недели
-        </h2>
-        <BannerCard s={s} />
-      </section>
+      {skin === "new" && bannerEl}
 
       <section className="pk-sec" id="pk-shop" aria-labelledby="pk-shop-t">
         <h2 className="pk-h" id="pk-shop-t">
@@ -358,50 +412,11 @@ export function PacksTab({ s }: { s: CardsState }) {
           </div>
 
           <div className="st-dock" data-pick={pendingOffers ? "1" : undefined}>
-            {!pendingOffers && (
-              <div className="st-pick">
-                  <div className="st-seg" role="group" aria-label="Набор паков">
-                    {bundles.map((b, i) => (
-                      <button
-                        key={b.n}
-                        type="button"
-                        className="st-opt"
-                        aria-pressed={sel === i}
-                        disabled={loading}
-                        style={{ ["--oc" as string]: OFFER_COLOR[i] ?? OFFER_COLOR[0] }}
-                        onClick={() => setSel(i)}
-                      >
-                        <img src={`/cards/offers/${Math.min(i, 2) + 1}.webp`} alt="" draggable={false} />
-                        <span>
-                          <b>×{b.n}</b>
-                          <small>{i === 0 ? "один пак" : effectivePay !== "token" && b.n > b.pay ? `+${b.n - b.pay} в подарок` : `${b.n} паков`}</small>
-                        </span>
-                        <em className="st-opt-p">
-                          {fmt(costOf(b))} <Cur k={PAY_CUR[effectivePay]} size={14} />
-                        </em>
-                      </button>
-                    ))}
-                  </div>
-                  <button type="button" className="st-all" disabled={loading} onClick={() => setGal(true)}>
-                    <Ico name="grid" size={16} /> Все наборы
-                  </button>
-                </div>
-              )}
-            <div className="st-stage">
-              {pendingOffers ? (
-                <div className="cg-pickstage">
-                  <div className="cg-offers">
-                    {pendingOffers.map((id, i) => (
-                      <GameCard key={id} cardId={id} live onClick={() => void pickCard(i)} className="cg-offer-card" />
-                    ))}
-                  </div>
-                </div>
-              ) : (
-                <PackStage phase={phase} blocked={!!reason && !loading} art={BUNDLE_ART[sel]} onOpen={() => void open(bundle.n)} />
-              )}
-            </div>
+            {skin === "new" && pickEl}
+            {stageEl}
 
             <div className="pk-info st-co">
+              {skin === "classic" && pickEl}
               <div className="pk-chips">
                 <span className="cg-eyebrow">Набор AniGalaxy</span>
                 <span className="cg-chip">{PACK.choices} карты на выбор</span>
@@ -518,6 +533,8 @@ export function PacksTab({ s }: { s: CardsState }) {
           </div>
         </div>
       </section>
+
+      {skin === "classic" && bannerEl}
 
       {gal && (
         <Portal>

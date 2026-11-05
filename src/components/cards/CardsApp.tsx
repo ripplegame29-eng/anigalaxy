@@ -16,13 +16,14 @@ import "../../app/cards-progress.css";
 import "../../app/cards-campaign.css";
 import "../../app/cards-season.css";
 import "../../app/cards-arsenal.css";
-import "../../app/cards-premium.css";
 import { AuctionTab } from "./AuctionTab";
 import { BattleTab } from "./BattleTab";
 import { CollectionTab } from "./CollectionTab";
 import { ForgeTab } from "./ForgeTab";
 import { PacksTab } from "./PacksTab";
 import { ProgressTab } from "./ProgressTab";
+import { ProgressTabClassic } from "./ProgressTabClassic";
+import { setSkin, useSkin } from "./skin";
 import { SeasonTab } from "./SeasonTab";
 import { SharpenTab } from "./SharpenTab";
 import { setSound, useSoundOn } from "@/lib/cards/sound";
@@ -142,6 +143,7 @@ function ExchangePopover({ ac, diamonds, onDone }: { ac: number; diamonds: numbe
 }
 
 export function CardsApp() {
+  const skin = useSkin();
   const account = useAccount();
   const { state: s, error, loading } = useCards();
   const [tab, setTab] = useState<TabId>("packs");
@@ -293,7 +295,12 @@ export function CardsApp() {
   ];
 
   return (
-    <div className="cg" data-tab={tab}>
+    <div className="cg" data-tab={tab} data-skin={skin}>
+      <div className="cg-skinbar" role="group" aria-label="Оформление">
+        <span>Оформление:</span>
+        <button type="button" aria-pressed={skin === "new"} onClick={() => setSkin("new")}>Новое</button>
+        <button type="button" aria-pressed={skin === "classic"} onClick={() => setSkin("classic")}>Классика</button>
+      </div>
       <section className={`cg-hero2 cg-enter${tab === "collection" ? "" : " mini"}`}>
         {tab === "collection" && (
         <div>
@@ -380,7 +387,7 @@ export function CardsApp() {
         {tab === "auction" && <AuctionTab s={s} me={account.nickname} />}
         {tab === "trade" && <TradeTab s={s} />}
         {tab === "collection" && <CollectionTab s={s} />}
-        {tab === "progress" && <ProgressTab s={s} />}
+        {tab === "progress" && (skin === "new" ? <ProgressTab s={s} /> : <ProgressTabClassic s={s} />)}
         {tab === "season" && <SeasonTab s={s} />}
       </div>
       <ToastHost />
