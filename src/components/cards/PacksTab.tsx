@@ -42,7 +42,7 @@ const PAY_CUR: Record<Pay, CurKey> = { token: "packs", diamonds: "diamonds", dus
 
 /** Цвета рамок наборов: синий, фиолетовый, золотой */
 /** Упаковка набора для сцены: у одиночного пака своя анимация открытия, у наборов — общий арт */
-const BUNDLE_ART: ({ src: string; ar: number } | undefined)[] = [undefined, { src: "/cards/offers/2.webp", ar: 880 / 598 }, { src: "/cards/offers/3.webp", ar: 560 / 640 }];
+const BUNDLE_ART: ({ src: string; ar: number } | undefined)[] = [undefined, { src: "/cards/offers/2.webp", ar: 778 / 544 }, { src: "/cards/offers/3.webp", ar: 853 / 650 }];
 const OFFER_COLOR = ["#3aa0ff", "#b46bff", "#4fe3ff"];
 
 function Thumb({ cardId, rank, name }: { cardId: string; rank: number; name: string }) {
