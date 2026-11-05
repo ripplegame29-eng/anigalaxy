@@ -338,3 +338,23 @@
 .cg .pk-gbar u { box-shadow: none; }
 
 @media (max-width: 1100px) { .cg .pk-hero { grid-template-columns: minmax(0, 1fr); min-height: 0; margin-bottom: 48px; } }
+
+/* ── Кнопки гачи: сплошной синий, как «Смотреть» на сайте (кроме вкладки «Сезон») ── */
+.cg:not([data-tab="season"]) :is(.cg-btn, .cg-btn.sm, .cg-btn.lg, .cg-btn.pri, .cg-btn.gold, .cg-bt .cg-btn, .pk-page .cg-btn, .pk-page .cg-btn.gold, .ar-result .cg-btn.pri, .st-all, .bt-go, .cg-cta, .pk-page .cg-cta) {
+  background: #2b7fff !important; background-image: none !important; color: #fff !important;
+  border: 0 !important; border-radius: 8px !important; font-weight: 700 !important; letter-spacing: 0 !important;
+  box-shadow: none !important; text-shadow: none !important; min-height: 40px; padding-inline: 18px;
+}
+.cg:not([data-tab="season"]) :is(.cg-btn.sm) { min-height: 34px; padding-inline: 14px; font-size: 13px; }
+.cg:not([data-tab="season"]) :is(.cg-btn.lg, .cg-cta, .bt-go) { min-height: 48px; padding-inline: 22px; }
+.cg:not([data-tab="season"]) :is(.cg-btn, .bt-go, .cg-cta, .st-all)::before,
+.cg:not([data-tab="season"]) :is(.cg-btn, .bt-go, .cg-cta, .st-all)::after { display: none !important; }
+.cg:not([data-tab="season"]) :is(.cg-btn, .st-all, .bt-go, .cg-cta):hover:not(:disabled) { background: #4a93ff !important; transform: translateY(-1px); box-shadow: 0 10px 24px -12px rgba(43,127,255,.9) !important; }
+.cg:not([data-tab="season"]) :is(.cg-btn, .st-all, .bt-go, .cg-cta):active:not(:disabled) { background: #2468d8 !important; transform: none; }
+.cg:not([data-tab="season"]) :is(.cg-btn, .st-all, .bt-go, .cg-cta):disabled { opacity: .45; filter: none; cursor: not-allowed; }
+.cg:not([data-tab="season"]) .cg-btn.danger { background: #3a1a26 !important; color: #ffb3c9 !important; }
+.cg:not([data-tab="season"]) .cg-btn.danger:hover:not(:disabled) { background: #52202f !important; }
+.cg:not([data-tab="season"]) .bt-go { justify-content: flex-start; gap: 14px; }
+.cg:not([data-tab="season"]) .bt-go em { background: rgba(0,0,0,.22) !important; border: 0 !important; border-radius: 8px !important; }
+.cg:not([data-tab="season"]) .bt-go > svg, .cg:not([data-tab="season"]) .bt-go .ico { background: rgba(255,255,255,.16) !important; border: 0 !important; }
+.cg:not([data-tab="season"]) .bt-go small { color: rgba(255,255,255,.85) !important; }
