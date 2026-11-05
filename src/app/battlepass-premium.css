@@ -1039,3 +1039,8 @@ body:has(.ag-root.has-hueco){background:linear-gradient(180deg,rgba(10,3,7,.55),
 .bp2 .bp-gx{position:absolute;top:6px;right:6px;width:20px;height:26px;border-radius:5px;display:grid;place-items:center;background:linear-gradient(160deg,#2b6bff,#7a4dff 60%,#18c8ff);box-shadow:0 0 0 1px rgba(160,220,255,.35) inset,0 0 12px rgba(70,140,255,.55);pointer-events:none}
 .bp2 .bp-gx i{width:10px;height:14px;border-radius:2px;border:1.5px solid rgba(255,255,255,.85);background:linear-gradient(160deg,rgba(255,255,255,.35),rgba(255,255,255,.05));transform:rotate(8deg)}
 .bp2 .bp-rw.locked .bp-gx{filter:saturate(.5) brightness(.8)}
+
+/* Герои гачи в эксклюзивах: полноценная карточка на подсветке ранга */
+.bp2-ix.hero .art{height:280px;cursor:default;background:radial-gradient(circle at 50% 45%,color-mix(in srgb,var(--k) 34%,transparent),transparent 72%)}
+.bp2-ix.hero .hc{width:156px;filter:drop-shadow(0 14px 22px color-mix(in srgb,var(--k) 55%,transparent));transition:transform .4s cubic-bezier(.3,1.4,.5,1)}
+.bp2-ix.hero:hover .hc{transform:translateY(-4px) scale(1.04)}

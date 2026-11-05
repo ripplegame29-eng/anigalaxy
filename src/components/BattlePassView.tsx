@@ -55,6 +55,11 @@ import { progressEmit, useProgress } from "@/lib/progression/events";
 import type { BattlepassLine, ProgressEffect } from "@/lib/progression/types";
 import { pushToast } from "@/lib/toasts";
 import { syncBpRewards } from "@/lib/cards/client";
+import "@/app/cards-card.css";
+import { GameCard } from "@/components/cards/GameCard";
+import { GACHA_BP_LEVELS, gachaRewardAt } from "@/lib/battlepass/gacha";
+import { cardDef } from "@/lib/cards/catalog";
+import { RANKS } from "@/lib/cards/config";
 import { useAccount } from "@/lib/use-account";
 
 type ClaimEffect = Extract<ProgressEffect, { type: "BATTLEPASS_CLAIMED" }>;
@@ -469,7 +474,7 @@ function ExclusiveShowcase({
   onClaim: (line: BattlepassLine, level: number) => void;
   onOpen: (key: string) => void;
 }) {
-  const [kind, setKind] = useState<"all" | "frame" | "tag">("all");
+  const [kind, setKind] = useState<"all" | "frame" | "tag" | "hero">("all");
   const [rarity, setRarity] = useState<"all" | BpRewardCard["rarity"]>("all");
 
   const rarities = useMemo(() => {
@@ -478,10 +483,23 @@ function ExclusiveShowcase({
   }, []);
 
   const cards = EXCLUSIVE_CARDS.filter(
-    (card) => (kind === "all" || card.kind === kind) && (rarity === "all" || card.rarity === rarity),
+    (card) => kind !== "hero" && (kind === "all" || card.kind === kind) && (rarity === "all" || card.rarity === rarity),
   );
-  const count = (id: "all" | "frame" | "tag") =>
-    id === "all" ? EXCLUSIVE_CARDS.length : EXCLUSIVE_CARDS.filter((card) => card.kind === id).length;
+  /* Герои из награды гачи: полноценные карточки на уровнях пропуска */
+  const heroes = useMemo(
+    () =>
+      GACHA_BP_LEVELS.flatMap((level) =>
+        (["free", "premium"] as const).flatMap((line) => {
+          const id = gachaRewardAt(level, line)?.card;
+          const def = id ? cardDef(id) : undefined;
+          return id && def ? [{ id, level, line, name: def.name, series: def.series, rank: RANKS[def.rank] }] : [];
+        }),
+      ),
+    [],
+  );
+  const shownHeroes = heroes.filter((h) => (kind === "all" || kind === "hero") && (rarity === "all" || rarity === h.rank.key));
+  const count = (id: "all" | "frame" | "tag" | "hero") =>
+    id === "hero" ? heroes.length : id === "all" ? EXCLUSIVE_CARDS.length + heroes.length : EXCLUSIVE_CARDS.filter((card) => card.kind === id).length;
 
   const [profileOpen, setProfileOpen] = useState(false);
 
@@ -498,7 +516,7 @@ function ExclusiveShowcase({
         <div>
           <h2>Эксклюзивы сезона</h2>
           <p>
-            {EXCLUSIVE_CARDS.length} {plural(EXCLUSIVE_CARDS.length, "предмет", "предмета", "предметов")} · только в этом сезоне
+            {EXCLUSIVE_CARDS.length + heroes.length} {plural(EXCLUSIVE_CARDS.length + heroes.length, "предмет", "предмета", "предметов")} · только в этом сезоне
           </p>
         </div>
       </div>
@@ -510,6 +528,7 @@ function ExclusiveShowcase({
               { id: "all", label: "Всё" },
               { id: "frame", label: "Рамки" },
               { id: "tag", label: "Титулы" },
+              { id: "hero", label: "Карты" },
             ] as const
           ).map((item) => (
             <button key={item.id} type="button" onClick={() => setKind(item.id)} className={`bp2-pl${kind === item.id ? " on" : ""}`}>
@@ -548,6 +567,32 @@ function ExclusiveShowcase({
         )}
 
         <div className="bp2-grid">
+          {shownHeroes.map((h) => {
+            const status = bpRewardStatus(h.level, h.line, statusCtx);
+            const canClaim = status === "claimable";
+            return (
+              <article key={`hero:${h.id}`} className={`bp2-ix hero${canClaim ? " can" : ""}`} style={{ "--k": h.rank.color } as React.CSSProperties}>
+                <div className="art">
+                  <div className="hc">
+                    <GameCard cardId={h.id} stats={false} locked={status === "locked"} />
+                  </div>
+                  <span className="lv2">{status === "claimed" ? "✓" : <BpIcon name="lock" size={13} />} {h.level} ур.</span>
+                  {h.line === "premium" && <span className="pm">Пропуск</span>}
+                </div>
+                <div className="im">
+                  <small>Карта · {h.rank.name}</small>
+                  <b>{h.name}</b>
+                  {canClaim && (
+                    <button type="button" className="bp2-claim" onClick={() => onClaim(h.line, h.level)}>
+                      Забрать
+                    </button>
+                  )}
+                  {status === "claimed" && <em className="got">Получено</em>}
+                  {!canClaim && status !== "claimed" && h.line === "premium" && !statusCtx.premium && <em>Нужен пропуск</em>}
+                </div>
+              </article>
+            );
+          })}
           {cards.map((card) => {
             const status = bpRewardStatus(card.level, card.line, statusCtx);
             const canClaim = status === "claimable";
