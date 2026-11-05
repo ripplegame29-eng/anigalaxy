@@ -28,12 +28,13 @@ function claimedKeys(db: Database, userId: number): string[] {
   }
 }
 
-export function bpGachaSync(db: Database, userId: number): Res<{ reward: Reward; count: number }> {
-  return transaction(db, (): Res<{ reward: Reward; count: number }> => {
+export function bpGachaSync(db: Database, userId: number): Res<{ reward: Reward; count: number; cards: string[] }> {
+  return transaction(db, (): Res<{ reward: Reward; count: number; cards: string[] }> => {
     const x = getExtra(db, userId);
     const done = new Set<string>(Array.isArray(x.bpGacha) ? (x.bpGacha as string[]) : []);
     const total: Reward = {};
     let count = 0;
+    const cards: string[] = [];
     for (const key of claimedKeys(db, userId)) {
       if (done.has(key)) continue;
       const [season, line, lv] = key.split(":");
@@ -48,13 +49,13 @@ export function bpGachaSync(db: Database, userId: number): Res<{ reward: Reward;
       total.dust = (total.dust ?? 0) + (r.dust ?? 0);
       total.packs = (total.packs ?? 0) + (r.packs ?? 0);
       total.scroll = (total.scroll ?? 0) + (r.scroll ?? 0);
-      if (r.card) total.card = r.card;
+      if (r.card) cards.push(r.card);
     }
     if (count) {
       x.bpGacha = [...done];
       setExtra(db, userId, x);
     }
-    return { ok: true, value: { reward: total, count } };
+    return { ok: true, value: { reward: total, count, cards } };
   });
 }
 

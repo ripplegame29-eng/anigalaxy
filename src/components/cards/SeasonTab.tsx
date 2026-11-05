@@ -14,7 +14,7 @@ import { PASS, PASS_CARDS, PASS_XP, PASS_XP_DAILY, PASS_XP_MISSION, passReward, 
 /** Цена премиум-ветки сезонного пасса (в рублях) */
 const PREMIUM_PRICE = 1190;
 import { BATTLEPASS } from "@/lib/battlepass/config";
-import { BattlePassView } from "@/components/BattlePassView";
+import { SeasonPass } from "./SeasonPass";
 import { cardDef } from "@/lib/cards/catalog";
 import { RANKS } from "@/lib/cards/config";
 import { rewardText, type Reward } from "@/lib/cards/progress";
@@ -511,9 +511,7 @@ export function SeasonTab({ s }: { s: CardsState }) {
         </button>
       </div>
       {view === "bp" ? (
-        <div className="relative overflow-hidden bp2-page sv-bpwrap">
-          <BattlePassView />
-        </div>
+        <SeasonPass />
       ) : (
         <NextSeasonTab s={s} />
       )}

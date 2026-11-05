@@ -84,11 +84,11 @@ function bridgeBpXp(state: CardsState): void {
 }
 
 /** Выдать награды гачи за уже забранные уровни боевого пропуска */
-export async function syncBpRewards(): Promise<{ count: number } | null> {
-  const r = await call<{ result: { count: number; reward: Record<string, number> }; state: CardsState }>("/api/cards/bp-sync", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" });
+export async function syncBpRewards(): Promise<{ count: number; cards: string[] } | null> {
+  const r = await call<{ result: { count: number; cards: string[]; reward: Record<string, number> }; state: CardsState }>("/api/cards/bp-sync", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" });
   if (!r.ok) return null;
   emit({ state: r.data.state });
-  return { count: r.data.result.count };
+  return { count: r.data.result.count, cards: r.data.result.cards ?? [] };
 }
 
 function emit(next: Partial<Snapshot>): void {
