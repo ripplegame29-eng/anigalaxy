@@ -231,6 +231,33 @@
 @media (max-width: 720px) { .cg .pg-view .pg-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } .cg .cg-pg .pgh { padding: 18px; } }
 
 
+/* ══ Obsidian Glass: единый вид остальных вкладок ══ */
+/* кошелёк: плоские графитовые плитки без цветных верхних рамок */
+.cg .cg-tok { background: #14151b !important; border: 1px solid rgba(255,255,255,.08) !important; border-radius: 12px !important; box-shadow: none !important; }
+.cg .cg-tok::before, .cg .cg-tok::after { display: none !important; }
+/* заголовки панелей: без синей планки, тонкая линия */
+.cg :is(.cg-pg, .cg-hx, .cg-bt) .cg-h2 { padding-left: 0 !important; font-family: var(--cg-head) !important; font-weight: 400 !important; letter-spacing: 0 !important; }
+.cg :is(.cg-pg, .cg-hx, .cg-bt) .cg-h2::before { display: none !important; }
+.cg .cg-panel-head { border-bottom-color: rgba(255,255,255,.07) !important; }
+/* чипы: плоские, 8px */
+.cg .cg-chip, .cg :is(.cg-pg, .cg-hx, .cg-bt) .cg-chip { border-radius: 8px !important; background: #14151b !important; border: 1px solid rgba(255,255,255,.09) !important; box-shadow: none !important; font-family: var(--font-body, inherit); font-weight: 600; }
+.cg .cg-chip.on, .cg .cg-chip[aria-pressed="true"], .cg .cg-chip[aria-selected="true"], .cg .cg-pg .pg-ready { background: #1a1c24 !important; border-color: rgba(59,108,246,.7) !important; color: #fff !important; }
+/* под-вкладки (кузница, коллекция, арсенал…) как навигация: графит + синяя черта */
+.cg .cg-sub, .cg .cg-hx .cg-sub { background: #0e0f13 !important; border: 1px solid rgba(255,255,255,.07) !important; border-radius: 12px !important; }
+.cg .cg-sub button, .cg .cg-hx .cg-sub button { border-radius: 8px !important; font-family: var(--font-body, inherit); font-weight: 600; color: #8d93a3; }
+.cg .cg-sub button[aria-pressed="true"], .cg .cg-hx .cg-sub button[aria-pressed="true"] { background: #1a1c24 !important; color: #fff !important; box-shadow: inset 0 -2px 0 #3b6cf6 !important; }
+.cg .bt-mode { border-radius: 10px !important; }
+.cg .bt-mode[aria-selected="true"] { background: #1a1c24 !important; box-shadow: inset 0 -2px 0 #3b6cf6 !important; }
+.cg .cg-seg button[aria-checked="true"], .cg .cg-seg .on { background: #1a1c24 !important; box-shadow: inset 0 0 0 1px rgba(59,108,246,.7) !important; color: #fff; }
+.cg .cg-filter button, .cg .cg-rf button, .cg [class*="filter"] > button { border-radius: 8px !important; background: #14151b !important; border: 1px solid rgba(255,255,255,.09) !important; box-shadow: none !important; color: #aeb3c2; font-weight: 600; }
+.cg .cg-filter button[aria-pressed="true"], .cg .cg-rf button[aria-pressed="true"], .cg [class*="filter"] > button[aria-pressed="true"] { background: #1a1c24 !important; color: #fff !important; border-color: rgba(59,108,246,.75) !important; }
+.cg .pgh-badges span, .cg .pgh-badges span.hot { border-radius: 8px !important; background: #14151b !important; border: 1px solid rgba(255,255,255,.09) !important; box-shadow: none !important; font-family: var(--font-body, inherit); font-weight: 600; }
+.cg .pgh-badges span.hot { border-color: rgba(59,108,246,.75) !important; color: #fff; }
+/* иконки в плитках KPI: нейтральный графит */
+.cg .pgh-kpi .ico, .cg .cg-hero2 .ico { background: #1a1c24 !important; border-color: rgba(255,255,255,.08) !important; color: #9fb4e8 !important; }
+.cg .cg-hero2:not(.mini), .cg .cg-panel, .cg .pgh { border-radius: 16px !important; }
+
+
 /* ══ Сезон: боевой пропуск остаётся прежним (красный Hueco Mundo) ══ */
 .cg[data-tab="season"] { --cg-head: var(--font-unbounded), var(--font-display, inherit), sans-serif; font-synthesis: weight style; }
 .cg[data-tab="season"] h1, .cg[data-tab="season"] h2, .cg[data-tab="season"] h3, .cg[data-tab="season"] .sv-title {
