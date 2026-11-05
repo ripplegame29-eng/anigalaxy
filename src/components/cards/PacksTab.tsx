@@ -411,6 +411,8 @@ export function PacksTab({ s }: { s: CardsState }) {
         </aside>
       </section>
 
+      {bannerEl}
+
       <section className="pk-sec" id="pk-shop" aria-labelledby="pk-shop-t">
         <h2 className="pk-h" id="pk-shop-t">
           <Ico name="pack" size={22} /> Магазин паков
@@ -569,7 +571,6 @@ export function PacksTab({ s }: { s: CardsState }) {
         </div>
       </section>
 
-      {bannerEl}
 
       {gal && (
         <Portal>
