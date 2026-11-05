@@ -59,25 +59,11 @@ function Thumb({ cardId, rank, name }: { cardId: string; rank: number; name: str
 }
 
 /** Пять карт для веера: лучшие из коллекции, недостающие — витринные высшего ранга */
-function useFan(s: CardsState): string[] {
-  return useMemo(() => {
-    const own = new Map<string, number>();
-    for (const c of s.inventory) {
-      const d = cardDef(c.cardId);
-      if (d) own.set(c.cardId, Math.max(own.get(c.cardId) ?? 0, d.rank * 1000 + c.level));
-    }
-    const ids = [...own.entries()].sort((a, b) => b[1] - a[1]).map(([id]) => id).slice(0, 5);
-    if (ids.length < 5) {
-      const rest = CATALOG.filter((c) => !isHidden(c.id) && !ids.includes(c.id)).sort((a, b) => b.rank - a.rank);
-      for (const c of rest) {
-        if (ids.length >= 5) break;
-        ids.push(c.id);
-      }
-    }
-    /* лучшая карта в центре, остальные расходятся веером */
-    const [a, b, c, d, e] = ids;
-    return [d, b, a, c, e].filter((x): x is string => !!x);
-  }, [s.inventory]);
+/* Постоянная витрина для всех: от обычной до мифической (красной) */
+const FAN_IDS = ["roronoa-zoro", "satoru-gojo", "ryomen-sukuna", "ichigo-kurosaki", "rock-lee"];
+
+function useFan(_s: CardsState): string[] {
+  return useMemo(() => FAN_IDS.filter((id) => !!cardDef(id)), []);
 }
 
 function FeedRow({ p, now }: { p: Pull; now: number }) {
@@ -356,7 +342,7 @@ export function PacksTab({ s }: { s: CardsState }) {
             <Ico name="pack" size={17} /> К магазину паков
           </button>
         </div>
-        <div className="pk-fan" role="list" aria-label="Карты коллекции">
+        <div className="pk-fan" role="list" aria-label="Карты AniGalaxy">
           {fan.map((id, i) => {
             const d = cardDef(id);
             const r = d ? RANKS[d.rank] : undefined;
