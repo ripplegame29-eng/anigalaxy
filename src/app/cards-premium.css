@@ -172,3 +172,16 @@
 }
 .cg .st-opt-p img, .cg .st-opt-p svg { width: 16px; height: 16px; }
 .cg .st-opt-p .cur-art, .cg .st-opt-p > * { max-width: 18px; max-height: 18px; }
+
+/* ── Навигация по разделам: графит вместо тёмно-синего ── */
+.cg .cg-nav, .cg .bt-modes {
+  background: #0e0f13 !important; border: 1px solid rgba(255, 255, 255, .07) !important; box-shadow: none !important;
+  -webkit-backdrop-filter: none; backdrop-filter: none; border-radius: 14px;
+}
+.cg .cg-tab, .cg .bt-mode { color: #9aa0ae; border-radius: 10px; font-weight: 600; background: transparent; }
+.cg .cg-tab:hover, .cg .bt-mode:hover { color: #fff; background: rgba(255, 255, 255, .06) !important; }
+.cg .cg-tab[aria-selected="true"], .cg .bt-mode[aria-selected="true"] {
+  color: #fff; background: #1a1c24 !important; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .1), inset 0 -2px 0 var(--pm-blue) !important;
+}
+.cg .cg-tab .tab-ico { color: #7d8394; filter: none; }
+.cg .cg-tab[aria-selected="true"] .tab-ico { color: var(--pm-blue2); filter: none; }
