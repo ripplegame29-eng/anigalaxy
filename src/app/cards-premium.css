@@ -260,3 +260,22 @@ body:has(.cg)::before {
 
 @media (prefers-reduced-motion: reduce), (max-width: 720px) { .cg .pk-fan::after, .cg .pk-hero::after { animation: none; } }
 [data-eco="on"] .cg .pk-fan::after, [data-eco="on"] .cg .pk-hero::after { animation: none; }
+
+/* ══ Сезон: боевой пропуск остаётся прежним (красный Hueco Mundo) ══ */
+body:has(.cg[data-tab="season"]) {
+  background: radial-gradient(900px 620px at 10% -6%, rgba(255, 60, 100, .12), transparent 62%), radial-gradient(800px 600px at 94% 6%, rgba(120, 20, 60, .14), transparent 62%), #07050a !important;
+  background-attachment: fixed !important;
+}
+body:has(.cg[data-tab="season"])::before { display: none !important; }
+.cg[data-tab="season"] { --cg-head: var(--font-unbounded), var(--font-display, inherit), sans-serif; font-synthesis: weight style; }
+.cg[data-tab="season"] h1, .cg[data-tab="season"] h2, .cg[data-tab="season"] h3, .cg[data-tab="season"] .sv-title {
+  font-family: var(--font-display, inherit) !important; font-weight: 800 !important; letter-spacing: -.01em !important; line-height: 1.1;
+}
+.cg[data-tab="season"] .sv-title { font-weight: 900 !important; font-size: clamp(32px, 4.4vw, 54px) !important; letter-spacing: -.03em !important; line-height: 1 !important; background: linear-gradient(180deg, #fff, #ffc9d6 75%, #ff8fae) !important; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent !important; color: transparent !important; }
+.cg[data-tab="season"] .cg-hero2.mini { background: rgba(22, 7, 14, .7) !important; border-color: rgba(255, 110, 140, .22) !important; }
+.cg[data-tab="season"] .cg-nav { background: rgba(22, 7, 14, .7) !important; border-color: rgba(255, 110, 140, .28) !important; }
+.cg[data-tab="season"] .cg-tab[aria-selected="true"] { background: linear-gradient(135deg, rgba(255, 70, 110, .34), rgba(255, 255, 255, .04)) !important; box-shadow: inset 0 0 0 1px rgba(255, 130, 160, .45) !important; }
+.cg[data-tab="season"] .cg-tab[aria-selected="true"] .tab-ico { color: #ff9db6; }
+.cg[data-tab="season"] .cg-tab { font-weight: 800; }
+.cg[data-tab="season"] .cg-btn, .cg[data-tab="season"] .cg-btn.pri { font-weight: 700 !important; }
+.cg[data-tab="season"] .cg-btn.pri, .cg[data-tab="season"] .cg-cta { background: linear-gradient(180deg, #ff5c86, #e0245e) !important; box-shadow: 0 12px 30px -12px rgba(255, 60, 110, .8) !important; }
