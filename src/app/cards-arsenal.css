@@ -280,3 +280,48 @@
   background: #272935 !important; box-shadow: none !important; transform: translateY(-1px);
 }
 .cg .cg-btn.danger { color: #ffb3c9 !important; }
+
+/* ══ Стиль «чёрный + графит + редкое синее свечение» (по мотивам animeon.cc/cards) ══ */
+.cg {
+  --cg-bg: #050507;
+  --cg-s1: #101116;
+  --cg-s2: #0b0c10;
+  --cg-line: rgba(255, 255, 255, .06);
+  --cg-line2: rgba(255, 255, 255, .11);
+  --cg-text: #f4f5f8;
+  --cg-text2: #c9ccd6;
+  --cg-mut: #8d919f;
+  --cg-panel: linear-gradient(180deg, #121318, #0c0d11);
+  --cg-shadow: 0 20px 50px -30px rgba(0, 0, 0, .95), inset 0 1px 0 rgba(255, 255, 255, .03);
+}
+
+/* поверхности: чёрный графит вместо синих градиентов */
+.cg .cg-hero2, .cg .cg-hero2.mini, .cg .cg-panel, .cg .bn, .cg .pgh, .cg .pgh-slim, .cg .lb, .cg .bp2, .cg .cg-empty {
+  background: linear-gradient(180deg, #111217, #0a0b0f) !important;
+  border: 1px solid rgba(255, 255, 255, .07) !important;
+  box-shadow: 0 24px 60px -34px rgba(0, 0, 0, .95), inset 0 1px 0 rgba(255, 255, 255, .04) !important;
+}
+/* редкое синее свечение: тонкий свет по верхней кромке главных блоков */
+.cg .cg-hero2:not(.mini), .cg .pgh, .cg .bn {
+  background: radial-gradient(60% 90% at 50% -30%, rgba(59, 130, 255, .16), transparent 70%), linear-gradient(180deg, #111217, #0a0b0f) !important;
+}
+.cg .pgh-glow, .cg .lb-glow, .cg .pgh-ring { opacity: .35 !important; }
+.cg .cg-tabs, .cg .bt-modes, .cg .cg-tabbar { background: #0b0c10 !important; border-color: rgba(255, 255, 255, .06) !important; }
+.cg .cg-tab, .cg .bt-mode { background: transparent; }
+.cg .cg-slot, .cg .bt-slot, .cg .bt-syn, .cg .pg-wq, .cg .pg-a, .cg .pg-set, .cg .lb-my, .cg .lb-pod, .cg .lb-row {
+  background: #12131a !important; border-color: rgba(255, 255, 255, .07) !important;
+}
+.cg .cg-chip { background: #16171e !important; border-color: rgba(255, 255, 255, .09) !important; color: #e6e8ef; }
+.cg .cg-tab.on, .cg .cg-tab[aria-selected="true"], .cg .bt-mode.on {
+  background: linear-gradient(180deg, rgba(59,130,255,.22), rgba(59,130,255,.08)) !important;
+  box-shadow: inset 0 0 0 1px rgba(110,165,255,.45), 0 0 24px -6px rgba(59,130,255,.55) !important;
+}
+.cg .pk-page { --pk-glass: linear-gradient(180deg, #111217, #0a0b0f); --pk-line: rgba(255, 255, 255, .08); }
+body:has(.cg), body:has(.cg) main { background: #050507 !important; }
+.cg .cg-tok, .cg .pk-cur, .cg .pk-opt, .cg .pk-tier { background: #14151b !important; border-color: rgba(255, 255, 255, .08) !important; }
+.cg .pk-opt.on, .cg .pk-cur.on { box-shadow: inset 0 0 0 1px rgba(110,165,255,.5), 0 0 26px -8px rgba(59,130,255,.6) !important; }
+body:has(.cg)::before, body:has(.cg)::after { display: none !important; }
+.cg::after { display: none !important; }
+.cg::before { background: radial-gradient(60% 40% at 50% -8%, rgba(59, 130, 255, .13), transparent 70%) !important; }
+.cg .st { background: linear-gradient(180deg, #111217, #0a0b0f) !important; border-color: rgba(255,255,255,.08) !important; }
+.cg .st-dock { background: radial-gradient(56% 70% at 24% 45%, rgba(59,130,255,.14), transparent 70%), #0d0e13 !important; }
