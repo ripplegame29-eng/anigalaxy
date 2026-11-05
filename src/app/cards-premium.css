@@ -258,37 +258,6 @@
 .cg .cg-hero2:not(.mini), .cg .cg-panel, .cg .pgh { border-radius: 16px !important; }
 
 
-/* ══ Светлее: графит со слегка синим оттенком, мягкий свет, больше глубины ══ */
-.cg:not([data-tab="season"]) {
-  --cg-text2: #d6dae6; --cg-mut: #a2a9bd; --cg-s1: #191c26; --cg-s2: #151821;
-  --cg-line: rgba(255,255,255,.1); --cg-line2: rgba(255,255,255,.16);
-  --pm-surf: #171a23; --pm-surf2: #1d212c; --pm-line: rgba(255,255,255,.11); --pm-line2: rgba(255,255,255,.17);
-}
-.cg:not([data-tab="season"]) :is(.cg-hero2, .cg-hero2.mini, .cg-panel, .bn, .pgh, .pgh-slim, .lb, .cg-empty, .st, .pk-stock, .pk-info, .st-co) {
-  background: linear-gradient(180deg, #1c202b, #151821) !important;
-  border-color: rgba(255,255,255,.11) !important;
-  box-shadow: 0 22px 50px -32px rgba(0,0,0,.85), 0 0 60px -34px rgba(70,130,255,.5), inset 0 1px 0 rgba(255,255,255,.08) !important;
-}
-.cg:not([data-tab="season"]) :is(.cg-hero2:not(.mini), .pgh, .bn) {
-  background: radial-gradient(65% 100% at 50% -35%, rgba(80,140,255,.3), transparent 70%), radial-gradient(40% 70% at 100% 0, rgba(140,110,255,.16), transparent 70%), linear-gradient(180deg, #1d212d, #151821) !important;
-}
-.cg:not([data-tab="season"]) :is(.cg-tok, .pk-cur, .pk-opt, .pk-tier, .cg-chip, .pgh-badges span, .cg-filter button, .pgh-kpi li, .st-opt) {
-  background: #1f2330 !important; border-color: rgba(255,255,255,.13) !important;
-}
-.cg:not([data-tab="season"]) :is(.cg-slot, .bt-slot, .bt-syn, .pg-wq, .pg-a, .pg-set, .pg-day, .pg-m, .pg-stat, .lb-my, .lb-pod, .lb-row) {
-  background: #1e222e !important; border-color: rgba(255,255,255,.11) !important;
-}
-.cg:not([data-tab="season"]) :is(.cg-nav, .cg-tabs, .bt-modes, .cg-sub, .pg-sub, .cg-tabbar) { background: #171a23 !important; border-color: rgba(255,255,255,.12) !important; }
-.cg:not([data-tab="season"]) :is(.cg-tab[aria-selected="true"], .bt-mode[aria-selected="true"], .cg-sub button[aria-pressed="true"], .pg-sub-b[aria-selected="true"]) {
-  background: linear-gradient(180deg, #2a3042, #222736) !important; box-shadow: inset 0 -2px 0 #4a85ff, 0 8px 22px -14px rgba(80,140,255,.7) !important;
-}
-.cg:not([data-tab="season"]) .cg-tab, .cg:not([data-tab="season"]) .bt-mode, .cg:not([data-tab="season"]) .pg-sub-b { color: #b3b9ca; }
-.cg:not([data-tab="season"]) :is(.pk-stock li, .st-sum div, .pk-info) { color: #c4c9d8; }
-.cg:not([data-tab="season"]) :is(.pgh-kpi .ico, .cg-hero2 .ico) { background: rgba(80,140,255,.16) !important; color: #a8c6ff !important; border-color: rgba(120,170,255,.28) !important; }
-/* мягкий свет по странице: два больших пятна за контентом */
-.cg:not([data-tab="season"]) { background: radial-gradient(50% 36% at 12% 8%, rgba(60,120,255,.2), transparent 70%), radial-gradient(44% 34% at 90% 22%, rgba(130,100,255,.16), transparent 70%); }
-.cg:not([data-tab="season"]) .cg-btn:not(.pri) { background: rgba(255,255,255,.1); border-color: rgba(255,255,255,.14); }
-
 
 /* ══ Сезон: боевой пропуск остаётся прежним (красный Hueco Mundo) ══ */
 .cg[data-tab="season"] { --cg-head: var(--font-unbounded), var(--font-display, inherit), sans-serif; font-synthesis: weight style; }
