@@ -5,7 +5,7 @@ import { useEffect, useSyncExternalStore } from "react";
 export type Skin = "new" | "classic";
 const KEY = "ag-cards-skin";
 const subs = new Set<() => void>();
-let cur: Skin = "new";
+let cur: Skin = "classic";
 let inited = false;
 
 function init() {
@@ -16,7 +16,7 @@ function init() {
     const v = q ?? window.localStorage.getItem(KEY);
     if (v === "classic" || v === "new") cur = v;
   } catch {
-    /* хранилище недоступно: остаёмся на новом */
+    /* хранилище недоступно: остаёмся на классике */
   }
 }
 
@@ -35,7 +35,7 @@ const subscribe = (f: () => void) => {
   return () => void subs.delete(f);
 };
 
-/** Текущее оформление раздела карточек: «new» (графит Obsidian) или «classic» (как было до редизайна). */
+/** Оформление раздела карточек: «classic» (по умолчанию, как было) или «new» (графит Obsidian). */
 export function useSkin(): Skin {
   const v = useSyncExternalStore(
     subscribe,
@@ -43,7 +43,7 @@ export function useSkin(): Skin {
       init();
       return cur;
     },
-    () => "new" as Skin,
+    () => "classic" as Skin,
   );
   // подключаем/отключаем файл нового оформления
   useEffect(() => {

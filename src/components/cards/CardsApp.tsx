@@ -22,7 +22,6 @@ import { CollectionTab } from "./CollectionTab";
 import { ForgeTab } from "./ForgeTab";
 import { PacksTab } from "./PacksTab";
 import { ProgressTab } from "./ProgressTab";
-import { ProgressTabClassic } from "./ProgressTabClassic";
 import { setSkin, useSkin } from "./skin";
 import { SeasonTab } from "./SeasonTab";
 import { SharpenTab } from "./SharpenTab";
@@ -387,7 +386,7 @@ export function CardsApp() {
         {tab === "auction" && <AuctionTab s={s} me={account.nickname} />}
         {tab === "trade" && <TradeTab s={s} />}
         {tab === "collection" && <CollectionTab s={s} />}
-        {tab === "progress" && (skin === "new" ? <ProgressTab s={s} /> : <ProgressTabClassic s={s} />)}
+        {tab === "progress" && <ProgressTab s={s} />}
         {tab === "season" && <SeasonTab s={s} />}
       </div>
       <ToastHost />
