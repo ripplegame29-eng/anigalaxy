@@ -268,3 +268,24 @@
 /* заголовки внутри интро не должны раздувать вложенные плитки */
 .cg .in-side .gx-bbadge b, .cg .in-side .gx-rel b { font: 700 12px/1.2 var(--font-body); letter-spacing: 0; color: #fff; }
 .cg .in-side .gx-bbadge { padding: 7px 11px; }
+
+/* ------------------------------ фон гачи: ночной сад ------------------------------ */
+.cg:not(.cg-portal) { position: relative; isolation: isolate; }
+.cg:not(.cg-portal)::before {
+  content: "";
+  display: block;
+  position: sticky;
+  top: 0;
+  z-index: -1;
+  width: 100vw;
+  height: calc(100vh + 48px);
+  margin: -48px calc(50% - 50vw) calc(-100vh - 48px);
+  pointer-events: none;
+  background:
+    radial-gradient(70% 60% at 50% 40%, rgba(6, 8, 24, 0.35), transparent 75%),
+    url("/cards/bg-garden.webp") center / cover no-repeat,
+    #060914;
+}
+/* у сезона свой красный арт Hueco Mundo */
+.cg[data-tab="season"]:not(.cg-portal)::before { opacity: 0; }
+@media (max-width: 760px) { .cg:not(.cg-portal)::before { background-position: 30% center; } }
