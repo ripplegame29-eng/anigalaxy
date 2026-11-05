@@ -420,7 +420,6 @@
   animation: qg-ring-glow 2.6s ease-in-out infinite;
 }
 @keyframes qg-ring-glow { 0%, 100% { box-shadow: 0 0 46px -16px rgb(43 127 255 / 0.9); } 50% { box-shadow: 0 0 72px -6px rgb(43 127 255 / 1); } }
-}
 .qg-ring::before {
   content: "";
   position: absolute;
