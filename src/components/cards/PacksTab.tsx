@@ -5,7 +5,6 @@ import { CATALOG, cardDef, isHidden } from "@/lib/cards/catalog";
 import { PACK, RANKS } from "@/lib/cards/config";
 import { sfx } from "@/lib/cards/sound";
 import { act, hasArt, type CardsState, type Pull } from "@/lib/cards/client";
-import { useSkin } from "./skin";
 import { GameCard } from "./GameCard";
 import { BannerCard } from "./BannerCard";
 import { CardViewer } from "./CardViewer";
@@ -102,7 +101,6 @@ function FeedRow({ p, now }: { p: Pull; now: number }) {
 }
 
 export function PacksTab({ s }: { s: CardsState }) {
-  const skin = useSkin();
   const [busy, run] = useBusy();
   const [pay, setPay] = useState<Pay>("token");
   const [quick, setQuick] = useState(readQuick);
@@ -279,9 +277,6 @@ export function PacksTab({ s }: { s: CardsState }) {
                           <b>×{b.n}</b>
                           <small>{i === 0 ? "один пак" : effectivePay !== "token" && b.n > b.pay ? `+${b.n - b.pay} в подарок` : `${b.n} паков`}</small>
                         </span>
-                        {skin === "new" && <em className="st-opt-p">
-                          {fmt(costOf(b))} <Cur k={PAY_CUR[effectivePay]} size={14} />
-                        </em>}
                       </button>
                     ))}
                   </div>
@@ -374,8 +369,6 @@ export function PacksTab({ s }: { s: CardsState }) {
         </aside>
       </section>
 
-      {skin === "new" && bannerEl}
-
       <section className="pk-sec" id="pk-shop" aria-labelledby="pk-shop-t">
         <h2 className="pk-h" id="pk-shop-t">
           <Ico name="pack" size={22} /> Магазин паков
@@ -412,11 +405,10 @@ export function PacksTab({ s }: { s: CardsState }) {
           </div>
 
           <div className="st-dock" data-pick={pendingOffers ? "1" : undefined}>
-            {skin === "new" && pickEl}
             {stageEl}
 
             <div className="pk-info st-co">
-              {skin === "classic" && pickEl}
+              {pickEl}
               <div className="pk-chips">
                 <span className="cg-eyebrow">Набор AniGalaxy</span>
                 <span className="cg-chip">{PACK.choices} карты на выбор</span>
@@ -534,7 +526,7 @@ export function PacksTab({ s }: { s: CardsState }) {
         </div>
       </section>
 
-      {skin === "classic" && bannerEl}
+      {bannerEl}
 
       {gal && (
         <Portal>

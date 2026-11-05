@@ -22,7 +22,6 @@ import { CollectionTab } from "./CollectionTab";
 import { ForgeTab } from "./ForgeTab";
 import { PacksTab } from "./PacksTab";
 import { ProgressTab } from "./ProgressTab";
-import { setSkin, useSkin } from "./skin";
 import { SeasonTab } from "./SeasonTab";
 import { SharpenTab } from "./SharpenTab";
 import { setSound, useSoundOn } from "@/lib/cards/sound";
@@ -142,7 +141,6 @@ function ExchangePopover({ ac, diamonds, onDone }: { ac: number; diamonds: numbe
 }
 
 export function CardsApp() {
-  const skin = useSkin();
   const account = useAccount();
   const { state: s, error, loading } = useCards();
   const [tab, setTab] = useState<TabId>("packs");
@@ -294,12 +292,7 @@ export function CardsApp() {
   ];
 
   return (
-    <div className="cg" data-tab={tab} data-skin={skin}>
-      <div className="cg-skinbar" role="group" aria-label="Оформление">
-        <span>Оформление:</span>
-        <button type="button" aria-pressed={skin === "new"} onClick={() => setSkin("new")}>Новое</button>
-        <button type="button" aria-pressed={skin === "classic"} onClick={() => setSkin("classic")}>Классика</button>
-      </div>
+    <div className="cg" data-tab={tab}>
       <section className={`cg-hero2 cg-enter${tab === "collection" ? "" : " mini"}`}>
         {tab === "collection" && (
         <div>
