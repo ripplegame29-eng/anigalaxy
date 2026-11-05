@@ -185,3 +185,78 @@
 }
 .cg .cg-tab .tab-ico { color: #7d8394; filter: none; }
 .cg .cg-tab[aria-selected="true"] .tab-ico { color: var(--pm-blue2); filter: none; }
+
+/* ══ Атмосфера: многослойный фон страницы ══ */
+body:has(.cg), body:has(.cg) main { background: transparent !important; }
+body:has(.cg) {
+  background:
+    radial-gradient(900px 620px at 10% -6%, rgba(47, 123, 255, .20), transparent 62%),
+    radial-gradient(820px 600px at 94% 6%, rgba(98, 70, 255, .15), transparent 62%),
+    radial-gradient(1100px 700px at 50% 112%, rgba(47, 123, 255, .12), transparent 62%),
+    #07080b !important;
+  background-attachment: fixed !important;
+}
+/* тонкая сетка, угасающая к краям */
+body:has(.cg)::before {
+  display: block !important; content: ""; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background-image: linear-gradient(rgba(255,255,255,.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.04) 1px, transparent 1px);
+  background-size: 64px 64px; background-position: center top;
+  -webkit-mask-image: radial-gradient(70% 60% at 50% 30%, #000, transparent 85%); mask-image: radial-gradient(70% 60% at 50% 30%, #000, transparent 85%);
+}
+.cg::before { display: none !important; }
+
+/* линия после заголовков секций */
+.cg .pk-h::after { content: ""; flex: 1; height: 1px; margin-left: 8px; background: linear-gradient(90deg, rgba(120,170,255,.28), rgba(255,255,255,.06) 40%, transparent); }
+
+/* hero: орбиты, лучи света и пыль */
+.cg .pk-fan::after {
+  content: ""; position: absolute; z-index: -1; left: -8%; right: -8%; top: -12%; bottom: -26%; pointer-events: none;
+  background:
+    repeating-radial-gradient(circle at 50% 62%, transparent 0 74px, rgba(110,170,255,.13) 75px 76px, transparent 77px 150px),
+    conic-gradient(from 168deg at 50% 78%, transparent 0 4deg, rgba(90,162,255,.12) 8deg, transparent 15deg 22deg, rgba(150,120,255,.10) 28deg, transparent 36deg 44deg, rgba(90,162,255,.10) 50deg, transparent 58deg);
+  -webkit-mask-image: radial-gradient(closest-side at 50% 58%, #000 30%, transparent 92%); mask-image: radial-gradient(closest-side at 50% 58%, #000 30%, transparent 92%);
+  animation: pm-orbit 28s ease-in-out infinite alternate;
+}
+@keyframes pm-orbit { from { transform: scale(.97); opacity: .75; } to { transform: scale(1.04); opacity: 1; } }
+.cg .pk-hero::after {
+  content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background:
+    radial-gradient(2px 2px at 18% 24%, rgba(160,200,255,.9), transparent 60%),
+    radial-gradient(1.6px 1.6px at 36% 70%, rgba(160,200,255,.7), transparent 60%),
+    radial-gradient(2px 2px at 58% 14%, rgba(190,170,255,.8), transparent 60%),
+    radial-gradient(1.5px 1.5px at 72% 82%, rgba(160,200,255,.7), transparent 60%),
+    radial-gradient(2px 2px at 86% 34%, rgba(190,170,255,.8), transparent 60%),
+    radial-gradient(1.5px 1.5px at 44% 40%, rgba(160,200,255,.6), transparent 60%);
+  animation: pm-dust 6s ease-in-out infinite alternate;
+}
+@keyframes pm-dust { from { opacity: .35; transform: translateY(4px); } to { opacity: 1; transform: translateY(-6px); } }
+.cg .pk-hero-l::after { content: ""; display: block; width: 56px; height: 3px; border-radius: 3px; background: linear-gradient(90deg, var(--pm-blue), transparent); margin-top: 4px; order: 9; }
+
+/* карта недели: свой свет и фактура */
+.cg .bn {
+  position: relative; overflow: hidden; border-radius: 20px;
+  background:
+    radial-gradient(40% 90% at 14% 50%, rgba(98, 70, 255, .22), transparent 70%),
+    radial-gradient(34% 80% at 100% 0%, rgba(47, 123, 255, .16), transparent 70%),
+    linear-gradient(180deg, #101116, #0a0a0e) !important;
+}
+.cg .bn::before {
+  content: ""; position: absolute; inset: 0; pointer-events: none; opacity: .5;
+  background-image: linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px);
+  background-size: 40px 40px; -webkit-mask-image: linear-gradient(90deg, #000, transparent 75%); mask-image: linear-gradient(90deg, #000, transparent 75%);
+}
+.cg .bn > * { position: relative; }
+
+/* магазин: сцена с фактурой и лучами */
+.cg .st::before { background:
+  radial-gradient(40% 70% at 46% 60%, color-mix(in oklab, var(--oc) 30%, transparent), transparent 72%),
+  radial-gradient(30% 60% at 100% 100%, rgba(98, 70, 255, .14), transparent 70%); }
+.cg .st-stage::before {
+  content: ""; position: absolute; inset: 0; pointer-events: none; opacity: .55;
+  background-image: linear-gradient(rgba(255,255,255,.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.04) 1px, transparent 1px);
+  background-size: 44px 44px; -webkit-mask-image: radial-gradient(closest-side at 50% 55%, #000, transparent 90%); mask-image: radial-gradient(closest-side at 50% 55%, #000, transparent 90%);
+}
+.cg .st-stage > * { position: relative; z-index: 1; }
+
+@media (prefers-reduced-motion: reduce), (max-width: 720px) { .cg .pk-fan::after, .cg .pk-hero::after { animation: none; } }
+[data-eco="on"] .cg .pk-fan::after, [data-eco="on"] .cg .pk-hero::after { animation: none; }
