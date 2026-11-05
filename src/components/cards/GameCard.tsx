@@ -59,7 +59,10 @@ export function GameCard({ cardId, foil, level = 1, selected, dim, locked, count
   // Арт пробуем загрузить всегда: список артов на клиенте мог устареть, а битый файл
   // тогда превращается в заглушку с инициалами, а не в пустую рамку
   const [artFailed, setArtFailed] = useState<string | null>(null);
+  // Сбой загрузки (перезапуск сервера, таймаут) часто разовый: сначала две повторные попытки
+  const [retry, setRetry] = useState<{ id: string; n: number }>({ id: "", n: 0 });
   if (!def) return null;
+  const tries = retry.id === def.id ? retry.n : 0;
   const rank = RANKS[def.rank];
   const el = ELEMENTS[def.element];
   const style = { "--gc-c": rank.color, "--gc-el": EL_COLOR[def.element] } as CSSProperties;
@@ -79,7 +82,17 @@ export function GameCard({ cardId, foil, level = 1, selected, dim, locked, count
     >
       <div className="gc-art">
         {(hasArt(def.id) || artFailed !== def.id) && !unknown && artFailed !== def.id ? (
-          <img src={`/api/cards/art/${def.id}`} alt="" loading="lazy" draggable={false} onError={() => setArtFailed(def.id)} />
+          <img
+            key={tries}
+            src={tries ? `/api/cards/art/${def.id}?r=${tries}` : `/api/cards/art/${def.id}`}
+            alt=""
+            loading="lazy"
+            draggable={false}
+            onError={() => {
+              if (tries < 2) window.setTimeout(() => setRetry({ id: def.id, n: tries + 1 }), 800 * (tries + 1));
+              else setArtFailed(def.id);
+            }}
+          />
         ) : (
           <div className="gc-ph" aria-hidden>
             <span>{unknown ? "?" : initials}</span>
