@@ -519,7 +519,10 @@ export function QuizView() {
           </span>
         </div>
 
-        <div className={`qg-card${pickedCorrect === false ? " shake" : ""}`}>
+        <div
+          key={`${round.id}:${question.id}`}
+          className={`qg-card${pickedCorrect === false ? " shake" : ""}`}
+        >
           <p className="qg-hint">{question.hint}</p>
           {/* Название — это правильный ответ: до ответа не показываем даже размытым,
               иначе его угадывают по длине и силуэту букв */}
@@ -644,11 +647,11 @@ export function QuizView() {
   return (
     <div className="qg-page">
       <div className="qg-wrap">
-        <section className="qg-hero">
+        <section className="qg-hero" key={mode}>
           <div>
             <p className="qg-eyebrow">AniGalaxy · Квиз</p>
             <h1>
-              Угадай <em>тайтл</em>
+              Угадай <em className="qg-glitch" data-text="тайтл">тайтл</em>
             </h1>
             <p className="qg-lead">
               {mode === "frame"

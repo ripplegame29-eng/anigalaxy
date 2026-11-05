@@ -51,11 +51,42 @@
 .qg-eyebrow { margin: 0 0 8px; color: var(--qb, #22d3ee); font-size: 11.5px; font-weight: 800; letter-spacing: 0.18em; text-transform: uppercase; }
 .qg-hero h1 { margin: 0; font: 800 clamp(32px, 5vw, 48px) / 1 var(--font-display, var(--font-body)), sans-serif; letter-spacing: -0.03em; }
 .qg-hero h1 em {
+  position: relative;
+  display: inline-block;
   font-style: normal;
   background: linear-gradient(100deg, #7fb2ff, var(--qb));
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
+}
+/* Глитч: псевдоэлементы с копией текста, «рвущиеся» полосы по clip-path */
+.qg-hero h1 em::before,
+.qg-hero h1 em::after {
+  content: attr(data-text);
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(100deg, #7fb2ff, var(--qb));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  opacity: 0;
+  pointer-events: none;
+}
+.qg-hero h1 em::before { animation: qg-glitch-a 3.4s infinite linear alternate; }
+.qg-hero h1 em::after { animation: qg-glitch-b 2.8s infinite linear alternate-reverse; }
+@keyframes qg-glitch-a {
+  0%, 86% { opacity: 0; clip-path: inset(0 0 0 0); transform: translate(0, 0); }
+  88% { opacity: 0.85; clip-path: inset(16% 0 58% 0); transform: translate(-5px, -2px); }
+  92% { opacity: 0.7; clip-path: inset(56% 0 16% 0); transform: translate(4px, 2px); }
+  96% { opacity: 0.9; clip-path: inset(34% 0 44% 0); transform: translate(-3px, 1px); }
+  100% { opacity: 0; clip-path: inset(0 0 0 0); }
+}
+@keyframes qg-glitch-b {
+  0%, 82% { opacity: 0; clip-path: inset(0 0 0 0); transform: translate(0, 0); }
+  85% { opacity: 0.75; clip-path: inset(48% 0 30% 0); transform: translate(5px, 3px); }
+  89% { opacity: 0.6; clip-path: inset(4% 0 74% 0); transform: translate(-4px, -1px); }
+  94% { opacity: 0.85; clip-path: inset(68% 0 12% 0); transform: translate(2px, -2px); }
+  100% { opacity: 0; clip-path: inset(0 0 0 0); }
 }
 .qg-lead { max-width: 46ch; margin: 12px 0 22px; color: #8f9ab4; line-height: 1.5; }
 .qg-stats { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 16px; }
@@ -219,7 +250,15 @@
   border-radius: 26px;
   background: linear-gradient(165deg, rgb(18 21 31 / 0.94), rgb(10 12 20 / 0.94));
   box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.08);
-  animation: qg-rise 0.45s cubic-bezier(0.2, 0.9, 0.3, 1);
+  animation: qg-card-in 0.5s cubic-bezier(0.2, 0.9, 0.3, 1) both;
+}
+/* Глитч-вход карточки: быстрый сдвиг/искажение перед уходом в спокойный rise */
+@keyframes qg-card-in {
+  0% { opacity: 0; transform: translateY(16px) translateX(-6px); filter: hue-rotate(70deg) saturate(2.2); }
+  30% { opacity: 1; transform: translateX(3px); filter: none; }
+  55% { transform: translateX(-2px); }
+  75% { transform: translateX(2px); }
+  100% { opacity: 1; transform: none; filter: none; }
 }
 .qg-card.shake { animation: qg-shake 0.4s cubic-bezier(0.2, 0.9, 0.3, 1); }
 @keyframes qg-shake { 25% { transform: translateX(-6px); } 50% { transform: translateX(6px); } 75% { transform: translateX(-4px); } }
@@ -268,7 +307,6 @@
   text-transform: uppercase;
   backdrop-filter: blur(6px);
 }
-
 .qg-options { display: grid; gap: 10px; width: min(560px, 100%); }
 .qg-option {
   display: flex;
@@ -338,7 +376,7 @@
 .qg-loading { display: grid; justify-items: center; gap: 14px; padding: 60px 0; color: #8f9ab4; font-size: 14px; font-weight: 700; }
 .qg-empty { padding: 40px 16px; border-radius: 20px; background: rgb(255 255 255 / 0.03); box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.07); color: #8f9ab4; text-align: center; }
 
-.qg-result { display: grid; gap: 18px; justify-items: center; text-align: center; }
+.qg-result { display: grid; gap: 18px; justify-items: center; text-align: center; animation: qg-rise 0.5s cubic-bezier(0.2, 0.9, 0.3, 1); }
 .qg-result h2 { margin: 0; font: 800 clamp(26px, 4vw, 36px) / 1.1 var(--font-display, var(--font-body)), sans-serif; letter-spacing: -0.02em; }
 .qg-result p { margin: 0; color: #8f9ab4; line-height: 1.5; }
 .qg-score { display: grid; place-items: center; gap: 2px; }
