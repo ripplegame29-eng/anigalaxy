@@ -16,6 +16,7 @@ import "../../app/cards-progress.css";
 import "../../app/cards-campaign.css";
 import "../../app/cards-season.css";
 import "../../app/cards-arsenal.css";
+import { Backdrop } from "./Backdrop";
 import { AuctionTab } from "./AuctionTab";
 import { BattleTab } from "./BattleTab";
 import { CollectionTab } from "./CollectionTab";
@@ -293,6 +294,7 @@ export function CardsApp() {
 
   return (
     <div className="cg" data-tab={tab}>
+      <Backdrop />
       <section className={`cg-hero2 cg-enter${tab === "collection" ? "" : " mini"}`}>
         {tab === "collection" && (
         <div>
