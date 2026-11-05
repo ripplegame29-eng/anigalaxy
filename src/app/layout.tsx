@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Cinzel, Montserrat, Onest, Unbounded } from "next/font/google";
+import { Cinzel, Dela_Gothic_One, Montserrat, Onest, Unbounded } from "next/font/google";
 import "./globals.css";
 import "./ui-system.css";
 import "./ag-theme.css";
@@ -115,6 +115,14 @@ const unbounded = Unbounded({
   display: "swap",
 });
 
+/** Заголовки раздела карточек (как на animeon.cc/cards) */
+const dela = Dela_Gothic_One({
+  weight: "400",
+  variable: "--font-dela",
+  subsets: ["latin", "cyrillic"],
+  display: "swap",
+});
+
 const cinzel = Cinzel({
   weight: ["600"],
   variable: "--font-cinzel",
@@ -159,7 +167,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html
       lang="ru"
       data-scroll-behavior="smooth"
-      className={`${montserrat.variable} ${onest.variable} ${unbounded.variable} ${cinzel.variable} h-full antialiased`}
+      className={`${montserrat.variable} ${onest.variable} ${unbounded.variable} ${cinzel.variable} ${dela.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col">
         <script

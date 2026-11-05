@@ -325,3 +325,36 @@ body:has(.cg)::before, body:has(.cg)::after { display: none !important; }
 .cg::before { background: radial-gradient(60% 40% at 50% -8%, rgba(59, 130, 255, .13), transparent 70%) !important; }
 .cg .st { background: linear-gradient(180deg, #111217, #0a0b0f) !important; border-color: rgba(255,255,255,.08) !important; }
 .cg .st-dock { background: radial-gradient(56% 70% at 24% 45%, rgba(59,130,255,.14), transparent 70%), #0d0e13 !important; }
+
+/* ══ Система дизайна как на animeon.cc/cards (в нашем синем) ══ */
+.cg {
+  --cg-head: var(--font-dela), var(--font-body), sans-serif;
+  --cg-bg: #0a0a0a;
+  font-family: var(--font-body, inherit);
+  font-synthesis: none;
+}
+body:has(.cg), body:has(.cg) main { background: #0a0a0a !important; }
+/* заголовки: Dela Gothic One 400, плотный трекинг */
+.cg h1, .cg h2, .cg h3, .cg .cg-title, .cg .sv-title, .cg .cg-hero2 h1 {
+  font-family: var(--font-dela), var(--font-body), sans-serif !important;
+  font-weight: 400 !important; letter-spacing: -.02em !important; line-height: 1.05;
+}
+.cg .cg-hero2 h1 { font-size: clamp(30px, 3.4vw, 42px) !important; }
+.cg .cg-hero2.mini h1 { font-size: 30px !important; }
+.cg h2 { font-size: clamp(24px, 2.4vw, 30px); letter-spacing: -.025em !important; }
+.cg h3 { font-size: 20px; }
+.cg .sv-title { background: none !important; color: #fff !important; -webkit-text-fill-color: #fff; }
+/* кнопки: радиус 8, высота 36/44, вторичные — прозрачно-белые, главные — сплошной синий */
+.cg .cg-btn, .cg .cg-btn.sm, .cg .cg-btn.lg, .cg .cg-bt .cg-btn, .cg .pk-page .cg-btn, .cg .st-all, .cg .cg-cta, .cg .bt-go {
+  border-radius: 8px !important; font: 500 14px/1.4 var(--font-body, inherit) !important; min-height: 36px;
+  background: rgba(255, 255, 255, .06) !important; color: #f4f4f6 !important; padding-inline: 16px;
+}
+.cg .cg-btn.lg, .cg .cg-cta, .cg .pk-page .cg-btn { min-height: 44px; font-size: 15px !important; }
+.cg .cg-btn:hover:not(:disabled), .cg .st-all:hover:not(:disabled) { background: rgba(255, 255, 255, .11) !important; transform: none; }
+.cg .cg-btn.pri, .cg .cg-btn.gold, .cg .pk-page .cg-btn.gold, .cg .ar-result .cg-btn.pri, .cg .bt-go, .cg .cg-cta {
+  background: #3b6cf6 !important; color: #fff !important; font-weight: 600 !important;
+}
+.cg .cg-btn.pri:hover:not(:disabled), .cg .cg-btn.gold:hover:not(:disabled), .cg .bt-go:hover:not(:disabled), .cg .cg-cta:hover:not(:disabled) {
+  background: #4b7aff !important; box-shadow: 0 8px 28px -8px rgba(59, 108, 246, .7) !important; transform: none;
+}
+.cg .bt-go { min-height: 60px; border-radius: 12px !important; }
