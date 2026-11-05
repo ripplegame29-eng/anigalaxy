@@ -103,7 +103,13 @@ export function CheckoutDialog() {
         setError(typeof data?.error === "string" ? data.error : "Не удалось создать платёж. Попробуйте ещё раз.");
         return;
       }
-      window.location.assign(data.url);
+      // Профиль открыт во вложенном окне (iframe), а страница Platega не разрешает показ во фрейме —
+      // поэтому уходим на оплату из верхнего окна.
+      try {
+        (window.top ?? window).location.assign(data.url);
+      } catch {
+        window.location.assign(data.url);
+      }
     } catch {
       setStep("form");
       setError("Нет связи с сервером оплаты. Проверьте интернет и попробуйте ещё раз.");
