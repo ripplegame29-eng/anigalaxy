@@ -6,6 +6,7 @@ import { act, type CardsState } from "@/lib/cards/client";
 import { GameCard } from "./GameCard";
 import { InvPicker, Panel, fmt, fmtLeft, toast, useBusy, useNow } from "./common";
 import { Cur, Ico, ScrollArt, type IcoName } from "./icons";
+import { useSeriesPosters } from "./series-posters";
 
 const rewardChips = (r: Reward) => (
   <span className="pg-rw">
@@ -32,6 +33,7 @@ export function ProgressTab({ s }: { s: CardsState }) {
   const [picking, setPicking] = useState(false);
   const [sub, setSub] = useState<SubId | null>(null);
   const now = useNow(30_000);
+  const posters = useSeriesPosters();
   const p = s.progress;
   const inv = s.inventory;
   const showcase = useMemo(() => p.showcase.map((id) => inv.find((c) => c.id === id)).filter((c): c is NonNullable<typeof c> => !!c), [p.showcase, inv]);
@@ -250,34 +252,52 @@ export function ProgressTab({ s }: { s: CardsState }) {
         <div className="pg-view">
       <Panel title="Наборы по аниме" right={<span className="cg-chip">Собрано полностью: {p.sets.filter((x) => x.owned >= x.size).length} из {p.sets.length}</span>} hint="Собирайте героев одного аниме: награда за половину набора и за полный набор. Герои без арта в набор не входят.">
         <div className="pg-sets">
-          {p.sets.map((st) => (
-            <article key={st.series} className={`pg-set ${st.owned >= st.size ? "full" : ""}`}>
-              <header>
-                <b>{st.series}</b>
-                <span>
-                  {st.owned}/{st.size}
-                  <em>{Math.round((st.owned / st.size) * 100)}%</em>
-                </span>
-              </header>
-              <i className="pg-bar">
-                <b style={{ width: `${(st.owned / st.size) * 100}%` }} />
-                <em style={{ left: `${(st.need[0] / st.size) * 100}%` }} />
-              </i>
-              <div className="pg-set-btns">
-                {st.need.map((need, i) => (
-                  <button
-                    key={i}
-                    type="button"
-                    className="cg-btn sm"
-                    disabled={busy || st.claimed[i] || st.owned < need || (i === 1 && !st.claimed[0])}
-                    onClick={() => void claim("set-claim", { series: st.series, tier: i }, "Награда за набор получена")}
-                  >
-                    {st.claimed[i] ? "Получено" : i === 0 ? `Половина · ${need}` : `Полный · ${need}`}
-                  </button>
-                ))}
-              </div>
-            </article>
-          ))}
+          {p.sets.map((st) => {
+            const poster = posters[st.series];
+            const pct = Math.round((st.owned / st.size) * 100);
+            return (
+              <article key={st.series} className={`pg-set ${st.owned >= st.size ? "full" : ""}`}>
+                {poster && <i className="pg-set-bg" style={{ backgroundImage: `url(${poster})` }} aria-hidden />}
+                <div className="pg-set-top">
+                  <span className="pg-set-poster" aria-hidden>
+                    {poster ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={poster} alt="" loading="lazy" draggable={false} referrerPolicy="no-referrer" />
+                    ) : (
+                      <em>{st.series.slice(0, 1)}</em>
+                    )}
+                    {st.owned >= st.size && <b className="pg-set-done">✓</b>}
+                  </span>
+                  <div className="pg-set-main">
+                    <header>
+                      <b>{st.series}</b>
+                      <span>
+                        {st.owned}/{st.size}
+                        <em>{pct}%</em>
+                      </span>
+                    </header>
+                    <i className="pg-bar">
+                      <b style={{ width: `${(st.owned / st.size) * 100}%` }} />
+                      <em style={{ left: `${(st.need[0] / st.size) * 100}%` }} />
+                    </i>
+                  </div>
+                </div>
+                <div className="pg-set-btns">
+                  {st.need.map((need, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      className="cg-btn sm"
+                      disabled={busy || st.claimed[i] || st.owned < need || (i === 1 && !st.claimed[0])}
+                      onClick={() => void claim("set-claim", { series: st.series, tier: i }, "Награда за набор получена")}
+                    >
+                      {st.claimed[i] ? "Получено" : i === 0 ? `Половина · ${need}` : `Полный · ${need}`}
+                    </button>
+                  ))}
+                </div>
+              </article>
+            );
+          })}
         </div>
       </Panel>
       <p className="cg-hint" style={{ textAlign: "center" }}>

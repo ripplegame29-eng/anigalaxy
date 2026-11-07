@@ -14,6 +14,7 @@ import { TitleActions } from "@/components/TitleActions";
 import { FranchiseTimeline, type FranchiseItem } from "@/components/FranchiseTimeline";
 import { ScreenshotsGallery } from "@/components/ScreenshotsGallery";
 import { CommentsBlock } from "@/components/comments/CommentsBlock";
+import { TitleCards } from "@/components/TitleCards";
 import {
   cardKey,
   formatRating,
@@ -471,6 +472,8 @@ export default async function TitlePage({ params }: PageParams) {
         trailer={trailerVideo}
         title={card.title}
       />
+
+      <TitleCards title={card.title} alt={[card.titleOrig ?? "", ...(card.otherTitles ?? [])]} poster={card.poster} />
 
       {/* ------------------------- Похожие --------------------------- */}
       {similarCards.length > 0 && (

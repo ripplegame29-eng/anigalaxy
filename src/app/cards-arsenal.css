@@ -384,3 +384,23 @@
 /* веер в шапке паков: без мигания (пульс свечения мифика и бегущий блик) */
 .cg .pk-fan .gc-mythic, .cg .pk-fan .gc-foil, .cg .pk-fan-i .gc-mythic, .cg .pk-fan-i .gc-foil { animation: none !important; }
 .cg .pk-fan .gc-foil { background-position: 50% 50%; opacity: .35; }
+
+/* --- Наборы по аниме: постер тайтла, размытая подложка, прогресс рядом --- */
+.cg .cg-pg .pg-sets, .cg .pg-sets { grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 14px; }
+.cg .pg-sets .pg-set { position: relative; overflow: hidden; isolation: isolate; gap: 12px; padding: 14px; border-radius: 20px; }
+.cg .pg-sets .pg-set-bg { position: absolute; inset: -20%; z-index: -1; background-size: cover; background-position: center 25%; filter: blur(26px) saturate(1.5) brightness(.8); opacity: .34; transform: scale(1.15); pointer-events: none; }
+.cg .pg-sets .pg-set::after { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(90deg, rgba(8, 12, 26, .55), rgba(8, 12, 26, .2) 60%, rgba(8, 12, 26, .5)); pointer-events: none; }
+.cg .pg-sets .pg-set.full { border-color: rgba(255, 196, 94, .55); box-shadow: 0 16px 34px -18px rgba(255, 170, 50, .55), inset 0 1px 0 rgba(255, 235, 180, .25); }
+.cg .pg-set-top { display: flex; gap: 14px; align-items: center; min-width: 0; }
+.cg .pg-set-poster { position: relative; flex: 0 0 auto; width: 66px; aspect-ratio: 2 / 3; border-radius: 12px; overflow: hidden; display: grid; place-items: center; background: linear-gradient(160deg, #26356b, #101830);
+  box-shadow: 0 12px 22px -10px rgba(0, 0, 0, .9), 0 0 0 1px rgba(255, 255, 255, .16), 0 0 0 4px rgba(255, 255, 255, .03); transform: rotate(-2deg); transition: transform .25s var(--cg-ease, ease); }
+.cg .pg-sets .pg-set:hover .pg-set-poster { transform: rotate(0) scale(1.06); }
+.cg .pg-set-poster img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.cg .pg-set-poster em { font: 900 28px/1 var(--font-display, inherit); font-style: normal; color: rgba(255, 255, 255, .55); }
+.cg .pg-set-done { position: absolute; right: 4px; bottom: 4px; width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; font-size: 13px; color: #1b1300; background: linear-gradient(135deg, #ffd34e, #ffb020); box-shadow: 0 0 12px rgba(255, 190, 60, .9); }
+.cg .pg-set-main { flex: 1; min-width: 0; display: grid; gap: 10px; }
+.cg .pg-set-main header { flex-direction: column; align-items: flex-start; gap: 3px; }
+.cg .pg-set-main header b { font: 800 15px/1.2 var(--font-display, inherit); color: #fff; text-wrap: balance; }
+.cg .pg-set-main header span { flex: 0 0 auto; color: #aebbdc; display: inline-flex; align-items: center; gap: 6px; font-size: 13px; }
+.cg .pg-set-main header span em { font-style: normal; padding: 1px 7px; border-radius: 99px; font-size: 11px; color: #cfe2ff; background: rgba(59, 130, 255, .22); border: 1px solid rgba(120, 170, 255, .35); }
+.cg .pg-sets .pg-set-btns { display: grid; grid-template-columns: 1fr 1fr; }
