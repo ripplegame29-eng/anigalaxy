@@ -375,7 +375,7 @@ export const MIGRATIONS: Migration[] = [
       -- Подарки, которые нельзя записать в документ прогресса сразу: игрок только
       -- зарегистрировался, и его первая синхронизация перезаписала бы запись.
       -- Выдаются сервером сразу после первого сохранения прогресса.
-      CREATE TABLE pending_grants (
+      CREATE TABLE IF NOT EXISTS pending_grants (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
         ac INTEGER NOT NULL DEFAULT 0,
@@ -384,7 +384,7 @@ export const MIGRATIONS: Migration[] = [
         notice TEXT NOT NULL DEFAULT '',
         created_at INTEGER NOT NULL
       );
-      CREATE INDEX idx_pending_grants_user ON pending_grants(user_id);
+      CREATE INDEX IF NOT EXISTS idx_pending_grants_user ON pending_grants(user_id);
     `,
   },
   {
