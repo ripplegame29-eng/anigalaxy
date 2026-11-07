@@ -70,6 +70,8 @@ interface SceneState {
   extra: number;
   levelAfter: number;
   levelsGained: number;
+  /** Все выданные за раз награды («Забрать все») */
+  all?: BpRewardCard[];
 }
 
 /* ============================== Страница ================================ */
@@ -155,10 +157,15 @@ export function BattlePassView() {
     }
     const before = progress.level;
     const effects: ClaimEffect[] = [];
+    const given: BpRewardCard[] = [];
     for (const item of claimables) {
       const res = progressEmit({ type: "BATTLEPASS_CLAIMED", ...item });
       const effect = res.effects.find((entry): entry is ClaimEffect => entry.type === "BATTLEPASS_CLAIMED");
-      if (effect) effects.push(effect);
+      if (effect) {
+        effects.push(effect);
+        const got = cardByKey.get(`${item.line}:${item.level}`);
+        if (got) given.push(got);
+      }
     }
     if (effects.length === 0) {
       pushToast({ kind: "ac", title: "Награда недоступна", text: "Обновите страницу и попробуйте снова" });
@@ -167,9 +174,7 @@ export function BattlePassView() {
     const levelAfter = Math.max(...effects.map((item) => item.levelAfter));
     // Показываем самую «крупную» награду из пакета — по редкости, затем уровню
     const best =
-      claimables
-        .map((item) => cardByKey.get(`${item.line}:${item.level}`))
-        .filter((card): card is BpRewardCard => Boolean(card))
+      [...given]
         .sort((a, b) => b.level - a.level)[0] ?? null;
     setOpenKey(null);
     if (best) {
@@ -178,6 +183,7 @@ export function BattlePassView() {
         extra: Math.max(0, effects.length - 1),
         levelAfter,
         levelsGained: Math.max(0, levelAfter - before),
+        all: given.length > 1 ? given : undefined,
       });
     }
   }, [claimables, cardByKey, progress.level]);
@@ -358,6 +364,7 @@ export function BattlePassView() {
           extra={scene.extra}
           levelAfter={scene.levelAfter}
           levelsGained={scene.levelsGained}
+          all={scene.all}
           nickname={nickname}
           onClose={() => {
             setScene(null);
