@@ -550,7 +550,7 @@ function ThemeDialog() {
         <header>
           <div>
             <h2>Тема профиля</h2>
-            <p>Фон страницы, боковые арты и стиль карточек — всё видно сразу</p>
+            <p>Сборка = арт и акцент · фон выбирается отдельно · карточки и арты настраиваются во вкладке «Свои настройки»</p>
           </div>
           <label className="pc-sw">
             <input type="checkbox" checked={t.on} onChange={(e) => patchTheme((x) => ({ ...x, on: e.target.checked }))} />
@@ -562,7 +562,7 @@ function ThemeDialog() {
 
         <div className="pc-tabs" role="tablist">
           <button type="button" role="tab" aria-selected={tab === "presets"} className={tab === "presets" ? "on" : ""} onClick={() => setTab("presets")}>Готовые сборки</button>
-          <button type="button" role="tab" aria-selected={tab === "bgs"} className={tab === "bgs" ? "on" : ""} onClick={() => setTab("bgs")}>Живые фоны</button>
+          <button type="button" role="tab" aria-selected={tab === "bgs"} className={tab === "bgs" ? "on" : ""} onClick={() => setTab("bgs")}>Фон страницы</button>
           <button type="button" role="tab" aria-selected={tab === "custom"} className={tab === "custom" ? "on" : ""} onClick={() => setTab("custom")}>Свои настройки</button>
         </div>
 
@@ -577,7 +577,7 @@ function ThemeDialog() {
                   <span className="pc-preset-in">
                     <b>{p.name}</b>
                     <small>{p.tag}</small>
-                    <em><i />Акцент и фон подобраны</em>
+                    <em><i />Арт и акцент подобраны</em>
                   </span>
                 </button>
               );
@@ -599,7 +599,10 @@ function ThemeDialog() {
                 );
               })}
             </div>
-            <p className="pc-note">Фон двигается на всей странице профиля. Затемнение и размытие — на вкладке «Свои настройки».</p>
+            <div className="pc-bgbar">
+              <p className="pc-note">Выбор фона не меняет арты, акцент и карточки. Затемнение и размытие — на вкладке «Свои настройки».</p>
+              {t.bg.media && <button type="button" className="pc-btn is-ghost" onClick={() => patchTheme((x) => ({ ...x, bg: { ...x.bg, media: "" } }))}>Убрать фон</button>}
+            </div>
           </>
         )}
 

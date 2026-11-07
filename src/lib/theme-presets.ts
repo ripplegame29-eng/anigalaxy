@@ -7,7 +7,7 @@
  * «Арт-витрина» наверху раскладки виджетов.
  */
 import { patchArtwork, type ArtLayout } from "./artwork";
-import { DEFAULT_THEME, patchTheme } from "./ptheme";
+import { patchTheme } from "./ptheme";
 import { MAX_WIDGETS, readWidgetLayout, saveWidgetLayout } from "./widgets";
 
 export interface ThemePreset {
@@ -38,7 +38,7 @@ export const THEME_PRESETS: ThemePreset[] = [
   { id: "luna", name: "Луна · Туман", tag: "Портрет · светлая", accent: "#b8c7da", poster: "/themes/luna.webp", layout: "single", files: f("luna", "main"), aspect: 630 / 824, height: 460 },
 ];
 
-/** Применяет сборку: тема, арты и блок «Арт-витрина» в начале раскладки */
+/** Применяет сборку: арты, акцент и блок «Арт-витрина» в начале раскладки */
 export function applyThemePreset(p: ThemePreset): void {
   patchArtwork(() => ({
     layout: p.layout,
@@ -46,15 +46,9 @@ export function applyThemePreset(p: ThemePreset): void {
     aspect: p.aspect,
     slots: p.files.map((media) => ({ media, caption: "", fit: "cover" as const })),
   }));
-  patchTheme(() => ({
-    ...DEFAULT_THEME,
-    on: true,
-    accent: p.accent,
-    // фон — тот же арт, сильно размытый и затемнённый
-    bg: { media: p.files[0], dim: 72, blur: 22, fit: "cover" },
-    glass: { opacity: 70, blur: 16 },
-    radius: 20,
-  }));
+  // Сборка меняет только арт и акцент. Фон страницы, стекло и скругление
+  // остаются как есть: фон выбирается отдельно на вкладке «Фон страницы».
+  patchTheme((t) => ({ ...t, on: true, accent: p.accent }));
   const layout = readWidgetLayout();
   if (layout[0]?.id !== "artwork") {
     const next = [{ id: "artwork" as const, w: "l" as const }, ...layout.filter((s) => s.id !== "artwork")].slice(0, MAX_WIDGETS);
@@ -103,7 +97,7 @@ export const BG_PRESETS: BgPreset[] = [
   bg(5, "Туманные руины", "#aeb8c2", 60),
 ];
 
-/** Ставит живой фон страницы, не трогая остальную тему */
+/** Ставит живой фон страницы, не трогая остальную тему (акцент и арты остаются) */
 export function applyBgPreset(p: BgPreset): void {
-  patchTheme((t) => ({ ...t, on: true, accent: p.accent, bg: { media: p.file, dim: p.dim, blur: 0, fit: "cover" } }));
+  patchTheme((t) => ({ ...t, on: true, bg: { media: p.file, dim: p.dim, blur: 0, fit: "cover" } }));
 }
