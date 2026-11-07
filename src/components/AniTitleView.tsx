@@ -8,7 +8,6 @@ import { WatchButton } from "@/components/WatchButton";
 import { TitleActions } from "@/components/TitleActions";
 import { ScreenshotsGallery } from "@/components/ScreenshotsGallery";
 import { CommentsBlock } from "@/components/comments/CommentsBlock";
-import { TitleCards } from "@/components/TitleCards";
 import { formatRating, kindLabel, statusLabel, statusTone, truncate } from "@/lib/anime";
 import type { AniTitleDetail } from "@/lib/anilibria-map";
 import type { AnimeCard } from "@/lib/types";
@@ -46,7 +45,7 @@ export interface AniExtras {
  * Чистый вывод без запросов: данные приносит сервер (`AniTitlePage`)
  * или браузер (`AniTitleClient`, если сервер релиз не увидел).
  */
-export function AniTitleView({ id, detail, extras }: { id: string; detail: AniTitleDetail; extras: AniExtras }) {
+export function AniTitleView({ id, detail, extras, cards }: { id: string; detail: AniTitleDetail; extras: AniExtras; cards?: React.ReactNode }) {
   const { episodes } = detail;
   // id тайтла на сайте — «ani-алиас»: по нему работают избранное, подборки, комментарии и история
   const card = { ...detail.card, id };
@@ -245,7 +244,7 @@ export function AniTitleView({ id, detail, extras }: { id: string; detail: AniTi
 
       <ScreenshotsGallery shots={galleryShots} trailer={trailerVideo} title={card.title} />
 
-      <TitleCards title={card.title} alt={[card.titleOrig ?? "", ...(card.otherTitles ?? [])]} poster={card.poster} />
+      {cards}
       {similarCards.length > 0 && (
         <div className="mx-auto max-w-7xl px-4 pb-4 sm:px-6">
           <AnimeRow title="Похожие тайтлы" cards={similarCards} href={`/catalog?genre=${encodeURIComponent(card.genres[0] ?? "")}`} />

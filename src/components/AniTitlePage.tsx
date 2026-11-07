@@ -1,5 +1,6 @@
 import { AniTitleClient } from "@/components/AniTitleClient";
 import { AniTitleView } from "@/components/AniTitleView";
+import { TitleCards } from "@/components/TitleCards";
 import { aniAlias } from "@/lib/ani-fallback";
 import { getRelease } from "@/lib/anilibria";
 import { similar } from "@/lib/kodik";
@@ -22,5 +23,6 @@ export async function AniTitlePage({ id }: { id: string }) {
     card.genres.length ? similar(card).catch(() => []) : Promise.resolve([]),
   ]);
 
-  return <AniTitleView id={id} detail={detail} extras={{ shots, trailer, upcoming, similar: similarCards }} />;
+  return <AniTitleView id={id} detail={detail} extras={{ shots, trailer, upcoming, similar: similarCards }}
+      cards={<TitleCards title={card.title} alt={[card.titleOrig ?? "", ...(card.otherTitles ?? [])]} poster={card.poster} />} />;
 }
