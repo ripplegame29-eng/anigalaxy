@@ -26,6 +26,29 @@ export function HeroSlider({ items }: { items: AnimeCard[] }) {
   const canvasRefs = useRef<(HTMLCanvasElement | null)[]>([]);
   /** Сила шейдера: было привязано к кнопке под плеером, теперь задано константой */
   const shaderStrength = HERO_SHARPEN.strength;
+  /**
+   * Ролики весят по 7–8 МБ: качаем их только после загрузки страницы и паузы, чтобы они
+   * не отнимали канал у постера и каталога. На телефонах, в режиме экономии трафика
+   * и на медленной сети остаётся постер с Ken-Burns без видео.
+   */
+  const [videoOk, setVideoOk] = useState(false);
+  useEffect(() => {
+    const nav = navigator as Navigator & { connection?: { saveData?: boolean; effectiveType?: string } };
+    const c = nav.connection;
+    if (c?.saveData || /(^|-)2g$|3g/.test(c?.effectiveType ?? "")) return;
+    if (window.matchMedia("(max-width: 900px), (pointer: coarse), (prefers-reduced-data: reduce)").matches) return;
+    if (document.documentElement.dataset.eco === "on") return;
+    let t: ReturnType<typeof setTimeout> | undefined;
+    const start = () => {
+      t = setTimeout(() => setVideoOk(true), 1200);
+    };
+    if (document.readyState === "complete") start();
+    else window.addEventListener("load", start, { once: true });
+    return () => {
+      window.removeEventListener("load", start);
+      if (t) clearTimeout(t);
+    };
+  }, []);
 
   const slides = items.filter((i) => i.poster || i.screenshots?.length).slice(0, 6);
 
@@ -51,7 +74,7 @@ export function HeroSlider({ items }: { items: AnimeCard[] }) {
       if (i === index) void video.play().catch(() => {});
       else video.pause();
     });
-  }, [index]);
+  }, [index, videoOk]);
 
   // Апскейл активного ролика: шейдер забирает кадры у <video> (звук и
   // декодирование остаются там) и рисует результат поверх. Контекст один —
@@ -63,9 +86,9 @@ export function HeroSlider({ items }: { items: AnimeCard[] }) {
     if (window.matchMedia("(max-width: 900px), (pointer: coarse)").matches) return;
     const canvas = canvasRefs.current[index];
     const video = videoRefs.current[index];
-    if (!canvas || !video) return;
+    if (!canvas || !video || !videoOk) return;
     return attachSharpen(canvas, video, HERO_SHARPEN);
-  }, [index, shaderStrength]);
+  }, [index, shaderStrength, videoOk]);
 
   if (!slides.length) return null;
 
@@ -114,7 +137,7 @@ export function HeroSlider({ items }: { items: AnimeCard[] }) {
 
               {/* Ролик тайтла: без звука, без органов управления, без focusa.
                   Постер остаётся под ним, пока видео грузится. */}
-              {slide.heroVideo && (
+              {slide.heroVideo && videoOk && (
                 <video
                   ref={(el) => {
                     videoRefs.current[i] = el;
@@ -132,7 +155,7 @@ export function HeroSlider({ items }: { items: AnimeCard[] }) {
               )}
 
               {/* Слой апскейла: прозрачный, пока к нему не прикреплён шейдер */}
-              {slide.heroVideo && (
+              {slide.heroVideo && videoOk && (
                 <canvas
                   ref={(el) => {
                     canvasRefs.current[i] = el;

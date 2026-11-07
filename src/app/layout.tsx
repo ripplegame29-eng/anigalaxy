@@ -113,6 +113,8 @@ const unbounded = Unbounded({
   variable: "--font-unbounded",
   subsets: ["latin", "cyrillic"],
   display: "swap",
+  // Нужен лишь в паре разделов: не грузим его на каждой странице заранее
+  preload: false,
 });
 
 /** Заголовки раздела карточек (как на animeon.cc/cards) */
@@ -121,6 +123,7 @@ const dela = Dela_Gothic_One({
   variable: "--font-dela",
   subsets: ["latin", "cyrillic"],
   display: "swap",
+  preload: false,
 });
 
 const cinzel = Cinzel({
@@ -128,6 +131,7 @@ const cinzel = Cinzel({
   variable: "--font-cinzel",
   subsets: ["latin"],
   display: "swap",
+  preload: false,
 });
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";

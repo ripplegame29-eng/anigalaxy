@@ -59,6 +59,10 @@ const nextConfig: NextConfig = {
   },
   // Небольшой кэш роутов: данные каталога меняются нечасто
   outputFileTracingIncludes: {},
+  experimental: {
+    // Клиентский кэш переходов: возврат «назад» и повторный заход на страницу в первые секунды — мгновенно
+    staleTimes: { dynamic: 30, static: 180 },
+  },
   async headers() {
     const httpsOnly = process.env.SITE_HTTPS === "1";
     const CSP = buildCsp(httpsOnly);
@@ -74,9 +78,19 @@ const nextConfig: NextConfig = {
         headers: [{ key: "Cache-Control", value: "public, max-age=0, must-revalidate" }],
       },
       {
+        // Тяжёлые медиа с постоянными именами (фоны, темы, сцены боевого пропуска): неделя в кэше браузера,
+        // потом ещё сутки показываем старое и обновляем в фоне. Раньше каждый заход шёл на проверку к серверу
+        source: "/:dir(bgs|themes|bp|banners|collections)/:file*",
+        headers: [{ key: "Cache-Control", value: "public, max-age=604800, stale-while-revalidate=86400" }],
+      },
+      {
+        source: "/:path*.(webm|mp4|woff2)",
+        headers: [{ key: "Cache-Control", value: "public, max-age=604800, stale-while-revalidate=86400" }],
+      },
+      {
         // Остальная статика (иконки, превью): сутки, дальше условный запрос
-        source: "/:file*.{svg|png|jpg|jpeg|webp|avif|ico}",
-        headers: [{ key: "Cache-Control", value: "public, max-age=86400, must-revalidate" }],
+        source: "/:path*.(svg|png|jpg|jpeg|webp|avif|ico)",
+        headers: [{ key: "Cache-Control", value: "public, max-age=86400, stale-while-revalidate=604800" }],
       },
       {
         // Графика гачи (паки, наборы, рамки) обновляется без смены адреса:
