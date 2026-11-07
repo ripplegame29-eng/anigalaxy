@@ -380,3 +380,7 @@
 .cg.cg:not([data-tab="season"]) .bt-act2 .cg-btn:hover:not(:disabled) { background: #171b27 !important; border-color: rgba(94,160,255,.55) !important; box-shadow: 0 8px 22px -14px rgba(43,127,255,.9) !important; transform: translateY(-1px); }
 .cg.cg:not([data-tab="season"]) .bt-act2 .cg-btn:active:not(:disabled) { background: #0e1118 !important; transform: none; }
 @media (max-width: 640px) { .cg.cg:not([data-tab="season"]) .bt-act2 { grid-template-columns: minmax(0, 1fr); } .cg.cg:not([data-tab="season"]) .bt-act .bt-go { min-height: 64px; } }
+
+/* веер в шапке паков: без мигания (пульс свечения мифика и бегущий блик) */
+.cg .pk-fan .gc-mythic, .cg .pk-fan .gc-foil, .cg .pk-fan-i .gc-mythic, .cg .pk-fan-i .gc-foil { animation: none !important; }
+.cg .pk-fan .gc-foil { background-position: 50% 50%; opacity: .35; }
