@@ -13,6 +13,8 @@ import { cardsOfRank } from "@/lib/cards/catalog";
 import { PACK, RANKS } from "@/lib/cards/config";
 import { view, type CardsState } from "@/lib/cards/client";
 import { GameCard } from "./GameCard";
+import { OwnersModal } from "./TierTab";
+import { CollectorModal } from "./collector";
 import { fmt } from "./common";
 import { Cur, CurArt, Ico } from "./icons";
 
@@ -49,6 +51,8 @@ function worth(p: PaymentProduct): number {
 export function ShopTab({ s }: { s: CardsState }) {
   const [sel, setSel] = useState<(typeof BUNDLES)[number]>("cards-legend");
   const [bought, setBought] = useState<string[]>([]);
+  const [openCard, setOpenCard] = useState<string | null>(null);
+  const [nick, setNick] = useState<string | null>(null);
   useEffect(() => {
     let alive = true;
     void view<{ bought: string[] }>("shop").then((r) => alive && r.ok && setBought(r.data.bought));
@@ -132,7 +136,7 @@ export function ShopTab({ s }: { s: CardsState }) {
               <div className="shp-fan">
                 {fan.map((id, i) => (
                   <span key={id} className={`f${i}`}>
-                    <GameCard cardId={id} stats={false} />
+                    <GameCard cardId={id} stats={false} onClick={() => setOpenCard(id)} />
                   </span>
                 ))}
               </div>
@@ -219,6 +223,8 @@ export function ShopTab({ s }: { s: CardsState }) {
           );
         })}
       </div>
+      {openCard && <OwnersModal cardId={openCard} onClose={() => setOpenCard(null)} onPlayer={setNick} />}
+      {nick && <CollectorModal nick={nick} onClose={() => setNick(null)} />}
       <p className="shp-note">
         <Ico name="lock" size={14} /> Оплата картой или СБП через Platega. Карта гарантированного ранга выбирается на сервере в момент зачисления. Шансы обычных паков: SS 0,1%, S 0,4%, A 2,4%, B 21,5%, C 75,6% за карту; гарантия эпика — каждые {PACK.pityEpic} паков, легенды — каждые {PACK.pityLegend}.
       </p>

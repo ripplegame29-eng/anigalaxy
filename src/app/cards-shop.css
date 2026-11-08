@@ -390,3 +390,4 @@
 /* витрина набора: настоящие карты, без анимаций */
 .cg .shp-fan .gc { filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.55)); }
 .cg .shp-fan .f1 .gc { filter: drop-shadow(0 0 26px color-mix(in oklab, var(--ac) 55%, transparent)) drop-shadow(0 24px 40px rgba(0, 0, 0, 0.6)); }
+.cg .shp-fan .gc { cursor: pointer; } .cg .shp-fan > span:hover { z-index: 3; } .cg .shp-fan .f0:hover { transform: translateX(-50%) rotate(-14deg) scale(0.92) translateY(-6px); filter: none; } .cg .shp-fan .f2:hover { transform: translateX(50%) rotate(14deg) scale(0.92) translateY(-6px); filter: none; } .cg .shp-fan .f1:hover { transform: translateY(-8%); }
