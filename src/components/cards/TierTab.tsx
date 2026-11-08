@@ -205,7 +205,8 @@ export function OwnersModal({ cardId, onClose, onPlayer }: { cardId: string; onC
           </button>
           <div className="ow-hero">
             <div className="ow-card">
-              <GameCard cardId={cardId} live foil={def.rank >= 3} />
+              <GameCard cardId={cardId} live />
+              <i className="ow-holo" aria-hidden />
             </div>
             <div className="ow-id">
               <span className="ow-rank">
