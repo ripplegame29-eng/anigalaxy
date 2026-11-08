@@ -285,8 +285,8 @@
 
 /* 11 вкладок: на широком экране переносятся во второй ряд, а не уезжают за край */
 @media (min-width: 821px) {
-  .cg .cg-nav { flex-wrap: wrap; overflow: visible; }
-  .cg .cg-tab { flex: 1 0 auto; padding: 0 16px; min-height: 48px; }
+  .cg .cg-nav.cg-nav { flex-wrap: wrap !important; overflow: visible !important; }
+  .cg .cg-nav.cg-nav > .cg-tab { flex: 1 0 auto !important; padding: 0 14px; min-height: 46px; }
 }
 
 /* Тир-лист: один ранг за раз и лёгкие миниатюры вместо полных карт */
