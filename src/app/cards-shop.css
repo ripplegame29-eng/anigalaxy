@@ -282,3 +282,9 @@
   .cg .shp-gem { overflow: hidden; }
   .cg .shp-best { top: 8px; }
 }
+
+/* 11 вкладок: на широком экране переносятся во второй ряд, а не уезжают за край */
+@media (min-width: 821px) {
+  .cg .cg-nav { flex-wrap: wrap; overflow: visible; }
+  .cg .cg-tab { flex: 1 0 auto; padding: 0 16px; min-height: 48px; }
+}
