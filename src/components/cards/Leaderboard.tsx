@@ -33,7 +33,7 @@ const MEDAL_NAME = ["Чемпион сезона", "Серебро", "Бронз
 const frameOf = (id?: string) => (id ? FRAMES.find((f) => f.id === id) : undefined);
 const winRate = (r: TopRow): number => (r.wins + r.losses > 0 ? Math.round((r.wins / (r.wins + r.losses)) * 100) : 0);
 
-function Who({ r, size }: { r: TopRow; size: "xs" | "md" }) {
+function Who({ r, size }: { r: TopRow; size: "xs" | "sm" | "md" }) {
   return <AvatarFrame nickname={r.nick} avatar={r.avatar} frame={frameOf(r.frameId)} size={size} />;
 }
 
@@ -118,7 +118,22 @@ export function Leaderboard({
             </div>
           </div>
         </div>
+        <div className="lb-hero-top3" aria-label="Тройка лидеров">
+          {[1, 0, 2].map((i) => {
+            const r = rows[i];
+            return (
+              <button key={i} type="button" className={`lb-t3 p${i + 1}`} style={{ "--m": MEDAL[i] } as CSSProperties} onClick={() => r && onOpen(r.nick)} disabled={!r}>
+                {i === 0 && <Ico name="crown" size={26} className="lb-t3-crown" />}
+                <span className="lb-t3-ava">{r ? <Who r={r} size="sm" /> : <Ico name="user" size={24} />}</span>
+                <b>{r?.nick ?? "—"}</b>
+                <small>{r ? fmt(r.rating) : "место свободно"}</small>
+                <em>{i + 1}</em>
+              </button>
+            );
+          })}
+        </div>
         <div className="lb-my" style={{ ["--lg" as string]: cur.color }}>
+          <img className="lb-my-emb" src={`/cards/leagues/${cur.id}.webp`} alt="" aria-hidden />
           <div className="lb-my-top">
             <span>
               <small>Ваш рейтинг</small>
