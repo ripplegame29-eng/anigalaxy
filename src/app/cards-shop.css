@@ -288,3 +288,16 @@
   .cg .cg-nav { flex-wrap: wrap; overflow: visible; }
   .cg .cg-tab { flex: 1 0 auto; padding: 0 16px; min-height: 48px; }
 }
+
+/* Тир-лист: один ранг за раз и лёгкие миниатюры вместо полных карт */
+.cg .tl-ranks { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
+.cg .tl-ranks button { --rc: #fff; display: grid; justify-items: center; gap: 2px; padding: 10px 6px; border-radius: 14px; cursor: pointer; color: inherit; font: inherit;
+  background: var(--sp-panel); border: 1px solid var(--sp-line); transition: background 0.2s, border-color 0.2s; }
+.cg .tl-ranks b { font: 400 22px/1 var(--sp-head); color: var(--rc); }
+.cg .tl-ranks small { font-size: 11px; color: var(--sp-mut); }
+.cg .tl-ranks button.on { background: color-mix(in oklab, var(--rc) 14%, var(--sp-panel)); border-color: var(--rc); box-shadow: 0 0 18px color-mix(in oklab, var(--rc) 30%, transparent); }
+.cg .tl-card { animation: none; content-visibility: auto; contain-intrinsic-size: 160px; }
+.cg .tl-art { display: block; aspect-ratio: 5 / 7; border-radius: 10px; overflow: hidden; background: #0a0f1f; border: 2px solid color-mix(in oklab, var(--rc) 70%, transparent); }
+.cg .tl-art img { width: 100%; height: 100%; object-fit: cover; object-position: top center; display: block; }
+.cg .tl-card.none .tl-art img { filter: grayscale(0.9) brightness(0.5); }
+.cg .tl-rank { align-self: start; position: sticky; top: 80px; }

@@ -42,14 +42,15 @@ interface Owners {
 }
 
 const ROWS = [4, 3, 2, 1, 0];
-const LIMIT = 24;
+const LIMIT = 30;
 
 export function TierTab() {
   const [data, setData] = useState<{ players: number; cards: TierCard[] } | null>(null);
   const [err, setErr] = useState("");
   const [q, setQ] = useState("");
   const [sort, setSort] = useState<"rare" | "pop">("rare");
-  const [open, setOpen] = useState<Record<number, boolean>>({ 4: true, 3: true });
+  const [open, setOpen] = useState<Record<number, boolean>>({});
+  const [cur, setCur] = useState(4);
   const [card, setCard] = useState<string | null>(null);
   const [nick, setNick] = useState<string | null>(null);
 
@@ -127,8 +128,18 @@ export function TierTab() {
       {err && <div className="cg-empty">{err}</div>}
       {!data && !err && <div className="cg-empty">Загрузка тир-листа…</div>}
 
-      {rows.map(({ rank, list, found: f }) => {
-        if (!list.length) return null;
+      {data && (
+        <div className="tl-ranks" role="tablist" aria-label="Ранг">
+          {rows.map(({ rank, list, found: fd }) => (
+            <button key={rank} type="button" role="tab" aria-selected={cur === rank} className={cur === rank ? "on" : ""} style={{ "--rc": RANKS[rank].color } as CSSProperties} onClick={() => setCur(rank)}>
+              <b>{RANKS[rank].short}</b>
+              <small>{fd}/{list.length}</small>
+            </button>
+          ))}
+        </div>
+      )}
+      {rows.filter((r) => r.rank === cur).map(({ rank, list, found: f }) => {
+        if (!list.length) return <div key={rank} className="cg-empty">Ничего не найдено</div>;
         const r = RANKS[rank];
         const all = open[rank] || q.trim() !== "";
         const shown = all ? list : list.slice(0, LIMIT);
@@ -144,7 +155,9 @@ export function TierTab() {
             <div className="tl-cards">
               {shown.map((c, i) => (
                 <button key={c.id} type="button" className={`tl-card${c.owners ? "" : " none"}`} style={{ ["--d" as string]: `${Math.min(i, 20) * 25}ms` }} onClick={() => setCard(c.id)} aria-label={`${cardDef(c.id)?.name}: владельцев ${c.owners}`}>
-                  <GameCard cardId={c.id} stats={false} />
+                  <span className="tl-art">
+                    <img src={`/api/cards/art/${c.id}`} alt="" loading="lazy" decoding="async" draggable={false} />
+                  </span>
                   <span className="tl-badge">
                     <Ico name="user" size={11} />
                     {c.owners}
