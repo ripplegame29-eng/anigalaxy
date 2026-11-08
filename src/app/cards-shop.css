@@ -386,3 +386,7 @@
 @keyframes lb-pulse-b { 70% { box-shadow: 0 0 0 9px rgba(90, 168, 255, 0); } 0% { box-shadow: 0 0 0 0 rgba(90, 168, 255, 0.7); } }
 .cg .lb-tm b { background: linear-gradient(180deg, rgba(20, 28, 64, 0.9), rgba(8, 11, 28, 0.95)); border-color: rgba(120, 160, 255, 0.35); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 0 18px rgba(80, 130, 255, 0.18); }
 @media (prefers-reduced-motion: reduce) { .cg .lb-beam { animation: none; } }
+
+/* витрина набора: настоящие карты, без анимаций */
+.cg .shp-fan .gc { filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.55)); }
+.cg .shp-fan .f1 .gc { filter: drop-shadow(0 0 26px color-mix(in oklab, var(--ac) 55%, transparent)) drop-shadow(0 24px 40px rgba(0, 0, 0, 0.6)); }
