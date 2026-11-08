@@ -5,6 +5,7 @@ import { CATALOG, cardDef, isHidden } from "@/lib/cards/catalog";
 import { PACK, RANKS } from "@/lib/cards/config";
 import { sfx } from "@/lib/cards/sound";
 import { act, hasArt, type CardsState, type Pull } from "@/lib/cards/client";
+import { ShopTab } from "./ShopTab";
 import { GameCard } from "./GameCard";
 import { BannerCard } from "./BannerCard";
 import { CardViewer } from "./CardViewer";
@@ -545,6 +546,8 @@ export function PacksTab({ s }: { s: CardsState }) {
       {look !== null && fan[look] && (
         <CardViewer ids={fan} index={look} onIndex={setLook} onClose={() => setLook(null)} owned={s.inventory.some((c) => c.cardId === fan[look])} />
       )}
+
+      <ShopTab s={s} />
 
       {chosen.length > 0 && (
         <Reveal

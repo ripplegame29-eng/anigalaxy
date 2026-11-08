@@ -132,7 +132,7 @@ export function ShopTab({ s }: { s: CardsState }) {
               <div className="shp-fan">
                 {fan.map((id, i) => (
                   <span key={id} className={`f${i}`}>
-                    <GameCard cardId={id} stats={false} live={i === 1} foil={i === 1} />
+                    <span className="shp-fc"><img src={`/api/cards/art/${id}`} alt="" draggable={false} /></span>
                   </span>
                 ))}
               </div>

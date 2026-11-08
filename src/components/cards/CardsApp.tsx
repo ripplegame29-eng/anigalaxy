@@ -24,7 +24,6 @@ import { ForgeTab } from "./ForgeTab";
 import { PacksTab } from "./PacksTab";
 import { ProgressTab } from "./ProgressTab";
 import { SeasonTab } from "./SeasonTab";
-import { ShopTab } from "./ShopTab";
 import { TierTab } from "./TierTab";
 import { SharpenTab } from "./SharpenTab";
 import { ToastHost, fmt, fmtLeft, toast, useBusy, useNow } from "./common";
@@ -42,9 +41,8 @@ const TABS: readonly (readonly [string, string, IcoName])[] = [
   ["progress", "Прогресс", "trophy"],
   ["season", "Сезон", "crown"],
   ["tiers", "Тир-лист", "grid"],
-  ["shop", "Магазин", "gift"],
 ] as const;
-type TabId = "packs" | "forge" | "sharpen" | "battle" | "auction" | "trade" | "collection" | "progress" | "season" | "tiers" | "shop";
+type TabId = "packs" | "forge" | "sharpen" | "battle" | "auction" | "trade" | "collection" | "progress" | "season" | "tiers";
 
 const NOTIFY_KEY = "animehub:cards:notify";
 const canNotify = (): boolean => {
@@ -382,7 +380,6 @@ export function CardsApp() {
         {tab === "progress" && <ProgressTab s={s} />}
         {tab === "season" && <SeasonTab s={s} />}
         {tab === "tiers" && <TierTab />}
-        {tab === "shop" && <ShopTab s={s} />}
       </div>
       <ToastHost />
     </div>
