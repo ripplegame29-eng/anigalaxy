@@ -151,6 +151,10 @@ export function CheckoutDialog() {
               ))}
             </ul>
           )}
+          <div className="ck-okbadge" aria-hidden>
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z" /><path d="m9 12 2 2 4-4" /></svg>
+            <span>Проверено сервером</span>
+          </div>
           <div className="ck-cut" aria-hidden />
           <div className="ck-t-sum">
             <span>К оплате</span>
@@ -176,19 +180,15 @@ export function CheckoutDialog() {
                 ))}
               </div>
 
-              <div className="ck-info">
-                <p>
-                  Сумма и состав заказа проверены на сервере. На следующем шаге откроется
-                  защищённая страница <b>Platega</b>, где можно выбрать удобный способ оплаты.
-                </p>
-              </div>
+              <ol className="ck-steps">
+                <li><b>1</b><span>Откроется защищённая страница <em>Platega</em></span></li>
+                <li><b>2</b><span>Выберите СБП, карту или крипту</span></li>
+                <li><b>3</b><span>Покупка зачислится автоматически</span></li>
+              </ol>
 
               <button type="button" className="ck-hold ck-pay" onClick={() => void pay()}>
-                <span>{I.arrow}Перейти к оплате — {rub(order.price)}</span>
+                <span>Оплатить {rub(order.price)}{I.arrow}</span>
               </button>
-              <p className="ck-hint">
-                Откроется страница Platega. Доступ придёт автоматически после подтверждения платежа.
-              </p>
               {error && <p className="ck-error" role="alert">{error}</p>}
               <p className="ck-legal">Оплачивая, вы принимаете оферту и политику конфиденциальности. Соединение защищено SSL.</p>
             </>
