@@ -86,12 +86,14 @@ export function Leaderboard({
       <i className="lb-grid" aria-hidden />
       <header className="lb-hero">
         <i className="lb-hero-lines" aria-hidden />
+        <i className="lb-beam" aria-hidden />
+        <i className="lb-beam b2" aria-hidden />
         <i className="lb-hero-cup" aria-hidden>
           <Ico name="trophy" size={220} />
         </i>
         <div className="lb-hero-main">
           <span className="lb-live">
-            <i aria-hidden /> Hall of fame · арена
+            <i aria-hidden /> Зал славы галактики
           </span>
           <h3 id="lb-title">
             Рейтинг

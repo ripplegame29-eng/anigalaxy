@@ -365,3 +365,24 @@
 .cv-holo { background-image: linear-gradient(115deg, transparent 14%, rgba(127, 216, 255, .55) 30%, rgba(165, 106, 255, .55) 44%, rgba(255, 123, 213, .5) 56%, rgba(127, 255, 212, .5) 70%, transparent 86%) !important; background-size: 240% 100% !important; }
 /* без лучей на легендарных (S) картах */
 .gc-legendary .gc-deco { background: radial-gradient(70% 40% at 50% 0%, rgba(255, 214, 120, 0.4), transparent 72%) !important; mask-image: none !important; }
+
+/* ---------- шапка рейтинга: прожекторы и сетка ---------- */
+.cg .lb > .lb-hero { background:
+    radial-gradient(45% 70% at 100% 100%, rgba(124, 92, 255, 0.35), transparent 70%),
+    radial-gradient(30% 45% at 0% 0%, rgba(59, 130, 255, 0.22), transparent 70%),
+    linear-gradient(160deg, #0c1230, #070917 60%, #0d0a22); }
+.cg .lb-hero-lines { opacity: 1; background:
+    linear-gradient(rgba(140, 170, 255, 0.06) 1px, transparent 1px) 0 0 / 34px 34px,
+    linear-gradient(90deg, rgba(140, 170, 255, 0.06) 1px, transparent 1px) 0 0 / 34px 34px;
+  -webkit-mask-image: radial-gradient(80% 90% at 70% 40%, #000, transparent 85%); mask-image: radial-gradient(80% 90% at 70% 40%, #000, transparent 85%); }
+.cg .lb-beam { position: absolute; z-index: -1; pointer-events: none; top: -40%; right: 22%; width: 180px; height: 170%; transform: rotate(32deg); transform-origin: 50% 0;
+  background: linear-gradient(180deg, rgba(150, 190, 255, 0.0), rgba(120, 160, 255, 0.28) 30%, rgba(160, 110, 255, 0.18) 60%, transparent);
+  filter: blur(18px); mix-blend-mode: screen; animation: lb-beam 9s ease-in-out infinite alternate; }
+.cg .lb-beam.b2 { right: 38%; width: 90px; transform: rotate(24deg); opacity: 0.6; animation-duration: 12s; animation-delay: -4s; background: linear-gradient(180deg, transparent, rgba(255, 120, 200, 0.22) 45%, transparent); }
+@keyframes lb-beam { to { transform: rotate(40deg) translateX(-40px); } }
+.cg .lb-hero h3 span { background-image: linear-gradient(90deg, #5aa8ff, #8f7bff, #c86bff, #5aa8ff); }
+.cg .lb-live { color: #9fd0ff; background: rgba(60, 130, 255, 0.12); border-color: rgba(90, 160, 255, 0.4); }
+.cg .lb-live i { background: #5aa8ff; animation-name: lb-pulse-b; }
+@keyframes lb-pulse-b { 70% { box-shadow: 0 0 0 9px rgba(90, 168, 255, 0); } 0% { box-shadow: 0 0 0 0 rgba(90, 168, 255, 0.7); } }
+.cg .lb-tm b { background: linear-gradient(180deg, rgba(20, 28, 64, 0.9), rgba(8, 11, 28, 0.95)); border-color: rgba(120, 160, 255, 0.35); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 0 18px rgba(80, 130, 255, 0.18); }
+@media (prefers-reduced-motion: reduce) { .cg .lb-beam { animation: none; } }
