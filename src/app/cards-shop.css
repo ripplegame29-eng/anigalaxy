@@ -401,3 +401,7 @@
   background-size: 240% 100%; animation: cv-holo-idle 7s ease-in-out infinite alternate; }
 @keyframes cv-holo-idle { from { background-position: 20% 0; } to { background-position: 80% 0; } }
 @media (prefers-reduced-motion: reduce) { .cg .ow-card, .cg .ow-holo { animation: none; } }
+/* перелив строго внутри арта карты */
+.cg .ow-holo { display: none; }
+.cg .ow-card .gc-art::before { opacity: 0.8 !important; mix-blend-mode: soft-light; background: linear-gradient(115deg, transparent 14%, rgba(127, 216, 255, .55) 30%, rgba(165, 106, 255, .55) 44%, rgba(255, 123, 213, .5) 56%, rgba(127, 255, 212, .5) 70%, transparent 86%) !important;
+  background-size: 240% 100% !important; animation: cv-holo-idle 7s ease-in-out infinite alternate !important; }
