@@ -345,3 +345,6 @@
 .cg .lb-t3-ava { width: auto; height: auto; min-width: 0; min-height: 0; border-radius: 50%; box-shadow: 0 0 26px color-mix(in oklab, var(--m) 45%, transparent); }
 .cg .lb-t3-ava > * { transform: none; }
 @media (max-width: 900px) { .cg .lb-t3-ava { zoom: 0.8; } }
+.cg .tl-cards { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+.cg .tl-more { min-height: 0; aspect-ratio: auto; }
+@media (max-width: 560px) { .cg .tl-cards { grid-template-columns: repeat(3, minmax(0, 1fr)); } }

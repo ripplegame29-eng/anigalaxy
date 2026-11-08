@@ -42,7 +42,7 @@ interface Owners {
 }
 
 const ROWS = [4, 3, 2, 1, 0];
-const LIMIT = 30;
+const LIMIT = 5;
 
 export function TierTab() {
   const [data, setData] = useState<{ players: number; cards: TierCard[] } | null>(null);
@@ -50,7 +50,6 @@ export function TierTab() {
   const [q, setQ] = useState("");
   const [sort, setSort] = useState<"rare" | "pop">("rare");
   const [open, setOpen] = useState<Record<number, boolean>>({});
-  const [cur, setCur] = useState(4);
   const [card, setCard] = useState<string | null>(null);
   const [nick, setNick] = useState<string | null>(null);
 
@@ -128,20 +127,10 @@ export function TierTab() {
       {err && <div className="cg-empty">{err}</div>}
       {!data && !err && <div className="cg-empty">Загрузка тир-листа…</div>}
 
-      {data && (
-        <div className="tl-ranks" role="tablist" aria-label="Ранг">
-          {rows.map(({ rank, list, found: fd }) => (
-            <button key={rank} type="button" role="tab" aria-selected={cur === rank} className={cur === rank ? "on" : ""} style={{ "--rc": RANKS[rank].color } as CSSProperties} onClick={() => setCur(rank)}>
-              <b>{RANKS[rank].short}</b>
-              <small>{fd}/{list.length}</small>
-            </button>
-          ))}
-        </div>
-      )}
-      {rows.filter((r) => r.rank === cur).map(({ rank, list, found: f }) => {
-        if (!list.length) return <div key={rank} className="cg-empty">Ничего не найдено</div>;
+      {rows.map(({ rank, list, found: f }) => {
+        if (!list.length) return null;
         const r = RANKS[rank];
-        const all = open[rank] || q.trim() !== "";
+        const all = !!open[rank];
         const shown = all ? list : list.slice(0, LIMIT);
         return (
           <section key={rank} className="tl-row" style={{ "--rc": r.color } as CSSProperties} aria-label={`Ранг ${r.short}`}>
@@ -165,10 +154,10 @@ export function TierTab() {
                   <span className="tl-nm">{cardDef(c.id)?.name}</span>
                 </button>
               ))}
-              {!all && list.length > LIMIT && (
-                <button type="button" className="tl-more" onClick={() => setOpen((o) => ({ ...o, [rank]: true }))}>
-                  <b>+{list.length - LIMIT}</b>
-                  <small>Показать все</small>
+              {list.length > LIMIT && (
+                <button type="button" className="tl-more" onClick={() => setOpen((o) => ({ ...o, [rank]: !all }))}>
+                  <b>{all ? "−" : `+${list.length - LIMIT}`}</b>
+                  <small>{all ? "Свернуть" : "Показать все"}</small>
                 </button>
               )}
             </div>
