@@ -10,6 +10,7 @@ import { randomUUID } from "node:crypto";
 
 import { BATTLEPASS } from "../battlepass/config";
 import { PRODUCTS, type PaymentProduct } from "../payments/catalog";
+import { grantCardBundle } from "./cards-shop";
 import { PROGRESS_DOC_KEY } from "../sync-keys";
 import { setPremiumDays } from "./admin";
 import { adjustBalance, editProfile, pushNotice, setItem } from "./admin-edit";
@@ -389,6 +390,12 @@ function grantEntitlements(db: Database, order: PaymentOrder, now: number): void
 
   if (product.kind === "gift") {
     grantGift(db, order, product, now);
+    return;
+  }
+
+  if (product.kind === "cards") {
+    const got = grantCardBundle(db, order.userId, product, now);
+    notice(db, order.userId, `${product.title.replace(/^Гача · /, "")}: покупка зачислена в гачу${got.length ? " — внутри новая карта!" : ""}`, now);
   }
 }
 

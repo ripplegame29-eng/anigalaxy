@@ -42,6 +42,7 @@ import {
   type Res,
 } from "./cards";
 import { battleLog, battleReplay, buyEnergy, challenge, fight, ratingTop, setDeck, weekIndexOf } from "./cards-battle";
+import { cardOwners, cardTiers } from "./cards-shop";
 import { campaignClaim, campaignFight, campaignState } from "./cards-campaign";
 import { raidClaim, raidFight, raidView } from "./cards-raid";
 import { buyBooster, claimFreeBooster, equipRelics, gearState, upgradeRelic } from "./cards-gear";
@@ -130,6 +131,12 @@ export function cardsView(db: Database, userId: number, view: string, params: UR
       return battleReplay(db, userId, Math.floor(Number(params.get("id"))) || 0);
     case "profile":
       return collectorProfile(db, params.get("nick") ?? "");
+    case "tiers":
+      return { ok: true, value: cardTiers(db) };
+    case "owners":
+      return cardOwners(db, params.get("id") ?? "");
+    case "shop":
+      return { ok: true, value: shopState(db, userId) };
     default:
       return { ok: true, value: cardsState(db, userId, now) };
   }
@@ -232,4 +239,10 @@ export function cardsAction(db: Database, userId: number, op: string, body: Reco
     default:
       return { ok: false, error: "Неизвестное действие" };
   }
+}
+
+/** Какие разовые наборы магазина уже куплены */
+function shopState(db: Database, userId: number) {
+  const rows = db.prepare("SELECT DISTINCT product_id FROM payment_orders WHERE user_id = ? AND status = 'CONFIRMED' AND product_id LIKE 'cards-%'").all(userId);
+  return { bought: rows.map((r) => String(r.product_id)) };
 }

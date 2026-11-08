@@ -7,7 +7,7 @@
  * Данные приходят из `view("top")` (см. `ratingTop`), оформление — стили `lb-*`.
  */
 
-import { useMemo, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { LEAGUES, leagueOf } from "@/lib/cards/config";
 import { FRAMES } from "@/lib/cosmetics";
 import { AvatarFrame } from "@/components/profile/AvatarFrame";
@@ -49,6 +49,16 @@ export function Leaderboard({
   onOpen: (nick: string) => void;
 }) {
   const [q, setQ] = useState("");
+  const [nowMs, setNowMs] = useState(() => Date.now());
+  useEffect(() => {
+    const t = window.setInterval(() => setNowMs(Date.now()), 1000);
+    return () => window.clearInterval(t);
+  }, []);
+  /* неделя арены начинается в понедельник 00:00 UTC (как weekIndexOf на сервере) */
+  const WEEK = 7 * 86_400_000;
+  const OFF = 4 * 86_400_000;
+  const leftMs = Math.max(0, (Math.floor((nowMs - OFF) / WEEK) + 1) * WEEK + OFF - nowMs);
+  const left = { d: Math.floor(leftMs / 86_400_000), h: Math.floor(leftMs / 3_600_000) % 24, m: Math.floor(leftMs / 60_000) % 60, s: Math.floor(leftMs / 1000) % 60 };
   const [league, setLeague] = useState<string>("all");
   const mine = me.trim().toLowerCase();
   const isMe = (r: TopRow) => mine !== "" && r.nick.toLowerCase() === mine;
@@ -74,11 +84,39 @@ export function Leaderboard({
     <section className="lb" aria-labelledby="lb-title">
       <i className="lb-glow" aria-hidden />
       <i className="lb-grid" aria-hidden />
-      <header className="lb-head">
-        <div className="lb-title">
-          <span className="cg-eyebrow">Рейтинг боёв</span>
-          <h3 id="lb-title">Лидеры сезона</h3>
-          <p>Лучшие стратеги арены. Рейтинг растёт с победами в рейтинговых боях и обновляется после каждого боя.</p>
+      <header className="lb-hero">
+        <i className="lb-hero-lines" aria-hidden />
+        <i className="lb-hero-cup" aria-hidden>
+          <Ico name="trophy" size={220} />
+        </i>
+        <div className="lb-hero-main">
+          <span className="lb-live">
+            <i aria-hidden /> Hall of fame · арена
+          </span>
+          <h3 id="lb-title">
+            Рейтинг
+            <span>игроков</span>
+          </h3>
+          <p>Рейтинговые бои двигают вас по лигам — от Бронзы до Легенды. Таблица обновляется после каждого боя.</p>
+          <div className="lb-timer" aria-label="До новой недели арены">
+            <small>Новая неделя арены через</small>
+            <div>
+              {[
+                [left.d, "дн"],
+                [left.h, "час"],
+                [left.m, "мин"],
+                [left.s, "сек"],
+              ].map(([v, l], i) => (
+                <span key={String(l)} className="lb-tm">
+                  {i > 0 && <i aria-hidden>:</i>}
+                  <span className="lb-tmv">
+                    <b>{String(v).padStart(2, "0")}</b>
+                    <small>{l}</small>
+                  </span>
+                </span>
+              ))}
+            </div>
+          </div>
         </div>
         <div className="lb-my" style={{ ["--lg" as string]: cur.color }}>
           <div className="lb-my-top">
@@ -95,6 +133,11 @@ export function Leaderboard({
             {next ? `До лиги «${next.name}» — ${fmt(next.from - myRating)} очков` : "Вы в высшей лиге"}
             {myPlace ? ` · место ${myPlace}` : ""}
           </small>
+          <div className="lb-my-lgs" aria-hidden>
+            {LEAGUES.map((l) => (
+              <i key={l.id} className={l.id === cur.id ? "on" : myRating >= l.from ? "past" : ""} style={{ ["--lg" as string]: l.color }} title={l.name} />
+            ))}
+          </div>
         </div>
       </header>
 

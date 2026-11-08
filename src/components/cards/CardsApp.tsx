@@ -16,6 +16,7 @@ import "../../app/cards-progress.css";
 import "../../app/cards-campaign.css";
 import "../../app/cards-season.css";
 import "../../app/cards-arsenal.css";
+import "../../app/cards-shop.css";
 import { AuctionTab } from "./AuctionTab";
 import { BattleTab } from "./BattleTab";
 import { CollectionTab } from "./CollectionTab";
@@ -23,6 +24,8 @@ import { ForgeTab } from "./ForgeTab";
 import { PacksTab } from "./PacksTab";
 import { ProgressTab } from "./ProgressTab";
 import { SeasonTab } from "./SeasonTab";
+import { ShopTab } from "./ShopTab";
+import { TierTab } from "./TierTab";
 import { SharpenTab } from "./SharpenTab";
 import { ToastHost, fmt, fmtLeft, toast, useBusy, useNow } from "./common";
 import { CUR, Cur, CurArt, Ico, TabIco, type CurKey, type IcoName } from "./icons";
@@ -38,8 +41,10 @@ const TABS: readonly (readonly [string, string, IcoName])[] = [
   ["collection", "Коллекция", "grid"],
   ["progress", "Прогресс", "trophy"],
   ["season", "Сезон", "crown"],
+  ["tiers", "Тир-лист", "grid"],
+  ["shop", "Магазин", "gift"],
 ] as const;
-type TabId = "packs" | "forge" | "sharpen" | "battle" | "auction" | "trade" | "collection" | "progress" | "season";
+type TabId = "packs" | "forge" | "sharpen" | "battle" | "auction" | "trade" | "collection" | "progress" | "season" | "tiers" | "shop";
 
 const NOTIFY_KEY = "animehub:cards:notify";
 const canNotify = (): boolean => {
@@ -376,6 +381,8 @@ export function CardsApp() {
         {tab === "collection" && <CollectionTab s={s} />}
         {tab === "progress" && <ProgressTab s={s} />}
         {tab === "season" && <SeasonTab s={s} />}
+        {tab === "tiers" && <TierTab />}
+        {tab === "shop" && <ShopTab s={s} />}
       </div>
       <ToastHost />
     </div>
