@@ -49,6 +49,11 @@ export const POST = route(
       return json({ error: "Слишком много незавершённых платежей. Попробуйте через несколько минут." }, 429);
     }
 
+    if (product.once) {
+      const had = db.prepare("SELECT 1 AS x FROM payment_orders WHERE user_id = ? AND product_id = ? AND status = 'CONFIRMED' LIMIT 1").get(user!.id, product.id);
+      if (had) return json({ error: "Этот набор можно купить только один раз" }, 409);
+    }
+
     const meta: PaymentOrderMeta = {};
     let count = 1;
     let promoCode = "";

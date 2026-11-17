@@ -53,7 +53,7 @@
   place-items: center;
   font-weight: 800;
   font-size: calc(var(--av) * 0.34);
-  background: #1d6fe0 center/cover no-repeat;
+  background: linear-gradient(135deg,#2f6bff,#22a6f2);
 }
 /* Рамка поверх аватара, размер av × scale, всегда по центру коробки —
    тогда круг стоит на месте при любом scale. max-width: none обязателен:

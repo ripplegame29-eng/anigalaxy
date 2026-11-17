@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { cardDef } from "@/lib/cards/catalog";
 import { CLASSES, ELEMENTS, RANKS, type CardClass, type Element } from "@/lib/cards/config";
-import { ENERGY, SKILL_LEVEL_BONUS, SKILL_MAX_LEVEL, SKILL_SLOTS, ULTIMATES, PASSIVES, levelled, passivesFor, skillDef, skillPool, skillUpCost, slotsOf, type Skill, type SkillFx, type SkillTarget } from "@/lib/cards/skills";
+import { ENERGY, SKILL_LEVEL_BONUS, SKILL_MAX_LEVEL, SKILL_SLOTS, ultOf, PASSIVES, levelled, passivesFor, skillDef, skillPool, skillUpCost, slotsOf, type Skill, type SkillFx, type SkillTarget } from "@/lib/cards/skills";
 import type { Synergy } from "@/lib/cards/synergy";
 import { act, useCards, type InvCard } from "@/lib/cards/client";
 import { GameCard } from "./GameCard";
@@ -202,7 +202,7 @@ export function SkillEditor({ card, onClose }: { card: InvCard; onClose: () => v
   const wallet = state?.wallet;
   const slots = slotsOf(def.rank);
   const pool = skillPool(def.cls, def.element);
-  const ult = ULTIMATES[def.cls];
+  const ult = ultOf(def.id, def.cls);
   const clsCol = CLASS_COL[def.cls];
   const elCol = ELEM_COL[def.element];
   const groups = {

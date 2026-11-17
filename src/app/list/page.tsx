@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
-import MyList from "@/components/MyListPage";
+import MyList from "@/components/MyListLive";
 
 export const metadata: Metadata = {
   title: "Мой список",

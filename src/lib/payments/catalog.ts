@@ -8,7 +8,19 @@
  * Модуль общий для клиента и сервера — без Node.js-модулей и секретов.
  */
 
-export type ProductKind = "premium" | "battlepass" | "coins" | "donation" | "gift";
+export type ProductKind = "premium" | "battlepass" | "coins" | "donation" | "gift" | "cards";
+
+/** Состав набора магазина карт */
+export interface CardBundle {
+  diamonds?: number;
+  packs?: number;
+  dust?: number;
+  scroll?: number;
+  scrollRank?: number;
+  /** Гарантированная карта ранга (3 — S, 4 — SS), выбирает сервер */
+  cardRank?: number;
+  cardCount?: number;
+}
 
 export interface PaymentProduct {
   id: string;
@@ -33,11 +45,28 @@ export interface PaymentProduct {
   gift?: boolean;
   /** Короткое название тарифа для карточки подарка */
   giftTitle?: string;
+  /** Магазин карт: что получает игрок */
+  cards?: CardBundle;
+  /** Покупается один раз на аккаунт */
+  once?: boolean;
 }
 
 const product = (value: PaymentProduct): PaymentProduct => value;
 
 export const PRODUCTS: Record<string, PaymentProduct> = {
+  /* ---------------- Магазин карт гачи ----------------
+     Пак стоит 60 алмазов. Базовый курс ~1,2 алмаза за рубль (пак ≈ 50 ₽),
+     крупные наборы дают бонус; обмен AC на алмазы ограничен 100 в день,
+     поэтому прямые наборы выгоднее и не обесценивают AC. */
+  "cards-gems-1": product({ id: "cards-gems-1", kind: "cards", title: "Гача · Горсть алмазов", price: 99, cards: { diamonds: 120 } }),
+  "cards-gems-2": product({ id: "cards-gems-2", kind: "cards", title: "Гача · Шкатулка алмазов", price: 249, cards: { diamonds: 330 } }),
+  "cards-gems-3": product({ id: "cards-gems-3", kind: "cards", title: "Гача · Сундук алмазов", price: 499, cards: { diamonds: 720 } }),
+  "cards-gems-4": product({ id: "cards-gems-4", kind: "cards", title: "Гача · Сокровищница", price: 999, cards: { diamonds: 1560 } }),
+  "cards-gems-5": product({ id: "cards-gems-5", kind: "cards", title: "Гача · Галактический запас", price: 1990, oldPrice: 2390, cards: { diamonds: 3500 } }),
+  "cards-starter": product({ id: "cards-starter", kind: "cards", title: "Гача · Набор новичка", price: 149, oldPrice: 449, once: true, cards: { packs: 8, dust: 400, scroll: 1, scrollRank: 2 } }),
+  "cards-legend": product({ id: "cards-legend", kind: "cards", title: "Гача · Сундук легенды", price: 690, oldPrice: 990, cards: { cardRank: 3, packs: 6, dust: 600 } }),
+  "cards-mythic": product({ id: "cards-mythic", kind: "cards", title: "Гача · Мифический реликварий", price: 1990, oldPrice: 2990, cards: { cardRank: 4, packs: 15, dust: 1500, scroll: 1, scrollRank: 4 } }),
+
   "premium-month": product({
     id: "premium-month",
     kind: "premium",

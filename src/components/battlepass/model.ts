@@ -8,7 +8,7 @@
  */
 
 import { AE_RARITY, type AERarity } from "@/components/progression/AchievementEmblem";
-import { BATTLEPASS, bpRewards, describeReward, type RewardView } from "@/lib/battlepass/logic";
+import { BATTLEPASS, bpRewards, describeReward, gachaText, type RewardView } from "@/lib/battlepass/logic";
 import type { BattlepassLine } from "@/lib/progression/types";
 
 /** Тип награды для визуала: монета, молния XP, капсула титула, рамка */
@@ -32,6 +32,8 @@ export interface BpRewardCard {
   rarity: AERarity;
   rarityLabel: string;
   desc: string;
+  /** Награда карточной игры на этом уровне (текст) */
+  gacha?: string;
 }
 
 const RARITY_INDEX: Record<AERarity, number> = {
@@ -87,11 +89,14 @@ function cardKind(view: RewardView): BpCardKind {
 
 function buildCard(level: number, line: BattlepassLine, rewards: ReturnType<typeof bpRewards>): BpRewardCard | null {
   if (!rewards?.length) return null;
-  const views = rewards.map((reward) => describeReward(reward));
+  const gachaReward = rewards.find((reward) => reward.kind === "gacha");
+  const siteRewards = rewards.filter((reward) => reward.kind !== "gacha");
+  if (!siteRewards.length) return null;
+  const views = siteRewards.map((reward) => describeReward(reward));
   const primary = views[0];
   const kind = cardKind(primary);
   const rarity = cardRarity(kind, primary, level, line);
-  const isPick = rewards[0]?.kind === "framePick";
+  const isPick = siteRewards[0]?.kind === "framePick";
 
   return {
     key: `${line}:${level}`,
@@ -106,6 +111,7 @@ function buildCard(level: number, line: BattlepassLine, rewards: ReturnType<type
     rarity,
     rarityLabel: AE_RARITY[rarity].n,
     desc: isPick ? PICK_DESC : DESC[kind],
+    gacha: gachaReward && gachaReward.kind === "gacha" ? gachaText(gachaReward.reward) : undefined,
   };
 }
 

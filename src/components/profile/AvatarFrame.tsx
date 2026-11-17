@@ -1,3 +1,5 @@
+"use client";
+
 /**
  * Аватар с рамкой — порт `avatar-frame.js`.
  *
@@ -10,6 +12,7 @@
  * Размер рамки считает CSS: `--av × --scale`, где `--scale` приходит из
  * данных рамки. Рамка рисуется поверх аватара и на всю коробку.
  */
+import { useState } from "react";
 import type { FrameItem } from "@/lib/cosmetics";
 
 export type AvSize = "xs" | "sm" | "md" | "lg";
@@ -31,6 +34,8 @@ export function AvatarCircle({
   const initials =
     nickname.trim().split(/[\s_-]+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join("") ||
     nickname.slice(0, 2);
+  const [failed, setFailed] = useState<string | null>(null);
+  const showImg = Boolean(avatar) && failed !== avatar;
   return (
     <span
       className={`relative inline-grid shrink-0 place-items-center overflow-hidden rounded-full ${className}`}
@@ -39,13 +44,18 @@ export function AvatarCircle({
     >
       <span
         className={`grid h-full w-full place-items-center bg-gradient-to-br from-accent to-accent-2 text-center font-black leading-none text-white ${textClass}`}
-        style={
-          avatar
-            ? { backgroundImage: `url(${avatar})`, backgroundSize: "cover", backgroundPosition: "center" }
-            : undefined
-        }
       >
-        {!avatar && <span className="truncate px-1">{initials.toUpperCase()}</span>}
+        {showImg ? (
+          <img
+            src={avatar}
+            alt=""
+            draggable={false}
+            className="h-full w-full object-cover"
+            onError={() => setFailed(avatar ?? null)}
+          />
+        ) : (
+          <span className="truncate px-1">{initials.toUpperCase()}</span>
+        )}
       </span>
     </span>
   );

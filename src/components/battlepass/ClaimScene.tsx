@@ -27,6 +27,8 @@ export interface ClaimSceneProps {
   extra?: number;
   levelAfter?: number;
   levelsGained?: number;
+  /** Полный список наград пакета («Забрать все») */
+  all?: BpRewardCard[];
   nickname?: string;
   onClose: () => void;
 }
@@ -36,6 +38,7 @@ export function ClaimScene({
   extra = 0,
   levelAfter,
   levelsGained = 0,
+  all,
   nickname = "Гость",
   onClose,
 }: ClaimSceneProps) {
@@ -215,7 +218,17 @@ export function ClaimScene({
         <div className="rrar">{card.rarityLabel}</div>
         <div className="rmeta">{meta}</div>
         <div className="rdesc">{card.desc}</div>
-        {extra > 0 && (
+        {all && all.length > 1 && (
+          <ul className="bp-all" aria-label="Все полученные награды">
+            {all.map((c) => (
+              <li key={c.key} style={{ borderColor: AE_RARITY[c.rarity].c }}>
+                <b>{c.label}</b>
+                <small>{c.level} ур. · {c.line === "premium" ? "Premium" : "Free"}</small>
+              </li>
+            ))}
+          </ul>
+        )}
+        {extra > 0 && !all && (
           <div className="more">
             + ещё {extra} {plural(extra, "пакет", "пакета", "пакетов")}
           </div>

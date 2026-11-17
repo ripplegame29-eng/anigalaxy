@@ -7,6 +7,7 @@ import { act, type CardsState } from "@/lib/cards/client";
 import { GameCard } from "./GameCard";
 import { InvPicker, Panel, RankFilter, Stepper, fmt, toast, useBusy } from "./common";
 import { ScrollArt } from "./icons";
+import { TabHero } from "./TabHero";
 
 interface Step {
   success: boolean;
@@ -56,7 +57,23 @@ export function SharpenTab({ s }: { s: CardsState }) {
     });
 
   return (
-    <div className="cg-grid2">
+    <div className="cg-hx" style={{ display: "grid", gap: 16 }}>
+      <TabHero
+        eyebrow="Усиление героев"
+        title="Заточка карт"
+        text="Повышайте уровень карты за свитки или пыль. Каждый уровень усиливает характеристики, а серия неудач гарантирует успех."
+        badges={[
+          { icon: "anvil", text: `+${Math.round(LEVEL_BONUS * 100)}% к статам за уровень`, hot: true },
+          { icon: "check", text: "После 3 неудач — гарантия" },
+        ]}
+        kpi={[
+          { icon: "scroll", value: fmt(s.wallet.scrolls.reduce((a, b) => a + b, 0)), label: "свитков всего" },
+          { icon: "dust", value: fmt(s.wallet.dust), label: "пыли" },
+          { icon: "trend", value: `${MAX_LEVEL}`, label: "максимальный уровень" },
+          { icon: "star", value: `+${Math.round(LEVEL_BONUS * MAX_LEVEL * 100)}%`, label: "максимум к характеристикам" },
+        ]}
+      />
+      <div className="cg-grid2">
       <Panel title="Заточка" hint={`Каждая заточка тратит свиток ранга карты (или пыль, если свитков нет). Уровень повышает характеристики на ${LEVEL_BONUS * 100}%. При неудаче уровень не падает, а копится гарантия: после 3 неудач подряд следующая заточка всегда успешна.`}>
         {!card || !def ? (
           <div className="cg-empty">Выберите карту справа</div>
@@ -143,6 +160,7 @@ export function SharpenTab({ s }: { s: CardsState }) {
         <RankFilter value={rank} onChange={setRank} />
         <InvPicker cards={pool} selected={id ? [id] : []} onToggle={(x) => setId(x === id ? null : x)} max={1} size="xs" rankFilter={rank} />
       </Panel>
+      </div>
     </div>
   );
 }

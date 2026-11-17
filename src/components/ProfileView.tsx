@@ -265,7 +265,7 @@ export function ProfileView({ mode = "owner", basePath: basePathProp }: { mode?:
               style={{ position: "absolute", right: "max(16px, calc(50% - 590px))", top: 16, zIndex: 2 }}
             >
               <WidgetIcon name="plus" />
-              Изменить фон
+              Изменить баннер
             </button>
           )}
         </div>

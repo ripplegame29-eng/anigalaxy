@@ -8,8 +8,12 @@ export async function GET(req: Request, ctx: { params: Promise<{ id: string }> }
   const { id } = await ctx.params;
   if (!/^[a-z0-9-]{1,80}$/.test(id)) return new Response("not found", { status: 404 });
   try {
-    const full = path.join(ART_DIR, `${id}.jpg`);
-    const st = await stat(full);
+    // HD-версия (после scripts/upscale-art.ps1) важнее оригинала; нет её — отдаём обычный арт
+    let full = path.join(ART_DIR, `${id}.jpg`);
+    const hd = path.join(ART_DIR, "..", "cards-art-hd", `${id}.jpg`);
+    const hdSt = await stat(hd).catch(() => null);
+    if (hdSt) full = hd;
+    const st = hdSt ?? (await stat(full));
     // ETag по размеру и времени файла: заменили арт — браузер получит новый сразу, без ожидания кэша
     const etag = `"${st.size.toString(36)}-${Math.floor(st.mtimeMs).toString(36)}"`;
     if (req.headers.get("if-none-match") === etag) return new Response(null, { status: 304, headers: { ETag: etag, "Cache-Control": "no-cache" } });

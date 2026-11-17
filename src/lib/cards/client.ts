@@ -2,7 +2,9 @@
 
 /** Клиентское хранилище карточек: состояние сервера + вызов действий. */
 
+import type { DecksState } from "./heroclass";
 import { useSyncExternalStore } from "react";
+import { progressEmit } from "../progression/events";
 import { getProgressStore } from "../progression/store";
 import { cardDef, setHidden } from "./catalog";
 import type { Rank } from "./config";
@@ -41,6 +43,10 @@ export interface CardsState {
     deck: number[];
   };
   dailyReady: boolean;
+  /** Колоды: слоты с названием, классом и составом */
+  decks: DecksState;
+  /** Коллекция карт боя */
+  spells: { own: string[]; fresh: string[] };
   league: { id: string; name: string; from: number; color: string };
   premium: boolean;
   inventory: InvCard[];
@@ -50,6 +56,10 @@ export interface CardsState {
   missions: { id: string; text: string; goal: number; progress: number; claimed: boolean; reward: { diamonds?: number; dust?: number; scroll?: number } }[];
   split: { used: number; free: number; max: number; extraCost: number };
   mods: { ban: string; buff: string };
+  /** Снаряжение: реликвии, экипировка, запас бустеров */
+  gear: { relics: { id: string; lv: number }[]; slots: string[]; boosters: Record<string, number>; freeReady: boolean };
+  /** Правило арены на сегодня */
+  arena: { id: string; until: number };
   ac: number;
   art: string[];
   /** Герои без фото на AniList: не выпадают, в альбоме скрыты, если их нет у игрока */
@@ -71,11 +81,31 @@ const listeners = new Set<() => void>();
 let artSet = new Set<string>();
 let fetched = false;
 
+/** Очки сезонного пасса гачи → XP основного боевого пропуска (в пропуск идёт только прирост) */
+function bridgeBpXp(state: CardsState): void {
+  const p = state.events?.pass;
+  if (!p || !(p.xp > 0)) return;
+  try {
+    progressEmit({ type: "BP_GACHA_XP", gachaSeason: p.season, total: p.xp });
+  } catch {
+    /* не критично */
+  }
+}
+
+/** Выдать награды гачи за уже забранные уровни боевого пропуска */
+export async function syncBpRewards(): Promise<{ count: number; cards: string[] } | null> {
+  const r = await call<{ result: { count: number; cards: string[]; reward: Record<string, number> }; state: CardsState }>("/api/cards/bp-sync", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" });
+  if (!r.ok) return null;
+  emit({ state: r.data.state });
+  return { count: r.data.result.count, cards: r.data.result.cards ?? [] };
+}
+
 function emit(next: Partial<Snapshot>): void {
   snap = { ...snap, ...next };
   if (snap.state) {
     artSet = new Set(snap.state.art);
     setHidden(snap.state.hidden ?? []);
+    if (next.state) bridgeBpXp(snap.state);
   }
   listeners.forEach((l) => l());
 }

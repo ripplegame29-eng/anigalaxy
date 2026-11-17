@@ -2,7 +2,7 @@
 
 import { cardDef } from "@/lib/cards/catalog";
 import { CLASSES, ELEMENTS, FOIL_BONUS, LEVEL_BONUS, RANKS } from "@/lib/cards/config";
-import { ULTIMATES, defaultLoadout, skillDef } from "@/lib/cards/skills";
+import { ultOf, defaultLoadout, skillDef } from "@/lib/cards/skills";
 import type { InvCard } from "@/lib/cards/client";
 import { GameCard } from "./GameCard";
 import { Portal } from "./common";
@@ -75,7 +75,7 @@ export function CompareModal({ ids, best, onClose }: { ids: [string, string]; be
               <div key={d.id}>
                 <SkillChips ids={sk(d, d.id)} />
                 <p className="cg-hint" style={{ margin: "6px 0 0" }}>
-                  Ультимейт: <b>{ULTIMATES[d.cls].name}</b>
+                  Ультимейт: <b>{ultOf(d.id, d.cls).name}</b>
                   {sk(d, d.id).some((s) => !skillDef(s)) ? "" : ""}
                 </p>
               </div>

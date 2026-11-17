@@ -344,3 +344,7 @@
 @media (hover:none){
   .pm-link:active{transform:scale(.985)}
 }
+
+/* пустой прогресс: скруглённый конец штриха рисовал бы точку-«дужку» вверху аватара */
+.pm-rg .pm-v[data-pct="0"]{opacity:0}
+.pm-rg .pm-v{stroke-linecap:butt}

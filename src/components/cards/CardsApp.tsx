@@ -2,8 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { act, ensureLoaded, refresh, useCards, type CardsState } from "@/lib/cards/client";
-import { CATALOG, visibleCatalog } from "@/lib/cards/catalog";
-import { EXCHANGE, RANKS } from "@/lib/cards/config";
+import { CATALOG } from "@/lib/cards/catalog";
 import { openAuthDialog } from "@/lib/auth-dialog";
 import { useAccount } from "@/lib/use-account";
 import "../../app/cards.css";
@@ -12,19 +11,29 @@ import "../../app/cards-stage.css";
 import "../../app/cards-tabs.css";
 import "../../app/cards-battle.css";
 import "../../app/cards-skills.css";
+import "../../app/cards-ult.css";
 import "../../app/cards-progress.css";
 import "../../app/cards-campaign.css";
+import "../../app/cards-season.css";
+import "../../app/cards-arsenal.css";
+import "../../app/cards-shop.css";
+import "../../app/cards-v2.css";
+import "../../app/cards-arena2.css";
+import "../../app/cards-arena3.css";
+import "../../app/cards-result.css";
+import "../../app/cards-battlefx.css";
 import { AuctionTab } from "./AuctionTab";
 import { BattleTab } from "./BattleTab";
+import { CardsBackdrop } from "./CardsBackdrop";
 import { CollectionTab } from "./CollectionTab";
 import { ForgeTab } from "./ForgeTab";
 import { PacksTab } from "./PacksTab";
 import { ProgressTab } from "./ProgressTab";
 import { SeasonTab } from "./SeasonTab";
+import { TierTab } from "./TierTab";
 import { SharpenTab } from "./SharpenTab";
-import { setSound, useSoundOn } from "@/lib/cards/sound";
-import { ToastHost, fmt, fmtLeft, toast, useBusy, useNow } from "./common";
-import { CUR, Cur, CurArt, Ico, type CurKey, type IcoName } from "./icons";
+import { ToastHost, toast } from "./common";
+import { TabIco, type IcoName } from "./icons";
 import { TradeTab } from "./TradeTab";
 
 const TABS: readonly (readonly [string, string, IcoName])[] = [
@@ -37,8 +46,9 @@ const TABS: readonly (readonly [string, string, IcoName])[] = [
   ["collection", "Коллекция", "grid"],
   ["progress", "Прогресс", "trophy"],
   ["season", "Сезон", "crown"],
+  ["tiers", "Тир-лист", "grid"],
 ] as const;
-type TabId = "packs" | "forge" | "sharpen" | "battle" | "auction" | "trade" | "collection" | "progress" | "season";
+type TabId = "packs" | "forge" | "sharpen" | "battle" | "auction" | "trade" | "collection" | "progress" | "season" | "tiers";
 
 const NOTIFY_KEY = "animehub:cards:notify";
 const canNotify = (): boolean => {
@@ -77,7 +87,6 @@ function useGameNotices(s: CardsState | null, enabled: boolean): void {
   }, [s, enabled]);
 }
 
-const EX_STEPS = [1, 5, 10, 25, 50, 100];
 
 function Intro({ children }: { children: React.ReactNode }) {
   return (
@@ -93,61 +102,12 @@ function Intro({ children }: { children: React.ReactNode }) {
   );
 }
 
-function ExchangePopover({ ac, diamonds, onDone }: { ac: number; diamonds: number; onDone: () => void }) {
-  const [ex, setEx] = useState(5);
-  const [busy, run] = useBusy();
-  const cost = ex * EXCHANGE.acPerDiamond;
-  const reason = ac < cost ? `Не хватает ${fmt(cost - ac)} AC` : "";
-  const submit = () =>
-    run(async () => {
-      const r = await act<{ diamonds: number }>("exchange", { diamonds: ex });
-      if (r.ok) {
-        toast(`Обмен выполнен: +${fmt(r.result.diamonds)} алмазов, списано ${fmt(cost)} AC`);
-        onDone();
-      } else toast(r.error, true);
-    });
-  return (
-    <div className="cg-pop" role="dialog" aria-label="Обмен AC на алмазы">
-      <b>Обмен AC на алмазы</b>
-      <div className="rate">
-        <span>Курс</span>
-        <span>
-          1 <Cur k="diamonds" /> = {EXCHANGE.acPerDiamond} AC
-        </span>
-      </div>
-      <div className="cg-seg" role="radiogroup" aria-label="Сколько алмазов получить">
-        {EX_STEPS.map((n) => (
-          <button key={n} type="button" role="radio" aria-checked={ex === n} onClick={() => setEx(n)}>
-            {n}
-          </button>
-        ))}
-      </div>
-      <div className="sum">
-        <span>
-          Спишется: <b>{fmt(cost)} AC</b> · доступно {fmt(ac)} AC
-        </span>
-        <span>
-          Получите: <b>{fmt(ex)}</b> <Cur k="diamonds" /> (сейчас {fmt(diamonds)})
-        </span>
-      </div>
-      <button type="button" className="cg-btn pri" disabled={busy || !!reason} onClick={() => void submit()}>
-        {busy ? <span className="cg-spin" /> : null}
-        {reason || `Обменять на ${fmt(ex)} алмазов`}
-      </button>
-    </div>
-  );
-}
-
 export function CardsApp() {
   const account = useAccount();
   const { state: s, error, loading } = useCards();
   const [tab, setTab] = useState<TabId>("packs");
-  const [busy, run] = useBusy();
-  const [exOpen, setExOpen] = useState(false);
-  const now = useNow(30_000);
   const tries = useRef(0);
   const [notify, setNotify] = useState(false);
-  const snd = useSoundOn();
   useGameNotices(s, notify);
 
   useEffect(() => {
@@ -188,31 +148,6 @@ export function CardsApp() {
     }, 25_000);
     return () => window.clearInterval(id);
   }, [s, artCount]);
-
-  useEffect(() => {
-    if (!exOpen) return;
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setExOpen(false);
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [exOpen]);
-
-  const toggleNotify = async () => {
-    try {
-      if (typeof Notification === "undefined") return toast("Браузер не поддерживает уведомления", true);
-      if (notify) {
-        window.localStorage.setItem(NOTIFY_KEY, "0");
-        setNotify(false);
-        return toast("Системные уведомления выключены");
-      }
-      const perm = Notification.permission === "granted" ? "granted" : await Notification.requestPermission();
-      if (perm !== "granted") return toast("Разрешите уведомления в настройках браузера", true);
-      window.localStorage.setItem(NOTIFY_KEY, "1");
-      setNotify(true);
-      toast("Уведомления включены: пока сайт открыт, напомним об энергии, нападениях и аукционе");
-    } catch {
-      toast("Не удалось включить уведомления", true);
-    }
-  };
 
   const pick = (t: TabId) => {
     if (t === "battle" && s && s.events.notices.defenses > 0) void act("notices-seen", { kind: "defense" });
@@ -263,106 +198,15 @@ export function CardsApp() {
     );
   }
 
-  const w = s.wallet;
-  const energyLeft = w.nextEnergyAt ? w.nextEnergyAt - now : 0;
-  const owned = new Set(s.inventory.map((c) => c.cardId));
-  const visible = visibleCatalog(owned);
-  const perRank = RANKS.map((r) => {
-    const all = visible.filter((c) => c.rank === r.id);
-    const have = all.filter((c) => owned.has(c.id)).length;
-    return { r, have, total: all.length };
-  });
-  const haveAll = perRank.reduce((a, x) => a + x.have, 0);
-  const claim = () =>
-    run(async () => {
-      const r = await act<{ diamonds: number; dust: number; packs: number; streak: { n: number; bonusPct: number; milestone: unknown } }>("daily");
-      if (!r.ok) return toast(r.error, true);
-      toast(`Подарок дня (серия ${r.result.streak.n}): +${r.result.diamonds} алмазов, +${r.result.dust} пыли, +${r.result.packs} пак(а)${r.result.streak.milestone ? " и бонус за серию" : ""}`);
-    });
-
   const nt = s.events.notices;
   const badges: Record<string, number> = { battle: nt.defenses, auction: nt.auctions, trade: nt.trades };
-  const tokens: { k: CurKey; value: string; note?: string }[] = [
-    { k: "diamonds", value: fmt(w.diamonds) },
-    { k: "dust", value: fmt(w.dust) },
-    { k: "packs", value: String(w.packs) },
-    { k: "energy", value: `${w.energy}/${w.energyMax}`, note: energyLeft > 0 ? `+1 через ${fmtLeft(energyLeft)}` : undefined },
-  ];
-
   return (
-    <div className="cg">
-      <section className={`cg-hero2 cg-enter${tab === "collection" ? "" : " mini"}`}>
-        {tab === "collection" && (
-        <div>
-          <span className="cg-eyebrow">ANIGALAXY COLLECTION</span>
-          <h1>Коллекция</h1>
-          <p>Герои топовых аниме: открывайте паки, улучшайте карты, собирайте отряд 4×4 и сражайтесь за место в лиге.</p>
-          <div className="cg-collprog">
-            <div className="cg-collprog-top">
-              <span>Собрано героев</span>
-              <span>
-                <b>{haveAll}</b> / {visible.length}
-              </span>
-            </div>
-            <div className="cg-segbar" aria-hidden>
-              {perRank.map(({ r, have, total }) => (
-                <span key={r.id}>
-                  <i style={{ ["--c" as string]: r.color, ["--p" as string]: `${total ? (have / total) * 100 : 0}%` }} />
-                  {r.short} {have}/{total}
-                </span>
-              ))}
-            </div>
-          </div>
-        </div>
-        )}
-        <div className="cg-hero-r">
-          <div className="cg-ledger" aria-label="Кошелёк">
-            {tokens.map((t) => (
-              <div key={t.k} className="cg-tok" style={{ ["--c" as string]: CUR[t.k].color }} title={CUR[t.k].label}>
-                <span className="cg-tok-ico">
-                  <CurArt k={t.k} size={26} />
-                </span>
-                <b>{t.value}</b>
-                <small>{t.note ?? CUR[t.k].label}</small>
-              </div>
-            ))}
-          </div>
-          <div className="cg-hero-actions">
-            {s.dailyReady && (
-              <button type="button" className="cg-btn gold" disabled={busy} onClick={() => void claim()}>
-                <Ico name="gift" size={17} /> Подарок дня
-              </button>
-            )}
-            {tab === "collection" && (
-              <>
-            <button type="button" className="cg-btn" aria-pressed={notify} onClick={() => void toggleNotify()} title="Системные уведомления">
-              <Ico name="bell" size={16} /> {notify ? "Уведомления вкл." : "Уведомления"}
-            </button>
-            <button type="button" className="cg-btn" aria-pressed={snd} aria-label={snd ? "Выключить звук" : "Включить звук"} onClick={() => setSound(!snd)}>
-              <Ico name={snd ? "vol" : "volx"} size={16} /> Звук
-            </button>
-            <span className="cg-league" style={{ color: s.league.color }}>
-              <Ico name="trophy" size={17} />
-              {s.league.name}
-              <small>{fmt(w.rating)}</small>
-            </span>
-              </>
-            )}
-            <div className="cg-popwrap">
-              <button type="button" className="cg-btn" aria-expanded={exOpen} onClick={() => setExOpen((v) => !v)}>
-                <Ico name="swap" size={16} /> AC → <Cur k="diamonds" />
-                <Ico name="down" size={14} />
-              </button>
-              {exOpen && <ExchangePopover ac={s.ac} diamonds={w.diamonds} onDone={() => setExOpen(false)} />}
-            </div>
-          </div>
-        </div>
-      </section>
-
+    <div className="cg cg2" data-tab={tab}>
+      <CardsBackdrop />
       <div className="cg-nav" role="tablist" aria-label="Разделы карточек">
-        {TABS.map(([id, label, ico], i) => (
+        {TABS.map(([id, label], i) => (
           <button key={id} type="button" role="tab" id={`cg-tab-${id}`} aria-selected={tab === id} tabIndex={tab === id ? 0 : -1} className="cg-tab" onClick={() => pick(id as TabId)} onKeyDown={(e) => onTabKey(e, i)}>
-            <Ico name={ico} size={17} />
+            <TabIco id={id} size={22} />
             {label}
             {badges[id] ? <span className="cg-badge" aria-label={`Новых: ${badges[id]}`}>{badges[id]}</span> : null}
           </button>
@@ -379,6 +223,7 @@ export function CardsApp() {
         {tab === "collection" && <CollectionTab s={s} />}
         {tab === "progress" && <ProgressTab s={s} />}
         {tab === "season" && <SeasonTab s={s} />}
+        {tab === "tiers" && <TierTab />}
       </div>
       <ToastHost />
     </div>

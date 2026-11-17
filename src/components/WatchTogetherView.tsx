@@ -41,7 +41,7 @@ const ACCESS: { value: WtRoomInfo["access"]; label: string; hint: string }[] = [
 const episodeLabel = (n: number) => `${n}-я серия`;
 
 /** Запасной кадр для демо-сцены, когда живых комнат ещё нет */
-const DEMO_FALLBACK = { anime: "Магическая битва", episode: 14, viewers: 6 };
+const DEMO_FALLBACK = { anime: "Поднятие уровня в одиночку", episode: 14, viewers: 6 };
 
 /* ------------------------------ Иконки ------------------------------ */
 
@@ -55,6 +55,8 @@ const PATHS: Record<string, string[]> = {
   pause: ["M9.5 6.5v11", "M14.5 6.5v11"],
   arrow: ["M5 12h13", "m12.5 6.5 6 5.5-6 5.5"],
   close: ["m6.5 6.5 11 11", "m17.5 6.5-11 11"],
+  globe: ["M12 3.5a8.5 8.5 0 1 1 0 17 8.5 8.5 0 0 1 0-17", "M3.8 12h16.4", "M12 3.5c2.4 2.3 3.6 5.1 3.6 8.5s-1.2 6.2-3.6 8.5c-2.4-2.3-3.6-5.1-3.6-8.5s1.2-6.2 3.6-8.5"],
+  link: ["M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1", "M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"],
 };
 
 function Icon({
@@ -119,13 +121,6 @@ const CINEMA_POOL: Omit<CinemaMessage, "id">[] = [
   { author: "Юки", text: "Чат, вы лучшие 💙", color: "#34e5a0" },
 ];
 
-const CINEMA_REACTIONS = [
-  { emoji: "🔥", label: "Огонь", base: 12 },
-  { emoji: "😱", label: "Страх", base: 7 },
-  { emoji: "😂", label: "Смешно", base: 9 },
-  { emoji: "💙", label: "Люблю", base: 21 },
-] as const;
-
 const SEATS = [
   { initial: "Р", from: "#2d7dff", to: "#8a5cff" },
   { initial: "А", from: "#22d3ee", to: "#2d7dff" },
@@ -144,10 +139,7 @@ const SEATS = [
 export function WatchTogetherHero() {
   const [rooms, setRooms] = useState<WtRoomInfo[]>([]);
   const [messages, setMessages] = useState<CinemaMessage[]>(CINEMA_INITIAL);
-  const [counts, setCounts] = useState<number[]>(CINEMA_REACTIONS.map((item) => item.base));
-  const [bursts, setBursts] = useState<{ id: number; emoji: string; x: number; rot: number }[]>([]);
   const messageIndex = useRef(0);
-  const burstId = useRef(0);
 
   useEffect(() => {
     let alive = true;
@@ -189,27 +181,12 @@ export function WatchTogetherHero() {
     );
   };
 
-  const react = (index: number) => {
-    const item = CINEMA_REACTIONS[index];
-    setCounts((prev) => prev.map((count, i) => (i === index ? count + 1 : count)));
-    burstId.current += 1;
-    const id = burstId.current;
-    setBursts((prev) => [
-      ...prev.slice(-7),
-      {
-        id,
-        emoji: item.emoji,
-        x: 18 + ((id * 37) % 64),
-        rot: ((id * 23) % 40) - 20,
-      },
-    ]);
-  };
-
   const demo = rooms[0] ?? DEMO_FALLBACK;
 
   return (
     <header className="wtv-hero">
       <div className="wtv-hero-copy">
+        <span className="cg2-eye">Совместный просмотр</span>
         <h1>
           Смотрите аниме <span>вместе</span>, даже на расстоянии
         </h1>
@@ -249,8 +226,9 @@ export function WatchTogetherHero() {
         <div className="wtv-cin">
           <div className="wtv-cin-screen">
             <div className="wtv-cin-top">
-              <span>
-                {demo.anime} · серия {demo.episode}
+              <span className="wtv-cin-title">
+                {demo.anime} <i aria-hidden />
+                серия {demo.episode}
               </span>
               <span className="wtv-live">
                 <span className="wtv-dot" aria-hidden />
@@ -259,7 +237,7 @@ export function WatchTogetherHero() {
             </div>
 
             <div className="wtv-cin-chat" aria-live="off">
-              {messages.map((message) => (
+              {messages.slice(-3).map((message) => (
                 <div className="wtv-msg" key={message.id}>
                   <b style={{ background: message.color }}>{message.author.slice(0, 1)}</b>
                   <span>
@@ -269,46 +247,18 @@ export function WatchTogetherHero() {
               ))}
             </div>
 
-            {bursts.map((burst) => (
-              <span
-                className="wtv-fl"
-                key={burst.id}
-                style={{
-                  left: `${burst.x}%`,
-                  ["--sx" as string]: `${((burst.id * 17) % 50) - 25}px`,
-                  ["--rot" as string]: `${burst.rot}deg`,
-                }}
-                onAnimationEnd={() =>
-                  setBursts((prev) => prev.filter((item) => item.id !== burst.id))
-                }
-                aria-hidden
-              >
-                {burst.emoji}
+            <div className="wtv-cin-ctl" aria-hidden>
+              <span className="wtv-cin-play">
+                <Icon d={["M8.5 6.2v11.6L18 12z"]} className="h-4 w-4" sw={1.8} />
               </span>
-            ))}
+              <div className="wtv-cin-tl">
+                <i />
+              </div>
+              <span className="wtv-cin-time">12:41 / 23:40</span>
+            </div>
           </div>
 
           <div className="wtv-cin-dock">
-            <div className="wtv-cin-row">
-              <span className="wtv-sync">Синхронно у {demo.viewers} из {demo.viewers}</span>
-              <div className="wtv-rx">
-                {CINEMA_REACTIONS.map((item, index) => (
-                  <button
-                    type="button"
-                    key={item.emoji}
-                    onClick={() => react(index)}
-                    aria-label={item.label}
-                    style={{ ["--k" as string]: index === 0 ? "#2d7dff" : index === 1 ? "#8a5cff" : index === 2 ? "#4ac3f5" : "#22d3ee" }}
-                  >
-                    <span className="e">{item.emoji}</span>
-                    <span className="n">{counts[index]}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div className="wtv-cin-tl">
-              <i />
-            </div>
             <div className="wtv-seats">
               {SEATS.map((seat) => (
                 <i
@@ -318,10 +268,15 @@ export function WatchTogetherHero() {
                   {seat.initial}
                 </i>
               ))}
-              <em>{demo.viewers} в комнате</em>
+              <span className="wtv-seats-tx">
+                <b>{demo.viewers} в комнате</b>
+                <em>
+                  <span className="wtv-dot" aria-hidden />
+                  синхронно
+                </em>
+              </span>
             </div>
           </div>
-          <div className="wtv-cin-under" aria-hidden />
         </div>
       </div>
     </header>
@@ -719,6 +674,7 @@ export function WatchTogetherView() {
       {/* --------------------------- Форма ----------------------------- */}
       <section id="create-room" aria-label="Создание комнаты" className="wtv-panel scroll-mt-24">
         <div className="relative">
+          <span className="cg2-eye">Новая комната</span>
           <h2 className="wtv-h2">Создайте комнату</h2>
           <p className="wtv-sub">
             Название, тайтл, озвучка и доступ — код на шесть символов сервер выдаст сразу.
@@ -801,7 +757,7 @@ export function WatchTogetherView() {
                     onChange={(e) => onQueryChange(e.target.value)}
                     onFocus={() => q.length >= 2 && setDropdown(true)}
                     onKeyDown={onSearchKeyDown}
-                    placeholder="Например, Магическая битва"
+                    placeholder="Например, Поднятие уровня в одиночку"
                     autoComplete="off"
                     className="w-full bg-transparent text-sm text-white outline-none placeholder:text-muted/80"
                   />
@@ -916,19 +872,26 @@ export function WatchTogetherView() {
             {/* Доступ */}
             <fieldset className="min-w-0 sm:col-span-2">
               <legend className={LABEL}>Доступ</legend>
-              <div className="flex flex-wrap gap-2">
+              <div className="wtv-opts" role="radiogroup" aria-label="Доступ">
                 {ACCESS.map((option) => {
                   const active = access === option.value;
                   return (
                     <button
                       key={option.value}
                       type="button"
-                      aria-pressed={active}
                       onClick={() => setAccess(option.value)}
+                      role="radio"
+                      aria-checked={active}
                       className={`wtv-opt${active ? " on" : ""}`}
                     >
-                      <span className="block text-sm font-black">{option.label}</span>
-                      <span className="mt-0.5 block text-xs text-muted">{option.hint}</span>
+                      <span className="ic" aria-hidden>
+                        <Icon d={option.value === "open" ? PATHS.globe : PATHS.link} className="h-5 w-5" />
+                      </span>
+                      <span className="tx">
+                        <b>{option.label}</b>
+                        <small>{option.hint}</small>
+                      </span>
+                      <i className="wtv-rdo" aria-hidden />
                     </button>
                   );
                 })}
@@ -1051,6 +1014,7 @@ export function WatchTogetherView() {
       <section id="rooms" aria-label="Активные комнаты" className="wtv-rooms-section scroll-mt-24">
         <div className="wtv-sh">
           <div>
+            <span className="cg2-eye">Прямо сейчас</span>
             <h2>Активные комнаты</h2>
             <p>Заходите к тем, кто уже смотрит.</p>
           </div>
@@ -1075,7 +1039,7 @@ export function WatchTogetherView() {
             ))}
           </div>
         ) : (
-          <div className="rounded-2xl border border-dashed border-line bg-white/[0.03] px-5 py-8 text-center">
+          <div className="wtv-empty px-5 py-8 text-center">
             <p className="text-sm font-bold text-white">
               {roomsLoading ? "Загружаем комнаты…" : "Пока никто не смотрит"}
             </p>

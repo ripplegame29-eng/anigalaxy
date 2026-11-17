@@ -56,11 +56,23 @@ export function openSqlite(file: string): Database {
 }
 
 /** Выполнить `fn` одной транзакцией (откат при исключении) */
+/* «Пробный» режим: транзакции внутри dry() считаются, но откатываются */
+let dryRun = false;
+export function dry<T>(fn: () => T): T {
+  const prev = dryRun;
+  dryRun = true;
+  try {
+    return fn();
+  } finally {
+    dryRun = prev;
+  }
+}
+
 export function transaction<T>(db: Database, fn: () => T): T {
   db.exec("BEGIN IMMEDIATE");
   try {
     const result = fn();
-    db.exec("COMMIT");
+    db.exec(dryRun ? "ROLLBACK" : "COMMIT");
     return result;
   } catch (error) {
     try {

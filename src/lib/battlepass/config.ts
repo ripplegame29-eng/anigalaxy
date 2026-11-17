@@ -14,6 +14,8 @@
  */
 
 import type { BattlepassLine } from "../progression/types";
+import type { Reward as GachaReward } from "../cards/progress";
+import { gachaRewardAt } from "./gacha";
 
 export type { BattlepassLine };
 
@@ -29,7 +31,9 @@ export type BpReward =
   /** Сезонное оформление профиля (виджет-декор из `PROFILE_DECORS`) */
   | { kind: "decor"; itemId: string; dupeAc: number }
   /** «Лучшая подходящая» рамка из магазина: первая невыданная из списка */
-  | { kind: "framePick"; candidates: string[]; dupeAc: number };
+  | { kind: "framePick"; candidates: string[]; dupeAc: number }
+  /** Награда карточной игры (паки, свитки, алмазы, пыль, карта): выдаёт сервер гачи */
+  | { kind: "gacha"; reward: GachaReward };
 
 export interface BpLevelDef {
   level: number;
@@ -313,10 +317,23 @@ const withBleachFrames = (defs: BpLevelDef[]): BpLevelDef[] =>
     };
   });
 
+/** Награды гачи — последним элементом пакета уровня, чтобы главной оставалась награда сайта */
+const withGachaRewards = (defs: BpLevelDef[]): BpLevelDef[] =>
+  defs.map((def) => {
+    const f = gachaRewardAt(def.level, "free");
+    const p = gachaRewardAt(def.level, "premium");
+    if (!f && !p) return def;
+    return {
+      ...def,
+      free: f ? [...(def.free ?? []), { kind: "gacha", reward: f }] : def.free,
+      premium: p ? [...(def.premium ?? []), { kind: "gacha", reward: p }] : def.premium,
+    };
+  });
+
 /** Все уровни с наградами: milestone + filler, отсортированы по номеру */
-const LEVELS: BpLevelDef[] = withBleachFrames(
+const LEVELS: BpLevelDef[] = withGachaRewards(withBleachFrames(
   [...MILESTONE_LEVELS, ...buildFillerLevels()].sort((a, b) => a.level - b.level),
-);
+));
 
 export const BATTLEPASS: BattlePassConfig = {
   seasonId: "season-1",

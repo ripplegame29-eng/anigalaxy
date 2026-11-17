@@ -1,6 +1,7 @@
 /** Достижения, награды за сеты, недельные задания, витрина профиля. */
 
 import { cardDef, visibleCatalog } from "../cards/catalog";
+import { looksOf } from "./looks";
 import { ACHIEVEMENTS, SET_MIN_SIZE, SET_REWARDS, SHOWCASE_MAX, STREAK, WEEKLY, type ProgressState, type Reward, type SetView } from "../cards/progress";
 export type { ProgressState } from "../cards/progress";
 import { fail, getWallet, grantReward, listInventory, logEvent, type Res } from "./cards";
@@ -163,7 +164,7 @@ export function setShowcase(db: Database, userId: number, ids: number[]): Res<nu
 
 /** Профиль коллекционера для других игроков */
 export function collectorProfile(db: Database, nickname: string) {
-  const u = db.prepare("SELECT id, nickname FROM users WHERE lower(nickname) = lower(?)").get(nickname.trim());
+  const u = db.prepare("SELECT id, nickname, created_at FROM users WHERE lower(nickname) = lower(?)").get(nickname.trim());
   if (!u) return fail("Игрок не найден");
   const id = num(u.id);
   const w = getWallet(db, id, undefined, false);
@@ -171,21 +172,46 @@ export function collectorProfile(db: Database, nickname: string) {
   const x = getExtra(db, id);
   const owned = new Set(inv.map((c) => c.cardId));
   const best = [...inv].sort((a, b) => (cardDef(b.cardId)?.rank ?? 0) - (cardDef(a.cardId)?.rank ?? 0) || b.level - a.level)[0];
+  const look = looksOf(db, [id]).get(id);
+  const byRank = [0, 0, 0, 0, 0];
+  owned.forEach((cid) => {
+    const r = cardDef(cid)?.rank;
+    if (r !== undefined) byRank[r] += 1;
+  });
+  const achievements = ACHIEVEMENTS.map((a) => {
+    const v = statValue(a.stat, inv, x, w.wins);
+    return { id: a.id, name: a.name, icon: a.icon, done: a.tiers.filter((t) => v >= t.goal).length, max: a.tiers.length };
+  });
+  const place = num(db.prepare("SELECT COUNT(*) AS n FROM card_wallet WHERE wins + losses > 0 AND rating > ?").get(w.rating)?.n) + 1;
   return {
     ok: true as const,
     value: {
       nickname: str(u.nickname),
+      since: num(u.created_at),
+      avatar: look?.avatar ?? "",
+      frameId: look?.frameId ?? "",
       rating: w.rating,
+      place: w.wins + w.losses > 0 ? place : 0,
       wins: w.wins,
       losses: w.losses,
+      winStreak: x.stats.streak ?? 0,
       distinct: owned.size,
+      totalCards: visibleCatalog(owned).length,
       total: inv.length,
+      byRank,
+      packs: x.stats.packs ?? 0,
       streak: x.streak.best,
+      achievements,
       showcase: x.fav
         .map((fid) => inv.find((c) => c.id === fid))
         .filter((c): c is NonNullable<typeof c> => !!c)
         .map((c) => ({ cardId: c.cardId, foil: c.foil, level: c.level })),
       best: best ? { cardId: best.cardId, foil: best.foil, level: best.level } : null,
+      top: [...inv]
+        .sort((a, b) => (cardDef(b.cardId)?.rank ?? 0) - (cardDef(a.cardId)?.rank ?? 0) || b.level - a.level || Number(b.foil) - Number(a.foil))
+        .filter((c, i, arr) => arr.findIndex((y) => y.cardId === c.cardId) === i)
+        .slice(0, 6)
+        .map((c) => ({ cardId: c.cardId, foil: c.foil, level: c.level })),
     },
   };
 }

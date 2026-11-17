@@ -2083,10 +2083,14 @@ export function ShopSection(_props: { title?: string } = {}) {
       );
     }
     return (
-      <span className="grid place-items-center rounded-2xl bg-white/5" style={{ width: 150, height: 150 }}>
+      <span
+        className="rounded-2xl bg-white/5"
+        style={{ width: 150, height: 150, maxWidth: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}
+      >
         <svg
           viewBox="0 0 24 24"
           className="text-accent-2"
+          style={{ display: "block", flex: "none", margin: "auto", position: "static" }}
           width={48}
           height={48}
           fill="none"
@@ -2265,7 +2269,8 @@ export function ShopSection(_props: { title?: string } = {}) {
 
   /** Предмет дня: витрина прогрессии, иначе — самая дорогая рамка */
   const dealEntry: ShopEntry | undefined = deal
-    ? frameEntries.find((e) => e.id === deal.item.id) ?? [...frameEntries].sort((a, b) => (b.price ?? 0) - (a.price ?? 0))[0]
+    ? Object.values(entriesByCat).flat().find((e) => e.id === deal.item.id) ??
+      [...frameEntries].sort((a, b) => (b.price ?? 0) - (a.price ?? 0))[0]
     : [...frameEntries].sort((a, b) => (b.price ?? 0) - (a.price ?? 0))[0];
   const dealOwned = dealEntry ? boughtIds.has(dealEntry.id) : false;
 
@@ -2345,10 +2350,10 @@ export function ShopSection(_props: { title?: string } = {}) {
             <div className="buyrow">
               {dealOwned ? (
                 <span className="btn ok">Куплено</span>
-              ) : deal && dealEntry.price !== undefined ? (
+              ) : deal && deal.item.id === dealEntry.id && dealEntry.price !== undefined ? (
                 <>
                   <span className="old">{nf(deal.oldPrice)} AC</span>
-                  <span className="new">{nf(dealEntry.price)} AC</span>
+                  <span className="new">{nf(deal.price)} AC</span>
                   <span className="off">−{DEAL_PERCENT}%</span>
                   <button
                     type="button"

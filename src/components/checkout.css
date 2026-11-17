@@ -189,3 +189,60 @@
 .ck-tiles--static .ck-tile .ck-ti{filter:none;opacity:1}
 .ck-pay:disabled{opacity:.6;cursor:wait}
 .ck-error{margin:0;padding:10px 12px;border-radius:12px;font-size:12.5px;line-height:1.45;color:#ffb4b4;background:rgba(255,86,86,.1);border:1px solid rgba(255,86,86,.24)}
+
+/* ================= Премиальная версия окна оплаты ================= */
+.ck{background:radial-gradient(60% 50% at 50% 40%,rgba(70,90,255,.18),transparent 70%),rgba(3,5,14,.78);backdrop-filter:blur(14px) saturate(1.2)}
+.ck-panel{position:relative;isolation:isolate;border-radius:30px;background:#070a18;border:1px solid transparent;
+  background-clip:padding-box;box-shadow:0 50px 120px rgba(0,0,0,.7),0 0 0 1px rgba(140,170,255,.14),0 0 80px rgba(90,110,255,.18)}
+.ck-panel::before{content:"";position:absolute;inset:-1px;z-index:-1;border-radius:inherit;padding:1px;
+  background:conic-gradient(from var(--ckA,0deg),rgba(90,168,255,.0),rgba(90,168,255,.8),rgba(180,107,255,.8),rgba(255,111,174,.5),rgba(90,168,255,0) 60%);
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;animation:ck-rim 6s linear infinite}
+@property --ckA{syntax:"<angle>";inherits:false;initial-value:0deg}
+@keyframes ck-rim{to{--ckA:360deg}}
+
+/* левая часть — «чек» с глубоким космосом */
+.ck-ticket{background:
+  radial-gradient(70% 55% at 85% 100%,rgba(124,92,255,.55),transparent 70%),
+  radial-gradient(60% 50% at 0% 0%,rgba(59,130,255,.5),transparent 70%),
+  linear-gradient(160deg,#121a48 0%,#0b1030 55%,#160d36 100%)!important;color:#fff}
+.ck-ticket::before{background:
+  linear-gradient(rgba(150,180,255,.07) 1px,transparent 1px) 0 0/28px 28px,
+  linear-gradient(90deg,rgba(150,180,255,.07) 1px,transparent 1px) 0 0/28px 28px!important;
+  -webkit-mask-image:radial-gradient(90% 80% at 30% 20%,#000,transparent 85%);mask-image:radial-gradient(90% 80% at 30% 20%,#000,transparent 85%);opacity:1!important}
+.ck-au{opacity:.55}
+.ck-brand{background:linear-gradient(90deg,#fff,#9fd0ff);-webkit-background-clip:text;background-clip:text;color:transparent;letter-spacing:.02em}
+.ck-serial{padding:4px 10px;border-radius:999px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);font-variant-numeric:tabular-nums}
+.ck-t-title{text-shadow:0 6px 30px rgba(90,140,255,.5)}
+.ck-perks li{padding:9px 12px;border-radius:12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.09);backdrop-filter:blur(6px)}
+.ck-perks{gap:8px!important}
+.ck-perks li span{background:linear-gradient(135deg,#3fe0a0,#22b4ff)!important;color:#04121f!important}
+.ck-okbadge{display:inline-flex;align-items:center;gap:8px;align-self:flex-start;margin-top:14px;padding:7px 12px;border-radius:999px;font-size:11.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;
+  color:#9ff0cf;background:rgba(63,224,160,.1);border:1px solid rgba(63,224,160,.35)}
+.ck-cut{border-top:1px dashed rgba(255,255,255,.22)!important}
+.ck-t-sum strong{background:linear-gradient(180deg,#fff,#a9d4ff 60%,#7c9dff);-webkit-background-clip:text;background-clip:text;color:transparent!important;filter:drop-shadow(0 6px 24px rgba(90,150,255,.55))}
+.ck-fox{filter:drop-shadow(0 20px 40px rgba(60,120,255,.5));animation:ck-fox 5s ease-in-out infinite}
+@keyframes ck-fox{50%{transform:translateY(-8px) rotate(-2deg)}}
+
+/* правая часть */
+.ck-side{background:radial-gradient(80% 50% at 100% 0%,rgba(124,92,255,.12),transparent 70%),#080b1a}
+.ck-h{font-size:22px!important}
+.ck-h span{background:linear-gradient(135deg,#3d8bff,#7c5cff)!important;box-shadow:0 8px 24px rgba(70,110,255,.45)}
+.ck-tiles--static{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:10px!important}
+.ck-tile{padding:16px 12px!important;text-align:center;justify-items:center;border-radius:18px!important;background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.015))!important;
+  border:1px solid rgba(255,255,255,.08)!important;transition:transform .2s,border-color .2s}
+.ck-tile:hover{transform:translateY(-2px);border-color:rgba(140,180,255,.35)!important}
+.ck-tile small{font-size:11px!important}
+.ck-steps{list-style:none;margin:16px 0 0;padding:14px 16px;display:grid;gap:10px;border-radius:18px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07)}
+.ck-steps li{display:flex;align-items:center;gap:12px;font-size:13.5px;color:#c4cdea}
+.ck-steps b{flex:none;display:grid;place-items:center;width:26px;height:26px;border-radius:9px;font-size:12px;color:#fff;background:linear-gradient(135deg,rgba(61,139,255,.45),rgba(124,92,255,.45));border:1px solid rgba(140,170,255,.35)}
+.ck-steps em{font-style:normal;font-weight:800;color:#fff}
+.ck-pay.ck-hold{position:relative;overflow:hidden;margin-top:18px;min-height:62px;border:0!important;border-radius:18px!important;
+  background:linear-gradient(100deg,#2f7bff,#6a4dff 55%,#b04bff)!important;box-shadow:0 18px 40px rgba(80,90,255,.45),inset 0 1px 0 rgba(255,255,255,.3)!important;transition:transform .15s,filter .15s}
+.ck-pay.ck-hold:hover{transform:translateY(-2px);filter:brightness(1.08)}
+.ck-pay.ck-hold::after{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 35%,rgba(255,255,255,.35) 50%,transparent 65%);background-size:250% 100%;animation:ck-shine 3.2s ease-in-out infinite}
+@keyframes ck-shine{0%,40%{background-position:130% 0}100%{background-position:-130% 0}}
+.ck-pay.ck-hold span{position:relative;z-index:1;font-size:17px!important;font-weight:900!important;gap:10px}
+.ck-legal{margin-top:14px!important;opacity:.7}
+@media (max-width:720px){.ck-tiles--static{grid-template-columns:repeat(3,minmax(0,1fr))!important}.ck-tile{padding:12px 6px!important}.ck-tile small{display:none}}
+@media (prefers-reduced-motion:reduce){.ck-panel::before,.ck-pay.ck-hold::after,.ck-fox{animation:none}}
+@media (max-width:720px){.ck-serial{margin-right:44px}}

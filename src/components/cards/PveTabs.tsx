@@ -11,6 +11,7 @@ import type { BattleReport } from "./Arena";
 import { GameCard } from "./GameCard";
 import { Panel, ago, fmt, fmtLeft, toast, useBusy, useNow } from "./common";
 import { Cur, Ico } from "./icons";
+import { getPick } from "./gearui";
 
 type Report = BattleReport;
 
@@ -37,6 +38,12 @@ export function CampaignView({ s, onReport }: { s: CardsState; onReport: (r: Rep
     if (r.ok) setList(r.data);
   }, []);
   useEffect(() => {
+    /* управляемый бой завершается позже старта — обновляем данные, когда арена сообщит об итоге */
+    const on = () => void load();
+    window.addEventListener("ag:battle-done", on);
+    return () => window.removeEventListener("ag:battle-done", on);
+  }, [load]);
+  useEffect(() => {
     let alive = true;
     void view<ChapterView[]>("campaign").then((r) => {
       if (alive && r.ok) {
@@ -57,7 +64,7 @@ export function CampaignView({ s, onReport }: { s: CardsState; onReport: (r: Rep
 
   const go = (st: number, training: boolean) =>
     run(async () => {
-      const r = await act<Report>("camp-fight", { chapter: ch.id, stage: st, training });
+      const r = await act<Report>("camp-fight", { chapter: ch.id, stage: st, training, booster: getPick() ?? undefined, live: true });
       if (!r.ok) return toast(r.error, true);
       onReport(r.result);
       void load();
@@ -151,6 +158,12 @@ export function RaidPanel({ s, onReport }: { s: CardsState; onReport: (r: Report
     if (r.ok) setV(r.data);
   }, []);
   useEffect(() => {
+    /* управляемый бой завершается позже старта — обновляем данные, когда арена сообщит об итоге */
+    const on = () => void load();
+    window.addEventListener("ag:battle-done", on);
+    return () => window.removeEventListener("ag:battle-done", on);
+  }, [load]);
+  useEffect(() => {
     let alive = true;
     void view<RaidView>("raid").then((r) => alive && r.ok && setV(r.data));
     return () => {
@@ -162,7 +175,7 @@ export function RaidPanel({ s, onReport }: { s: CardsState; onReport: (r: Report
   const pct = Math.max(0, Math.min(100, (v.hp / v.maxHp) * 100));
   const fight = () =>
     run(async () => {
-      const r = await act<Report>("raid-fight");
+      const r = await act<Report>("raid-fight", { booster: getPick() ?? undefined, live: true });
       if (!r.ok) return toast(r.error, true);
       onReport(r.result);
       void load();
@@ -267,6 +280,12 @@ export function DuelPanel({ s, onReport, onProfile, nick, setNick }: { s: CardsS
     if (r.ok) setLog(r.data);
   }, []);
   useEffect(() => {
+    /* управляемый бой завершается позже старта — обновляем данные, когда арена сообщит об итоге */
+    const on = () => void load();
+    window.addEventListener("ag:battle-done", on);
+    return () => window.removeEventListener("ag:battle-done", on);
+  }, [load]);
+  useEffect(() => {
     let alive = true;
     void view<LogRow[]>("battlelog").then((r) => alive && r.ok && setLog(r.data));
     return () => {
@@ -275,7 +294,7 @@ export function DuelPanel({ s, onReport, onProfile, nick, setNick }: { s: CardsS
   }, []);
   const send = () =>
     run(async () => {
-      const r = await act<Report>("challenge", { nick });
+      const r = await act<Report>("challenge", { nick, booster: getPick() ?? undefined, live: true });
       if (!r.ok) return toast(r.error, true);
       onReport(r.result);
       void load();

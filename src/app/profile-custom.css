@@ -140,3 +140,4 @@ body:has(.ag-root.has-ptheme) > .sky,body:has(.ag-root.has-ptheme) > .stars{disp
 .pc-preset-pv.is-wide{height:118px}.pc-preset-pv.is-wide img{height:100%;width:100%;object-fit:cover}
 .pc-presets.is-bgs .pc-preset-in{padding:10px 14px 12px}
 .pc-note{margin-top:14px;font-size:12px;color:#8d97aa}
+.pc-bgbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:14px}.pc-bgbar .pc-note{margin:0;flex:1 1 260px}

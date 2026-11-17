@@ -5,23 +5,35 @@ import { ACHIEVEMENTS, SHOWCASE_MAX, rewardText, type Reward } from "@/lib/cards
 import { act, type CardsState } from "@/lib/cards/client";
 import { GameCard } from "./GameCard";
 import { InvPicker, Panel, fmt, fmtLeft, toast, useBusy, useNow } from "./common";
-import { Ico, type IcoName } from "./icons";
+import { Cur, Ico, ScrollArt, type IcoName } from "./icons";
+import { useSeriesPosters } from "./series-posters";
 
 const rewardChips = (r: Reward) => (
   <span className="pg-rw">
-    {r.diamonds ? <span className="pg-rw-i d">{fmt(r.diamonds)} алм.</span> : null}
-    {r.dust ? <span className="pg-rw-i u">{fmt(r.dust)} пыли</span> : null}
-    {r.scroll ? <span className="pg-rw-i s">{r.scroll} свиток</span> : null}
-    {r.packs ? <span className="pg-rw-i p">{r.packs} пак{r.packs > 1 ? "а" : ""}</span> : null}
+    {r.diamonds ? <span className="pg-rw-i d"><Cur k="diamonds" size={16} />{fmt(r.diamonds)} алм.</span> : null}
+    {r.dust ? <span className="pg-rw-i u"><Cur k="dust" size={16} />{fmt(r.dust)} пыли</span> : null}
+    {r.scroll ? <span className="pg-rw-i s"><ScrollArt size={18} />{r.scroll} свиток</span> : null}
+    {r.packs ? <span className="pg-rw-i p"><Cur k="packs" size={16} />{r.packs} пак{r.packs > 1 ? "а" : ""}</span> : null}
   </span>
 );
+
+type SubId = "streak" | "weekly" | "ach" | "sets" | "profile";
+const SUBS: [SubId, string, IcoName][] = [
+  ["streak", "Серия входов", "fire"],
+  ["weekly", "Задания недели", "target"],
+  ["ach", "Достижения", "trophy"],
+  ["sets", "Наборы по аниме", "book"],
+  ["profile", "Витрина и статистика", "grid"],
+];
 
 const tierClass = (done: number, total: number) => (done >= total ? "gold" : done >= 2 ? "silver" : done >= 1 ? "bronze" : "");
 
 export function ProgressTab({ s }: { s: CardsState }) {
   const [busy, run] = useBusy();
   const [picking, setPicking] = useState(false);
+  const [sub, setSub] = useState<SubId | null>(null);
   const now = useNow(30_000);
+  const posters = useSeriesPosters();
   const p = s.progress;
   const inv = s.inventory;
   const showcase = useMemo(() => p.showcase.map((id) => inv.find((c) => c.id === id)).filter((c): c is NonNullable<typeof c> => !!c), [p.showcase, inv]);
@@ -40,121 +52,153 @@ export function ProgressTab({ s }: { s: CardsState }) {
   const readyAch = p.achievements.filter((a) => a.done > a.claimed).length;
   const left = p.weekEndsAt - now;
   const cycle = p.streak.claimedToday ? ((p.streak.n - 1) % 7) + 1 : p.streak.n % 7;
+  const tiersAll = ACHIEVEMENTS.reduce((a, d) => a + d.tiers.length, 0);
+  const tiersGot = p.achievements.reduce((a, v) => a + v.claimed, 0);
+  const tiersPct = tiersAll ? Math.round((tiersGot / tiersAll) * 100) : 0;
+  const readyWeekly = p.weekly.filter((m) => !m.claimed && m.progress >= m.goal).length;
+  const readyMs = p.streak.milestones.filter((m) => !m.claimed && p.streak.n >= m.day).length;
+  const readyAll = readyAch + readyWeekly + readyMs;
+  const setsFull = p.sets.filter((x) => x.owned >= x.size).length;
+  const readySets = p.sets.reduce((a, st) => a + st.need.filter((need, i) => !st.claimed[i] && st.owned >= need && (i === 0 || st.claimed[0])).length, 0);
+  const counts: Record<SubId, number> = { streak: readyMs, weekly: readyWeekly, ach: readyAch, sets: readySets, profile: 0 };
+  const cur: SubId = sub ?? (readyWeekly ? "weekly" : readyAch ? "ach" : readySets ? "sets" : readyMs ? "streak" : "streak");
 
   return (
     <div className="cg-bt cg-pg" style={{ display: "grid", gap: 16 }}>
-      <div className="cg-grid2">
-        <div style={{ display: "grid", gap: 16, alignContent: "start" }}>
-        <Panel
-          title="Серия входов"
-          right={
-            <span className="cg-chip">
-              Серия: <b>{p.streak.n}</b> дн. · рекорд {p.streak.best}
+      <section className="pgh" aria-label="Сводка прогресса">
+        <i className="pgh-glow" aria-hidden />
+        <div className="pgh-main">
+          <span className="cg-eyebrow">Путь коллекционера</span>
+          <h3>Ваш прогресс</h3>
+          <p>Серия входов, недельные задания, достижения и наборы по аниме. Всё, что вы делаете в игре, копится здесь и превращается в награды.</p>
+          <div className="pgh-badges">
+            <span className={readyAll > 0 ? "hot" : ""}>
+              <Ico name="gift" size={15} /> {readyAll > 0 ? `Наград к получению: ${readyAll}` : "Все награды получены"}
             </span>
-          }
-          hint={`Каждый день подряд увеличивает подарок дня: сейчас +${p.streak.bonusPct}% (максимум +50%). Пропуск дня обнуляет серию.`}
-        >
-          <div className="pg-days" role="list">
-            {Array.from({ length: 7 }).map((_, i) => {
-              const day = i + 1;
-              const done = p.streak.n > 0 && (p.streak.claimedToday ? day <= cycle : day <= cycle);
-              const today = p.streak.claimedToday ? day === cycle : day === cycle + 1;
-              return (
-                <div key={day} role="listitem" className={`pg-day ${done ? "done" : ""} ${today ? "today" : ""}`}>
-                  <span className="pg-dn">{day}</span>
-                  {done && (
-                    <span className="pg-ck" aria-hidden>
-                      <Ico name="check" size={11} />
-                    </span>
-                  )}
-                  <span className="pg-dico" aria-hidden>
-                    <Ico name="gift" size={20} />
-                  </span>
-                  <small>{done ? "Получено" : today ? "Сегодня" : `День ${day}`}</small>
-                </div>
-              );
-            })}
+            <span>
+              <Ico name="fire" size={15} /> Серия {p.streak.n} дн.
+            </span>
+            <span>
+              <Ico name="clock" size={15} /> Недельные задания сбросятся через {fmtLeft(left)}
+            </span>
           </div>
-          <div className="pg-ms">
-            {p.streak.milestones.map((m) => (
-              <div key={m.day} className={`pg-m ${m.claimed ? "claimed" : p.streak.n >= m.day ? "ready" : ""}`}>
-                <b>{m.day} дн.</b>
-                {rewardChips(m.reward)}
-              </div>
-            ))}
-          </div>
-        </Panel>
-
-        <Panel title="Статистика">
-          <div className="pg-stats">
-            {[
-              ["Героев в коллекции", `${new Set(inv.map((c) => c.cardId)).size}`],
-              ["Побед в боях", fmt(s.wallet.wins)],
-              ["Лучшая серия побед", fmt(p.stats.streak ?? 0)],
-              ["Открыто паков", fmt(p.stats.packs ?? 0)],
-              ["Заточек", fmt(p.stats.sharpen ?? 0)],
-              ["Уровней умений", fmt(p.stats.skillUps ?? 0)],
-            ].map(([k, v]) => (
-              <div key={k} className="pg-stat">
+        </div>
+        <div className="pgh-ring" style={{ ["--p" as string]: tiersPct }} role="img" aria-label={`Достижения: ${tiersGot} из ${tiersAll} ступеней`}>
+          <b>{tiersPct}%</b>
+          <small>достижений</small>
+        </div>
+        <ul className="pgh-kpi">
+          {(
+            [
+              ["grid", fmt(new Set(inv.map((c) => c.cardId)).size), "героев собрано"],
+              ["trophy", `${tiersGot}/${tiersAll}`, "ступеней достижений"],
+              ["book", `${setsFull}/${p.sets.length}`, "наборов по аниме"],
+              ["pack", fmt(p.stats.packs ?? 0), "паков открыто"],
+            ] as [IcoName, string, string][]
+          ).map(([ic, v, k]) => (
+            <li key={k}>
+              <Ico name={ic} size={18} />
+              <span>
                 <b>{v}</b>
                 <small>{k}</small>
-              </div>
-            ))}
-          </div>
-        </Panel>
-        </div>
-
-        <Panel title="Недельные задания" right={<span className="cg-chip">Сброс через {fmtLeft(left)}</span>}>
-          <ul className="cg-list">
-            {p.weekly.map((m) => (
-              <li key={m.id}>
-                <span className="pg-wk">
-                  <span>
-                    {m.text} · {fmt(m.progress)}/{fmt(m.goal)}
-                  </span>
-                  <i className="pg-bar">
-                    <b style={{ width: `${(m.progress / m.goal) * 100}%` }} />
-                  </i>
-                  {rewardChips(m.reward)}
-                </span>
-                <button type="button" className="cg-btn sm pri" disabled={busy || m.claimed || m.progress < m.goal} onClick={() => void claim("weekly-claim", { id: m.id }, "Награда получена")}>
-                  {m.claimed ? "Получено" : "Забрать"}
-                </button>
-              </li>
-            ))}
-          </ul>
-        </Panel>
+              </span>
+            </li>
+          ))}
+        </ul>
+      </section>
+      <div className="pg-sub" role="tablist" aria-label="Разделы прогресса">
+        {SUBS.map(([id, label, ic]) => (
+          <button key={id} type="button" role="tab" aria-selected={cur === id} className="pg-sub-b" onClick={() => setSub(id)}>
+            <Ico name={ic} size={16} />
+            <span>{label}</span>
+            {counts[id] > 0 && <em aria-label={`Наград: ${counts[id]}`}>{counts[id]}</em>}
+          </button>
+        ))}
       </div>
 
-      <Panel
-        title="Витрина профиля"
-        hint={`До ${SHOWCASE_MAX} любимых карт: их видят другие игроки в вашем профиле коллекционера.`}
-        right={
-          <button type="button" className="cg-btn sm" onClick={() => setPicking((v) => !v)}>
-            {picking ? "Скрыть коллекцию" : "Изменить"}
-          </button>
-        }
-      >
-        <div className="pg-show">
-          {Array.from({ length: SHOWCASE_MAX }).map((_, i) =>
-            showcase[i] ? (
-              <button key={showcase[i].id} type="button" className="pg-show-c" onClick={() => toggleShow(showcase[i].id)} aria-label="Убрать из витрины">
-                <GameCard cardId={showcase[i].cardId} foil={showcase[i].foil} level={showcase[i].level} live />
-              </button>
-            ) : (
-              <button key={i} type="button" className="cg-slot" onClick={() => setPicking(true)} style={{ cursor: "pointer" }}>
-                + Карта
-              </button>
-            ),
-          )}
-        </div>
-        {picking && (
-          <div style={{ marginTop: 14 }}>
-            <InvPicker cards={inv} selected={p.showcase} onToggle={toggleShow} max={SHOWCASE_MAX} size="xs" />
+      {cur === "streak" && (
+        <div className="pg-view">
+    <Panel
+      title="Серия входов"
+      right={
+        <span className="cg-chip">
+          Серия: <b>{p.streak.n}</b> дн. · рекорд {p.streak.best}
+        </span>
+      }
+      hint={`Каждый день подряд увеличивает подарок дня: сейчас +${p.streak.bonusPct}% (максимум +50%). Пропуск дня обнуляет серию.`}
+    >
+      <div className="pg-days" role="list">
+        {Array.from({ length: 7 }).map((_, i) => {
+          const day = i + 1;
+          const done = p.streak.n > 0 && (p.streak.claimedToday ? day <= cycle : day <= cycle);
+          const today = p.streak.claimedToday ? day === cycle : day === cycle + 1;
+          return (
+            <div key={day} role="listitem" className={`pg-day ${done ? "done" : ""} ${today ? "today" : ""}`}>
+              <span className="pg-dn">{day}</span>
+              {done && (
+                <span className="pg-ck" aria-hidden>
+                  <Ico name="check" size={11} />
+                </span>
+              )}
+              <span className="pg-dico" aria-hidden>
+                <Ico name={day === 7 ? "crown" : "gift"} size={day === 7 ? 24 : 20} />
+              </span>
+              <small>{done ? "Получено" : today ? "Сегодня" : `День ${day}`}</small>
+            </div>
+          );
+        })}
+      </div>
+      <div className="pg-ms">
+        {p.streak.milestones.map((m) => (
+          <div key={m.day} className={`pg-m ${m.claimed ? "claimed" : p.streak.n >= m.day ? "ready" : ""}`}>
+            <b>{m.day} дн.</b>
+            {rewardChips(m.reward)}
           </div>
-        )}
-      </Panel>
+        ))}
+      </div>
+    </Panel>
 
+        </div>
+      )}
+
+      {cur === "weekly" && (
+        <div className="pg-view">
+    <Panel title="Недельные задания" right={<span className="cg-chip">Сброс через {fmtLeft(left)}</span>}>
+      <div className="pg-wq-list">
+        {p.weekly.map((m) => {
+          const ready = !m.claimed && m.progress >= m.goal;
+          const pct = Math.min(100, Math.round((m.progress / m.goal) * 100));
+          return (
+            <article key={m.id} className={`pg-wq${ready ? " ready" : ""}${m.claimed ? " claimed" : ""}`}>
+              <span className="pg-wq-i" aria-hidden>
+                <Ico name={m.claimed ? "check" : "target"} size={20} />
+              </span>
+              <div className="pg-wq-t">
+                <b>{m.text}</b>
+                <i className="pg-bar">
+                  <b style={{ width: `${pct}%` }} />
+                </i>
+                <span className="pg-wq-f">
+                  <span>
+                    {fmt(m.progress)} / {fmt(m.goal)} · {pct}%
+                  </span>
+                  {rewardChips(m.reward)}
+                </span>
+              </div>
+              <button type="button" className="cg-btn sm pri" disabled={busy || m.claimed || m.progress < m.goal} onClick={() => void claim("weekly-claim", { id: m.id }, "Награда получена")}>
+                {m.claimed ? "Получено" : "Забрать"}
+              </button>
+            </article>
+          );
+        })}
+      </div>
+    </Panel>
+
+        </div>
+      )}
+
+      {cur === "ach" && (
+        <div className="pg-view">
       <Panel title="Достижения" right={readyAch > 0 ? <span className="cg-chip pg-ready">Готово к получению: {readyAch}</span> : undefined}>
         <div className="pg-ach">
           {ACHIEVEMENTS.map((a) => {
@@ -171,7 +215,12 @@ export function ProgressTab({ s }: { s: CardsState }) {
                   <Ico name={a.icon as IcoName} size={22} />
                 </span>
                 <div className="pg-a-txt">
-                  <b>{a.name}</b>
+                  <b>
+                    {a.name}
+                    <em>
+                      {v.claimed}/{a.tiers.length}
+                    </em>
+                  </b>
                   <small>{a.desc}</small>
                   <i className="pg-bar">
                     <b style={{ width: `${pct}%` }} />
@@ -195,40 +244,127 @@ export function ProgressTab({ s }: { s: CardsState }) {
         </div>
       </Panel>
 
+
+        </div>
+      )}
+
+      {cur === "sets" && (
+        <div className="pg-view">
       <Panel title="Наборы по аниме" right={<span className="cg-chip">Собрано полностью: {p.sets.filter((x) => x.owned >= x.size).length} из {p.sets.length}</span>} hint="Собирайте героев одного аниме: награда за половину набора и за полный набор. Герои без арта в набор не входят.">
         <div className="pg-sets">
-          {p.sets.map((st) => (
-            <article key={st.series} className={`pg-set ${st.owned >= st.size ? "full" : ""}`}>
-              <header>
-                <b>{st.series}</b>
-                <span>
-                  {st.owned}/{st.size}
-                </span>
-              </header>
-              <i className="pg-bar">
-                <b style={{ width: `${(st.owned / st.size) * 100}%` }} />
-                <em style={{ left: `${(st.need[0] / st.size) * 100}%` }} />
-              </i>
-              <div className="pg-set-btns">
-                {st.need.map((need, i) => (
-                  <button
-                    key={i}
-                    type="button"
-                    className="cg-btn sm"
-                    disabled={busy || st.claimed[i] || st.owned < need || (i === 1 && !st.claimed[0])}
-                    onClick={() => void claim("set-claim", { series: st.series, tier: i }, "Награда за набор получена")}
-                  >
-                    {st.claimed[i] ? "Получено" : i === 0 ? `Половина · ${need}` : `Полный · ${need}`}
-                  </button>
-                ))}
-              </div>
-            </article>
-          ))}
+          {p.sets.map((st) => {
+            const poster = posters[st.series];
+            const pct = Math.round((st.owned / st.size) * 100);
+            return (
+              <article key={st.series} className={`pg-set ${st.owned >= st.size ? "full" : ""}`}>
+                {poster && <i className="pg-set-bg" style={{ backgroundImage: `url(${poster})` }} aria-hidden />}
+                <div className="pg-set-top">
+                  <span className="pg-set-poster" aria-hidden>
+                    {poster ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={poster} alt="" loading="lazy" draggable={false} referrerPolicy="no-referrer" />
+                    ) : (
+                      <em>{st.series.slice(0, 1)}</em>
+                    )}
+                    {st.owned >= st.size && <b className="pg-set-done">✓</b>}
+                  </span>
+                  <div className="pg-set-main">
+                    <header>
+                      <b>{st.series}</b>
+                      <span>
+                        {st.owned}/{st.size}
+                        <em>{pct}%</em>
+                      </span>
+                    </header>
+                    <i className="pg-bar">
+                      <b style={{ width: `${(st.owned / st.size) * 100}%` }} />
+                      <em style={{ left: `${(st.need[0] / st.size) * 100}%` }} />
+                    </i>
+                  </div>
+                </div>
+                <div className="pg-set-btns">
+                  {st.need.map((need, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      className="cg-btn sm"
+                      disabled={busy || st.claimed[i] || st.owned < need || (i === 1 && !st.claimed[0])}
+                      onClick={() => void claim("set-claim", { series: st.series, tier: i }, "Награда за набор получена")}
+                    >
+                      {st.claimed[i] ? "Получено" : i === 0 ? `Половина · ${need}` : `Полный · ${need}`}
+                    </button>
+                  ))}
+                </div>
+              </article>
+            );
+          })}
         </div>
       </Panel>
       <p className="cg-hint" style={{ textAlign: "center" }}>
         Награда набора: {rewardText({ diamonds: 40, dust: 100 })} за половину и {rewardText({ diamonds: 150, dust: 400, packs: 1, scroll: 1 })} за полный набор.
       </p>
+
+        </div>
+      )}
+
+      {cur === "profile" && (
+        <div className="pg-view">
+    <Panel title="Статистика">
+      <div className="pg-stats">
+        {(
+          [
+            ["grid", "Героев в коллекции", `${new Set(inv.map((c) => c.cardId)).size}`],
+            ["swords", "Побед в боях", fmt(s.wallet.wins)],
+            ["trend", "Лучшая серия побед", fmt(p.stats.streak ?? 0)],
+            ["pack", "Открыто паков", fmt(p.stats.packs ?? 0)],
+            ["anvil", "Заточек", fmt(p.stats.sharpen ?? 0)],
+            ["bolt", "Уровней умений", fmt(p.stats.skillUps ?? 0)],
+          ] as [IcoName, string, string][]
+        ).map(([ic, k, v]) => (
+          <div key={k} className="pg-stat">
+            <span className="pg-stat-i" aria-hidden>
+              <Ico name={ic} size={18} />
+            </span>
+            <b>{v}</b>
+            <small>{k}</small>
+          </div>
+        ))}
+      </div>
+    </Panel>
+      <Panel
+        title="Витрина профиля"
+        hint={`До ${SHOWCASE_MAX} любимых карт: их видят другие игроки в вашем профиле коллекционера.`}
+        right={
+          <button type="button" className="cg-btn sm" onClick={() => setPicking((v) => !v)}>
+            {picking ? "Скрыть коллекцию" : "Изменить"}
+          </button>
+        }
+      >
+        <div className="pg-show">
+          {Array.from({ length: SHOWCASE_MAX }).map((_, i) =>
+            showcase[i] ? (
+              <button key={showcase[i].id} type="button" className="pg-show-c" onClick={() => toggleShow(showcase[i].id)} aria-label="Убрать из витрины">
+                <GameCard cardId={showcase[i].cardId} foil={showcase[i].foil} level={showcase[i].level} live />
+              </button>
+            ) : (
+              <button key={i} type="button" className="cg-slot pg-slot" onClick={() => setPicking(true)} style={{ cursor: "pointer" }}>
+                <em>{i + 1}</em>
+                <Ico name="plus" size={20} />
+                <span>Добавить карту</span>
+              </button>
+            ),
+          )}
+        </div>
+        {picking && (
+          <div style={{ marginTop: 14 }}>
+            <InvPicker cards={inv} selected={p.showcase} onToggle={toggleShow} max={SHOWCASE_MAX} size="xs" />
+          </div>
+        )}
+      </Panel>
+
+
+        </div>
+      )}
     </div>
   );
 }

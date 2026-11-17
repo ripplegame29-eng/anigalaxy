@@ -62,3 +62,8 @@
 .bd--notices .bd-pattern{background-image:radial-gradient(rgba(255,255,255,.05) 1px,transparent 1.5px);background-size:30px 30px}
 .bd-n1,.bd-n2,.bd-n3{left:auto;right:6vw;top:14vh;translate:50% -50%}
 .bd-n1{width:34vmin;height:34vmin}.bd-n2{width:62vmin;height:62vmin;animation-delay:-3s}.bd-n3{width:96vmin;height:96vmin;animation-delay:-6s}
+
+/* Свечение не должно обрываться жёсткой гранью: мягко гасим его к низу и краям экрана,
+   а блики-полосы расписания — по краям самой полосы */
+.bd{height:100vh;height:100lvh;contain:paint;-webkit-mask-image:linear-gradient(180deg,#000 0,#000 55%,transparent 96%),linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent);-webkit-mask-composite:source-in;mask-image:linear-gradient(180deg,#000 0,#000 55%,transparent 96%),linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent);mask-composite:intersect}
+.bd-streak{-webkit-mask-image:linear-gradient(transparent,#000 25%,#000 75%,transparent);mask-image:linear-gradient(transparent,#000 25%,#000 75%,transparent)}

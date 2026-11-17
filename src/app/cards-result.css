@@ -1,0 +1,104 @@
+/* AniGalaxy Cards — итог боя: всплывающее окно в стиле страницы паков (стекло, синяя линия-рамка, Unbounded) */
+
+.rs-scrim {
+  position: fixed; inset: 0; z-index: 90; display: grid; place-items: center;
+  padding: clamp(12px, 3vw, 32px);
+  background: radial-gradient(70% 60% at 50% 38%, rgba(32, 64, 160, 0.34), rgba(3, 5, 14, 0.84));
+  -webkit-backdrop-filter: blur(7px); backdrop-filter: blur(7px);
+  animation: rs-fade 0.4s 0.55s both;
+}
+.rs {
+  --ac: #3b82f6; --ac2: #7cc0ff; --t2: #a9b5d6; --t3: #7480a3;
+  position: relative; display: grid; gap: 16px; width: min(900px, 100%); max-height: 100%; overflow: auto;
+  padding: 26px 34px 24px; border-radius: 28px;
+  background: linear-gradient(180deg, rgba(90, 150, 255, 0.07), rgba(90, 150, 255, 0.01)), rgba(9, 15, 38, 0.94);
+  box-shadow: 0 50px 110px -30px #000, 0 0 90px -30px rgba(59, 130, 246, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.07);
+  scrollbar-width: thin; scrollbar-color: rgba(124, 192, 255, 0.3) transparent;
+  animation: rs-pop 0.55s 0.55s cubic-bezier(0.2, 0.9, 0.25, 1) both;
+}
+.rs::before {
+  content: ""; position: absolute; inset: 0; border-radius: inherit; padding: 1px; pointer-events: none; z-index: 2;
+  background: linear-gradient(160deg, rgba(150, 200, 255, 0.34), rgba(120, 170, 255, 0.05) 30%, rgba(59, 130, 246, 0.24) 70%, rgba(150, 200, 255, 0.14));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+}
+.rs::after { content: ""; position: absolute; left: 50%; top: -120px; width: 620px; height: 300px; translate: -50% 0; pointer-events: none; background: radial-gradient(closest-side, rgba(59, 130, 246, 0.35), transparent); }
+.rs-lose::after { background: radial-gradient(closest-side, rgba(255, 90, 130, 0.22), transparent); }
+.rs > * { position: relative; z-index: 1; }
+
+.rs-head { display: grid; justify-items: center; gap: 8px; text-align: center; }
+.rs-eye { display: inline-flex; align-items: center; gap: 10px; font: 600 12px var(--font-body, inherit); letter-spacing: 0.16em; text-transform: uppercase; color: var(--ac2); }
+.rs-eye::before { content: ""; width: 7px; height: 7px; border-radius: 2px; background: var(--ac); box-shadow: 0 0 12px var(--ac); rotate: 45deg; }
+.rs-lose .rs-eye { color: #ff9db4; }
+.rs-lose .rs-eye::before { background: #ff5f86; box-shadow: 0 0 12px #ff5f86; }
+.rs-head h2 {
+  margin: 0; font: 800 clamp(30px, 4.4vw, 46px) / 1.05 var(--font-unbounded, var(--font-display, inherit)); letter-spacing: -0.03em;
+  background: linear-gradient(180deg, #fff 20%, #8fc4ff); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+}
+.rs-lose .rs-head h2 { background: linear-gradient(180deg, #fff 20%, #ff9db4); -webkit-background-clip: text; background-clip: text; }
+.rs-head p { margin: 0; font-size: 14px; color: var(--t2); }
+
+.rs-main { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 20px; align-items: center; }
+.rs-main:not(:has(.rs-mvp)) { grid-template-columns: 1fr; }
+.rs-mvp { display: grid; justify-items: center; gap: 6px; text-align: center; }
+.rs-mvp-tag { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 99px; font: 700 11px var(--font-body, inherit); letter-spacing: 0.14em; color: #fff; background: linear-gradient(135deg, #2f6bff, #22a6f2); box-shadow: 0 8px 20px -8px rgba(47, 107, 255, 0.9); }
+.rs-mvp-card { width: 104px; filter: drop-shadow(0 14px 22px rgba(0, 0, 0, 0.6)); }
+.rs-mvp b { font: 700 14px var(--font-body, inherit); color: #fff; }
+.rs-mvp small { font-size: 11.5px; line-height: 1.35; color: var(--t3); }
+
+.rs-kpi { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.rs-kpi li { display: grid; gap: 3px; padding: 10px 14px; border-radius: 14px; background: rgba(255, 255, 255, 0.035); border: 1px solid rgba(150, 200, 255, 0.12); }
+.rs-kpi li svg { color: var(--ac2); }
+.rs-kpi b { font: 800 21px / 1.1 var(--font-unbounded, var(--font-display, inherit)); letter-spacing: -0.02em; color: #fff; }
+.rs-kpi small { font-size: 12px; color: var(--t3); }
+
+.rs-tbl { display: grid; gap: 6px; }
+.rs-row { display: grid; grid-template-columns: 40px minmax(0, 1.2fr) minmax(0, 1fr) auto; gap: 14px; align-items: center; padding: 6px 14px 6px 6px; border-radius: 14px; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(150, 200, 255, 0.1); }
+.rs-row.mvp { border-color: rgba(124, 192, 255, 0.5); background: rgba(59, 130, 246, 0.1); }
+.rs-row.out { opacity: 0.55; }
+.rs-av { --rc: #8fb0ff; width: 40px; height: 40px; border-radius: 12px; overflow: hidden; border: 2px solid var(--rc); }
+.rs-av img { width: 100%; height: 100%; object-fit: cover; object-position: top; display: block; }
+.rs-nm { display: grid; min-width: 0; }
+.rs-nm b { font: 700 14px var(--font-body, inherit); color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rs-nm small { font-size: 11.5px; color: var(--t3); }
+.rs-bar { height: 7px; border-radius: 6px; background: rgba(255, 255, 255, 0.07); overflow: hidden; }
+.rs-bar i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #2f6bff, #22a6f2); }
+.rs-num { display: grid; justify-items: end; min-width: 56px; font-variant-numeric: tabular-nums; }
+.rs-num b { font: 800 15px var(--font-unbounded, var(--font-display, inherit)); color: #fff; }
+.rs-num small { font-size: 11px; color: #6df0b0; }
+
+.rs-rew { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+.rs-chip { display: inline-flex; align-items: center; gap: 7px; padding: 8px 14px; border-radius: 99px; font: 700 13px var(--font-body, inherit); color: #e4edff; background: rgba(59, 130, 246, 0.12); border: 1px solid rgba(124, 192, 255, 0.28); }
+.rs-chip.rt.up { color: #8ff0c0; border-color: rgba(109, 240, 176, 0.4); background: rgba(40, 200, 130, 0.1); }
+.rs-chip.rt.down { color: #ffb4c4; border-color: rgba(255, 95, 134, 0.4); background: rgba(255, 95, 134, 0.1); }
+.rs-note { margin: 0; text-align: center; font-size: 13.5px; color: var(--t2); }
+.rs-note b { color: #fff; }
+.rs-stars { display: flex; justify-content: center; gap: 8px; color: rgba(255, 255, 255, 0.18); }
+.rs-stars .on { color: #ffd34d; filter: drop-shadow(0 0 10px rgba(255, 200, 60, 0.7)); }
+
+.rs-loot { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
+.rs-drop { --rc: #7cc0ff; display: flex; align-items: center; gap: 14px; padding: 12px 18px 12px 12px; border-radius: 18px; background: linear-gradient(135deg, color-mix(in srgb, var(--rc) 16%, transparent), rgba(255, 255, 255, 0.02)); border: 1px solid color-mix(in srgb, var(--rc) 45%, transparent); box-shadow: 0 0 30px -10px var(--rc); }
+.rs-drop span { display: grid; gap: 1px; }
+.rs-drop small { font: 700 10.5px var(--font-body, inherit); letter-spacing: 0.14em; text-transform: uppercase; color: var(--rc); }
+.rs-drop b { font: 700 16px var(--font-body, inherit); color: #fff; }
+.rs-drop em { font-style: normal; font-size: 12px; color: var(--t3); }
+
+.rs-btn {
+  justify-self: center; min-width: 220px; padding: 13px 48px; border: 0; border-radius: 12px; cursor: pointer;
+  font: 700 15px var(--font-body, inherit); color: #fff; background: linear-gradient(135deg, #2f6bff, #22a6f2);
+  box-shadow: 0 10px 30px -10px rgba(47, 107, 255, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  transition: transform 0.18s, filter 0.18s, box-shadow 0.18s;
+}
+.rs-btn:hover { transform: translateY(-1px); filter: brightness(1.07); box-shadow: 0 14px 40px -8px rgba(47, 107, 255, 0.95), inset 0 1px 0 rgba(255, 255, 255, 0.35); }
+.rs-btn:focus-visible { outline: 2px solid #b9d2ff; outline-offset: 3px; }
+
+@keyframes rs-fade { from { opacity: 0; } }
+@keyframes rs-pop { from { opacity: 0; transform: translateY(18px) scale(0.97); } }
+@media (max-width: 760px) {
+  .rs { padding: 24px 18px 22px; gap: 18px; border-radius: 22px; }
+  .rs-main { grid-template-columns: 1fr; }
+  .rs-kpi { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .rs-row { grid-template-columns: 40px minmax(0, 1fr) auto; }
+  .rs-bar { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { .rs-scrim, .rs { animation: none; } }

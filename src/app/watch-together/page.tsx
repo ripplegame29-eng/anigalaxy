@@ -130,6 +130,7 @@ export default function WatchTogetherPage() {
           <section id="how-it-works" className="wtv-section" aria-label="Как это работает">
             <div className="wtv-sh">
               <div>
+                <span className="cg2-eye">Шаги</span>
                 <h2>Как это работает</h2>
               </div>
             </div>
@@ -148,6 +149,7 @@ export default function WatchTogetherPage() {
           <section className="wtv-section" aria-label="Возможности">
             <div className="wtv-sh">
               <div>
+                <span className="cg2-eye">Возможности</span>
                 <h2>Возможности комнат</h2>
               </div>
             </div>
@@ -176,7 +178,12 @@ export default function WatchTogetherPage() {
           </section>
 
           <section className="wtv-section" aria-label="Частые вопросы">
-            <h2 className="wtv-faq-title">Частые вопросы</h2>
+            <div className="wtv-sh">
+              <div>
+                <span className="cg2-eye">Вопросы</span>
+                <h2>Частые вопросы</h2>
+              </div>
+            </div>
 
             <div className="wtv-faq">
               {FAQ.map((item) => (

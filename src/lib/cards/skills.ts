@@ -114,6 +114,51 @@ export const ULTIMATES: Record<CardClass, Skill> = {
   support: U("u-support", "Дар жизни", "Лечит всю команду на 35% здоровья и даёт +25% к атаке на 3 раунда.", "heal", { target: "allies", cls: "support", healPct: 0.35, atkUp: 0.25 }),
 };
 
+/* ---------------------- Именные ультимейты героев ---------------------- */
+
+export interface HeroUlt {
+  skill: Skill;
+  /** Иероглифы для кат-сцены */
+  kanji: string;
+  /** Подпись формы: «Бан-кай», «Шикай»… */
+  form: string;
+}
+
+const H = (id: string, name: string, desc: string, fx: SkillFx, cls: CardClass, kanji: string, form: string, rest: Partial<Skill> & Pick<Skill, "target">): HeroUlt => ({
+  skill: U(`u-h-${id}`, name, desc, fx, { cls, ...rest }),
+  kanji,
+  form,
+});
+
+/** Ультимейты персонажей «Блича»: заменяют классовый, механика в духе класса героя */
+export const HERO_ULTS: Record<string, HeroUlt> = {
+  "ichigo-kurosaki": H("ichigo", "Бан-кай: Тенса Зангецу", "Чёрный Гэцуга по всем врагам: 190% атаки и −25% защиты на 3 раунда.", "beam", "warrior", "卍解", "Бан-кай", { target: "enemies", power: 1.9, defDown: 0.25 }),
+  "kenpachi-zaraki": H("kenpachi", "Снятая печать", "Рубка без сдерживания: 165% атаки всем врагам и оглушение на ход.", "quake", "warrior", "解放", "Полная мощь", { target: "enemies", power: 1.65, stun: 1 }),
+  "grimmjow-jaegerjaquez": H("grimmjow", "Ресуррекшн: Пантера", "Десгарон по всем врагам: 170% атаки и −20% защиты.", "slash", "warrior", "帰刃", "Ресуррекшн", { target: "enemies", power: 1.7, defDown: 0.2 }),
+  "renji-abarai": H("renji", "Бан-кай: Хихио Забимару", "Змеиный клинок хлещет всех врагов: 165% атаки и −25% защиты.", "whirl", "warrior", "卍解", "Бан-кай", { target: "enemies", power: 1.65, defDown: 0.25 }),
+  "sosuke-aizen": H("aizen", "Кётока Суйгецу", "Абсолютный гипноз: 175% атаки всем врагам, защита −30% на 3 раунда.", "dark", "mage", "鏡花水月", "Шикай", { target: "enemies", power: 1.75, defDown: 0.3 }),
+  "rukia-kuchiki": H("rukia", "Шикай: Хакурен", "Первый танец: Белая рябь. 160% атаки всем врагам и оглушение на ход.", "ice", "mage", "始解", "Шикай", { target: "enemies", power: 1.6, stun: 1 }),
+  "toshiro-hitsugaya": H("toshiro", "Бан-кай: Дайгурэн Хёринмару", "Ледяной дракон: 190% атаки всем врагам и оглушение на ход.", "ice", "mage", "卍解", "Бан-кай", { target: "enemies", power: 1.9, stun: 1 }),
+  "uryu-ishida": H("uryu", "Лихт Регн", "Ливень квинси: 165% атаки всем врагам и ожог (3 тика по 25%).", "rain", "mage", "滅却師", "Квинси", { target: "enemies", power: 1.65, burn: 0.25 }),
+  "kisuke-urahara": H("urahara", "Бан-кай: Кандзаки Бэнихимэ", "Багровая принцесса: 180% атаки всем врагам и ожог (3 тика по 30%).", "fire", "mage", "卍解", "Бан-кай", { target: "enemies", power: 1.8, burn: 0.3 }),
+  "byakuya-kuchiki": H("byakuya", "Бан-кай: Сенбонзакура Кагэёси", "Тысяча лепестков: 195% атаки всем врагам.", "rain", "mage", "卍解", "Бан-кай", { target: "enemies", power: 1.95 }),
+  "mayuri-kurotsuchi": H("mayuri", "Бан-кай: Конжики Асурадзи", "Золотой Асура: 150% атаки всем врагам и яд (3 тика по 35%).", "poison", "mage", "卍解", "Бан-кай", { target: "enemies", power: 1.5, burn: 0.35 }),
+  "genryusai-shigekuni-yamamoto": H("yamamoto", "Бан-кай: Дзандзюрэй Рюдзин Дзякка", "Пламя первого клинка: 215% атаки всем врагам и ожог (3 тика по 40%).", "fire", "mage", "卍解", "Бан-кай", { target: "enemies", power: 2.15, burn: 0.4 }),
+  "coyote-starrk": H("starrk", "Ресуррекшн: Лос Лобос", "Шквал волчьих пуль: 190% атаки всем врагам.", "beam", "mage", "帰刃", "Ресуррекшн", { target: "enemies", power: 1.9 }),
+  "ulquiorra-cifer": H("ulquiorra", "Ресуррекшн: Сегунда Этапа", "Луч Черо Оскурас по слабейшему врагу: 380% атаки, ×1,6 при <35% здоровья.", "dark", "assassin", "帰刃", "Сегунда Этапа", { target: "enemyLow", power: 3.8, exec: 1.6 }),
+  "yoruichi-shihoin": H("yoruichi", "Сюнко: Богиня вспышки", "Молниеносная серия по слабейшему врагу: 360% атаки, ×1,5 при <35% здоровья.", "wind", "assassin", "瞬歩", "Сюнко", { target: "enemyLow", power: 3.6, exec: 1.5 }),
+  "gin-ichimaru": H("gin", "Бан-кай: Камисори Синсо", "Укол «Бога смерти»: 400% атаки по слабейшему врагу.", "pierce", "assassin", "卍解", "Бан-кай", { target: "enemyLow", power: 4.0, exec: 1.3 }),
+  "shinji-hirako": H("shinji", "Сакасама но Сэкай", "Мир наизнанку: 340% атаки по слабейшему врагу и оглушение.", "debuff", "assassin", "逆様", "Шикай", { target: "enemyLow", power: 3.4, stun: 1 }),
+  "orihime-inoue": H("orihime", "Сантен Кессюн", "Щит отрицания: лечит команду на 40% здоровья и даёт +20% к атаке.", "heal", "support", "三天結盾", "Сантен Кессюн", { target: "allies", healPct: 0.4, atkUp: 0.2 }),
+  "yasutora-sado": H("sado", "Дьябло: Брасо Дерека", "Броня гиганта: щит команде 30% максимального здоровья на 3 раунда.", "shield", "tank", "巨人", "Брасо", { target: "allies", shieldPct: 0.3 }),
+};
+
+/** Ультимейт героя: именной, если есть, иначе классовый */
+export function ultOf(cardId: string | undefined, cls: CardClass): Skill {
+  return (cardId ? HERO_ULTS[cardId]?.skill : undefined) ?? ULTIMATES[cls];
+}
+export const heroUlt = (cardId: string | undefined): HeroUlt | undefined => (cardId ? HERO_ULTS[cardId] : undefined);
+
 /* -------------------------------- Пассивки -------------------------------- */
 
 export interface Passive {
@@ -173,6 +218,7 @@ export function levelled(sk: Skill, lv: number): Skill {
 }
 
 for (const u of Object.values(ULTIMATES)) BY_ID.set(u.id, u);
+for (const h of Object.values(HERO_ULTS)) BY_ID.set(h.skill.id, h.skill);
 
 /** Сколько умений можно экипировать по рангу */
 export const SKILL_SLOTS: Record<Rank, number> = { 0: 1, 1: 2, 2: 2, 3: 3, 4: 3 };

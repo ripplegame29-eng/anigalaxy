@@ -180,7 +180,7 @@ export default function HomePage() {
         <Hero />
       </Suspense>
 
-      <div className="mx-auto max-w-7xl space-y-14 px-4 pb-6 pt-12 sm:px-6 sm:pt-16">
+      <div className="mx-auto flex max-w-7xl flex-col gap-14 px-4 pb-6 pt-12 sm:px-6 sm:pt-16">
         {/* Плашки: Premium и Боевой пропуск */}
         <section aria-label="Premium и боевой пропуск">
           <HomePromo />
@@ -189,10 +189,12 @@ export default function HomePage() {
         {/* Гача: витрина карточек сразу под Premium-плашками */}
         <GachaBanner />
 
-        {/* Продолжить просмотр — прямо над онгоингами, как в макете. Блок
-            клиентский и пуст без истории просмотра: без записей он ничего
+        {/* Продолжить просмотр — прямо над онгоингами, как в макете. На телефоне блок
+            поднят в самый верх. Он клиентский и пуст без истории просмотра: без записей он ничего
             не рисует. */}
-        <ContinueRow />
+        <div className="empty:hidden max-sm:-order-1">
+          <ContinueRow />
+        </div>
 
         {/* Быстрый переход по жанрам — компактной полосой, без отдельной секции */}
         <GenreStrip genres={GENRES.map((g) => g.title)} />

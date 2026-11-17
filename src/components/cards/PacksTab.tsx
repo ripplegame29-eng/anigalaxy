@@ -1,14 +1,18 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { cardDef } from "@/lib/cards/catalog";
 import { PACK, RANKS } from "@/lib/cards/config";
 import { sfx } from "@/lib/cards/sound";
-import { act, hasArt, type CardsState, type Pull } from "@/lib/cards/client";
+import { act, type CardsState } from "@/lib/cards/client";
+import { ShopTab } from "./ShopTab";
 import { GameCard } from "./GameCard";
 import { BannerCard } from "./BannerCard";
+import { CardViewer } from "./CardViewer";
 import { PackStage, type PackPhase } from "./PackStage";
-import { Reveal, ago, fmt, toast, useBusy, useNow } from "./common";
+import { PackHero, FAN_IDS } from "./PackHero";
+import { StockPanel } from "./StockPanel";
+import { Portal, Reveal, ago, fmt, toast, useBusy, useNow } from "./common";
 import { Cur, Ico, type CurKey } from "./icons";
 
 interface PackResult {
@@ -39,63 +43,22 @@ const wait = (ms: number) => new Promise<void>((r) => window.setTimeout(r, ms));
 
 const PAY_CUR: Record<Pay, CurKey> = { token: "packs", diamonds: "diamonds", dust: "dust" };
 
-function Gauge({ title, left, now, max, color }: { title: string; left: number; now: number; max: number; color: string }) {
-  const R = 32;
-  const len = 2 * Math.PI * R;
-  const done = Math.min(1, now / max);
-  return (
-    <div className="cg-gauge" style={{ ["--c" as string]: color }}>
-      <div className="cg-ring" role="img" aria-label={`${title}: ${now} из ${max}`}>
-        <svg viewBox="0 0 74 74">
-          <circle className="bg" cx="37" cy="37" r={R} />
-          <circle className="fg" cx="37" cy="37" r={R} style={{ ["--len" as string]: len, ["--off" as string]: len * (1 - done) }} />
-        </svg>
-        <b>{left <= 1 ? "1" : left}</b>
-      </div>
-      <div>
-        <h3>{title}</h3>
-        <p>{left <= 1 ? "Гарантия выпадет в следующем паке" : `Гарантия через ${left} ${left < 5 ? "пака" : "паков"}`}</p>
-        <div className="lbl">
-          Серия без неё: {now} из {max}
-        </div>
-      </div>
-    </div>
-  );
-}
+/** Упаковка набора для сцены: у одиночного пака своя анимация открытия, у наборов — общий арт */
+const BUNDLE_ART: ({ src: string; ar: number } | undefined)[] = [undefined, { src: "/cards/offers/2.webp?v=7", ar: 1556 / 1088 }, { src: "/cards/offers/3.webp?v=7", ar: 1706 / 1300 }];
+const OFFER_COLOR = ["#3aa0ff", "#b46bff", "#4fe3ff"];
 
-/** Цвета рамок наборов: синий, фиолетовый, золотой */
-const OFFER_COLOR = ["#3aa0ff", "#b46bff", "#ffc45e"];
+const packWord = (n: number) => (n === 1 ? "пак" : n < 5 ? "пака" : "паков");
+const pctOf = (w: number) => String(w / 10).replace(".", ",");
+const bar = (left: number, max: number) => Math.min(100, ((max - left) / max) * 100);
+const scrollTo = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
 
-function Thumb({ cardId, rank, name }: { cardId: string; rank: number; name: string }) {
-  const initials = name
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((w) => w[0])
-    .join("");
+/** Кольцо гарантии: заливается после появления на экране */
+function Ring({ pct, color, ready }: { pct: number; color: string; ready: boolean }) {
   return (
-    <span className="cg-thumb" style={{ ["--c" as string]: RANKS[rank]?.color }}>
-      {hasArt(cardId) ? <img src={`/api/cards/art/${cardId}`} alt="" loading="lazy" draggable={false} /> : initials}
-    </span>
-  );
-}
-
-function FeedRow({ p, now }: { p: Pull; now: number }) {
-  const d = cardDef(p.cardId);
-  const r = RANKS[p.rank];
-  return (
-    <li className={`pk-row${p.rank >= 4 ? " top" : ""}`} style={{ ["--c" as string]: r?.color }}>
-      <Thumb cardId={p.cardId} rank={p.rank} name={d?.name ?? "?"} />
-      <span className="pk-row-t">
-        <b>{d?.name ?? "Карта"}</b>
-        <span className="cg-tag" style={{ color: r?.color }}>
-          {r?.name}
-        </span>
-      </span>
-      <span className="pk-row-r">
-        <b>{p.nick}</b>
-        <small>{ago(p.at, now)}</small>
-      </span>
-    </li>
+    <svg viewBox="0 0 80 80" aria-hidden style={{ ["--cl" as string]: color } as CSSProperties}>
+      <circle className="t" cx="40" cy="40" r="36" />
+      <circle className="f" cx="40" cy="40" r="36" style={{ strokeDashoffset: ready ? 226 - (226 * pct) / 100 : 226 }} />
+    </svg>
   );
 }
 
@@ -106,14 +69,31 @@ export function PacksTab({ s }: { s: CardsState }) {
   const [sel, setSel] = useState(0);
   const [results, setResults] = useState<PackResult[]>([]);
   const [phase, setPhase] = useState<PackPhase>("idle");
+  const [look, setLook] = useState<number | null>(null);
+  const [gal, setGal] = useState(false);
+  const [ring, setRing] = useState(false);
   const now = useNow(60_000);
   const alive = useRef(true);
   useEffect(() => {
     alive.current = true;
+    const id = window.requestAnimationFrame(() => setRing(true));
     return () => {
       alive.current = false;
+      window.cancelAnimationFrame(id);
     };
   }, []);
+
+  useEffect(() => {
+    if (!gal) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setGal(false);
+    window.addEventListener("keydown", onKey);
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prev;
+    };
+  }, [gal]);
 
   const w = s.wallet;
   const bundles = PACK.bundles;
@@ -179,169 +159,347 @@ export function PacksTab({ s }: { s: CardsState }) {
   const legendLeft = Math.max(0, PACK.pityLegend - w.pityLegend);
   const loading = phase !== "idle" || busy;
 
-  const packWord = (n: number) => (n === 1 ? "пак" : n < 5 ? "пака" : "паков");
+  const fan = FAN_IDS.filter((id) => !!cardDef(id));
+  const feed = [...s.pulls.today, ...s.pulls.yesterday];
+  const energyLeft = w.nextEnergyAt ? w.nextEnergyAt - now : 0;
+  const wallets = [
+    { id: "token", label: "Жетоны паков", have: w.packs, per: 1, k: "packs" },
+    { id: "diamonds", label: "Алмазы", have: w.diamonds, per: PACK.diamonds, k: "diamonds" },
+    { id: "dust", label: "Пыль", have: w.dust, per: PACK.dust, k: "dust" },
+  ] as const;
+
+  /* лента для бегущей строки: две одинаковые половины, чтобы цикл был бесшовным */
+  const tickBase = feed.length ? Array.from({ length: Math.ceil(8 / feed.length) }, () => feed).flat() : [];
+  const tick = [...tickBase, ...tickBase];
+  const lastFind = feed[0];
+  const lastDef = lastFind ? cardDef(lastFind.cardId) : undefined;
+
+  const renderTile = (b: (typeof bundles)[number], i: number) => {
+    const l = lackOf(b);
+    const gift = effectivePay === "token" ? 0 : b.n - b.pay;
+    const each = Math.round(costOf(b) / b.n);
+    return (
+      <button
+        key={b.n}
+        type="button"
+        className="st-tile"
+        aria-pressed={sel === i}
+        disabled={!!pendingOffers || loading}
+        style={{ ["--oc" as string]: OFFER_COLOR[i] ?? OFFER_COLOR[0] }}
+        onClick={() => {
+          setSel(i);
+          setGal(false);
+        }}
+      >
+        {i === bundles.length - 1 ? <span className="st-rib best">Лучшая выгода</span> : i === 1 ? <span className="st-rib">Популярный</span> : null}
+        <span className="st-art" aria-hidden>
+          <i className="st-beam" />
+          <i className="st-pad" />
+          <img src={`/cards/offers/${Math.min(i, 2) + 1}.webp?v=7`} alt="" draggable={false} loading="lazy" />
+          {gift > 0 && (
+            <span className="st-gift">
+              <Ico name="gift" size={13} />+{gift}
+            </span>
+          )}
+        </span>
+        <b className="st-n">
+          ×{b.n} <small>{packWord(b.n)}</small>
+        </b>
+        <span className="st-price">
+          {fmt(costOf(b))} <Cur k={PAY_CUR[effectivePay]} size={17} />
+        </span>
+        <span className="st-meta">
+          {b.n > 1 && effectivePay !== "token" && <span>по {fmt(each)} за пак</span>}
+          {gift > 0 && (
+            <em>
+              −{gift} {packWord(gift)} в подарок
+            </em>
+          )}
+          {(b.n === 1 || effectivePay === "token") && <span>{PACK.choices} карты на выбор в каждом</span>}
+        </span>
+        {l > 0 && (
+          <span className="st-lack">
+            Не хватает {fmt(l)} {unit}
+          </span>
+        )}
+      </button>
+    );
+  };
+
+  const pickEl = !pendingOffers && (
+    <div className="st-pick">
+      <div className="st-seg" role="group" aria-label="Набор паков">
+        {bundles.map((b, i) => (
+          <button key={b.n} type="button" className="st-opt" aria-pressed={sel === i} disabled={loading} style={{ ["--oc" as string]: OFFER_COLOR[i] ?? OFFER_COLOR[0] }} onClick={() => setSel(i)}>
+            <img src={`/cards/offers/${Math.min(i, 2) + 1}.webp?v=7`} alt="" draggable={false} />
+            <span>
+              <b>×{b.n}</b>
+              <small>{i === 0 ? "один пак" : effectivePay !== "token" && b.n > b.pay ? `+${b.n - b.pay} в подарок` : `${b.n} паков`}</small>
+            </span>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+
+  const stageEl = (
+    <div className="st-stage">
+      {pendingOffers ? (
+        <div className="cg-pickstage">
+          <div className="cg-offers">
+            {pendingOffers.map((id, i) => (
+              <GameCard key={id} cardId={id} live onClick={() => void pickCard(i)} className="cg-offer-card" />
+            ))}
+          </div>
+        </div>
+      ) : (
+        <PackStage phase={phase} blocked={!!reason && !loading} art={BUNDLE_ART[sel]} onOpen={() => void open(bundle.n)} />
+      )}
+    </div>
+  );
+
+  const guar = [
+    { t: "Эпическая и выше", left: epicLeft, now: w.pityEpic, max: PACK.pityEpic, c: RANKS[2].color },
+    { t: "Легендарная и выше", left: legendLeft, now: w.pityLegend, max: PACK.pityLegend, c: RANKS[3].color },
+  ];
 
   return (
-    <>
-      <section className="pk-sec" aria-labelledby="pk-shop-t">
-        <h2 className="pk-h" id="pk-shop-t">
-          <Ico name="pack" size={22} /> Магазин паков
-        </h2>
-        <div className="pk-shop">
-          <div className="pk-pick">
-            <span className="pk-lbl">Выберите набор</span>
-            <div className="pk-opts" role="group" aria-label="Набор паков">
-              {bundles.map((b, i) => {
-                const l = lackOf(b);
-                const saved = b.n - b.pay;
+    <div className="pk-page cg2-page">
+      <PackHero onShop={() => scrollTo("pk-shop")} onWeek={() => scrollTo("pk-week")} onLook={setLook} />
+
+      <StockPanel
+        s={s}
+        energyLeft={energyLeft}
+        loading={loading}
+        disabled={loading || !!reason}
+        hint={!loading && reason ? reason : undefined}
+        onOpen={() => void open(bundle.n)}
+        cta={
+          <>
+            {bundle.n === 1 ? "Открыть пак" : `Открыть ×${bundle.n}`}
+            <small>
+              {fmt(costOf(bundle))} <Cur k={PAY_CUR[effectivePay]} size={14} />
+            </small>
+          </>
+        }
+      />
+
+      <section className="cg2-sec" id="pk-week" aria-labelledby="pk-ban-t">
+        <div className="cg2-sh">
+          <div>
+            <span className="cg2-eye">Карта недели</span>
+            <h2 id="pk-ban-t">Герой в центре внимания</h2>
+          </div>
+        </div>
+        <BannerCard s={s} />
+      </section>
+
+      <section className="cg2-sec" id="pk-shop" aria-labelledby="pk-shop-t">
+        <div className="cg2-sh">
+          <div>
+            <span className="cg2-eye">Магазин паков</span>
+            <h2 id="pk-shop-t">Выберите набор</h2>
+          </div>
+          <p>Чем больше набор, тем больше паков в подарок.</p>
+        </div>
+        <div className="st cg2-glass" style={{ ["--oc" as string]: OFFER_COLOR[sel] ?? OFFER_COLOR[0] }}>
+          <div className="st-top">
+            <div className="st-wal" role="radiogroup" aria-label="Чем платить">
+              {wallets.map((x) => {
+                const can = Math.floor(x.have / x.per);
                 return (
-                  <button
-                    key={b.n}
-                    type="button"
-                    className="pk-opt"
-                    aria-pressed={sel === i}
-                    disabled={!!pendingOffers || loading}
-                    style={{ ["--oc" as string]: OFFER_COLOR[i] ?? OFFER_COLOR[0] }}
-                    onClick={() => setSel(i)}
-                  >
-                    <img src={`/cards/offers/${Math.min(i, 2) + 1}.webp`} alt="" draggable={false} loading="lazy" />
-                    <span className="pk-opt-t">
-                      <small>{i === bundles.length - 1 ? "Лучшая выгода" : i === 0 ? "Один пак" : "Набор"}</small>
-                      <b>
-                        ×{b.n} {packWord(b.n)}
-                      </b>
-                      <span className="pk-opt-c">
-                        {fmt(costOf(b))} <Cur k={PAY_CUR[effectivePay]} size={15} />
-                        {saved > 0 && <em>−{saved} в подарок</em>}
-                      </span>
-                      {l > 0 && <span className="pk-opt-lack">Не хватает {fmt(l)} {unit}</span>}
+                  <button key={x.id} type="button" role="radio" aria-checked={effectivePay === x.id} disabled={!!pendingOffers || loading} onClick={() => setPay(x.id)}>
+                    <Cur k={x.k} size={26} />
+                    <span>
+                      <small>{x.label}</small>
+                      <b>{fmt(x.have)}</b>
                     </span>
+                    <em>{can > 0 ? `хватит на ${can} ${packWord(can)}` : x.id === "token" && w.packs < 1 ? "нет жетонов" : "не хватает"}</em>
                   </button>
                 );
               })}
             </div>
-            <div className="pk-pay">
-              <span className="pk-lbl">Оплата</span>
-              <div className="cg-seg" role="radiogroup" aria-label="Чем платить">
-                {(
-                  [
-                    ["token", `Жетоны · ${w.packs}`, "packs"],
-                    ["diamonds", `${PACK.diamonds} за пак`, "diamonds"],
-                    ["dust", `${PACK.dust} за пак`, "dust"],
-                  ] as const
-                ).map(([id, label, k]) => (
-                  <button key={id} type="button" role="radio" aria-checked={effectivePay === id} onClick={() => setPay(id)}>
-                    <Cur k={k} size={16} /> {label}
-                  </button>
-                ))}
-              </div>
-              <p className="pk-note">Набор из 6 паков стоит как 5, набор из 20 — как 15. В наборах лучшую карту можно забирать автоматически: включите быстрое открытие.</p>
-            </div>
+            <label className="cg-switch" title="Лучшая карта из тройки забирается сразу, без выбора">
+              <input type="checkbox" checked={quick} onChange={toggleQuick} />
+              <i />
+              Быстрое открытие
+            </label>
           </div>
 
-          <div className="pk-center">
-            <div className="pk-title">
-              <span className="cg-eyebrow">Бустер AniGalaxy</span>
-              <h3>{pendingOffers ? "Выберите одну карту" : "Откройте пак"}</h3>
-              <p>{pendingOffers ? "Остальные две карты превратятся в пыль — вернётся четверть их стоимости." : `В каждом паке ${PACK.choices} карты на выбор. Гарантии на эпическую и легендарную — справа.`}</p>
-            </div>
+          <div className="st-dock" data-pick={pendingOffers ? "1" : undefined}>
+            {stageEl}
 
-            {pendingOffers ? (
-              <div className="cg-pickstage">
-                <div className="cg-offers">
-                  {pendingOffers.map((id, i) => (
-                    <GameCard key={id} cardId={id} live onClick={() => void pickCard(i)} className="cg-offer-card" />
-                  ))}
-                </div>
-              </div>
-            ) : (
-              <PackStage phase={phase} blocked={!!reason && !loading} onOpen={() => void open(bundle.n)} />
-            )}
-
-            {!pendingOffers && (
-              <div className="pk-act">
-                <button type="button" className="cg-cta" disabled={loading || !!reason} onClick={() => void open(bundle.n)}>
-                  {loading ? <span className="cg-spin" /> : <Ico name="pack" size={20} />}
-                  {loading ? "Открываем…" : bundle.n === 1 ? "Открыть пак" : `Открыть ×${bundle.n}`}
-                  <span className="price">
-                    {fmt(costOf(bundle))} <Cur k={PAY_CUR[effectivePay]} size={16} />
-                  </span>
-                </button>
-                <label className="cg-switch">
-                  <input type="checkbox" checked={quick} onChange={toggleQuick} />
-                  <i />
-                  Быстрое открытие
-                </label>
-                {reason && !loading && (
-                  <span className="cg-why" role="status">
-                    <Ico name="ban" size={16} />
-                    {reason}
-                  </span>
-                )}
-              </div>
-            )}
-          </div>
-
-          <aside className="pk-side" aria-label="Гарантии и шансы">
-            <span className="pk-lbl">Гарантии</span>
-            <p className="pk-note">Считаются паки подряд без редкой добычи.</p>
-            <div className="cg-guar">
-              <Gauge title="Эпическая и выше" left={epicLeft} now={w.pityEpic} max={PACK.pityEpic} color={RANKS[2].color} />
-              <Gauge title="Легендарная и выше" left={legendLeft} now={w.pityLegend} max={PACK.pityLegend} color={RANKS[3].color} />
-              <div className="cg-odds" aria-label="Шансы одной карты">
-                {RANKS.map((r, i) => {
-                  const pc = PACK.weights[i] / 10;
-                  return (
-                    <div key={r.id} className="cg-odds-row" style={{ ["--c" as string]: r.color }}>
-                      <span>{r.name}</span>
-                      <span className="t">
-                        <i style={{ width: `${Math.min(100, pc * 1.6)}%` }} />
-                      </span>
-                      <em>{pc.toFixed(1)}%</em>
-                    </div>
-                  );
-                })}
-              </div>
-              <p className="cg-hint" style={{ margin: 0 }}>
-                {s.premium ? "Premium: шансы на редкие карты ×1,25." : "С Premium шансы на редкие карты выше на 25%."}
-              </p>
-            </div>
-          </aside>
-        </div>
-      </section>
-
-      <section className="pk-sec" aria-labelledby="pk-ban-t">
-        <h2 className="pk-h" id="pk-ban-t">
-          <Ico name="star" size={22} /> Баннер недели
-        </h2>
-        <BannerCard s={s} />
-      </section>
-
-      <section className="pk-sec" aria-labelledby="pk-feed-t">
-        <h2 className="pk-h" id="pk-feed-t">
-          <Ico name="trophy" size={22} /> Лента находок
-        </h2>
-        <p className="pk-note pk-feed-hint">Легендарные и мифические карты, выпавшие игрокам.</p>
-        <div className="pk-feed">
-          {(["today", "yesterday"] as const).map((k) => (
-            <div key={k} className="pk-day">
-              <h3>{k === "today" ? "Сегодня" : "Вчера"}</h3>
-              {s.pulls[k].length === 0 ? (
-                <div className="cg-empty">
-                  <Ico name="trophy" size={22} />
-                  {k === "today" ? "Пока никого — станьте первым." : "Вчера редких находок не было."}
-                </div>
+            <div className="pk-info st-co">
+              {pickEl}
+              <span className="cg2-eye">{pendingOffers ? "Ваш выбор" : bundle.n === 1 ? "Стандарт" : `Набор ×${bundle.n}`}</span>
+              <h3>{pendingOffers ? "Выберите одну карту" : bundle.n === 1 ? "Один пак" : `${bundle.n} ${packWord(bundle.n)}`}</h3>
+              {pendingOffers ? (
+                <p className="pk-sub">Остальные две карты превратятся в пыль: вернётся часть их стоимости.</p>
               ) : (
-                <ul>
-                  {s.pulls[k].map((p, i) => (
-                    <FeedRow key={i} p={p} now={now} />
-                  ))}
-                </ul>
+                <>
+                  <div className="cg2-price">
+                    <b>{fmt(costOf(bundle))}</b>
+                    <Cur k={PAY_CUR[effectivePay]} size={22} />
+                    <small>{effectivePay === "token" ? "жетонов" : effectivePay === "diamonds" ? "алмазов" : "пыли"}</small>
+                  </div>
+                  <dl className="st-sum">
+                    <div>
+                      <dt>Вы получите</dt>
+                      <dd>
+                        {bundle.n} {bundle.n === 1 ? "карту" : bundle.n < 5 ? "карты" : "карт"} <small>из {PACK.choices * bundle.n} на выбор</small>
+                      </dd>
+                    </div>
+                    {effectivePay !== "token" && bundle.n > bundle.pay && (
+                      <div className="ok">
+                        <dt>Экономия</dt>
+                        <dd>
+                          {fmt((bundle.n - bundle.pay) * (effectivePay === "diamonds" ? PACK.diamonds : PACK.dust))} <Cur k={PAY_CUR[effectivePay]} size={16} />
+                        </dd>
+                      </div>
+                    )}
+                    <div className={lack > 0 ? "bad" : undefined}>
+                      <dt>Баланс после</dt>
+                      <dd>
+                        {fmt(haveOf)} <i aria-hidden>→</i> {lack > 0 ? "—" : fmt(haveOf - costOf(bundle))} <Cur k={PAY_CUR[effectivePay]} size={16} />
+                      </dd>
+                    </div>
+                  </dl>
+                  <div className="cg2-spec" role="img" aria-label="Шансы одной карты">
+                    {RANKS.map((r, i) => (
+                      <i key={r.id} style={{ ["--w" as string]: Math.max(PACK.weights[i] / 10, 3), ["--c" as string]: r.color } as CSSProperties} title={`${r.name} ${pctOf(PACK.weights[i])}%`} />
+                    ))}
+                  </div>
+                  <div className="cg2-leg">
+                    {RANKS.map((r, i) => (
+                      <span key={r.id} style={{ ["--c" as string]: r.color } as CSSProperties}>
+                        <i aria-hidden>●</i> {r.name} <b>{pctOf(PACK.weights[i])}%</b>
+                      </span>
+                    ))}
+                  </div>
+                  <ul className="pk-bul">
+                    <li>
+                      <Ico name="check" size={15} /> Оставляете лучшую карту, остальные уходят в пыль
+                    </li>
+                    <li>
+                      <Ico name="check" size={15} /> {s.premium ? "Premium: шансы на редкие карты ×1,25" : "С Premium шансы на редкие карты выше на 25%"}
+                    </li>
+                  </ul>
+                  <div className="pk-act st-buy">
+                    <button type="button" className="cg-cta" disabled={loading || !!reason} onClick={() => void open(bundle.n)}>
+                      {loading ? <span className="cg-spin" /> : <Ico name="pack" size={20} />}
+                      {loading ? "Открываем…" : bundle.n === 1 ? "Открыть пак" : `Открыть ×${bundle.n}`}
+                      <span className="price">
+                        {fmt(costOf(bundle))} <Cur k={PAY_CUR[effectivePay]} size={16} />
+                      </span>
+                    </button>
+                    {reason && !loading && (
+                      <span className="cg-why" role="status">
+                        <Ico name="ban" size={16} />
+                        {reason}
+                      </span>
+                    )}
+                  </div>
+                </>
               )}
             </div>
-          ))}
+          </div>
+
+          <div className="st-low">
+            <div className="cg2-gar">
+              {guar.map((g) => (
+                <div key={g.t} className="cg2-gr" style={{ ["--cl" as string]: g.c } as CSSProperties}>
+                  <Ring pct={bar(g.left, g.max)} color={g.c} ready={ring} />
+                  <div>
+                    <h3>
+                      {g.left} {packWord(g.left)}
+                    </h3>
+                    <p>
+                      до гарантии {g.t.toLowerCase()}
+                      <br />
+                      Серия без неё: {g.now} из {g.max}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="cg2-found">
+              <Ico name="trophy" size={18} />
+              {lastFind ? (
+                <span>
+                  Последняя находка: <b style={{ color: RANKS[lastFind.rank]?.color }}>{lastDef?.name ?? "карта"}</b> · {lastFind.nick}, {ago(lastFind.at, now)}
+                </span>
+              ) : (
+                <span>Из последних находок пока никого. Станьте первым.</span>
+              )}
+            </div>
+          </div>
         </div>
       </section>
+
+      <ShopTab />
+
+      <section className="cg2-sec" aria-labelledby="pk-feed-t">
+        <div className="cg2-sh">
+          <div>
+            <span className="cg2-eye">Лента находок</span>
+            <h2 id="pk-feed-t">Герои, которых нашли только что</h2>
+          </div>
+        </div>
+        {tick.length === 0 ? (
+          <div className="cg2-glass cg2-feed-empty">Пока никого. Первая находка появится здесь.</div>
+        ) : (
+          <div className="cg2-glass cg2-tick" aria-label="Недавние находки игроков">
+            <div className="tk">
+              {tick.map((p, i) => {
+                const d = cardDef(p.cardId);
+                const r = RANKS[p.rank];
+                return (
+                  <div key={i} aria-hidden={i >= tickBase.length}>
+                    <i style={{ ["--c1" as string]: r?.color }}>{r?.short}</i>
+                    <span>
+                      {d?.name ?? "Карта"}
+                      <br />
+                      <small>
+                        {r?.name} · {p.nick} · {ago(p.at, now)}
+                      </small>
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+      </section>
+
+
+      {gal && (
+        <Portal>
+          <div className="st-gal" role="dialog" aria-modal="true" aria-label="Выбор набора" onClick={(e) => e.target === e.currentTarget && setGal(false)}>
+            <div className="st-gal-p" style={{ ["--oc" as string]: OFFER_COLOR[sel] ?? OFFER_COLOR[0] }}>
+              <header>
+                <div>
+                  <span className="cg-eyebrow">Наборы</span>
+                  <h3>Выберите набор паков</h3>
+                  <p>Чем больше набор, тем выгоднее: при оплате алмазами или пылью часть паков достаётся в подарок.</p>
+                </div>
+                <button type="button" className="st-gal-x" aria-label="Закрыть" onClick={() => setGal(false)}>
+                  <Ico name="close" size={18} />
+                </button>
+              </header>
+              <div className="st-tiles" role="group" aria-label="Набор паков">
+                {bundles.map((b, i) => renderTile(b, i))}
+              </div>
+              <footer>
+                <span>
+                  Оплата: <b>{wallets.find((x) => x.id === effectivePay)?.label}</b> · на счету <b>{fmt(haveOf)}</b> <Cur k={PAY_CUR[effectivePay]} size={15} />
+                </span>
+              </footer>
+            </div>
+          </div>
+        </Portal>
+      )}
+
+      {look !== null && fan[look] && <CardViewer ids={fan} index={look} onIndex={setLook} onClose={() => setLook(null)} owned={s.inventory.some((c) => c.cardId === fan[look])} />}
 
       {chosen.length > 0 && (
         <Reveal
@@ -351,6 +509,7 @@ export function PacksTab({ s }: { s: CardsState }) {
           sub={dustBack ? `Остальные карты ушли в пыль: +${fmt(dustBack)}` : undefined}
         />
       )}
-    </>
+    </div>
   );
 }
+

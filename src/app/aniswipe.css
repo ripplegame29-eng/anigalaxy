@@ -549,7 +549,7 @@ body.as-modal-open {
 
 .as-undo {
   position: absolute;
-  left: -8px;
+  left: -76px;
   top: 14px;
   display: grid;
   justify-items: center;
@@ -574,7 +574,7 @@ body.as-modal-open {
   color: #fff;
   transform: rotate(-12deg);
 }
-@media (max-width: 520px) {
+@media (max-width: 640px) {
   .as-undo {
     position: static;
     align-self: center;

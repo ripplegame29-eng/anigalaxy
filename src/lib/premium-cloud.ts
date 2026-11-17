@@ -17,7 +17,7 @@ export interface PremiumServerState {
   drop: { available: boolean; claimed: boolean; ac: number; freezes: number };
 }
 
-function apply(state: PremiumServerState): void {
+export function applyPremiumState(state: PremiumServerState): void {
   const account = readAccount();
   if (!account) return;
   saveAccount({
@@ -49,7 +49,7 @@ export async function premiumAction(
     });
     const data = (await response.json()) as { ok?: boolean; state?: PremiumServerState; error?: string };
     if (data.ok && data.state) {
-      apply(data.state);
+      applyPremiumState(data.state);
       return { ok: true, state: data.state };
     }
     return { ok: false, error: data.error ?? "Не получилось, попробуйте позже" };

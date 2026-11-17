@@ -1,0 +1,1232 @@
+/* ====================================================================== */
+/*  Арена: эксклюзивные ультимейты S и SS, добивающие стихии, импакт     */
+/*  Все длительности — доли от --T (её задаёт Arena.tsx с учётом скорости) */
+/* ====================================================================== */
+
+.ec-fire { --ec: #ff6a3d; --ec2: #ffd27a; }
+.ec-water { --ec: #4db8ff; --ec2: #c9f1ff; }
+.ec-wind { --ec: #5fe6b8; --ec2: #e2fff3; }
+.ec-earth { --ec: #d49b4f; --ec2: #f3dcae; }
+.ec-light { --ec: #ffe9a6; --ec2: #ffffff; }
+.ec-dark { --ec: #9a6bff; --ec2: #e0d0ff; }
+
+/* ---- кат-ин: панель с героем ---- */
+.ar-ucut {
+  --T: 1800ms;
+  --sx: 1;
+  position: absolute;
+  inset: 0;
+  z-index: 22;
+  pointer-events: none;
+  overflow: hidden;
+  contain: layout paint;
+}
+.ar-ucut.side-b { --sx: -1; }
+.ar-ucut > i { position: absolute; display: block; }
+.uc-dim {
+  inset: 0;
+  background:
+    radial-gradient(80% 90% at 50% 50%, color-mix(in oklab, var(--ec) 10%, transparent), rgba(2, 3, 9, 0.93) 85%),
+    rgba(2, 3, 9, 0.55);
+  animation: uc-dim var(--T) linear both;
+}
+.uc-lines {
+  inset: -20% -10%;
+  background: repeating-linear-gradient(0deg, transparent 0 11px, color-mix(in oklab, var(--ec2) 55%, transparent) 11px 12px, transparent 12px 27px, rgba(255, 255, 255, 0.35) 27px 28px, transparent 28px 46px);
+  -webkit-mask: linear-gradient(90deg, #000, transparent 30%, transparent 70%, #000), linear-gradient(180deg, #000 18%, transparent 34%, transparent 66%, #000 82%);
+  mask: linear-gradient(90deg, #000, transparent 30%, transparent 70%, #000), linear-gradient(180deg, #000 18%, transparent 34%, transparent 66%, #000 82%);
+  -webkit-mask-composite: source-in;
+  mask-composite: intersect;
+  transform: skewY(calc(var(--sx) * -5deg));
+  opacity: 0;
+  animation: uc-lines var(--T) linear both;
+}
+.uc-band {
+  position: absolute;
+  left: -6%;
+  right: -6%;
+  top: 50%;
+  height: clamp(150px, 60%, 310px);
+  translate: 0 -50%;
+  transform: skewY(calc(var(--sx) * -5deg));
+  overflow: hidden;
+  background:
+    radial-gradient(60% 130% at calc(50% - var(--sx) * 26%) 50%, color-mix(in oklab, var(--ec) 34%, transparent), transparent 70%),
+    radial-gradient(circle, rgba(255, 255, 255, 0.07) 1px, transparent 1.6px) 0 0 / 9px 9px,
+    linear-gradient(90deg, #05070f, #0b0f1e 50%, #05070f);
+  border-block: 1px solid color-mix(in oklab, var(--ec2) 70%, transparent);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.6), 0 0 70px color-mix(in oklab, var(--ec) 45%, transparent), inset 0 0 60px rgba(0, 0, 0, 0.55);
+  animation: uc-band var(--T) cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.ar-ucut.side-b .uc-band { animation-name: uc-band-b; }
+.uc-glow {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(calc(90deg * var(--sx)), transparent 20%, color-mix(in oklab, var(--ec2) 60%, transparent) 50%, transparent 80%);
+  mix-blend-mode: screen;
+  opacity: 0;
+  animation: uc-sweep var(--T) linear both;
+}
+.uc-art {
+  position: absolute;
+  bottom: -22%;
+  height: 150%;
+  aspect-ratio: 2 / 3;
+  left: 9%;
+  transform: skewY(calc(var(--sx) * 5deg));
+  -webkit-mask: linear-gradient(180deg, #000 62%, transparent 96%), linear-gradient(90deg, transparent, #000 16%, #000 72%, transparent);
+  mask: linear-gradient(180deg, #000 62%, transparent 96%), linear-gradient(90deg, transparent, #000 16%, #000 72%, transparent);
+  -webkit-mask-composite: source-in;
+  mask-composite: intersect;
+  animation: uc-art var(--T) cubic-bezier(0.16, 0.84, 0.3, 1) both;
+}
+.ar-ucut.side-b .uc-art { left: auto; right: 9%; }
+.uc-art img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 12%;
+  display: block;
+  filter: contrast(1.12) saturate(1.15) drop-shadow(0 0 22px color-mix(in oklab, var(--ec) 70%, transparent));
+}
+.uc-art.ghost { display: none; }
+.uc-txt {
+  position: absolute;
+  top: 50%;
+  left: 42%;
+  right: 9%;
+  translate: 0 -50%;
+  display: grid;
+  gap: clamp(3px, 0.8vw, 8px);
+  justify-items: start;
+  text-align: left;
+  transform: skewY(calc(var(--sx) * 5deg));
+  min-width: 0;
+}
+.ar-ucut.side-b .uc-txt { left: 9%; right: 42%; justify-items: end; text-align: right; }
+.uc-txt small {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: clamp(9.5px, 1.25vw, 12px);
+  font-weight: 800;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: color-mix(in oklab, var(--ec2) 80%, #fff);
+  animation: uc-fadeup var(--T) cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.uc-txt small em {
+  font-style: normal;
+  letter-spacing: 0.04em;
+  font-size: 1.25em;
+  line-height: 1;
+  padding: 5px 9px 4px;
+  color: #06080f;
+  background: linear-gradient(180deg, #fff, var(--ec2) 55%, var(--ec));
+  clip-path: polygon(7px 0, 100% 0, calc(100% - 7px) 100%, 0 100%);
+}
+.uc-txt b {
+  font-family: var(--font-display, inherit);
+  font-size: clamp(24px, 5.1vw, 58px);
+  font-weight: 900;
+  line-height: 0.98;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+  font-style: italic;
+  color: #fff;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+  text-shadow: 0 0 26px color-mix(in oklab, var(--ec) 85%, transparent), 0 3px 0 rgba(0, 0, 0, 0.65), calc(var(--sx) * 3px) 3px 0 color-mix(in oklab, var(--ec) 70%, #000);
+  animation: uc-slam var(--T) cubic-bezier(0.2, 0.9, 0.2, 1) both;
+}
+.uc-txt > span {
+  font-size: clamp(11px, 1.5vw, 15px);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: rgba(255, 255, 255, 0.78);
+  padding-top: 6px;
+  border-top: 1px solid color-mix(in oklab, var(--ec2) 55%, transparent);
+  animation: uc-fadeup var(--T) cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.uc-cut {
+  left: -20%;
+  right: -20%;
+  top: 50%;
+  height: 3px;
+  margin-top: -1.5px;
+  background: linear-gradient(90deg, transparent, #fff 20%, #fff 80%, transparent);
+  box-shadow: 0 0 22px #fff, 0 0 60px var(--ec);
+  transform: skewY(calc(var(--sx) * -5deg)) scaleX(0);
+  animation: uc-cut var(--T) linear both;
+}
+.uc-white { inset: 0; background: #fff; opacity: 0; animation: uc-white var(--T) linear both; }
+
+@keyframes uc-dim { 0% { opacity: 0; } 9% { opacity: 1; } 90% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes uc-lines { 0% { opacity: 0; background-position: 0 0; } 12% { opacity: 0.55; } 88% { opacity: 0.55; } 100% { opacity: 0; background-position: 0 460px; } }
+@keyframes uc-band {
+  0% { clip-path: inset(0 100% 0 0); }
+  13% { clip-path: inset(0 0 0 0); }
+  88% { clip-path: inset(0 0 0 0); opacity: 1; }
+  96% { clip-path: inset(48% 0 48% 0); opacity: 1; }
+  100% { clip-path: inset(50% 0 50% 0); opacity: 0; }
+}
+@keyframes uc-band-b {
+  0% { clip-path: inset(0 0 0 100%); }
+  13% { clip-path: inset(0 0 0 0); }
+  88% { clip-path: inset(0 0 0 0); opacity: 1; }
+  96% { clip-path: inset(48% 0 48% 0); opacity: 1; }
+  100% { clip-path: inset(50% 0 50% 0); opacity: 0; }
+}
+@keyframes uc-sweep { 0%, 8% { opacity: 0; transform: translateX(calc(var(--sx) * -70%)); } 16% { opacity: 0.9; } 30% { opacity: 0; transform: translateX(calc(var(--sx) * 70%)); } 100% { opacity: 0; } }
+@keyframes uc-art {
+  0%, 5% { opacity: 0; translate: calc(var(--sx) * -70%) 0; scale: 1.25; }
+  20% { opacity: 1; translate: 0 0; scale: 1; }
+  88% { opacity: 1; translate: calc(var(--sx) * 5%) 0; scale: 1.06; }
+  100% { opacity: 0; translate: calc(var(--sx) * 8%) 0; scale: 1.1; }
+}
+@keyframes uc-slam {
+  0%, 15% { opacity: 0; scale: 2.1; filter: blur(10px); }
+  24% { opacity: 1; scale: 0.96; filter: blur(0); }
+  29% { scale: 1; }
+  88% { opacity: 1; scale: 1.03; }
+  100% { opacity: 0; scale: 1.05; }
+}
+@keyframes uc-fadeup { 0%, 22% { opacity: 0; translate: calc(var(--sx) * 26px) 0; } 32% { opacity: 1; translate: 0 0; } 88% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes uc-cut { 0%, 86% { opacity: 0; transform: skewY(calc(var(--sx) * -5deg)) scaleX(0); } 93% { opacity: 1; transform: skewY(calc(var(--sx) * -5deg)) scaleX(1); } 100% { opacity: 0; transform: skewY(calc(var(--sx) * -5deg)) scaleX(1); } }
+@keyframes uc-white { 0%, 89% { opacity: 0; } 94% { opacity: 0.5; } 100% { opacity: 0; } }
+
+/* ---- SS: вторая фаза — «удар кадром», расслоение арта, штамп ранга ---- */
+.ar-ucut.tier-ss { --T: 2500ms; }
+.ar-ucut.tier-ss .uc-band { height: clamp(170px, 68%, 350px); border-block-width: 2px; }
+.ar-ucut.tier-ss .uc-art { animation-name: uc-art-ss; }
+.ar-ucut.tier-ss .uc-art.ghost { display: block; mix-blend-mode: screen; animation-name: uc-ghost; }
+.ar-ucut.tier-ss .uc-art.ghost img { filter: brightness(0) invert(1) drop-shadow(0 0 0 var(--ec)); opacity: 0.9; }
+.ar-ucut.tier-ss .uc-art.ghost::after { content: ""; position: absolute; inset: 0; background: var(--ec); mix-blend-mode: multiply; }
+.ar-ucut.tier-ss .uc-txt b { animation-name: uc-slam-ss; }
+.ar-ucut.tier-ss .uc-white { animation-name: uc-white-ss; }
+.uc-stamp {
+  position: absolute;
+  top: 50%;
+  left: calc(50% + var(--sx) * 30%);
+  translate: -50% -50%;
+  transform: skewY(calc(var(--sx) * 5deg));
+  font-family: var(--font-display, inherit);
+  font-style: italic;
+  font-weight: 900;
+  font-size: clamp(90px, 22vw, 260px);
+  line-height: 1;
+  letter-spacing: -0.06em;
+  color: transparent;
+  -webkit-text-stroke: 2px color-mix(in oklab, var(--ec2) 60%, transparent);
+  opacity: 0;
+  animation: uc-stamp var(--T) cubic-bezier(0.2, 0.9, 0.2, 1) both;
+}
+.uc-shards { position: absolute; inset: 0; opacity: 0; animation: uc-shards var(--T) linear both; }
+.uc-shards::before,
+.uc-shards::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(calc(var(--sx) * 62deg), transparent 47.6%, #fff 49.6%, var(--ec2) 50.2%, transparent 51.4%);
+}
+.uc-shards::after { background: linear-gradient(calc(var(--sx) * -38deg), transparent 48.4%, #fff 49.7%, var(--ec) 50.3%, transparent 51.2%); }
+@keyframes uc-art-ss {
+  0%, 4% { opacity: 0; translate: calc(var(--sx) * -70%) 0; scale: 1.25; }
+  15% { opacity: 1; translate: 0 0; scale: 1; }
+  52% { translate: calc(var(--sx) * 3%) 0; scale: 1.04; filter: none; }
+  55% { scale: 1.22; filter: brightness(2.4) contrast(1.3); }
+  62% { scale: 1.14; filter: none; }
+  90% { opacity: 1; translate: calc(var(--sx) * 6%) 0; scale: 1.18; }
+  100% { opacity: 0; scale: 1.24; }
+}
+@keyframes uc-ghost {
+  0%, 53% { opacity: 0; translate: 0 0; scale: 1.14; }
+  56% { opacity: 0.75; translate: calc(var(--sx) * -5%) 0; scale: 1.22; }
+  74% { opacity: 0; translate: calc(var(--sx) * -16%) 0; scale: 1.36; }
+  100% { opacity: 0; }
+}
+@keyframes uc-slam-ss {
+  0%, 12% { opacity: 0; scale: 2.1; filter: blur(10px); }
+  19% { opacity: 1; scale: 0.96; filter: blur(0); }
+  23% { scale: 1; }
+  53% { scale: 1.02; }
+  56% { scale: 1.13; }
+  63% { scale: 1.04; }
+  90% { opacity: 1; scale: 1.06; }
+  100% { opacity: 0; scale: 1.08; }
+}
+@keyframes uc-white-ss { 0%, 51% { opacity: 0; } 54% { opacity: 0.85; } 60% { opacity: 0; } 90% { opacity: 0; } 95% { opacity: 0.6; } 100% { opacity: 0; } }
+@keyframes uc-stamp { 0%, 53% { opacity: 0; scale: 2.4; } 58% { opacity: 0.55; scale: 1; } 88% { opacity: 0.4; scale: 1.05; } 100% { opacity: 0; scale: 1.1; } }
+@keyframes uc-shards { 0%, 52% { opacity: 0; scale: 0.7; } 55% { opacity: 1; scale: 1; } 66% { opacity: 0; scale: 1.25; } 100% { opacity: 0; } }
+
+/* ---- добивающий удар стихии: рисуется на canvas (ultfx.ts) ---- */
+.ar-fin {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 16;
+  pointer-events: none;
+}
+
+/* ---- удар по камере для S/SS и искра крита ---- */
+.ar-field.shk-ult { animation: ar-fshake-u 0.7s cubic-bezier(0.2, 0.8, 0.2, 1); }
+@keyframes ar-fshake-u {
+  0% { transform: scale(1); }
+  8% { transform: scale(1.045) translate(-7px, 4px); }
+  20% { transform: scale(1.035) translate(6px, -5px); }
+  34% { transform: scale(1.025) translate(-5px, 3px); }
+  50% { transform: scale(1.015) translate(4px, -2px); }
+  68% { transform: scale(1.008) translate(-2px, 1px); }
+  100% { transform: none; }
+}
+.ar-unit.crit .ar-hitfx::after {
+  content: "";
+  position: absolute;
+  inset: -22%;
+  background:
+    linear-gradient(38deg, transparent 48.8%, #fff 49.6%, #fff 50.4%, transparent 51.2%),
+    linear-gradient(-52deg, transparent 49.2%, rgba(255, 255, 255, 0.9) 49.8%, rgba(255, 255, 255, 0.9) 50.2%, transparent 50.8%);
+  -webkit-mask: radial-gradient(closest-side, #000 30%, transparent 96%);
+  mask: radial-gradient(closest-side, #000 30%, transparent 96%);
+  transform: scale(0.3);
+}
+.ar-unit.crit.hit .ar-hitfx::after { animation: ar-critspark 0.4s cubic-bezier(0.1, 0.8, 0.2, 1) both; }
+@keyframes ar-critspark { 0% { transform: scale(0.3) rotate(-8deg); } 100% { transform: scale(1.15) rotate(4deg); } }
+
+@media (max-width: 620px) {
+  .uc-band, .ar-ucut.tier-ss .uc-band { height: clamp(150px, 46%, 250px); }
+  .uc-art { left: 5%; height: 118%; bottom: -10%; }
+  .ar-ucut.side-b .uc-art { right: 5%; }
+  .uc-txt { left: 45%; right: 9%; }
+  .ar-ucut.side-b .uc-txt { left: 9%; right: 45%; }
+  .uc-txt b { font-size: clamp(15px, 4.6vw, 22px); overflow-wrap: break-word; hyphens: auto; }
+  .uc-txt small { letter-spacing: 0.16em; gap: 7px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ar-ucut, .ar-fin { display: none !important; }
+  .ar-field.shk-ult { animation: none !important; }
+  .ar-unit.crit.hit .ar-hitfx::after { animation: none !important; }
+}
+html[data-eco="on"] .ar-ucut,
+html[data-eco="on"] .ar-fin { display: none !important; }
+html[data-eco="on"] .ar-field.shk-ult { animation: none !important; }
+
+/* ====================================================================== */
+/*  Управляемый бой: панель хода, выбор цели, тактические карты           */
+/* ====================================================================== */
+.ar-auto[aria-pressed="true"] { color: #fff; border-color: rgba(110, 160, 255, 0.75); background: rgba(70, 120, 255, 0.22); box-shadow: 0 0 18px -4px rgba(90, 140, 255, 0.8); }
+
+.ar-unit.pick { cursor: crosshair; }
+.ar-unit.pick .ar-card { animation: ar-pick 1s ease-in-out infinite; }
+.ar-unit.pick .ar-card::after {
+  content: "";
+  position: absolute;
+  inset: -5px;
+  border-radius: 16px;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 1px rgba(90, 150, 255, 0.9), 0 0 22px rgba(90, 150, 255, 0.85), inset 0 0 18px rgba(90, 150, 255, 0.35);
+  pointer-events: none;
+  z-index: 6;
+}
+.ar-unit.pick:hover .ar-card { transform: translateY(-4px) scale(1.04); animation: none; }
+@keyframes ar-pick { 50% { transform: translateY(-3px); } }
+
+.ar-cmd {
+  --ec: #6ea0ff;
+  position: relative;
+  margin-top: 12px;
+  padding: 14px 16px 12px;
+  display: grid;
+  grid-template-columns: minmax(150px, auto) minmax(0, 1fr);
+  grid-template-areas: "who acts" "hand hand" "hint hint";
+  gap: 12px 16px;
+  align-items: center;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  background:
+    linear-gradient(180deg, color-mix(in oklab, var(--ec) 9%, transparent), transparent 46%),
+    linear-gradient(180deg, #11131b, #0a0b11);
+  box-shadow: 0 18px 44px -22px #000, inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  animation: cmd-in 0.32s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.ar-cmd::before { content: ""; position: absolute; left: 22px; right: 22px; top: -1px; height: 1px; background: linear-gradient(90deg, transparent, color-mix(in oklab, var(--ec) 80%, #fff), transparent); }
+@keyframes cmd-in { from { opacity: 0; transform: translateY(10px); } }
+.cmd-who { grid-area: who; display: flex; align-items: center; gap: 12px; min-width: 0; }
+.cmd-av { flex: none; width: 46px; height: 46px; border-radius: 14px; overflow: hidden; border: 1px solid color-mix(in oklab, var(--ec) 65%, transparent); box-shadow: 0 0 18px -4px var(--ec); }
+.cmd-av img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 14%; display: block; }
+.cmd-wt { display: grid; gap: 2px; min-width: 0; }
+.cmd-wt small { font-size: 10.5px; font-weight: 800; letter-spacing: 0.16em; text-transform: uppercase; color: color-mix(in oklab, var(--ec) 60%, #fff); }
+.cmd-wt b { font-size: 16px; line-height: 1.15; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 220px; }
+
+.cmd-acts { grid-area: acts; display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; }
+.cmd-act {
+  --fxc: #cfe0ff;
+  appearance: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 52px;
+  padding: 8px 12px;
+  text-align: left;
+  color: #eef1f8;
+  font: inherit;
+  cursor: pointer;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: linear-gradient(180deg, #1b1e29, #13151d);
+  transition: transform 0.14s, border-color 0.14s, box-shadow 0.18s, background 0.14s;
+}
+.cmd-act:hover:not(:disabled) { transform: translateY(-2px); border-color: color-mix(in oklab, var(--fxc) 60%, transparent); box-shadow: 0 10px 22px -12px var(--fxc); }
+.cmd-act:active:not(:disabled) { transform: translateY(0) scale(0.98); }
+.cmd-act:focus-visible, .cmd-card:focus-visible { outline: 2px solid #7fb0ff; outline-offset: 2px; }
+.cmd-act[aria-pressed="true"] { border-color: #fff; background: linear-gradient(180deg, color-mix(in oklab, var(--fxc) 22%, #1b1e29), #13151d); box-shadow: 0 0 0 1px color-mix(in oklab, var(--fxc) 70%, transparent), 0 0 22px -6px var(--fxc); }
+.cmd-act:disabled { opacity: 0.42; cursor: not-allowed; }
+.cmd-g { flex: none; width: 34px; height: 34px; display: grid; place-items: center; border-radius: 10px; color: var(--fxc); background: color-mix(in oklab, var(--fxc) 13%, #0b0c12); border: 1px solid color-mix(in oklab, var(--fxc) 34%, transparent); }
+.cmd-n { display: grid; gap: 1px; min-width: 0; }
+.cmd-n b { font-size: 13.5px; line-height: 1.2; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cmd-n small { font-size: 11px; color: rgba(255, 255, 255, 0.55); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cmd-act.ult:not(:disabled) { border-color: color-mix(in oklab, var(--fxc) 70%, transparent); background: linear-gradient(180deg, color-mix(in oklab, var(--fxc) 20%, #1b1e29), #13151d); box-shadow: 0 0 24px -8px var(--fxc); }
+.cmd-act.ult:not(:disabled) .cmd-g { animation: cmd-ult 1.4s ease-in-out infinite; }
+.cmd-act.ult:not(:disabled) .cmd-n small { color: var(--fxc); font-weight: 700; }
+@keyframes cmd-ult { 50% { box-shadow: 0 0 16px var(--fxc); } }
+
+.cmd-hand { grid-area: hand; display: grid; grid-template-columns: auto repeat(3, minmax(0, 1fr)); gap: 8px; align-items: stretch; padding-top: 12px; border-top: 1px solid rgba(255, 255, 255, 0.07); }
+.cmd-mana { display: grid; align-content: center; gap: 7px; padding-right: 8px; min-width: 96px; }
+.cmd-mana em { font-style: normal; font-size: 10.5px; font-weight: 800; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(255, 255, 255, 0.55); }
+.cmd-mana span { display: flex; gap: 4px; }
+.cmd-mana i { width: 11px; height: 11px; rotate: 45deg; border-radius: 2px; border: 1px solid rgba(120, 165, 255, 0.4); background: transparent; transition: background 0.2s, box-shadow 0.2s; }
+.cmd-mana i.on { background: linear-gradient(135deg, #cfe2ff, #5b93ff); border-color: #a9c8ff; box-shadow: 0 0 9px rgba(91, 147, 255, 0.9); }
+.cmd-card {
+  --fxc: #cfe0ff;
+  appearance: none;
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-areas: "g n" "g d";
+  column-gap: 10px;
+  align-items: center;
+  padding: 9px 12px 9px 14px;
+  text-align: left;
+  font: inherit;
+  color: #eef1f8;
+  cursor: pointer;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: linear-gradient(135deg, color-mix(in oklab, var(--fxc) 10%, #171923), #101219 60%);
+  transition: transform 0.16s, border-color 0.16s, box-shadow 0.2s;
+}
+.cmd-card .sk-g, .cmd-card > svg { grid-area: g; color: var(--fxc); }
+.cmd-card b { grid-area: n; font-size: 13px; line-height: 1.2; }
+.cmd-card small { grid-area: d; font-size: 11px; line-height: 1.25; color: rgba(255, 255, 255, 0.55); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.cc-cost { position: absolute; top: -7px; left: -7px; width: 22px; height: 22px; display: grid; place-items: center; font-style: normal; font-size: 11.5px; font-weight: 800; color: #06101f; background: linear-gradient(135deg, #e3eeff, #6b9dff); border-radius: 50%; box-shadow: 0 0 10px rgba(91, 147, 255, 0.7); line-height: 1; }
+
+
+.cmd-card:hover:not(:disabled) { transform: translateY(-3px); border-color: color-mix(in oklab, var(--fxc) 55%, transparent); box-shadow: 0 12px 24px -14px var(--fxc); }
+.cmd-card[aria-pressed="true"] { transform: translateY(-5px); border-color: #fff; box-shadow: 0 0 0 1px color-mix(in oklab, var(--fxc) 70%, transparent), 0 14px 26px -12px var(--fxc); }
+.cmd-card:disabled { opacity: 0.4; cursor: not-allowed; }
+.cmd-hint { grid-area: hint; margin: 0; font-size: 12px; color: rgba(255, 255, 255, 0.5); text-align: center; }
+
+/* разыгранная тактика — всплывает над полем */
+.ar-tac .cc-cost { position: static; flex: none; }
+.ar-tac {
+  --fxc: #cfe0ff;
+  position: absolute;
+  top: 12px;
+  left: 16px;
+  z-index: 18;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px 8px 16px;
+  color: var(--fxc);
+  border-radius: 13px;
+  border: 1px solid color-mix(in oklab, var(--fxc) 55%, transparent);
+  background: linear-gradient(135deg, color-mix(in oklab, var(--fxc) 14%, #12141c), #0b0c12);
+  box-shadow: 0 12px 28px -12px #000, 0 0 22px -8px var(--fxc);
+  pointer-events: none;
+  animation: ar-tac 1.2s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.ar-tac.side-b { left: auto; right: 16px; }
+.ar-tac span { display: grid; gap: 1px; }
+.ar-tac small { font-size: 9.5px; font-weight: 800; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(255, 255, 255, 0.6); }
+.ar-tac b { font-size: 14px; color: #fff; }
+@keyframes ar-tac { 0% { opacity: 0; transform: translateY(-14px) scale(0.9); } 14% { opacity: 1; transform: none; } 80% { opacity: 1; } 100% { opacity: 0; transform: translateY(-6px); } }
+
+@media (max-width: 860px) {
+  .ar-cmd { grid-template-columns: 1fr; grid-template-areas: "who" "acts" "hand" "hint"; padding: 12px; gap: 10px; }
+  .cmd-acts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .cmd-n b { white-space: normal; font-size: 12.5px; }
+  .cmd-act { padding: 8px 9px; gap: 8px; }
+  .cmd-hand { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .cmd-mana { grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; padding: 0; }
+  .cmd-card { grid-template-columns: 1fr; grid-template-areas: "g" "n" "d"; row-gap: 4px; padding: 10px 8px 8px; }
+  .cmd-card small { -webkit-line-clamp: 3; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ar-unit.pick .ar-card, .cmd-act.ult .cmd-g, .ar-cmd, .ar-tac { animation: none !important; }
+}
+
+/* ====================================================================== */
+/*  Карты на столе: раздача рубашкой вверх и переворот, «дыхание»,        */
+/*  удар с полётом к цели, отдача, гибель, победная стойка                */
+/* ====================================================================== */
+.ar-field .ar-unit { --ax: calc(var(--dir, 1) * 34px); --ay: 0px; }
+.ar-field .ar-card { transition: transform 0.18s var(--cg-ease, ease), scale 0.25s cubic-bezier(0.2, 0.8, 0.2, 1); }
+
+/* ---- рубашка ---- */
+.ar-back {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  border-radius: 9% / 6%;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(120, 160, 255, 0.34) 0, transparent 42%),
+    repeating-linear-gradient(45deg, rgba(150, 180, 255, 0.07) 0 1px, transparent 1px 9px),
+    repeating-linear-gradient(-45deg, rgba(150, 180, 255, 0.07) 0 1px, transparent 1px 9px),
+    linear-gradient(160deg, #1a2244, #0a0e20 60%, #060814);
+  border: 2px solid #33437c;
+  box-shadow: inset 0 0 0 3px #080b18, inset 0 0 0 4px rgba(150, 180, 255, 0.4), inset 0 0 26px rgba(0, 0, 0, 0.6), 0 10px 22px -10px #000;
+}
+.ar-back::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 44%;
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  rotate: 45deg;
+  border: 2px solid rgba(190, 210, 255, 0.85);
+  background: radial-gradient(circle, #dbe7ff 0, #5b86ff 28%, #131b3c 70%);
+  box-shadow: 0 0 18px rgba(100, 150, 255, 0.8), inset 0 0 10px rgba(255, 255, 255, 0.35);
+}
+.ar-back::after {
+  content: "";
+  position: absolute;
+  inset: 8% 9%;
+  border-radius: 7% / 5%;
+  border: 1px solid rgba(150, 180, 255, 0.38);
+  background: linear-gradient(115deg, transparent 40%, rgba(255, 255, 255, 0.22) 50%, transparent 60%) -120% 0 / 220% 100% no-repeat;
+}
+
+/* ---- раздача и переворот ---- */
+.ar-field.deal-0 .ar-unit { opacity: 0; }
+.ar-field.deal-1 .ar-unit {
+  animation: ar-deal 0.6s cubic-bezier(0.18, 0.85, 0.25, 1) both;
+  animation-delay: calc(var(--i, 0) * 95ms + var(--sd, 0) * 50ms);
+  z-index: calc(10 - var(--i, 0));
+}
+.ar-field.deal-1 .ar-unit > :not(.ar-card) { animation: ar-fadein 0.35s ease both; animation-delay: calc(1.3s + var(--i, 0) * 120ms + var(--sd, 0) * 60ms); }
+.ar-field.deal-1 .ar-card {
+  animation: ar-flip 0.62s cubic-bezier(0.3, 0.1, 0.2, 1) both;
+  animation-delay: calc(0.85s + var(--i, 0) * 120ms + var(--sd, 0) * 60ms);
+}
+.ar-field.deal-1 .ar-unit.r-3 .ar-card,
+.ar-field.deal-1 .ar-unit.r-4 .ar-card {
+  animation: ar-flip 0.62s cubic-bezier(0.3, 0.1, 0.2, 1) both, ar-flipglow 0.9s ease-out both;
+  animation-delay: calc(0.85s + var(--i, 0) * 120ms + var(--sd, 0) * 60ms), calc(1.15s + var(--i, 0) * 120ms + var(--sd, 0) * 60ms);
+}
+.ar-field.deal-1 .ar-back { animation: ar-backoff 0.62s steps(1, end) both; animation-delay: calc(0.85s + var(--i, 0) * 120ms + var(--sd, 0) * 60ms); }
+.ar-field.deal-1 .ar-back::after { animation: ar-backshine 0.5s ease-out both; animation-delay: calc(0.5s + var(--i, 0) * 95ms + var(--sd, 0) * 50ms); }
+@keyframes ar-deal {
+  0% { opacity: 0; transform: translate(calc(var(--dir, 1) * -46vw), 60%) rotate(calc(var(--dir, 1) * -34deg)) scale(0.55); }
+  25% { opacity: 1; }
+  78% { transform: translate(calc(var(--dir, 1) * 6px), -6px) rotate(calc(var(--dir, 1) * 2deg)) scale(1.05); }
+  100% { opacity: 1; transform: none; }
+}
+@keyframes ar-flip {
+  0% { transform: perspective(900px) rotateY(180deg); }
+  46% { transform: perspective(900px) translateY(-16px) rotateY(90deg) scale(1.14); }
+  82% { transform: perspective(900px) translateY(-4px) rotateY(-8deg) scale(1.06); }
+  100% { transform: perspective(900px) rotateY(0); }
+}
+@keyframes ar-backoff { 0% { visibility: visible; } 46% { visibility: hidden; } 100% { visibility: hidden; } }
+@keyframes ar-backshine { from { background-position: -120% 0; } to { background-position: 220% 0; } }
+@keyframes ar-flipglow {
+  0% { box-shadow: 0 0 0 0 color-mix(in oklab, var(--rc) 90%, #fff), 0 0 0 0 var(--rc); filter: brightness(1.3); }
+  100% { box-shadow: 0 0 0 16px transparent, 0 0 46px 6px transparent; filter: none; }
+}
+@keyframes ar-fadein { from { opacity: 0; transform: translateY(6px); } }
+
+/* ---- в бою: лёгкое «дыхание», подъём активной карты ---- */
+.ar-field.live .ar-card { animation: ar-idle 3.6s ease-in-out infinite; animation-delay: calc(var(--i, 0) * -0.8s - var(--sd, 0) * 0.45s); }
+@keyframes ar-idle { 50% { translate: 0 -3px; } }
+.ar-overlay .ar-unit.dead .ar-card, .ar-field .ar-unit.dead .ar-card { translate: none; }
+.ar-field .ar-unit.is-turn { z-index: 6; }
+.ar-field .ar-unit.is-turn:not(.dead) .ar-card { scale: 1.07; }
+@media (hover: hover) {
+  .ar-field.live .ar-unit:not(.dead):not(.is-turn):hover .ar-card { scale: 1.045; }
+}
+
+/* ---- обычная атака: замах, бросок к цели, отскок ---- */
+.ar-field .ar-unit.act-atk { z-index: 15; }
+.ar-field .ar-unit.act-atk .ar-card { animation: ar-strike 0.64s cubic-bezier(0.3, 0, 0.2, 1) both; }
+@keyframes ar-strike {
+  0% { transform: none; filter: none; }
+  17% { transform: translate(calc(var(--ax) * -0.09), calc(var(--ay) * -0.09 - 8px)) rotate(calc(var(--dir, 1) * -7deg)) scale(1.12); filter: drop-shadow(0 16px 14px rgba(0, 0, 0, 0.55)); }
+  31% { transform: translate(var(--ax), var(--ay)) rotate(calc(var(--dir, 1) * 9deg)) scale(1.14); filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.6)) brightness(1.25); }
+  39% { transform: translate(calc(var(--ax) * 0.9), calc(var(--ay) * 0.9)) rotate(calc(var(--dir, 1) * -4deg)) scale(1.05); }
+  100% { transform: none; filter: none; }
+}
+
+/* ---- отдача от удара ---- */
+.ar-overlay .ar-unit.hit:not(.dead) .ar-card, .ar-field .ar-unit.hit:not(.dead):not(.act-atk) .ar-card { animation: ar-recoil 0.46s cubic-bezier(0.2, 0.8, 0.2, 1), ar-hitblink 0.42s; }
+.ar-overlay .ar-unit.crit.hit:not(.dead) .ar-card, .ar-field .ar-unit.crit.hit:not(.dead):not(.act-atk) .ar-card { animation: ar-recoil-c 0.56s cubic-bezier(0.2, 0.8, 0.2, 1), ar-hitblink 0.5s; }
+@keyframes ar-recoil {
+  0% { transform: none; }
+  14% { transform: translateX(calc(var(--dir, 1) * -15px)) rotate(calc(var(--dir, 1) * -5deg)) scale(0.95); }
+  46% { transform: translateX(calc(var(--dir, 1) * 5px)) rotate(calc(var(--dir, 1) * 2deg)); }
+  72% { transform: translateX(calc(var(--dir, 1) * -2px)); }
+  100% { transform: none; }
+}
+@keyframes ar-recoil-c {
+  0% { transform: none; }
+  10% { transform: translateX(calc(var(--dir, 1) * -26px)) rotate(calc(var(--dir, 1) * -10deg)) scale(0.9); }
+  22% { transform: translateX(calc(var(--dir, 1) * -22px)) rotate(calc(var(--dir, 1) * -8deg)) scale(0.92); }
+  52% { transform: translateX(calc(var(--dir, 1) * 8px)) rotate(calc(var(--dir, 1) * 3deg)); }
+  76% { transform: translateX(calc(var(--dir, 1) * -3px)); }
+  100% { transform: none; }
+}
+
+/* ---- гибель: трещины, осколки, карта гаснет и оседает ---- */
+.ar-overlay .ar-unit.dead:not(.kc) .ar-card, .ar-field .ar-unit.dead:not(.kc) .ar-card { animation: ar-die 0.8s cubic-bezier(0.3, 0, 0.2, 1) both; }
+@keyframes ar-die {
+  0% { filter: brightness(1.6) saturate(0.4); transform: scale(1.05); }
+  18% { transform: scale(1.02) rotate(calc(var(--dir, 1) * 3deg)); }
+  34% { transform: scale(1) rotate(calc(var(--dir, 1) * -3deg)); }
+  100% { filter: grayscale(0.92) brightness(0.42); transform: scale(0.93) translateY(6px) rotate(calc(var(--dir, 1) * -4deg)); }
+}
+.ar-death { position: absolute; inset: 0; z-index: 7; pointer-events: none; border-radius: 9% / 6%; overflow: visible; }
+.ar-death::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background:
+    linear-gradient(63deg, transparent 49.2%, rgba(0, 0, 0, 0.9) 49.6%, rgba(255, 255, 255, 0.5) 50.3%, transparent 50.8%) 12% 0 / 100% 100%,
+    linear-gradient(118deg, transparent 49.3%, rgba(0, 0, 0, 0.9) 49.7%, rgba(255, 255, 255, 0.4) 50.3%, transparent 50.7%) 0 30% / 100% 70% no-repeat,
+    linear-gradient(-22deg, transparent 49.4%, rgba(0, 0, 0, 0.85) 49.8%, rgba(255, 255, 255, 0.35) 50.3%, transparent 50.7%) 0 100% / 100% 55% no-repeat;
+  animation: ar-crack 0.5s steps(3, end) both;
+}
+@keyframes ar-crack { from { opacity: 0; clip-path: circle(0% at 46% 44%); } to { opacity: 1; clip-path: circle(120% at 46% 44%); } }
+.ar-death i {
+  position: absolute;
+  left: 50%;
+  top: 45%;
+  width: 16%;
+  aspect-ratio: 1;
+  background: linear-gradient(135deg, #f1f5ff, #7f8db5 55%, #2a3050);
+  clip-path: polygon(50% 0, 100% 70%, 20% 100%);
+  opacity: 0;
+  animation: ar-shard 0.75s cubic-bezier(0.15, 0.7, 0.3, 1) 0.08s both;
+}
+.ar-death i:nth-child(1) { --sx: -120%; --sy: -210%; --sr: -200deg; }
+.ar-death i:nth-child(2) { --sx: 190%; --sy: -150%; --sr: 260deg; width: 12%; }
+.ar-death i:nth-child(3) { --sx: -230%; --sy: 60%; --sr: 150deg; width: 13%; }
+.ar-death i:nth-child(4) { --sx: 240%; --sy: 90%; --sr: -170deg; }
+.ar-death i:nth-child(5) { --sx: 40%; --sy: -280%; --sr: 320deg; width: 10%; }
+.ar-death i:nth-child(6) { --sx: -60%; --sy: 250%; --sr: -260deg; width: 11%; }
+@keyframes ar-shard {
+  0% { opacity: 1; transform: translate(-50%, -50%) scale(0.4); }
+  70% { opacity: 1; }
+  100% { opacity: 0; transform: translate(calc(-50% + var(--sx)), calc(-50% + var(--sy) + 60%)) rotate(var(--sr)) scale(1); }
+}
+
+/* ---- конец боя: победители вскидываются, проигравшие гаснут ---- */
+.ar-side.won .ar-unit:not(.dead) .ar-card { animation: ar-cheer 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) both; animation-delay: calc(var(--i, 0) * 110ms); }
+@keyframes ar-cheer {
+  0% { transform: none; filter: none; }
+  30% { transform: translateY(-16px) scale(1.1) rotate(calc(var(--dir, 1) * -3deg)); filter: brightness(1.45) drop-shadow(0 0 18px rgba(140, 180, 255, 0.9)); }
+  60% { transform: translateY(0) scale(1.02); }
+  100% { transform: none; filter: drop-shadow(0 0 10px rgba(120, 160, 255, 0.45)); }
+}
+.ar-side.lost { filter: saturate(0.5) brightness(0.72); transition: filter 0.6s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ar-field.live .ar-card, .ar-field .ar-unit.act-atk .ar-card, .ar-side.won .ar-unit .ar-card, .ar-death i, .ar-death::before { animation: none !important; }
+  .ar-death i { display: none; }
+}
+html[data-eco="on"] .ar-field.live .ar-card { animation: none !important; }
+
+/* ====================================================================== */
+/*  Игровой стол: рама, зоны сторон, гнёзда под карты, герб в центре, HUD */
+/* ====================================================================== */
+.ar-overlay .ar-field {
+  --you: #4f8dff;
+  --foe: #ff4f7a;
+  border: 0;
+  border-radius: 30px;
+  padding: clamp(26px, 3.2vw, 44px) clamp(22px, 3.6vw, 52px);
+  background:
+    radial-gradient(46% 78% at 20% 50%, color-mix(in oklab, var(--you) 22%, transparent), transparent 72%),
+    radial-gradient(46% 78% at 80% 50%, color-mix(in oklab, var(--foe) 18%, transparent), transparent 72%),
+    radial-gradient(circle at 50% 50%, rgba(130, 160, 255, 0.14) 0, transparent 30%),
+    repeating-linear-gradient(60deg, rgba(150, 175, 255, 0.04) 0 1px, transparent 1px 36px),
+    repeating-linear-gradient(-60deg, rgba(150, 175, 255, 0.04) 0 1px, transparent 1px 36px),
+    linear-gradient(180deg, #0e1328, #080b18 58%, #05070f);
+}
+.ar-overlay .ar-field::before { display: none; }
+
+.ar-board { position: absolute; inset: 0; z-index: -1; pointer-events: none; border-radius: inherit; overflow: hidden; }
+.ar-board i { position: absolute; display: block; }
+/* рама стола: фаска из нескольких слоёв металла */
+.bd-frame {
+  inset: 0;
+  border-radius: inherit;
+  box-shadow:
+    inset 0 0 0 1px #04050a,
+    inset 0 0 0 2px #56649a,
+    inset 0 0 0 3px #1c233d,
+    inset 0 0 0 9px #10152a,
+    inset 0 0 0 10px #343f6b,
+    inset 0 0 0 11px #04050a,
+    inset 0 0 0 12px rgba(170, 195, 255, 0.16),
+    inset 0 0 110px rgba(0, 0, 0, 0.7),
+    inset 0 60px 90px -70px rgba(140, 170, 255, 0.35);
+}
+/* угловые накладки с кристаллом */
+.bd-c { width: 74px; height: 74px; }
+.bd-c::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(135deg, #7f93d6 0, #2b3560 34%, #0d1122 60%, transparent 61%);
+  clip-path: polygon(0 0, 100% 0, 100% 16%, 46% 16%, 16% 46%, 16% 100%, 0 100%);
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.7));
+}
+.bd-c::after {
+  content: "";
+  position: absolute;
+  left: 15px;
+  top: 15px;
+  width: 13px;
+  height: 13px;
+  rotate: 45deg;
+  background: radial-gradient(circle at 35% 30%, #fff, #7fb0ff 40%, #1d3fa8);
+  box-shadow: 0 0 12px #5b93ff, 0 0 0 2px #0a0e1f, 0 0 0 3px #7f93d6;
+  animation: bd-gem 3.2s ease-in-out infinite;
+}
+.bd-c.tl { left: 0; top: 0; }
+.bd-c.tr { right: 0; top: 0; scale: -1 1; }
+.bd-c.bl { left: 0; bottom: 0; scale: 1 -1; }
+.bd-c.br { right: 0; bottom: 0; scale: -1 -1; }
+.bd-c.tr::after, .bd-c.br::after { background: radial-gradient(circle at 35% 30%, #fff, #ff9ab4 40%, #b3204a); box-shadow: 0 0 12px #ff5a86, 0 0 0 2px #0a0e1f, 0 0 0 3px #7f93d6; animation-delay: -1.6s; }
+@keyframes bd-gem { 50% { filter: brightness(1.6); } }
+/* осевая линия и кольца в центре */
+.bd-line { left: 50%; top: 13px; bottom: 13px; width: 2px; margin-left: -1px; background: linear-gradient(180deg, transparent, rgba(160, 190, 255, 0.5) 18%, rgba(160, 190, 255, 0.12) 38%, transparent 44%, transparent 56%, rgba(160, 190, 255, 0.12) 62%, rgba(160, 190, 255, 0.5) 82%, transparent); }
+.bd-line::before, .bd-line::after { content: ""; position: absolute; left: 50%; width: 9px; height: 9px; margin-left: -4.5px; rotate: 45deg; background: #a9c2ff; box-shadow: 0 0 10px #6f9bff; }
+.bd-line::before { top: 14%; }
+.bd-line::after { bottom: 14%; }
+.bd-ring { left: 50%; top: 50%; width: min(300px, 58%); aspect-ratio: 1; translate: -50% -50%; border-radius: 50%; border: 1px solid rgba(160, 190, 255, 0.22); background: radial-gradient(circle, rgba(90, 130, 255, 0.16), transparent 62%); }
+.bd-ring::before { content: ""; position: absolute; inset: 9%; border-radius: 50%; border: 1px dashed rgba(170, 195, 255, 0.4); animation: bd-spin 60s linear infinite; }
+.bd-ring::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: 50%;
+  background: repeating-conic-gradient(from 0deg, rgba(180, 205, 255, 0.55) 0 0.6deg, transparent 0.6deg 15deg);
+  -webkit-mask: radial-gradient(closest-side, transparent 93%, #000 94%);
+  mask: radial-gradient(closest-side, transparent 93%, #000 94%);
+  animation: bd-spin 90s linear infinite reverse;
+}
+@keyframes bd-spin { to { rotate: 360deg; } }
+/* блик по столу и пылинки света */
+.bd-sheen { inset: 0; background: linear-gradient(112deg, transparent 42%, rgba(200, 220, 255, 0.07) 50%, transparent 58%); background-size: 260% 100%; animation: bd-sheen 11s ease-in-out infinite; }
+@keyframes bd-sheen { 0%, 55% { background-position: 130% 0; } 100% { background-position: -130% 0; } }
+.bd-m { bottom: -8px; width: 3px; height: 3px; border-radius: 50%; background: #cfe0ff; box-shadow: 0 0 8px 1px rgba(140, 180, 255, 0.9); opacity: 0; animation: bd-mote 9s linear infinite; }
+.bd-m:nth-of-type(odd) { background: #ffd2de; box-shadow: 0 0 8px 1px rgba(255, 120, 160, 0.8); }
+@keyframes bd-mote { 0% { opacity: 0; transform: translate(0, 0); } 12% { opacity: 0.9; } 80% { opacity: 0.5; } 100% { opacity: 0; transform: translate(var(--mx, 20px), -110cqh); } }
+
+/* гнёзда под карты */
+.ar-overlay .ar-unit { grid-template-columns: minmax(0, 1fr); }
+.ar-overlay .ar-unit::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  left: -7px;
+  right: -7px;
+  top: -7px;
+  aspect-ratio: 0.7;
+  border-radius: 15px;
+  background: linear-gradient(180deg, rgba(4, 6, 14, 0.82), rgba(12, 16, 32, 0.6));
+  box-shadow: inset 0 3px 10px #000, inset 0 0 0 1px rgba(150, 175, 255, 0.16), inset 0 -18px 26px -18px color-mix(in oklab, var(--zc, #4f8dff) 55%, transparent), 0 1px 0 rgba(255, 255, 255, 0.06);
+  transition: box-shadow 0.3s;
+}
+.ar-overlay .ar-side.a .ar-unit { --zc: var(--you); }
+.ar-overlay .ar-side.b .ar-unit { --zc: var(--foe); }
+.ar-overlay .ar-unit.is-turn::before { box-shadow: inset 0 3px 10px #000, inset 0 0 0 1px color-mix(in oklab, var(--zc) 80%, #fff), inset 0 -26px 34px -16px var(--zc), 0 0 26px -4px var(--zc); }
+.ar-overlay .ar-unit.dead::before { box-shadow: inset 0 3px 10px #000, inset 0 0 0 1px rgba(150, 175, 255, 0.08); }
+.ar-overlay .ar-unit.is-turn .ar-card { box-shadow: none; border-radius: 0; }
+.ar-overlay .ar-meta { min-width: 0; }
+.ar-overlay .ar-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+
+/* герб в центре */
+.ar-overlay .ar-vs {
+  position: relative;
+  width: 104px;
+  height: 104px;
+  border: 0;
+  background:
+    radial-gradient(circle at 50% 32%, rgba(140, 175, 255, 0.5), rgba(10, 16, 44, 0.96) 62%) padding-box;
+  box-shadow: 0 0 0 1px #05060c, 0 0 0 3px #5b6aa3, 0 0 0 4px #0a0e1f, 0 0 0 8px #141a30, 0 0 0 9px #3a4675, 0 0 34px rgba(90, 135, 255, 0.55), inset 0 2px 0 rgba(255, 255, 255, 0.25), inset 0 -14px 22px rgba(0, 0, 0, 0.55);
+}
+.ar-overlay .ar-vs::before { content: ""; position: absolute; inset: -17px; border-radius: 50%; border: 1px solid rgba(170, 195, 255, 0.35); border-left-color: transparent; border-right-color: transparent; animation: bd-spin 14s linear infinite; }
+.ar-overlay .ar-vs::after { content: ""; position: absolute; inset: -25px; border-radius: 50%; border: 1px dashed rgba(170, 195, 255, 0.22); animation: bd-spin 40s linear infinite reverse; }
+.ar-overlay .ar-vs b { font-size: 15px; text-shadow: 0 0 14px rgba(120, 165, 255, 0.9); }
+
+/* HUD: плашки сторон и медаль раунда */
+.ar-overlay .ar-team {
+  position: relative;
+  padding: 11px 18px 11px 22px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(180deg, #151826, #0c0e17);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07), 0 12px 26px -18px #000;
+  clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 50%, calc(100% - 14px) 100%, 0 100%);
+}
+.ar-overlay .ar-team.b { padding: 11px 22px 11px 18px; clip-path: polygon(14px 0, 100% 0, 100% 100%, 14px 100%, 0 50%); }
+.ar-overlay .ar-team::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 5px; background: linear-gradient(180deg, #8fb6ff, #2f6ff0); box-shadow: 0 0 14px #3f7dff; }
+.ar-overlay .ar-team.b::before { left: auto; right: 0; background: linear-gradient(180deg, #ff9ab4, #e02a5c); box-shadow: 0 0 14px #ff4f7a; }
+.ar-overlay .ar-tn { font-weight: 800; letter-spacing: 0.12em; }
+.ar-overlay .ar-tb { height: 14px; border-radius: 4px; background: #05070f; box-shadow: inset 0 2px 5px #000, inset 0 0 0 1px rgba(150, 175, 255, 0.18); }
+.ar-overlay .ar-tb i { border-radius: 3px; }
+.ar-overlay .ar-tb::after { content: ""; position: absolute; inset: 0; background: repeating-linear-gradient(90deg, transparent 0 calc(10% - 2px), rgba(3, 5, 12, 0.85) calc(10% - 2px) 10%), linear-gradient(180deg, rgba(255, 255, 255, 0.3), transparent 50%); pointer-events: none; }
+.ar-overlay .ar-team em { font-size: 16px; min-width: 52px; text-align: right; }
+.ar-overlay .ar-team.b em { text-align: left; }
+.ar-overlay .ar-round {
+  position: relative;
+  min-width: 78px;
+  padding: 10px 18px;
+  border: 0;
+  border-radius: 0;
+  background: linear-gradient(180deg, #1c2340, #0b0e1c);
+  clip-path: polygon(50% 0, 100% 24%, 100% 76%, 50% 100%, 0 76%, 0 24%);
+  filter: drop-shadow(0 0 12px rgba(90, 135, 255, 0.5));
+}
+.ar-overlay .ar-round::before { content: ""; position: absolute; inset: 2px; clip-path: inherit; background: linear-gradient(180deg, rgba(150, 180, 255, 0.5), rgba(60, 80, 150, 0.2)); z-index: -1; }
+.ar-overlay .ar-round::after { content: ""; position: absolute; inset: 4px; clip-path: inherit; background: radial-gradient(100% 90% at 50% 0, #24306a, #090c1a); z-index: -1; }
+.ar-overlay .ar-round b { font-size: 24px; text-shadow: 0 0 14px rgba(120, 165, 255, 0.9); }
+
+/* бой помещается в экран: карты подстраиваются под высоту окна */
+@media (min-width: 861px) {
+  .cg-modal.ar-overlay { padding-top: 22px; }
+  .ar-overlay .ar-unit { width: min(100%, 128px, max(78px, calc((100dvh - 500px) * 0.3))); }
+  .ar-overlay .ar-name { display: none; }
+  .ar-overlay .ar-meta { justify-content: center; }
+  .ar-overlay .ar-num { font-variant-numeric: tabular-nums; font-size: 11.5px; letter-spacing: 0.02em; }
+  .ar-overlay .ar-side { gap: 14px clamp(14px, 2.2vw, 28px); }
+}
+@media (max-width: 860px) {
+  .ar-overlay .ar-field { padding: 22px 16px; border-radius: 22px; }
+  .bd-c { width: 46px; height: 46px; }
+  .bd-c::after { left: 9px; top: 9px; width: 9px; height: 9px; }
+  .bd-line { left: 13px; right: 13px; top: 50%; bottom: auto; width: auto; height: 2px; margin: -1px 0 0; background: linear-gradient(90deg, transparent, rgba(160, 190, 255, 0.5) 18%, transparent 40%, transparent 60%, rgba(160, 190, 255, 0.5) 82%, transparent); }
+  .bd-line::before, .bd-line::after { display: none; }
+  .bd-ring { width: 150px; }
+  .ar-overlay .ar-unit::before { left: -4px; right: -4px; top: -4px; border-radius: 10px; }
+  .ar-overlay .ar-vs { width: 64px; height: 64px; }
+  .ar-overlay .ar-vs::after { display: none; }
+  .ar-overlay .ar-vs::before { inset: -10px; }
+  .ar-overlay .ar-team, .ar-overlay .ar-team.b { padding: 8px 14px; }
+  .ar-overlay .ar-team em { min-width: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bd-sheen, .bd-m, .bd-ring::before, .bd-ring::after, .bd-c::after, .ar-overlay .ar-vs::before, .ar-overlay .ar-vs::after { animation: none !important; }
+  .bd-m { display: none; }
+}
+html[data-eco="on"] .bd-sheen, html[data-eco="on"] .bd-m { display: none; }
+
+/* ====================================================================== */
+/*  Сцена за столом: туманность, звёзды, планета, скалы арены, лучи       */
+/*  Палитра зависит от правила арены дня (класс bg-<id> на оверлее)       */
+/* ====================================================================== */
+.cg-modal.ar-overlay { --b1: #2f5cff; --b2: #8a3dff; --b3: #a9c0ff; --b0: #070a1c; background: #04050a; isolation: isolate; }
+.ar-overlay.bg-a-moon, .ar-overlay.bg-a-hunt { --b1: #6d4dff; --b2: #ff4fb0; --b3: #e3c9ff; --b0: #0d0720; }
+.ar-overlay.bg-a-storm, .ar-overlay.bg-a-charge { --b1: #2f7bff; --b2: #35d0ff; --b3: #c9ecff; --b0: #05101f; }
+.ar-overlay.bg-a-calm, .ar-overlay.bg-a-iron { --b1: #1fa3c7; --b2: #3f6cff; --b3: #cfeaf2; --b0: #06131a; }
+.ar-overlay.bg-a-fragile, .ar-overlay.bg-a-ash { --b1: #ff5a3a; --b2: #ffa23d; --b3: #ffd9b8; --b0: #170806; }
+.ar-overlay.bg-a-bless, .ar-overlay.bg-a-chaos { --b1: #58d8ff; --b2: #c66bff; --b3: #f1e6ff; --b0: #0a0a1e; }
+
+.cg-modal.ar-overlay > .ar-bg { width: auto; max-height: none; border: 0; border-radius: 0; padding: 0; box-shadow: none; animation: none; }
+.ar-bg { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; background: linear-gradient(180deg, #030409 0, var(--b0) 46%, #05050c 100%); }
+.ar-bg i { position: absolute; display: block; }
+.bg-gl { position: absolute; inset: 0; width: 100%; height: 100%; display: block; opacity: 0; transition: opacity 0.8s; }
+.bg-gl[data-on="1"] { opacity: 1; }
+.bg-vig { inset: 0; background: radial-gradient(120% 90% at 50% 45%, transparent 55%, rgba(2, 3, 8, 0.6) 100%); }
+
+/* ====================================================================== */
+/*  Верхняя панель и кнопки управления боем                               */
+/* ====================================================================== */
+.cg.cg.cg .ar-overlay .ar-top {
+  position: relative;
+  padding: 10px 14px 10px 20px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  background: linear-gradient(180deg, rgba(24, 28, 46, 0.92), rgba(9, 11, 20, 0.92));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.09), 0 16px 34px -22px #000;
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+.cg.cg.cg .ar-overlay .ar-top::after { content: ""; position: absolute; left: 18px; right: 18px; bottom: -1px; height: 1px; background: linear-gradient(90deg, transparent, color-mix(in oklab, var(--b1) 70%, #fff), transparent); opacity: 0.8; }
+.cg .ar-overlay .ar-title { display: flex; align-items: center; gap: 12px; letter-spacing: 0.01em; text-shadow: 0 2px 10px rgba(0, 0, 0, 0.6); }
+.cg .ar-overlay .ar-title::before { content: ""; flex: none; width: 12px; height: 12px; rotate: 45deg; background: radial-gradient(circle at 35% 30%, #fff, var(--b1) 45%, #101a4a); box-shadow: 0 0 12px var(--b1), 0 0 0 2px #0a0e1f, 0 0 0 3px rgba(170, 195, 255, 0.6); }
+
+/* очередь ходов и журнал — в тон столу */
+.cg .ar-overlay .ar-queue, .cg .ar-overlay .ar-log {
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  background: linear-gradient(180deg, rgba(20, 23, 38, 0.88), rgba(9, 11, 19, 0.88));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07), 0 14px 30px -22px #000;
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+.cg .ar-overlay .ar-queue .aq-it { box-shadow: 0 0 0 1px #05060c, 0 0 0 2px color-mix(in oklab, var(--rc, #8fb0ff) 70%, #1a2040), 0 4px 10px -4px #000; }
+.cg .ar-overlay .ar-queue .aq-it.now { scale: 1.12; box-shadow: 0 0 0 1px #05060c, 0 0 0 2px #fff, 0 0 16px rgba(120, 165, 255, 0.9); }
+
+@media (max-width: 860px) {
+  .cg.cg.cg .ar-overlay .ar-top { padding: 8px 10px; }
+  .cg .ar-overlay .ar-title::before { display: none; }
+}
+
+/* ====================================================================== */
+/*  Кнопки боя: готовые игровые плашки (public/cards/ui/btn-*.webp),      */
+/*  растянутые как рамка из девяти частей — текст остаётся живым          */
+/* ====================================================================== */
+.cg.cg.cg .ar-overlay .cg-btn,
+.cg.cg.cg .ar-overlay .ar-top .cg-seg button,
+.cg.cg.cg .ar-overlay .cmd-act {
+  --plate: url("/cards/ui/btn-idle.webp");
+  position: relative !important;
+  box-sizing: border-box !important;
+  overflow: visible !important;
+  min-height: 46px !important;
+  padding: 0 4px !important;
+  border-style: solid !important;
+  border-color: transparent !important;
+  border-width: 14px 20px !important;
+  border-radius: 0 !important;
+  border-image: var(--plate) 66 fill / 15px 21px / 2px stretch !important;
+  background: none !important;
+  box-shadow: none !important;
+  color: #f2f6ff !important;
+  font-weight: 800 !important; font-size: 13px !important; line-height: 1 !important; font-family: var(--font-display, inherit) !important;
+  letter-spacing: 0.08em !important;
+  text-transform: uppercase !important;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.9), 0 0 10px rgba(110, 160, 255, 0.6) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  cursor: pointer;
+  transition: transform 0.12s, filter 0.18s !important;
+  -webkit-tap-highlight-color: transparent;
+}
+.cg.cg.cg .ar-overlay .cg-btn::before,
+.cg.cg.cg .ar-overlay .cg-btn::after { display: none !important; }
+.cg.cg.cg .ar-overlay .cg-btn:hover:not(:disabled),
+.cg.cg.cg .ar-overlay .ar-top .cg-seg button:hover,
+.cg.cg.cg .ar-overlay .cmd-act:hover:not(:disabled) { background: none !important; filter: brightness(1.22) drop-shadow(0 0 8px rgba(90, 150, 255, 0.7)) !important; transform: translateY(-1px) !important; box-shadow: none !important; }
+.cg.cg.cg .ar-overlay .cg-btn:active:not(:disabled),
+.cg.cg.cg .ar-overlay .ar-top .cg-seg button:active,
+.cg.cg.cg .ar-overlay .cmd-act:active:not(:disabled) { background: none !important; filter: brightness(0.86) !important; transform: translateY(2px) scale(0.985) !important; }
+.cg.cg.cg .ar-overlay .cg-btn:focus-visible,
+.cg.cg.cg .ar-overlay .ar-top .cg-seg button:focus-visible,
+.cg.cg.cg .ar-overlay .cmd-act:focus-visible { outline: 2px solid #b9d2ff !important; outline-offset: 4px !important; }
+/* активное состояние и главные кнопки — светящаяся синяя плашка */
+.cg.cg.cg .ar-overlay .cg-btn[aria-pressed="true"],
+.cg.cg.cg .ar-overlay .cg-btn.pri,
+.cg.cg.cg .ar-overlay .ar-top .cg-seg button[aria-pressed="true"],
+.cg.cg.cg .ar-overlay .cmd-act[aria-pressed="true"],
+.cg.cg.cg .ar-overlay .cmd-act.ult:not(:disabled) {
+  --plate: url("/cards/ui/btn-on.webp");
+  color: #fff !important;
+  text-shadow: 0 1px 0 rgba(4, 16, 80, 0.95), 0 0 12px rgba(255, 255, 255, 0.55) !important;
+}
+.cg.cg.cg .ar-overlay .cg-btn:disabled,
+.cg.cg.cg .ar-overlay .cmd-act:disabled { --plate: url("/cards/ui/btn-off.webp"); color: #aab0c2 !important; opacity: 0.8 !important; filter: none !important; cursor: not-allowed; text-shadow: 0 1px 0 rgba(0, 0, 0, 0.8) !important; }
+/* квадратные кнопки: пауза и качество эффектов */
+.cg.cg.cg .ar-overlay .ar-top .ar-ctl { width: 54px !important; min-width: 54px !important; padding: 0 !important; border-width: 14px 16px !important; border-image-width: 15px 19px !important; letter-spacing: 0.02em !important; }
+/* скорость: две плашки вплотную */
+.cg.cg.cg .ar-overlay .ar-top .cg-seg { display: inline-flex !important; gap: 0 !important; padding: 0 !important; border: 0 !important; background: none !important; box-shadow: none !important; }
+.cg.cg.cg .ar-overlay .ar-top .cg-seg button { min-width: 56px !important; padding: 0 !important; border-width: 14px 16px !important; border-image-width: 15px 19px !important; }
+.cg.cg.cg .ar-overlay .ar-top .cg-seg button + button { margin-left: -6px !important; }
+.cg.cg.cg .ar-overlay .cg-btn.lg { min-height: 56px !important; font-size: 15px !important; border-width: 17px 30px !important; border-image-width: 18px 26px !important; }
+/* действия героя в панели хода */
+.cg.cg.cg .ar-overlay .cmd-act { min-height: 58px !important; justify-content: flex-start !important; text-align: left !important; text-transform: none !important; letter-spacing: 0 !important; border-width: 12px 18px !important; border-image-width: 15px 21px !important; gap: 10px !important; }
+.cg.cg.cg .ar-overlay .cmd-act .cmd-g { background: rgba(4, 8, 22, 0.55); border-color: color-mix(in oklab, var(--fxc) 45%, transparent); }
+.cg.cg.cg .ar-overlay .cmd-act .cmd-n b { font-weight: 800; font-size: 13.5px; line-height: 1.2; font-family: var(--font-display, inherit); text-transform: none; }
+.cg.cg.cg .ar-overlay .cmd-act .cmd-n small { font-weight: 500; font-size: 11px; line-height: 1.2; font-family: var(--font-body, inherit); letter-spacing: 0; text-shadow: none; color: rgba(235, 242, 255, 0.72); }
+.cg.cg.cg .ar-overlay .ar-auto[aria-pressed="true"] { box-shadow: none !important; background: none !important; }
+
+@media (max-width: 860px) {
+  .cg.cg.cg .ar-overlay .ar-top .cg-btn { min-height: 40px !important; font-size: 10.5px !important; letter-spacing: 0.04em !important; border-width: 12px 13px !important; border-image-width: 13px 16px !important; padding: 0 !important; }
+  .cg.cg.cg .ar-overlay .ar-top .ar-ctl { width: 42px !important; min-width: 42px !important; border-width: 12px 11px !important; }
+  .cg.cg.cg .ar-overlay .ar-top .cg-seg button { min-width: 42px !important; min-height: 40px !important; font-size: 11px !important; border-width: 12px 11px !important; border-image-width: 13px 16px !important; }
+  .cg.cg.cg .ar-overlay .cmd-act { min-height: 52px !important; border-width: 10px 13px !important; border-image-width: 13px 17px !important; }
+}
+
+/* ====================================================================== */
+/*  Удары и числа урона: холст боевых эффектов (battlefx.ts), рывок карты */
+/*  с шлейфом, «тяжёлые» числа с отскоком                                 */
+/* ====================================================================== */
+.ar-cfx { z-index: 17; mix-blend-mode: screen; }
+.ar-field .ar-unit.act-atk .ar-card { animation: ar-strike2 0.64s cubic-bezier(0.3, 0, 0.2, 1) both; }
+@keyframes ar-strike2 {
+  0% { transform: none; filter: none; }
+  16% { transform: translate(calc(var(--ax) * -0.12), calc(var(--ay) * -0.12 - 12px)) rotate(calc(var(--dir, 1) * -9deg)) scale(1.16); filter: drop-shadow(0 22px 16px rgba(0, 0, 0, 0.6)) brightness(1.1); }
+  22% { transform: translate(calc(var(--ax) * -0.12), calc(var(--ay) * -0.12 - 12px)) rotate(calc(var(--dir, 1) * -9deg)) scale(1.16); filter: drop-shadow(0 22px 16px rgba(0, 0, 0, 0.6)) brightness(1.3); }
+  31% { transform: translate(var(--ax), var(--ay)) rotate(calc(var(--dir, 1) * 11deg)) scale(1.18); filter: drop-shadow(calc(var(--dir, 1) * -26px) 0 10px color-mix(in oklab, var(--rc, #8fb0ff) 70%, transparent)) drop-shadow(calc(var(--dir, 1) * -54px) 0 16px color-mix(in oklab, var(--rc, #8fb0ff) 35%, transparent)) brightness(1.4); }
+  37% { transform: translate(calc(var(--ax) * 1.02), var(--ay)) rotate(calc(var(--dir, 1) * 6deg)) scale(1.1, 1.14); filter: brightness(1.25); }
+  46% { transform: translate(calc(var(--ax) * 0.86), calc(var(--ay) * 0.86 - 6px)) rotate(calc(var(--dir, 1) * -5deg)) scale(1.05); filter: none; }
+  100% { transform: none; filter: none; }
+}
+/* числа урона: вылетают с отскоком, крит — крупный, с золотой обводкой */
+.cg .ar-float { animation: ar-float2 1.25s cubic-bezier(0.2, 0.8, 0.3, 1) forwards; -webkit-text-stroke: 1px rgba(8, 10, 24, 0.85); paint-order: stroke fill; letter-spacing: 0.01em; }
+.cg .ar-float.dmg { color: #ff8795; text-shadow: 0 3px 0 rgba(60, 0, 14, 0.9), 0 0 16px rgba(255, 70, 90, 0.75); }
+.cg .ar-float.big { text-shadow: 0 3px 0 rgba(70, 20, 0, 0.9), 0 0 20px rgba(255, 110, 60, 0.9); }
+.cg .ar-float.crit {
+  font-size: clamp(30px, 4.4vw, 46px);
+  color: #fff3b8;
+  -webkit-text-stroke: 1.5px #7a3d00;
+  text-shadow: 0 4px 0 #5a2a00, 0 0 22px rgba(255, 190, 40, 0.95), 0 0 46px rgba(255, 120, 20, 0.6);
+  animation: ar-float-crit 1.4s cubic-bezier(0.2, 0.8, 0.3, 1) forwards;
+}
+.cg .ar-float.heal { text-shadow: 0 3px 0 rgba(0, 50, 28, 0.9), 0 0 16px rgba(70, 230, 160, 0.8); }
+@keyframes ar-float2 {
+  0% { transform: translate(calc(-50% + var(--x, 0px)), 14px) scale(0.3) rotate(-6deg); opacity: 0; }
+  12% { transform: translate(calc(-50% + var(--x, 0px)), -14px) scale(1.45) rotate(3deg); opacity: 1; }
+  24% { transform: translate(calc(-50% + var(--x, 0px)), -8px) scale(0.94) rotate(0deg); }
+  34% { transform: translate(calc(-50% + var(--x, 0px)), -12px) scale(1.04); }
+  70% { opacity: 1; }
+  100% { transform: translate(calc(-50% + var(--x, 0px)), -64px) scale(0.92); opacity: 0; }
+}
+@keyframes ar-float-crit {
+  0% { transform: translate(calc(-50% + var(--x, 0px)), 10px) scale(0.2) rotate(-12deg); opacity: 0; filter: brightness(3); }
+  10% { transform: translate(calc(-50% + var(--x, 0px)), -22px) scale(1.9) rotate(5deg); opacity: 1; filter: brightness(2); }
+  20% { transform: translate(calc(-50% + var(--x, 0px)), -14px) scale(0.92) rotate(-2deg); filter: none; }
+  30% { transform: translate(calc(-50% + var(--x, 0px)), -18px) scale(1.08) rotate(0deg); }
+  75% { opacity: 1; }
+  100% { transform: translate(calc(-50% + var(--x, 0px)), -78px) scale(1); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ar-cfx { display: none !important; }
+  .cg .ar-float, .cg .ar-float.crit { animation-duration: 0.01ms !important; }
+}
+html[data-eco="on"] .ar-cfx { display: none !important; }
+
+
+/* ======================= Именной ультимейт: Бан-кай и др. ======================= */
+.ar-bk { --T: 3200ms; --sx: 1; position: absolute; inset: 0; z-index: 24; pointer-events: none; overflow: hidden; contain: layout paint; }
+.ar-bk.side-b { --sx: -1; }
+.ar-bk > i, .ar-bk > span { position: absolute; display: block; }
+.bk-dim { inset: 0; background: radial-gradient(75% 85% at 50% 52%, color-mix(in oklab, var(--ec) 18%, #05060f), #010207 88%); animation: bk-dim var(--T) linear both; }
+.bk-rays { left: 50%; top: 52%; width: 220%; aspect-ratio: 1; translate: -50% -50%; opacity: 0; border-radius: 50%;
+  background: repeating-conic-gradient(from 0deg, color-mix(in oklab, var(--ec) 55%, transparent) 0 3deg, transparent 3deg 11deg);
+  -webkit-mask: radial-gradient(closest-side, transparent 8%, #000 30%, transparent 78%); mask: radial-gradient(closest-side, transparent 8%, #000 30%, transparent 78%);
+  animation: bk-rays var(--T) linear both; }
+.bk-ring { left: 50%; top: 52%; width: 36%; aspect-ratio: 1; translate: -50% -50%; border-radius: 50%; opacity: 0;
+  border: 2px solid var(--ec2); box-shadow: 0 0 40px var(--ec), inset 0 0 40px color-mix(in oklab, var(--ec) 60%, transparent); }
+.bk-ring.r1 { animation: bk-ring var(--T) ease-out both; animation-delay: .35s; }
+.bk-ring.r2 { animation: bk-ring var(--T) ease-out both; animation-delay: .65s; }
+.bk-ring.r3 { animation: bk-ring var(--T) ease-out both; animation-delay: .95s; }
+.bk-kanji { left: 50%; top: 50%; translate: -50% -50%; font: 900 clamp(120px, 34vmin, 380px)/1 "Yu Mincho", "Noto Serif JP", "MS Mincho", "Hiragino Mincho ProN", serif; white-space: nowrap;
+  color: transparent; -webkit-text-stroke: 3px color-mix(in oklab, var(--ec2) 85%, transparent); text-shadow: 0 0 60px var(--ec); opacity: 0; animation: bk-kanji var(--T) cubic-bezier(.2, .8, .2, 1) both; }
+.bk-hero { left: 50%; bottom: -4%; height: 92%; aspect-ratio: 5 / 7; translate: -50% 0; opacity: 0; -webkit-mask: linear-gradient(180deg, #000 55%, transparent); mask: linear-gradient(180deg, #000 55%, transparent);
+  filter: drop-shadow(0 0 28px var(--ec)); animation: bk-hero var(--T) cubic-bezier(.2, .8, .2, 1) both; }
+.bk-hero img { width: 100%; height: 100%; object-fit: cover; object-position: center top; border-radius: 14px; }
+.bk-embers { inset: 0; opacity: 0; background-image: radial-gradient(2px 2px at 12% 90%, var(--ec2), transparent), radial-gradient(3px 3px at 30% 80%, var(--ec), transparent), radial-gradient(2px 2px at 48% 95%, var(--ec2), transparent),
+  radial-gradient(3px 3px at 66% 85%, var(--ec), transparent), radial-gradient(2px 2px at 82% 92%, var(--ec2), transparent), radial-gradient(2px 2px at 92% 78%, var(--ec), transparent); background-size: 100% 100%; animation: bk-embers var(--T) ease-out both; }
+.bk-txt { position: absolute; left: 0; right: 0; bottom: 7%; z-index: 3; text-align: center; display: grid; gap: 4px; justify-items: center; opacity: 0; animation: bk-txt var(--T) cubic-bezier(.2, .8, .2, 1) both; }
+.bk-txt small { font: 700 clamp(11px, 1.6vmin, 15px)/1 var(--font-oswald, inherit); letter-spacing: .32em; text-transform: uppercase; color: var(--ec2); text-shadow: 0 0 12px var(--ec); }
+.bk-txt b { font: 800 clamp(22px, 5.4vmin, 56px)/1.05 var(--font-playfair, serif); color: #fff; padding: 4px 28px; text-shadow: 0 0 24px var(--ec), 0 4px 18px rgba(0, 0, 0, .9); background: linear-gradient(90deg, transparent, rgba(0, 0, 0, .55) 20%, rgba(0, 0, 0, .55) 80%, transparent); }
+.bk-slash { left: -10%; width: 120%; height: 4px; top: 40%; opacity: 0; background: linear-gradient(90deg, transparent, #fff 20%, var(--ec2) 50%, #fff 80%, transparent); box-shadow: 0 0 24px 4px var(--ec); transform: rotate(-18deg) scaleX(0); }
+.bk-slash.s1 { animation: bk-slash var(--T) ease-out both; }
+.bk-slash.s2 { top: 58%; transform: rotate(14deg) scaleX(0); animation: bk-slash2 var(--T) ease-out both; }
+.bk-flash { inset: 0; background: #fff; opacity: 0; animation: bk-flash var(--T) linear both; }
+@keyframes bk-dim { 0% { opacity: 0; } 8% { opacity: 1; } 92% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes bk-rays { 0% { opacity: 0; transform: rotate(0) scale(.5); } 18% { opacity: .55; } 90% { opacity: .45; } 100% { opacity: 0; transform: rotate(40deg) scale(1.15); } }
+@keyframes bk-ring { 0% { opacity: .95; transform: scale(.2); } 70% { opacity: .35; } 100% { opacity: 0; transform: scale(3.3); } }
+@keyframes bk-kanji { 0%, 6% { opacity: 0; transform: scale(1.5); } 22% { opacity: 1; transform: scale(1); } 80% { opacity: .85; transform: scale(1.05); } 100% { opacity: 0; transform: scale(1.25); } }
+@keyframes bk-hero { 0%, 14% { opacity: 0; transform: translateX(calc(var(--sx) * -12%)) scale(.94); } 30% { opacity: 1; transform: translateX(0) scale(1); } 86% { opacity: 1; transform: scale(1.04); } 100% { opacity: 0; transform: scale(1.1); } }
+@keyframes bk-embers { 0% { opacity: 0; transform: translateY(14%); } 24% { opacity: 1; } 100% { opacity: 0; transform: translateY(-26%); } }
+@keyframes bk-txt { 0%, 30% { opacity: 0; transform: translateY(18px) scale(.96); } 42% { opacity: 1; transform: none; } 88% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes bk-slash { 0%, 26% { opacity: 0; transform: rotate(-18deg) scaleX(0); } 30% { opacity: 1; transform: rotate(-18deg) scaleX(1); } 46% { opacity: 0; transform: rotate(-18deg) scaleX(1.1); } 100% { opacity: 0; } }
+@keyframes bk-slash2 { 0%, 31% { opacity: 0; transform: rotate(14deg) scaleX(0); } 35% { opacity: 1; transform: rotate(14deg) scaleX(1); } 50% { opacity: 0; transform: rotate(14deg) scaleX(1.1); } 100% { opacity: 0; } }
+@keyframes bk-flash { 0%, 12% { opacity: 0; } 14% { opacity: .75; } 26% { opacity: 0; } 92% { opacity: 0; } 96% { opacity: .55; } 100% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .bk-rays, .bk-ring, .bk-embers, .bk-slash { animation: none; opacity: 0; } }
+html[data-eco="on"] .bk-rays, html[data-eco="on"] .bk-ring, html[data-eco="on"] .bk-embers { display: none; }
+
+/* ── v9: рубящие/колющие эффекты без широкой белой полосы + премиальная лента умения ── */
+.ar-fx.fx-slash::before {
+  inset: auto; left: -14%; right: -14%; top: 50%; height: 3px; border-radius: 3px; rotate: -34deg;
+  background: linear-gradient(90deg, transparent, color-mix(in oklab, var(--fxc) 70%, transparent) 22%, #fff 50%, color-mix(in oklab, var(--fxc) 70%, transparent) 78%, transparent);
+  box-shadow: 0 0 10px 1px color-mix(in oklab, var(--fxc) 80%, transparent), 0 0 26px 2px color-mix(in oklab, var(--fxc) 40%, transparent);
+  transform-origin: 20% 50%;
+  animation: arx-blade 0.42s cubic-bezier(.2,.8,.2,1) 0.2s both;
+}
+.ar-fx.fx-slash::after {
+  inset: auto; left: -4%; right: 6%; top: 58%; height: 1.5px; rotate: -34deg;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.75), transparent);
+  box-shadow: 0 0 8px color-mix(in oklab, var(--fxc) 70%, transparent);
+  animation: arx-blade 0.42s cubic-bezier(.2,.8,.2,1) 0.27s both;
+}
+@keyframes arx-blade {
+  0% { opacity: 0; transform: scaleX(0.05); }
+  22% { opacity: 1; }
+  60% { opacity: 1; transform: scaleX(1); }
+  100% { opacity: 0; transform: scaleX(1.06); }
+}
+.ar-fx.fx-pierce::before {
+  background: linear-gradient(90deg, transparent 48.6%, #fff 49.7%, #fff 50.3%, transparent 51.4%);
+  filter: drop-shadow(0 0 6px var(--fxc));
+}
+.ar-unit.hit .ar-card { animation: cg-shake 0.42s, ar-hitblink2 0.42s; }
+@keyframes ar-hitblink2 { 0%, 100% { filter: none; } 15% { filter: brightness(1.45) saturate(.8); } }
+
+.cg .ar-overlay .ar-mid .ar-banner.ar-banner {
+  min-width: min(480px, 88vw); padding: 13px 30px 13px 16px; gap: 0 18px;
+  clip-path: polygon(22px 0, 100% 0, calc(100% - 22px) 100%, 0 100%);
+  background:
+    linear-gradient(100deg, color-mix(in oklab, var(--fxc) 38%, transparent) 0, transparent 46%),
+    radial-gradient(120% 140% at 0% 0%, rgba(255,255,255,.07), transparent 50%),
+    linear-gradient(180deg, rgba(22, 30, 62, .94), rgba(6, 9, 24, .97) 70%);
+  -webkit-backdrop-filter: blur(14px) saturate(1.3); backdrop-filter: blur(14px) saturate(1.3);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.22), inset 0 -1px 0 color-mix(in oklab, var(--fxc) 55%, transparent), inset 3px 0 0 var(--fxc);
+  filter: drop-shadow(0 20px 34px rgba(0,0,0,.75)) drop-shadow(0 0 20px color-mix(in oklab, var(--fxc) 42%, transparent));
+}
+.cg .ar-overlay .ar-mid .ar-banner::before { height: 1px; background: linear-gradient(90deg, transparent 4%, color-mix(in oklab, var(--fxc) 80%, #fff) 30%, #fff 50%, color-mix(in oklab, var(--fxc) 80%, #fff) 70%, transparent 96%); opacity: .85; }
+.cg .ar-overlay .ar-mid .ar-b-ico {
+  width: 52px; height: 52px; border: 0;
+  background: radial-gradient(circle at 50% 32%, color-mix(in oklab, var(--fxc) 34%, #101a3e), #050816 78%);
+  box-shadow: 0 0 0 1.5px color-mix(in oklab, var(--fxc) 70%, transparent), 0 0 0 5px rgba(255,255,255,.04), 0 0 22px color-mix(in oklab, var(--fxc) 55%, transparent), inset 0 1px 0 rgba(255,255,255,.25);
+}
+.cg .ar-overlay .ar-mid .ar-b-who { font: 600 10px var(--font-body, inherit); letter-spacing: .26em; color: color-mix(in oklab, var(--fxc) 45%, #cdd8f5); opacity: .9; }
+.cg .ar-overlay .ar-mid .ar-b-name { font: 800 23px / 1.1 var(--fx-head); letter-spacing: -.015em; text-shadow: 0 0 18px color-mix(in oklab, var(--fxc) 55%, transparent), 0 2px 0 rgba(0,0,0,.4); }
+.cg .ar-overlay .ar-mid .ar-b-tg { padding: 5px 13px; font: 600 10.5px var(--font-body, inherit); letter-spacing: .08em; text-transform: uppercase; background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.18); color: #e8eeff; }
+.cg .ar-overlay .ar-mid .ar-banner::after { background: linear-gradient(105deg, transparent 42%, rgba(255,255,255,.16) 50%, transparent 58%); }
+
+/* ── v9: премиальный кат-ин ультимейта ───────────────────────────────── */
+.uc-band {
+  border-block: 0;
+  background:
+    radial-gradient(60% 130% at calc(50% - var(--sx) * 26%) 50%, color-mix(in oklab, var(--ec) 30%, transparent), transparent 70%),
+    linear-gradient(calc(90deg * var(--sx)), color-mix(in oklab, var(--ec) 16%, transparent), transparent 55%),
+    radial-gradient(circle, rgba(255, 255, 255, 0.055) 1px, transparent 1.6px) 0 0 / 8px 8px,
+    linear-gradient(180deg, #0b1020, #04060d 55%, #080c1a);
+  box-shadow: 0 0 80px color-mix(in oklab, var(--ec) 40%, transparent), inset 0 0 90px rgba(0, 0, 0, 0.6);
+}
+.uc-band::before, .uc-band::after {
+  content: ""; position: absolute; left: 0; right: 0; height: 2px; pointer-events: none;
+  background: linear-gradient(90deg, transparent, color-mix(in oklab, var(--ec2) 60%, transparent) 14%, #fff 50%, color-mix(in oklab, var(--ec2) 60%, transparent) 86%, transparent);
+  box-shadow: 0 0 14px color-mix(in oklab, var(--ec) 70%, transparent);
+}
+.uc-band::before { top: 0; }
+.uc-band::after { bottom: 0; opacity: .7; }
+/* на широких экранах композиция держится по центру, а не разъезжается по краям */
+.uc-art { left: max(6%, calc(50% - 720px)); }
+.ar-ucut.side-b .uc-art { left: auto; right: max(6%, calc(50% - 720px)); }
+.uc-txt { left: max(40%, calc(50% - 300px)); right: max(8%, calc(50% - 720px)); }
+.ar-ucut.side-b .uc-txt { left: max(8%, calc(50% - 720px)); right: max(40%, calc(50% - 300px)); }
+.uc-txt small { gap: 12px; letter-spacing: .34em; font-weight: 700; color: color-mix(in oklab, var(--ec2) 70%, #fff); }
+.uc-txt small em { padding: 5px 10px 4px; font-weight: 900; box-shadow: 0 0 18px color-mix(in oklab, var(--ec) 70%, transparent); }
+.uc-txt b {
+  font-weight: 800; letter-spacing: -.012em;
+  background: linear-gradient(180deg, #fff 18%, color-mix(in oklab, var(--ec2) 55%, #fff) 62%, color-mix(in oklab, var(--ec) 70%, #fff));
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent;
+  text-shadow: none;
+  filter: drop-shadow(0 2px 0 rgba(0, 0, 0, .7)) drop-shadow(0 0 22px color-mix(in oklab, var(--ec) 75%, transparent));
+}
+.uc-txt > span {
+  display: inline-flex; align-items: center; gap: 10px; border-top: 0; padding-top: 4px;
+  font-weight: 600; letter-spacing: .22em; text-transform: uppercase; color: rgba(255, 255, 255, .72);
+}
+.uc-txt > span::before { content: ""; width: 34px; height: 1px; background: linear-gradient(90deg, transparent, var(--ec2)); }
+.ar-ucut.side-b .uc-txt > span { flex-direction: row-reverse; }
+.ar-ucut.side-b .uc-txt > span::before { background: linear-gradient(270deg, transparent, var(--ec2)); }
+.uc-art img { filter: contrast(1.1) saturate(1.12) drop-shadow(0 0 26px color-mix(in oklab, var(--ec) 65%, transparent)) drop-shadow(0 6px 18px rgba(0, 0, 0, .6)); }
+
+/* правило арены в шапке боя: описание не налезает на название */
+.cg .ar-overlay .gx-arena.compact { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; column-gap: 10px; row-gap: 1px; max-width: 300px; }
+.cg .ar-overlay .gx-arena.compact .gx-arena-ico { grid-row: 1 / 3; }
+.cg .ar-overlay .gx-arena.compact .gx-arena-txt { grid-column: 2; grid-row: 1; }
+.cg .ar-overlay .gx-arena.compact .gx-arena-txt small { font-size: 9.5px; }
+.cg .ar-overlay .gx-arena.compact .gx-arena-sm { grid-column: 2; grid-row: 2; max-width: none; font-size: 11px; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* v9.1: в кат-ине выходит целая карта в рамке, а не обрезок арта */
+.uc-art.uc-card {
+  bottom: auto; top: calc(50% - min(42%, 280px)); height: min(84%, 560px); width: auto; aspect-ratio: 5 / 7;
+  -webkit-mask: none; mask: none;
+  filter: drop-shadow(0 22px 34px rgba(0, 0, 0, .7)) drop-shadow(0 0 30px color-mix(in oklab, var(--ec) 60%, transparent));
+}
+.uc-art.uc-card .gc { height: 100%; pointer-events: none; }
+.uc-art.uc-card.ghost { display: none; }
+.ar-ucut.tier-ss .uc-art.uc-card.ghost { display: block; mix-blend-mode: screen; }
+.ar-ucut.tier-ss .uc-art.uc-card.ghost .gc { filter: brightness(0) invert(1); opacity: .85; }
+.ar-ucut.tier-ss .uc-art.uc-card.ghost::after { display: none; }
+
+/* ── v10: ультимейт-кинематограф уровня AAA (обычные ульты) ───────────── */
+.ar-cine .cn-dim {
+  background:
+    radial-gradient(60% 70% at 50% 50%, color-mix(in oklab, var(--fxc) 22%, transparent), transparent 70%),
+    radial-gradient(90% 100% at 50% 50%, rgba(3, 5, 14, .55) 20%, rgba(1, 2, 8, .94) 100%);
+}
+/* золотые искры, поднимающиеся вверх */
+.ar-cine .cn-dim::after {
+  content: ""; position: absolute; inset: 0; opacity: .9;
+  background:
+    radial-gradient(circle, #ffe9a8 0 1.4px, transparent 2.6px) 8% 20% / 190px 230px,
+    radial-gradient(circle, #ffc65a 0 1.1px, transparent 2.2px) 46% 60% / 260px 190px,
+    radial-gradient(circle, #fff 0 .9px, transparent 2px) 78% 35% / 210px 280px,
+    radial-gradient(circle, #ffd27a 0 1.6px, transparent 3px) 30% 80% / 320px 240px;
+  animation: cn-embers 2.5s linear both;
+}
+@keyframes cn-embers { 0% { background-position: 8% 20%, 46% 60%, 78% 35%, 30% 80%; } 100% { background-position: 8% -140%, 46% -90%, 78% -170%, 30% -110%; } }
+/* лучи: тонкие, мягкие, а не белые полосы */
+.ar-cine .cn-rays {
+  width: 170%;
+  background: repeating-conic-gradient(from 0deg, color-mix(in oklab, var(--fxc) 40%, #ffd98a) 0 .45deg, transparent .45deg 7.5deg);
+  -webkit-mask: radial-gradient(closest-side, transparent 10%, rgba(0,0,0,.9) 26%, transparent 66%);
+  mask: radial-gradient(closest-side, transparent 10%, rgba(0,0,0,.9) 26%, transparent 66%);
+  animation-name: cn-rays2;
+}
+.ar-cine .cn-rays::after { content: ""; position: absolute; inset: 30%; border-radius: 50%; background: radial-gradient(circle, rgba(255, 226, 150, .38), rgba(255, 170, 60, .12) 40%, transparent 68%); }
+@keyframes cn-rays2 { 0% { opacity: 0; transform: rotate(0) scale(.85); } 16% { opacity: .34; } 78% { opacity: .3; } 100% { opacity: 0; transform: rotate(18deg) scale(1.08); } }
+/* кинематографические шторы с тонкой золотой кромкой */
+.ar-cine .cn-bar { background: linear-gradient(180deg, #010208, #04060f); }
+.ar-cine .cn-bar.t { box-shadow: 0 1px 0 rgba(255, 214, 120, .55), 0 6px 24px rgba(255, 170, 60, .18); }
+.ar-cine .cn-bar.b { box-shadow: 0 -1px 0 rgba(255, 214, 120, .55), 0 -6px 24px rgba(255, 170, 60, .18); }
+/* плашка */
+.ar-cine .cn-plate {
+  height: clamp(92px, 30%, 142px); margin-top: calc(clamp(92px, 30%, 142px) / -2); gap: clamp(16px, 2.8vw, 34px);
+  border-block: 0;
+  background:
+    linear-gradient(90deg, transparent, color-mix(in oklab, var(--fxc) 20%, transparent) 36%, transparent 64%),
+    linear-gradient(90deg, transparent 0, rgba(8, 11, 28, .96) 12%, rgba(8, 11, 28, .96) 88%, transparent 100%),
+    linear-gradient(180deg, #121a3a, #060818 52%, #0c1230);
+  box-shadow: 0 0 60px rgba(255, 180, 60, .32), 0 0 120px color-mix(in oklab, var(--fxc) 30%, transparent), 0 24px 40px -20px #000;
+}
+.ar-cine .cn-plate::before, .ar-cine .cn-plate::after { content: ""; position: absolute; left: 0; right: 0; pointer-events: none; }
+.ar-cine .cn-plate::before { top: 0; height: 2px; background: linear-gradient(90deg, transparent, #b8862c 10%, #fff3c4 50%, #b8862c 90%, transparent); box-shadow: 0 0 12px rgba(255, 190, 70, .8); }
+.ar-cine .cn-plate::after { bottom: 0; height: 2px; background: linear-gradient(90deg, transparent, #b8862c 10%, #ffe08a 50%, #b8862c 90%, transparent); box-shadow: 0 0 12px rgba(255, 190, 70, .7); }
+.ar-cine .cn-ico {
+  width: clamp(62px, 10vw, 96px); height: clamp(62px, 10vw, 96px); border: 3px solid transparent;
+  background: radial-gradient(circle at 50% 32%, color-mix(in oklab, var(--fxc) 38%, #101a40), #04060f 78%) padding-box, conic-gradient(from 20deg, #7a5410, #ffe9a3, #b8862c, #fff6d0, #7a5410) border-box;
+  box-shadow: 0 0 0 5px rgba(4, 6, 15, .9), 0 0 0 6px rgba(255, 214, 120, .4), 0 0 34px color-mix(in oklab, var(--fxc) 75%, transparent), 0 0 20px rgba(255, 176, 32, .55), inset 0 2px 0 rgba(255, 255, 255, .3);
+  position: relative;
+}
+.ar-cine .cn-ico::after { content: ""; position: absolute; inset: -14px; border-radius: 50%; border: 1px dashed rgba(255, 214, 120, .45); animation: bd-spin 14s linear infinite; }
+.ar-cine .cn-txt { gap: 4px; }
+.ar-cine .cn-txt small {
+  display: inline-flex; align-items: center; gap: 12px; font-weight: 700; letter-spacing: .36em; color: #ffd98a;
+}
+.ar-cine .cn-txt small::before { content: ""; width: 28px; height: 1px; background: linear-gradient(90deg, transparent, #ffd98a); }
+.ar-cine .cn-txt b {
+  font-size: clamp(26px, 4.8vw, 54px); font-weight: 800; font-style: italic; text-transform: uppercase; letter-spacing: -.005em; line-height: 1;
+  background: linear-gradient(180deg, #fff 22%, #ffe9a8 58%, #e9a53a);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  filter: drop-shadow(0 2px 0 rgba(0, 0, 0, .75)) drop-shadow(0 0 20px rgba(255, 170, 40, .55));
+}
+.ar-cine .cn-streak { height: 1.5px; background: linear-gradient(90deg, transparent, #ffe9a8, #fff, transparent); box-shadow: 0 0 10px rgba(255, 200, 90, .8); }

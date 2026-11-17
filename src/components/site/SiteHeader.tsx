@@ -57,7 +57,7 @@ import {
 } from "./header-data";
 import { AnimeOfTheDay } from "./AnimeOfTheDay";
 import { useAccount } from "@/lib/use-account";
-import { activatePremium } from "@/lib/auth";
+import { applyPremiumState, fetchPremiumState } from "@/lib/premium-cloud";
 import { useLinks } from "@/lib/accounts";
 import { addNotice, markNoticesRead, profileStore, purchaseItem, setNoticeRead, unreadCount, updateProfile, useProfile } from "@/lib/profile";
 import { timeAgo } from "@/lib/history";
@@ -434,18 +434,36 @@ export function SiteHeader({ onOpenSearch }: SiteHeaderProps) {
    * подсказки должны приходить с ним вместе.
    */
   const [chDone, setChDone] = useState(false);
-  const tgDone = links.some((item) => item.provider === "telegram");
+  /* Привязку Telegram знает сервер (вход/привязка через бота), а не только
+     локальный стор: берём оба источника */
+  const [srv, setSrv] = useState<{ linked: boolean; claimed: boolean } | null>(null);
+  const hasAccount = Boolean(account);
+  useEffect(() => {
+    if (!hasAccount) return;
+    let alive = true;
+    fetch("/api/bonus/telegram", { cache: "no-store" })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data: { linked?: boolean; claimed?: boolean } | null) => {
+        if (alive && data) setSrv({ linked: Boolean(data.linked), claimed: Boolean(data.claimed) });
+      })
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, [hasAccount]);
+  const tgDone = Boolean(srv?.linked) || links.some((item) => item.provider === "telegram");
   const done: Record<QuestId, boolean> = { tg: tgDone, ch: chDone };
   /* Отметка «бонус получен» лежит в localStorage, а сервер о ней не знает:
      читаем её через `useSyncExternalStore` — на сервере приходит false, на
      клиенте значение из хранилища. Через `useState` нельзя: инициализатор при
      гидрации не пересчитывается, и кнопка «Забрать награду» возвращалась бы
      навсегда. */
-  const granted = useSyncExternalStore(
+  const grantedLocal = useSyncExternalStore(
     bonusStoreSubscribe,
     () => bonusClaimed(account?.nickname),
     () => false,
   );
+  const granted = grantedLocal || Boolean(srv?.claimed);
   const [opened, setOpened] = useState<Record<string, boolean>>({});
   const [checking, setChecking] = useState(false);
   const [shaking, setShaking] = useState(false);
@@ -508,44 +526,49 @@ export function SiteHeader({ onOpenSearch }: SiteHeaderProps) {
     if (granted || checking) return;
     setChecking(true);
     setNoteIsError(false);
-    later(() => {
+    void (async () => {
+      type Reply = { ok: boolean; error?: string; linked?: boolean; subscribed?: boolean | null };
+      let reply: Reply;
+      try {
+        const res = await fetch("/api/bonus/telegram", { method: "POST" });
+        reply = (await res.json().catch(() => ({}))) as Reply;
+        if (!res.ok && !reply.error) reply = { ok: false, error: res.status === 401 ? BONUS_COPY.needAccount : "Не удалось проверить" };
+      } catch {
+        reply = { ok: false, error: "Нет связи с сервером. Попробуйте ещё раз" };
+      }
       setChecking(false);
-      const chDone = Boolean(opened["ch"]);
-      if (done["tg"] && chDone) {
-        const until = activatePremium(7);
-        if (until === null) {
-          setNoteIsError(true);
-          setNote(BONUS_COPY.needAccount);
-          setShaking(true);
-          later(() => setShaking(false), BONUS_TIMING.note);
-          return;
-        }
+      if (reply.linked !== undefined) setSrv((prev) => ({ linked: Boolean(reply.linked), claimed: prev?.claimed ?? false }));
+      if (reply.subscribed === true || reply.ok) {
         setChDone(true);
         setJust("ch");
         later(() => setJust(null), 1000);
-        // Титул из окна бонуса: попадает в «купленное» и сам надевается, если слот свободен
+      }
+      if (reply.ok) {
+        setSrv({ linked: true, claimed: true });
+        // Premium выдал сервер; титул — в профиль, он надевается, если слот свободен
         purchaseItem(BONUS_TITLE_ID, 0);
         if (!profileStore.get().titleId) updateProfile({ titleId: BONUS_TITLE_ID });
         addNotice("Получен титул «Звёздный странник» и 7 дней Premium");
         markBonusClaimed(account?.nickname);
+        void fetchPremiumState().then((state) => state && applyPremiumState(state));
         setDot(false);
         setNote(BONUS_COPY.grantedNote);
         return;
       }
-      /* Незакрытые шаги перечисляем так же, как макет, но подсказка честная:
-         Telegram проверяется по стору, подписка на канал — нет. */
-      const missed = [
-        done["tg"] ? null : BONUS_COPY.missTg,
-        chDone ? null : BONUS_COPY.missCh,
-      ].filter(Boolean);
+      if (reply.error === "Бонус уже получен") {
+        setSrv({ linked: true, claimed: true });
+        markBonusClaimed(account?.nickname);
+        setDot(false);
+        return;
+      }
       setShaking(true);
       setNoteIsError(true);
-      setNote(`Пока не видим: ${missed.join(" и ")}. Выполните шаг и проверьте ещё раз.`);
+      setNote(reply.error ?? "Не удалось проверить");
       later(() => {
         setShaking(false);
-        setNote((current) => (current.startsWith("Пока не видим") ? "" : current));
-      }, BONUS_TIMING.note);
-    }, BONUS_TIMING.check);
+        setNote((current) => (current === (reply.error ?? "Не удалось проверить") ? "" : current));
+      }, BONUS_TIMING.note * 2);
+    })();
   };
 
   /* -------------------------------- Разметка ---------------------------- */

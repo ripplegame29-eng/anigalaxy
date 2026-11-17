@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Cinzel, Montserrat, Onest, Unbounded } from "next/font/google";
+import { Cinzel, Dela_Gothic_One, Montserrat, Onest, Oswald, Playfair_Display, Unbounded } from "next/font/google";
 import "./globals.css";
 import "./ui-system.css";
 import "./ag-theme.css";
@@ -24,6 +24,7 @@ import "./nickname.css";
 import "./ag-comments.css";
 import "./catalog.css";
 import "./watch-together.css";
+import "./watch-together-v2.css";
 import "./aniswipe.css";
 import "./cosmetics-shop.css";
 import "./ags-premium.css";
@@ -113,13 +114,29 @@ const unbounded = Unbounded({
   variable: "--font-unbounded",
   subsets: ["latin", "cyrillic"],
   display: "swap",
+  // Нужен лишь в паре разделов: не грузим его на каждой странице заранее
+  preload: false,
 });
+
+/** Заголовки раздела карточек (как на animeon.cc/cards) */
+const dela = Dela_Gothic_One({
+  weight: "400",
+  variable: "--font-dela",
+  subsets: ["latin", "cyrillic"],
+  display: "swap",
+  preload: false,
+});
+
+/** Шрифты новой карточки: имя (Playfair) и номер (Oswald) */
+const playfair = Playfair_Display({ weight: ["800"], variable: "--font-playfair", subsets: ["latin", "cyrillic"], display: "swap", preload: false });
+const oswald = Oswald({ weight: ["500", "700"], variable: "--font-oswald", subsets: ["latin", "cyrillic"], display: "swap", preload: false });
 
 const cinzel = Cinzel({
   weight: ["600"],
   variable: "--font-cinzel",
   subsets: ["latin"],
   display: "swap",
+  preload: false,
 });
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
@@ -159,7 +176,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html
       lang="ru"
       data-scroll-behavior="smooth"
-      className={`${montserrat.variable} ${onest.variable} ${unbounded.variable} ${cinzel.variable} h-full antialiased`}
+      className={`${montserrat.variable} ${onest.variable} ${unbounded.variable} ${cinzel.variable} ${dela.variable} ${playfair.variable} ${oswald.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col">
         <script

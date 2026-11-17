@@ -331,7 +331,7 @@ useEffect(() => {
           <div className="don-mascot" id="mascot" ref={mascotRef}>
             <div className="don-ring" />
             <div className="don-ring don-b" />
-            <Image src="/donate-cat2.png" alt="Маскот AniGalaxy" width={520} height={560} priority unoptimized />
+            <Image src="/donate-cat2.png" alt="Маскот AniGalaxy" width={520} height={560} priority />
           </div>
 
           <h1>Поддержав AniGalaxy — получи бонусы!</h1>

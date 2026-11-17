@@ -325,7 +325,7 @@ const TrackSlot = memo(function TrackSlot({
                 "✦"
               )}
             </span>
-            <span className={`bp2-v${card.view.kind !== "tag" && card.view.kind !== "frame" && card.view.kind !== "decor" && String(card.view.amount).length > 3 ? " sm" : ""}`}>
+            <span className={`bp2-v${(card.view.kind === "ac" || card.view.kind === "bpXp") && String(card.view.amount).length > 3 ? " sm" : ""}`}>
               +{card.view.kind === "ac" || card.view.kind === "bpXp" ? card.view.amount.toLocaleString("ru-RU") : ""}
             </span>
             <small>{card.kind === "ac" ? "AC" : "Опыт"}</small>
@@ -346,6 +346,7 @@ const TrackSlot = memo(function TrackSlot({
           </>
         )}
         {canClaim && <span className="bp2-take">Забрать</span>}
+        {card.gacha && <span className="bp-gx" title={card.gacha} aria-label={`Награда гачи: ${card.gacha}`}><i /></span>}
         {card.bundle > 1 && <span className="bp-bundle">×{card.bundle}</span>}
       </button>
     </div>

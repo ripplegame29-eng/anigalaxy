@@ -45,7 +45,8 @@
 
 /* ---------- Появление страницы ---------- */
 .page-in {
-  animation: ui-page-in var(--t-slow) var(--ease) both;
+  /* backwards, не both: заполнение вперёд оставляет transform и ломает position:fixed у модалок */
+  animation: ui-page-in var(--t-slow) var(--ease) backwards;
 }
 @keyframes ui-page-in {
   from {

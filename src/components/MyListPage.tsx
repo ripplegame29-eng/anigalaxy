@@ -179,7 +179,7 @@ export default function MyList({ user = { name: 'otaku_rin' }, readOnly = false,
     let alive = true;
     (async () => {
       const norm = (s: string) => s.toLowerCase().replace(/[^a-zа-я0-9]+/gi, ' ').trim();
-      const names = Array.from(new Set([...data.items.map((i) => i.title), ...data.history.map((h) => h.title)]));
+      const names = Array.from(new Set([...data.items.filter((i) => !i.poster || !i.href).map((i) => i.title), ...data.history.filter((h) => !h.image || !h.href).map((h) => h.title)]));
       const found: Record<string, { poster?: string; href: string }> = {};
       for (const name of names) {
         try {

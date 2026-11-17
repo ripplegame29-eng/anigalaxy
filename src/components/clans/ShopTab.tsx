@@ -40,7 +40,11 @@ export function ShopTab() {
       const data = (await res.json().catch(() => ({}))) as { error?: string; checkoutUrl?: string; demo?: boolean };
       if (!res.ok) return notify("err", data.error ?? "Не получилось оформить заказ");
       if (typeof data.checkoutUrl === "string") {
-        window.location.assign(data.checkoutUrl);
+        try {
+          (window.top ?? window).location.assign(data.checkoutUrl);
+        } catch {
+          window.location.assign(data.checkoutUrl);
+        }
         return;
       }
       notify("ok", "Тестовая оплата: кристаллы зачислены");

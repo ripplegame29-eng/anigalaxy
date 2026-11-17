@@ -25,9 +25,13 @@ export function Poster({
   /** Вторая попытка, если основная картинка не загрузилась */
   fallback?: string;
 }) {
-  const [useFallback, setUseFallback] = useState(false);
-  const [failed, setFailed] = useState(false);
-  const current = useFallback && fallback ? fallback : src;
+  /* Шаги: 0 — основной через оптимизатор, 1 — основной напрямую из браузера
+     (если сервер не достучался до CDN), 2 — запасной через оптимизатор, 3 — запасной напрямую, 4 — заглушка */
+  const [step, setStep] = useState(0);
+  const hasFallback = Boolean(fallback) && fallback !== src;
+  const current = step < 2 ? src : fallback;
+  const direct = step === 1 || step === 3;
+  const failed = step >= 4;
   const [loaded, setLoaded] = useState(false);
 
   if (!current || failed) {
@@ -46,8 +50,9 @@ export function Poster({
   return (
     <Image
       src={current}
-      key={current}
+      key={`${current}:${step}`}
       alt={alt}
+      unoptimized={direct}
       fill
       sizes={sizes}
       priority={priority}
@@ -58,7 +63,14 @@ export function Poster({
         if (el && el.complete && el.naturalWidth > 0) setLoaded(true);
       }}
       onLoad={() => setLoaded(true)}
-      onError={() => (fallback && !useFallback && fallback !== src ? setUseFallback(true) : setFailed(true))}
+      onError={() => {
+        setLoaded(false);
+        setStep((value) => {
+          const next = value + 1;
+          if (next >= 2 && next < 4 && !hasFallback) return 4;
+          return next;
+        });
+      }}
     />
   );
 }

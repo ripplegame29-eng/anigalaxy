@@ -71,7 +71,7 @@
   function avatarHTML(p, size, empty){
     p = p || {};
     var pct = clampPct(p.xpPercent);
-    var inner = p.avatarUrl ? '<img src="'+esc(p.avatarUrl)+'" alt="">' : esc((p.letter || p.name || '?').toString().charAt(0).toUpperCase());
+    var inner = p.avatarUrl ? '<img src="'+esc(p.avatarUrl)+'" alt="" onerror="this.replaceWith(document.createTextNode(this.dataset.l))" data-l="'+esc((p.letter || p.name || '?').toString().charAt(0).toUpperCase())+'">' : esc((p.letter || p.name || '?').toString().charAt(0).toUpperCase());
     return '<span class="pm-av" data-pm-av style="--s:'+(size||36)+'px">'+
       '<span class="pm-pic">'+inner+'</span>'+
       '<svg class="pm-rg" viewBox="0 0 100 100" aria-hidden="true"><circle class="pm-t" cx="50" cy="50" r="46"/>'+

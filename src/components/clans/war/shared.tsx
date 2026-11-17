@@ -17,6 +17,7 @@ import "../../../app/cards-stage.css";
 import "../../../app/cards-tabs.css";
 import "../../../app/cards-battle.css";
 import "../../../app/cards-skills.css";
+import "../../../app/cards-ult.css";
 import "../../../app/cards-progress.css";
 import "../../../app/cards-campaign.css";
 import "../../../app/clan-war-ui.css";

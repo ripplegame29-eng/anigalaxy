@@ -1,10 +1,11 @@
 "use client";
 
 import { useState, type CSSProperties, type ReactNode } from "react";
-import { cardDef } from "@/lib/cards/catalog";
-import { ELEMENTS, RANKS } from "@/lib/cards/config";
+import { CATALOG_SIZE, cardDef } from "@/lib/cards/catalog";
+import { CLASSES, ELEMENTS, RANKS } from "@/lib/cards/config";
 import { hasArt } from "@/lib/cards/client";
 import { ELEMENT_ICON, Ico } from "./icons";
+import { ornSvg } from "./card-orn";
 
 const EL_COLOR: Record<string, string> = {
   fire: "#ff6a3d",
@@ -59,7 +60,10 @@ export function GameCard({ cardId, foil, level = 1, selected, dim, locked, count
   // Арт пробуем загрузить всегда: список артов на клиенте мог устареть, а битый файл
   // тогда превращается в заглушку с инициалами, а не в пустую рамку
   const [artFailed, setArtFailed] = useState<string | null>(null);
+  // Сбой загрузки (перезапуск сервера, таймаут) часто разовый: сначала две повторные попытки
+  const [retry, setRetry] = useState<{ id: string; n: number }>({ id: "", n: 0 });
   if (!def) return null;
+  const tries = retry.id === def.id ? retry.n : 0;
   const rank = RANKS[def.rank];
   const el = ELEMENTS[def.element];
   const style = { "--gc-c": rank.color, "--gc-el": EL_COLOR[def.element] } as CSSProperties;
@@ -69,6 +73,9 @@ export function GameCard({ cardId, foil, level = 1, selected, dim, locked, count
     .map((w) => w[0])
     .join("");
   const Tag = onClick ? "button" : "div";
+  // Размер имени подбираем по длине: длинные имена идут в две строки помельче
+  const nl = def.name.length;
+  const nameStyle = { fontSize: `${nl > 13 ? Math.max(5.8, Math.min(8.6, 118 / (nl * 0.72))) : Math.max(7.2, Math.min(12.6, 70 / (nl * 0.72)))}cqw` } as CSSProperties;
   return (
     <Tag
       type={onClick ? "button" : undefined}
@@ -79,7 +86,17 @@ export function GameCard({ cardId, foil, level = 1, selected, dim, locked, count
     >
       <div className="gc-art">
         {(hasArt(def.id) || artFailed !== def.id) && !unknown && artFailed !== def.id ? (
-          <img src={`/api/cards/art/${def.id}`} alt="" loading="lazy" draggable={false} onError={() => setArtFailed(def.id)} />
+          <img
+            key={tries}
+            src={tries ? `/api/cards/art/${def.id}?r=${tries}` : `/api/cards/art/${def.id}`}
+            alt=""
+            loading="lazy"
+            draggable={false}
+            onError={() => {
+              if (tries < 2) window.setTimeout(() => setRetry({ id: def.id, n: tries + 1 }), 800 * (tries + 1));
+              else setArtFailed(def.id);
+            }}
+          />
         ) : (
           <div className="gc-ph" aria-hidden>
             <span>{unknown ? "?" : initials}</span>
@@ -87,22 +104,27 @@ export function GameCard({ cardId, foil, level = 1, selected, dim, locked, count
         )}
       </div>
       <div className="gc-deco" aria-hidden />
-      <img className="gc-frame" src={`/cards/frames/${rank.key}.webp`} alt="" draggable={false} loading="lazy" />
+      <div className="gc-ring" aria-hidden />
+      <svg className="gc-frame" viewBox="0 0 1000 1462" preserveAspectRatio="none" aria-hidden dangerouslySetInnerHTML={{ __html: ornSvg(def.rank) }} />
       {!unknown && (
         <>
           <div className="gc-top">
-            <span className="gc-rank">
-              <RankMark rank={def.rank} />
-              {rank.short}
+            <span className="gc-num">
+              {String(def.num).padStart(3, "0")}
+              <small>/ {CATALOG_SIZE}</small>
             </span>
-            <span className="gc-el" title={el.name}>
-              <Ico name={ELEMENT_ICON[def.element]} size={14} />
+            <span className="gc-tr">
+              <span className="gc-el" title={el.name}>
+                <Ico name={ELEMENT_ICON[def.element]} size={14} />
+              </span>
             </span>
           </div>
           <div className="gc-plate">
-            <b>{def.name}</b>
+            <b style={nameStyle} className={nl > 13 ? "gc-long" : undefined}>
+              {def.name}
+            </b>
             <small>{def.series}</small>
-            {stats && (
+            {stats ? (
               <div className="gc-stats">
                 <span>
                   <Ico name="sword" size={12} />
@@ -117,7 +139,28 @@ export function GameCard({ cardId, foil, level = 1, selected, dim, locked, count
                   {def.hp}
                 </span>
               </div>
+            ) : (
+              <div className="gc-bar">
+                <span>
+                  {CLASSES[def.cls].name} · {el.name}
+                </span>
+                <span className="gc-bar-r">
+                  <span className="gc-dots" aria-hidden>
+                    {Array.from({ length: [1, 2, 3, 5, 7][def.rank] }).map((_, i) => (
+                      <i key={i} />
+                    ))}
+                  </span>
+                  {rank.name}
+                </span>
+              </div>
             )}
+          </div>
+          <div className="gc-tier" aria-hidden>
+            <i />
+            <span>
+              {rank.short} · {rank.name}
+            </span>
+            <i />
           </div>
           {level > 1 && <div className="gc-lv">+{level - 1}</div>}
           {foil && <div className="gc-foil" aria-hidden />}
