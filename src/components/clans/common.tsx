@@ -3,7 +3,7 @@
 /** Общие кирпичики клан-хаба: контекст, форматирование, время, иконки, кнопки, панели. */
 
 import { createContext, useContext, useSyncExternalStore, type ReactNode } from "react";
-import { CLAN_EMBLEMS } from "@/lib/emblems.data";
+import { CLAN_EMBLEMS, clanEmblem } from "@/lib/emblems.data";
 import { ROLE_NAME, type ClanRole } from "@/lib/clan-rules";
 import type { ClanInfo, MyClan } from "@/lib/clans/client";
 import { EmblemArt } from "./EmblemArt";
@@ -12,7 +12,7 @@ export const fmt = (n: number): string => Math.round(n).toLocaleString("ru-RU");
 
 /* ------------------------------- Контекст -------------------------------- */
 
-export type TabId = "overview" | "war" | "donate" | "roster" | "league" | "shop";
+export type TabId = "overview" | "war" | "donate" | "chat" | "roster" | "league" | "shop";
 
 export interface ClanCtxValue {
   me: MyClan;
@@ -86,13 +86,19 @@ export function ago(ts: number, now: number): string {
 /* -------------------------------- Эмблемы -------------------------------- */
 
 /** У клана пока нет выбранной эмблемы на сервере — подбираем стабильную по id */
-export function emblemFor(clanId: number) {
-  return CLAN_EMBLEMS[Math.abs(clanId) % CLAN_EMBLEMS.length];
+/** Эмблема клана: выбранная главой, иначе — по номеру клана */
+export function emblemFor(clanId: number, emblemId?: string) {
+  return (emblemId && clanEmblem(emblemId)) || CLAN_EMBLEMS[Math.abs(clanId) % CLAN_EMBLEMS.length];
 }
-export function Crest({ clanId, size = 150, interactive = false }: { clanId: number; size?: number; interactive?: boolean }) {
+export function Crest({ clanId, emblemId, size = 150, interactive = false, avatarV = 0 }: { clanId: number; emblemId?: string; size?: number; interactive?: boolean; avatarV?: number }) {
+  if (avatarV > 0)
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img className="ca-crest ca-crest-img" src={`/api/clans/media?id=${clanId}&kind=avatar&v=${avatarV}`} alt="" style={{ width: size, height: size, borderRadius: Math.round(size * 0.22), objectFit: "cover" }} />
+    );
   return (
     <span className="ca-crest" style={{ width: size, height: size }}>
-      <EmblemArt emblem={emblemFor(clanId)} size={size} interactive={interactive} />
+      <EmblemArt emblem={emblemFor(clanId, emblemId)} size={size} interactive={interactive} />
     </span>
   );
 }
@@ -167,6 +173,14 @@ const PATHS: Record<string, ReactNode> = {
     </>
   ),
   edit: <path d="M4 20h4L19 9l-4-4L4 16zM14 6l4 4" />,
+  chat: <path d="M4 5h16v11H9l-5 4z" />,
+  image: (
+    <>
+      <rect x="3" y="4" width="18" height="16" rx="2.5" />
+      <circle cx="9" cy="10" r="2" />
+      <path d="M21 16l-5-5-9 9" />
+    </>
+  ),
   logout: <path d="M10 4H5v16h5M15 8l4 4-4 4M19 12H9" />,
   bolt: <path d="M13 2L4 14h7l-1 8 9-12h-7z" />,
   sword: <path d="M5 19L19 5M14 5h5v5M5 19l-2 2" />,

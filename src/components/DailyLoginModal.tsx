@@ -198,7 +198,7 @@ export function DailyLoginModal({ open, onClose, premium }: { open: boolean; onC
             <span className="dm-flash" />
             <div className="dm-mw">
               <div className="dm-mi">
-                <Image src="/images/daily-mascot.png" alt="" width={597} height={640} priority />
+                <Image unoptimized src="/images/daily-mascot-4k.png" alt="" width={900} height={810} priority />
               </div>
             </div>
             <span className="dm-shadow" />
@@ -214,10 +214,10 @@ export function DailyLoginModal({ open, onClose, premium }: { open: boolean; onC
             <span className="dm-cap s">Внутри</span>
             <div className="dm-slots">
               <span className="dm-slot">
-                <Image className="dm-coin" src="/coin.png" alt="" width={76} height={76} />
+                <Image className="dm-coin" unoptimized src="/coin.png" alt="" width={76} height={76} />
               </span>
               <span className="dm-slot">
-                <Image className="dm-exp" src="/images/daily-exp.png" alt="" width={88} height={84} />
+                <Image className="dm-exp" unoptimized src="/images/daily-exp-hd.png" alt="" width={88} height={84} />
               </span>
             </div>
           </div>
@@ -234,16 +234,16 @@ export function DailyLoginModal({ open, onClose, premium }: { open: boolean; onC
             </button>
             <div className="dm-pills">
               <span className="dm-pill">
-                <Image src="/coin.png" alt="" width={18} height={18} />
+                <Image unoptimized src="/coin.png" alt="" width={18} height={18} />
                 + {DAILY_ENTRY_AC} AC за вход — автоматически
               </span>
               {premium ? (
                 <span className="dm-pill pr">
-                  <Image src="/coin.png" alt="" width={18} height={18} />×{PREMIUM_QUEST_MULT} к наградам с <em>Premium</em>
+                  <Image unoptimized src="/coin.png" alt="" width={18} height={18} />×{PREMIUM_QUEST_MULT} к наградам с <em>Premium</em>
                 </span>
               ) : (
                 <span className="dm-pill pr off">
-                  <Image src="/coin.png" alt="" width={18} height={18} />
+                  <Image unoptimized src="/coin.png" alt="" width={18} height={18} />
                   ×{PREMIUM_QUEST_MULT} с <em>Premium</em>
                 </span>
               )}
@@ -292,7 +292,7 @@ export function DailyLoginModal({ open, onClose, premium }: { open: boolean; onC
 
           <div className="dm-info">
             <span className="dm-ii">
-              <Image src="/coin.png" alt="" width={30} height={30} />
+              <Image unoptimized src="/coin.png" alt="" width={30} height={30} />
             </span>
             <div>
               <h4>Сегодня — {(view.todayAc + view.entryAc) * mult} AC</h4>
@@ -370,7 +370,7 @@ export function DailyLoginModal({ open, onClose, premium }: { open: boolean; onC
               />
             ))}
             <div className="dm-rvi">
-              <Image className="dm-coin" src="/coin.png" alt="" width={120} height={120} />
+              <Image className="dm-coin" unoptimized src="/coin.png" alt="" width={120} height={120} />
             </div>
             <span className="dm-rvk">Получено</span>
             <h3>День {reward?.day ?? view.today}</h3>
@@ -495,13 +495,13 @@ function Cell({
       <span className="dm-n">{cell.day}</span>
       <span className="dm-ic">
         {cell.kind === "ac" ? (
-          <Image className="dm-coin" src="/coin.png" alt="" width={76} height={76} />
+          <Image className="dm-coin" unoptimized src="/coin.png" alt="" width={76} height={76} />
         ) : null}
         {cell.kind === "exp" ? (
-          <Image className="dm-exp" src="/images/daily-exp.png" alt="" width={88} height={84} />
+          <Image className="dm-exp" unoptimized src="/images/daily-exp-hd.png" alt="" width={88} height={84} />
         ) : null}
         {cell.kind === "box" ? (
-          <Image className="dm-mini-m" src="/images/daily-mascot-mini.png" alt="" width={100} height={102} />
+          <Image className="dm-mini-m" unoptimized src="/images/daily-mascot-mini-hd.png" alt="" width={100} height={102} />
         ) : null}
         {/* Рамка аватара — рисунок макета: силуэт внутри кольца с лучами */}
         {cell.kind === "frame" ? (
@@ -520,7 +520,7 @@ function Cell({
         ) : null}
         {cell.kind === "grand" ? (
           <span className="dm-grand s">
-            <Image className="dm-mini-m gm" src="/images/daily-mascot-grand.png" alt="" width={132} height={122} />
+            <Image className="dm-mini-m gm" unoptimized src="/images/daily-mascot-grand-hd.png" alt="" width={132} height={122} />
             <b>★</b>
           </span>
         ) : null}

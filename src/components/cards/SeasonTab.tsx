@@ -48,7 +48,7 @@ function parts(r: Reward): Part[] {
 }
 
 function PartIcon({ k, size, id }: { k: Part["k"]; size: number; id?: string }) {
-  if (k === "card") return <img className="sv-face" src={`/api/cards/art/${id}`} alt="" width={size * 2} height={size * 2} draggable={false} loading="lazy" />;
+  if (k === "card") return <img className="sv-face" src={`/api/cards/art/${id}?w=320`} alt="" width={size * 2} height={size * 2} draggable={false} loading="lazy" />;
   return k === "scroll" ? <ScrollArt size={Math.round(size * 1.75)} /> : <Cur k={k} size={size} />;
 }
 

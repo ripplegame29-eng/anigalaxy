@@ -81,10 +81,16 @@ export function Versus({
   children?: React.ReactNode;
 }) {
   const lead = mine.score === foe.score ? "" : mine.score > foe.score ? "mine" : "foe";
+  const total = mine.stars + foe.stars;
+  const share = total > 0 ? (mine.stars / total) * 100 : 50;
   return (
     <div className={`cw-vs ${lead ? `lead-${lead}` : ""}`}>
+      <span className="cw-vs-bg mine" aria-hidden />
+      <span className="cw-vs-bg foe" aria-hidden />
+      <span className="cw-vs-badge" aria-hidden>VS</span>
       <div className="cw-vs-side mine">
-        <Crest tag={mine.tag} size={78} side="mine" />
+        <span className="cw-vs-halo" aria-hidden />
+        <Crest tag={mine.tag} size={92} side="mine" clanId={mine.clanId} avatarV={mine.avatarV} />
         <b className="cw-vs-name">{mine.name}</b>
         <span className="cw-vs-tag">[{mine.tag}]</span>
         {scored ? (
@@ -101,10 +107,18 @@ export function Versus({
           <span>:</span>
           <strong className="foe">{foe.score}</strong>
         </div>
+        {scored ? (
+          <div className="cw-vs-tug" role="img" aria-label={`Звёзды: ${mine.stars} против ${foe.stars}`}>
+            <i className="mine" style={{ width: `${share}%` }} />
+            <i className="foe" style={{ width: `${100 - share}%` }} />
+            <b style={{ left: `${share}%` }} />
+          </div>
+        ) : null}
         {children}
       </div>
       <div className="cw-vs-side foe">
-        <Crest tag={foe.tag} size={78} side="foe" bot={bot} />
+        <span className="cw-vs-halo" aria-hidden />
+        <Crest tag={foe.tag} size={92} side="foe" bot={bot} clanId={foe.clanId} avatarV={foe.avatarV} />
         <b className="cw-vs-name">{foe.name}</b>
         <span className="cw-vs-tag">{bot ? "Отряд сервера" : `[${foe.tag}]`}</span>
         {scored ? (

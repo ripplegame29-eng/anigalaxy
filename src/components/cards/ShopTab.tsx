@@ -194,10 +194,19 @@ export function ShopTab() {
               key={id}
               type="button"
               className={`shp-gt g${i}`}
+              style={{ ["--img" as string]: `url(/cards/gems/t${i + 1}.webp?v=3)`, ["--d" as string]: `${i * -0.7}s` }}
               onClick={() => buy(it)}
               aria-label={`${it.title.replace(/^Гача · /, "")}: ${fmt(d)} алмазов за ${rub(it.price)}${bonus > 0 ? `, бонус +${bonus}%` : ""}`}
             >
-              <img src={`/cards/gems/t${i + 1}.webp?v=3`} alt="" draggable={false} loading="lazy" />
+              <span className="shp-gt-in">
+                <img src={`/cards/gems/t${i + 1}.webp?v=3`} alt="" draggable={false} loading="lazy" />
+                {Array.from({ length: 6 }, (_, k) => (
+                  <i key={`f${k}`} className="shp-gt-fly" style={{ ["--k" as string]: k, ["--x" as string]: `${12 + ((k * 29 + i * 17) % 76)}%`, ["--dx" as string]: `${((k * 13 + i * 5) % 20) - 10}px` }} aria-hidden />
+                ))}
+                {Array.from({ length: 3 + i }, (_, k) => (
+                  <i key={k} className="shp-gt-spark" style={{ ["--k" as string]: k, ["--x" as string]: `${18 + ((k * 37 + i * 13) % 64)}%`, ["--y" as string]: `${14 + ((k * 23 + i * 7) % 46)}%` }} aria-hidden />
+                ))}
+              </span>
             </button>
           );
         })}

@@ -1,191 +1,133 @@
 "use client";
 
-/** Магазин и казна: взнос монет, наборы кристаллов, оформление клана, места в составе. */
+/** Клановый рынок: наборы паков и боевые бустеры за алмазы со скидкой клана, лимиты на неделю. */
 
-import { useMemo, useState } from "react";
-import {
-  CLAN_ITEMS,
-  CRYSTAL_PACKS,
-  CRYSTAL_PRICE,
-  DONATE_MAX,
-  DONATE_MIN,
-  DONOR_TIERS,
-  RARITY_NAME,
-  SLOT_PACK,
-  TREASURY_PRICE,
-  donorTier,
-  type ClanItem,
-  type ItemSlot,
-} from "@/lib/clan-rules";
-import { CrystalIcon, DonorMedal, ItemArt } from "./ClanArt";
-import { Btn, Ico, Panel, fmt, useClan } from "./common";
+import { useCallback, useEffect, useState } from "react";
+import { MARKET, type MarketItem } from "@/lib/clan-market";
+import { CLAN_ITEMS, SLOT_PACK, type ClanItem } from "@/lib/clan-rules";
+import { ClanShowcase } from "./ClanShowcase";
+import { CrystalPacks } from "./CrystalPacks";
+import { useMemo } from "react";
+import { refresh as refreshCards } from "@/lib/cards/client";
+import { Ico as CardIco } from "@/components/cards/icons";
+import { CrystalIcon } from "./ClanArt";
+import { Btn, Panel, countdown, fmt, useClan, useNow } from "./common";
 
-const SLOT_NAME: Record<ItemSlot, string> = { banner: "Знамёна", aura: "Ауры", frame: "Рамки" };
-const QUICK = [100, 500, 1000, 5000];
+interface View { diamonds: number; bought: Record<string, number>; weekEndsAt: number }
+
+const ART: Record<string, string> = { "pack-s": "/cards/offers/1.webp", "pack-m": "/cards/offers/2.webp", "pack-l": "/cards/offers/3.webp", };
+const BOOST: Record<string, { ico: "bolt" | "shield" | "fire" | "target" | "heart"; c: string }> = {
+  "b-stim": { ico: "bolt", c: "#ffb547" },
+  "b-aegis": { ico: "shield", c: "#5aa8ff" },
+  "b-surge": { ico: "fire", c: "#b483ff" },
+  "b-focus": { ico: "target", c: "#ff6b7d" },
+  "b-feather": { ico: "heart", c: "#5ee0a8" },
+};
+
+function Art({ item }: { item: MarketItem }) {
+  const img = ART[item.art];
+  if (img)
+    // eslint-disable-next-line @next/next/no-img-element
+    return <img src={img} alt="" loading="lazy" />;
+  const b = BOOST[item.art];
+  return (
+    <span className="mk-boost" style={{ ["--bc" as string]: b.c }}>
+      <CardIco name={b.ico} size={44} />
+    </span>
+  );
+}
 
 export function ShopTab() {
-  const { me, clan, role, manage, act, notify, reload } = useClan();
-  const [amount, setAmount] = useState(100);
-  const [busy, setBusy] = useState("");
+  const { me, clan, role, act } = useClan();
   const owned = useMemo(() => new Set(me.owned ?? []), [me.owned]);
-  const equipped = me.data?.equipped ?? {};
-  const items: readonly ClanItem[] = me.catalog?.length ? me.catalog : CLAN_ITEMS;
-  const tier = donorTier(me.donorRub ?? 0);
-  const amountOk = Number.isFinite(amount) && amount >= DONATE_MIN && amount <= DONATE_MAX;
+  const items: readonly ClanItem[] = (me.catalog?.length ? me.catalog : CLAN_ITEMS).filter((i) => i.slot !== "banner");
+  const [cbusy, setCbusy] = useState("");
+  const doAct = async (key: string, action: string, body: Record<string, unknown>, ok: string) => { setCbusy(key); await act(action, body, ok); setCbusy(""); };
+  const now = useNow();
+  const [v, setV] = useState<View | null>(null);
+  const [busy, setBusy] = useState("");
+  const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
 
-  const buyPack = async (pack: string) => {
-    setBusy(pack);
+  const load = useCallback(async () => {
     try {
-      const res = await fetch("/api/clans/shop", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ pack }) });
-      const data = (await res.json().catch(() => ({}))) as { error?: string; checkoutUrl?: string; demo?: boolean };
-      if (!res.ok) return notify("err", data.error ?? "Не получилось оформить заказ");
-      if (typeof data.checkoutUrl === "string") {
-        try {
-          (window.top ?? window).location.assign(data.checkoutUrl);
-        } catch {
-          window.location.assign(data.checkoutUrl);
-        }
-        return;
-      }
-      notify("ok", "Тестовая оплата: кристаллы зачислены");
-      await reload();
-    } catch {
-      notify("err", "Нет связи с сервером");
-    } finally {
-      setBusy("");
-    }
-  };
-  const doAct = async (key: string, action: string, body: Record<string, unknown>, ok: string) => {
-    setBusy(key);
-    await act(action, body, ok);
+      const r = await fetch("/api/clans/market", { cache: "no-store" });
+      if (r.ok) setV((await r.json()) as View);
+    } catch { /* повторим при покупке */ }
+  }, []);
+  useEffect(() => { void load(); }, [load]);
+
+  const buy = async (item: MarketItem) => {
+    setBusy(item.id); setMsg(null);
+    try {
+      const r = await fetch("/api/clans/market", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ itemId: item.id }) });
+      const d = (await r.json()) as View & { error?: string };
+      if (r.ok) { setV(d); setMsg({ ok: true, text: `«${item.name}» в вашем запасе` }); void refreshCards(); }
+      else setMsg({ ok: false, text: d.error ?? "Не получилось" });
+    } catch { setMsg({ ok: false, text: "Нет связи с сервером" }); }
     setBusy("");
   };
 
+  const card = (item: MarketItem) => {
+    const n = v?.bought[item.id] ?? 0;
+    const left = item.limit - n;
+    const locked = clan.level < item.level;
+    const poor = (v?.diamonds ?? 0) < item.price;
+    const off = Math.round((1 - item.price / item.base) * 100);
+    return (
+      <article key={item.id} className={`mk-item${locked ? " is-locked" : ""}`}>
+        <div className="mk-art"><Art item={item} /></div>
+        <div className="mk-body">
+          <h3>{item.name}</h3>
+          <p>{item.desc}</p>
+          <div className="mk-meta">
+            <span>−{off}% для клана</span>
+            <span>{locked ? `с ${item.level} ур. клана` : `осталось ${Math.max(0, left)} из ${item.limit}`}</span>
+          </div>
+        </div>
+        <button type="button" className="mk-buy" disabled={locked || left <= 0 || poor || busy === item.id || !v} onClick={() => void buy(item)}>
+          <span className="mk-price"><img src="/icons/cur-diamonds.webp" alt="" /> {fmt(item.price)}</span>
+          <s>{fmt(item.base)}</s>
+        </button>
+      </article>
+    );
+  };
+
   return (
-    <div className="ca-shop">
-      <Panel className="ca-treasury" title="Казна клана" icon="coin">
-        <div className="ca-tre">
-          <div className="ca-tre-bal">
-            <b>{fmt(clan.treasury)}</b>
-            <span>AC в казне</span>
-          </div>
-          <div className="ca-tre-form">
-            <p className="ca-dim">Монеты казны тратятся на обычное и редкое оформление. Взнос списывается с вашего баланса.</p>
-            <div className="ca-quick" role="group" aria-label="Быстрый выбор суммы">
-              {QUICK.map((v) => (
-                <button key={v} type="button" className={amount === v ? "on" : ""} onClick={() => setAmount(v)}>
-                  {fmt(v)}
-                </button>
-              ))}
-            </div>
-            <div className="ca-row ca-row-nowrap">
-              <input className="ca-input" type="number" inputMode="numeric" min={DONATE_MIN} max={DONATE_MAX} value={Number.isNaN(amount) ? "" : amount} onChange={(e) => setAmount(Number(e.target.value))} aria-label="Сумма взноса" />
-              <Btn kind="gold" disabled={!amountOk || busy === "donate"} onClick={() => void doAct("donate", "donate", { ac: Math.floor(amount) }, "Взнос внесён в казну")}>
-                Внести
-              </Btn>
-            </div>
-            {!amountOk && (
-              <small className="ca-dim">
-                От {DONATE_MIN} до {fmt(DONATE_MAX)} AC за раз
-              </small>
-            )}
-          </div>
-        </div>
-      </Panel>
-
+    <div className="mk">
       <Panel
-        title="Кристаллы клана"
-        icon="bolt"
-        className="ca-crystals"
-        aside={
-          <span className="ca-chip">
-            <CrystalIcon size={14} /> <b>{fmt(clan.crystals)}</b>
-          </span>
-        }
+        className="mk-head"
+        title="Клановый рынок"
+        icon="shop"
+        aside={<span className="mk-bal"><img src="/icons/cur-diamonds.webp" alt="" /> <b>{v ? fmt(v.diamonds) : "…"}</b> алмазов</span>}
       >
-        <p className="ca-dim">Кристаллы покупают только оформление и места в составе. Очки сезона, лигу и награды купить нельзя — клан растёт за счёт активности игроков.</p>
-        <div className="ca-packs">
-          {CRYSTAL_PACKS.map((p, i) => (
-            <button key={p.id} type="button" className={`ca-pack p${i}`} disabled={!!busy} onClick={() => void buyPack(p.id)}>
-              {p.note && <em>{p.note}</em>}
-              <CrystalIcon size={30 + i * 6} />
-              <b>{p.name}</b>
-              <span>{fmt(p.crystals)}</span>
-              <strong>{p.rub} ₽</strong>
-            </button>
-          ))}
-        </div>
-        <div className="ca-donor">
-          {tier ? (
-            <span className="ca-donor-me">
-              <DonorMedal color={tier.color} size={26} /> Ваш титул: <b style={{ color: tier.color }}>{tier.name}</b>
-            </span>
-          ) : (
-            <span className="ca-dim">Титулов спонсора пока нет.</span>
-          )}
-          <span className="ca-dim">{[...DONOR_TIERS].reverse().map((t) => `${t.name} от ${fmt(t.from)} ₽`).join(" · ")}</span>
-        </div>
+        <p className="ca-dim">Паки и бустеры для боёв дешевле, чем в гаче. Покупаете себе: всё сразу падает в ваш запас карт. Лимиты обновятся через {v && now ? countdown(v.weekEndsAt - now) : "…"}.</p>
+        {msg && <p className={msg.ok ? "mk-ok" : "ca-err"}>{msg.text}</p>}
       </Panel>
 
-      <Panel title="Оформление клана" icon="shop" className="ca-items-p" aside={!manage && <span className="ca-dim">Покупают глава и офицеры</span>}>
-        {(["banner", "aura", "frame"] as const).map((slot) => (
-          <div key={slot} className="ca-itemgroup">
-            <h3>{SLOT_NAME[slot]}</h3>
-            <div className="ca-items">
-              {items
-                .filter((it) => it.slot === slot)
-                .map((it) => {
-                  const has = owned.has(it.id);
-                  const on = equipped[it.slot] === it.id;
-                  const tr = it.rarity === "common" || it.rarity === "rare" ? TREASURY_PRICE[it.rarity] : 0;
-                  const cr = CRYSTAL_PRICE[it.rarity];
-                  return (
-                    <div key={it.id} className={`ca-item r-${it.rarity}${on ? " on" : ""}${has ? " has" : ""}`}>
-                      {on && <i className="ca-item-on">Надето</i>}
-                      <div className="ca-item-art">
-                        <ItemArt item={it} size={88} />
-                      </div>
-                      <b>{it.name}</b>
-                      <small>{RARITY_NAME[it.rarity]}</small>
-                      {has ? (
-                        <Btn size="sm" kind={on ? "ghost" : "primary"} disabled={!manage || busy === it.id} onClick={() => void doAct(it.id, "equip", { slot: it.slot, itemId: on ? null : it.id }, on ? "Снято" : "Надето")}>
-                          {on ? "Снять" : "Надеть"}
-                        </Btn>
-                      ) : (
-                        <div className="ca-buy">
-                          {tr > 0 && (
-                            <Btn size="sm" disabled={!manage || clan.treasury < tr || busy === it.id} onClick={() => void doAct(it.id, "buy", { itemId: it.id, currency: "treasury" }, "Куплено за монеты казны")}>
-                              <Ico n="coin" size={13} /> {fmt(tr)}
-                            </Btn>
-                          )}
-                          <Btn size="sm" disabled={!manage || clan.crystals < cr || busy === it.id} onClick={() => void doAct(it.id, "buy", { itemId: it.id, currency: "crystals" }, "Куплено за кристаллы")}>
-                            <CrystalIcon size={12} /> {cr}
-                          </Btn>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-            </div>
-          </div>
-        ))}
-      </Panel>
+      <ClanShowcase items={items} owned={owned} equipped={me.data?.equipped ?? {}} busy={cbusy} doAct={doAct} />
+
+      <CrystalPacks />
+
+      <section className="mk-sec">
+        <h2>Наборы героев</h2>
+        <div className="mk-grid mk-grid-packs">{MARKET.filter((m) => m.group === "packs").map(card)}</div>
+      </section>
+
+      <section className="mk-sec">
+        <h2>Бустеры для боя</h2>
+        <div className="mk-grid">{MARKET.filter((m) => m.group === "boost").map(card)}</div>
+      </section>
 
       <Panel title={SLOT_PACK.name} icon="roster" className="ca-slots">
         <div className="ca-slots-in">
           <div className="ca-slots-meter">
-            <div className="ca-bar ca-bar-lg">
-              <i style={{ width: `${(clan.extraSlots / SLOT_PACK.max) * 100}%` }} />
-            </div>
-            <span className="ca-dim">
-              Сейчас мест: <b>{clan.cap}</b> · куплено дополнительных {clan.extraSlots} из {SLOT_PACK.max}
-            </span>
+            <div className="ca-bar ca-bar-lg"><i style={{ width: `${(clan.extraSlots / SLOT_PACK.max) * 100}%` }} /></div>
+            <span className="ca-dim">Сейчас мест: <b>{clan.cap}</b> · куплено дополнительных {clan.extraSlots} из {SLOT_PACK.max}</span>
           </div>
-          <Btn kind="primary" disabled={role !== "leader" || clan.crystals < SLOT_PACK.crystals || clan.extraSlots >= SLOT_PACK.max || busy === "slots"} onClick={() => void doAct("slots", "slots", {}, "Места добавлены")}>
+          <Btn kind="primary" disabled={role !== "leader" || clan.crystals < SLOT_PACK.crystals || clan.extraSlots >= SLOT_PACK.max} onClick={() => void act("slots", {}, "Места добавлены")}>
             <CrystalIcon size={14} /> {SLOT_PACK.crystals} · +{SLOT_PACK.slots} мест
           </Btn>
         </div>
-        {role !== "leader" && <small className="ca-dim">Места покупает глава клана.</small>}
       </Panel>
     </div>
   );

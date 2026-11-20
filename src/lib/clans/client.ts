@@ -27,6 +27,11 @@ export interface ClanInfo {
   extraSlots: number;
   level: number;
   cap: number;
+  /** Эмблема, выбранная главой; пусто — по номеру клана */
+  emblem?: string;
+  /** Версии своих аватара и обложки (0 — нет) */
+  avatarV?: number;
+  bannerV?: number;
 }
 export interface ClanMemberRow {
   userId: number;
@@ -78,6 +83,8 @@ export interface MyClan {
   catalog?: ClanItem[];
   donorRub?: number;
   events?: ClanEventRow[];
+  /** Эмблемы кланов, купленные мной в магазине профиля */
+  myEmblems?: string[];
 }
 export interface ClanListRow {
   id: number;
@@ -89,6 +96,10 @@ export interface ClanListRow {
   level: number;
   league: number;
   trophies: number;
+  emblem?: string;
+  avatarV?: number;
+  activeToday?: number;
+  createdAt?: number;
 }
 
 export type CallResult<T = unknown> = { ok: true; result: T; state?: unknown } | { ok: false; error: string };
@@ -212,4 +223,31 @@ export function resetClans(): void {
   meRes.set(null);
   warRes.set(null);
   donateRes.set(null);
+}
+
+/** Ссылка на свою картинку клана */
+export const clanMediaUrl = (clanId: number, kind: "avatar" | "banner", v: number): string => `/api/clans/media?id=${clanId}&kind=${kind}&v=${v}`;
+
+/** Ужать выбранный файл до WebP: аватар — квадрат 512, обложка — 1600×640 (обрезка по центру) */
+export async function prepareClanImage(file: File, kind: "avatar" | "banner"): Promise<string> {
+  if (file.type === "image/gif") {
+    if (file.size > (kind === "avatar" ? 2_000_000 : 4_000_000)) throw new Error(kind === "avatar" ? "GIF до 2 МБ" : "GIF до 4 МБ");
+    return await new Promise<string>((ok, bad) => { const r = new FileReader(); r.onload = () => ok(String(r.result)); r.onerror = () => bad(new Error("read")); r.readAsDataURL(file); });
+  }
+  const bmp = await createImageBitmap(file);
+  const [W, H] = kind === "avatar" ? [512, 512] : [1600, 640];
+  const scale = Math.max(W / bmp.width, H / bmp.height);
+  const sw = W / scale, sh = H / scale;
+  const sx = (bmp.width - sw) / 2, sy = (bmp.height - sh) / 2;
+  const cv = document.createElement("canvas");
+  cv.width = W; cv.height = H;
+  const g = cv.getContext("2d")!;
+  g.imageSmoothingQuality = "high";
+  g.drawImage(bmp, sx, sy, sw, sh, 0, 0, W, H);
+  bmp.close();
+  for (const q of [0.88, 0.8, 0.7, 0.6]) {
+    const url = cv.toDataURL("image/webp", q);
+    if (url.length * 0.75 < (kind === "avatar" ? 380_000 : 1_150_000)) return url;
+  }
+  return cv.toDataURL("image/jpeg", 0.7);
 }

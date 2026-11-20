@@ -2,7 +2,7 @@ import { CLAN_ITEMS } from "@/lib/clan-rules";
 import { ownedItems, donorRub } from "@/lib/server/clan-economy";
 import { currentSeason, memberGains, seasonEnd } from "@/lib/server/clan-points";
 import { goalState, leagueTable, settleSeasons } from "@/lib/server/clan-season";
-import { clanData, clanEvents, clanIdOfUser, clanMembers, getClan } from "@/lib/server/clans";
+import { clanData, clanEvents, clanIdOfUser, clanMembers, getClan, ownedEmblems } from "@/lib/server/clans";
 import { cwSettle } from "@/lib/server/clan-cardwar";
 import { json, route } from "@/lib/server/http";
 
@@ -37,6 +37,7 @@ export const GET = route(
       catalog: CLAN_ITEMS,
       donorRub: donorRub(db, user!.id),
       events: clanEvents(db, clan.id, 30),
+      myEmblems: ownedEmblems(db, user!.id),
     });
   },
   { auth: true },

@@ -1,3 +1,4 @@
+import { CATALOG } from "./catalog";
 /**
  * Связь «название тайтла на сайте → серия карточек гачи».
  * Названия на сайте приходят от Kodik/AniLiberty и редко совпадают с серией один в один,
@@ -6,6 +7,37 @@
 
 /** Серия → все написания, по которым узнаём тайтл (первое — и поисковое для постера) */
 export const SERIES_ALIASES: Record<string, string[]> = {
+  "Убийца Акамэ": ["убийца акамэ", "akame ga kill"],
+  "Детектив Конан": ["детектив конан", "detective conan", "meitantei conan"],
+  "Сейлор Мун": ["сейлор мун", "sailor moon"],
+  "Код Гиас": ["код гиас", "code geass"],
+  "Киберпанк: Бегущие по краю": ["бегущие по краю", "edgerunners"],
+  "Инуяся": ["инуяся", "inuyasha"],
+  "Баскетбол Куроко": ["баскетбол куроко", "kuroko no basket"],
+  "Сага о Винланде": ["сага о винланде", "vinland saga"],
+  "Мадока Магика": ["мадока", "madoka magica"],
+  "Слэм-данк": ["слэм-данк", "slam dunk"],
+  "Подземелье вкусностей": ["подземелье вкусностей", "dungeon meshi", "delicious in dungeon"],
+  "Одинокий рокер": ["одинокий рокер", "bocchi the rock"],
+  "Моногатари": ["моногатари", "monogatari"],
+  "Квинтэссенция квинтетов": ["квинтэссенция квинтетов", "5-toubun", "gotoubun"],
+  "К-Он!": ["к-он", "k-on"],
+  "Гуррен-Лаганн": ["гуррен-лаганн", "гуррен лаганн", "gurren lagann"],
+  "Госпожа Кагуя": ["госпожа кагуя", "kaguya-sama"],
+  "Бродяга Кэнсин": ["бродяга кэнсин", "rurouni kenshin"],
+  "Дандадан": ["дандадан", "dandadan"],
+  "Монолог фармацевта": ["монолог фармацевта", "kusuriya no hitorigoto"],
+  "Обещанный Неверленд": ["обещанный неверленд", "promised neverland"],
+  "Пожиратель душ": ["пожиратель душ", "soul eater"],
+  "Психо-паспорт": ["психо-паспорт", "psycho-pass"],
+  "Реинкарнация безработного": ["реинкарнация безработного", "mushoku tensei"],
+  "Тёмный дворецкий": ["тёмный дворецкий", "темный дворецкий", "kuroshitsuji"],
+  "Тень в диком мире": ["тень в диком мире", "kage no jitsuryokusha"],
+  "Созданный в Бездне": ["созданный в бездне", "made in abyss"],
+  "Кайдзю №8": ["кайдзю", "kaiju no. 8"],
+  "Любимый во Франксе": ["любимый во франксе", "darling in the franxx"],
+  "Бог башни": ["бог башни", "tower of god"],
+  "Но гейм но лайф": ["но гейм но лайф", "no game no life"],
   "Наруто": ["наруто", "naruto"],
   "Ван-Пис": ["ван-пис", "ван пис", "one piece"],
   "Блич": ["блич", "bleach"],
@@ -66,5 +98,21 @@ export function seriesForTitle(title: string, extra: string[] = []): string | nu
       }
     }
   }
+  if (best) return best.s;
+  // Запасной путь: любая серия каталога, чьё название (от 4 символов) встречается в названии тайтла
+  for (const series of catalogSeries()) {
+    const key = norm(series);
+    if (key.length < 4) continue;
+    for (const h of hay) {
+      const at = h.indexOf(key);
+      if (at >= 0 && (!best || at < best.at || (at === best.at && key.length > norm(best.s).length))) best = { s: series, at };
+    }
+  }
   return best?.s ?? null;
+}
+
+let seriesCache: string[] | null = null;
+function catalogSeries(): string[] {
+  if (!seriesCache) seriesCache = [...new Set(CATALOG.map((c) => c.series))].filter((x) => x && x !== "тайтл");
+  return seriesCache;
 }

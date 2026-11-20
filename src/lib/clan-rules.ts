@@ -21,9 +21,9 @@ export const LEAGUES: readonly League[] = [
   { id: 0, name: "Бронза", color: "#e0955a", deep: "#6b3414" },
   { id: 1, name: "Серебро", color: "#cfd8ec", deep: "#4a5570" },
   { id: 2, name: "Золото", color: "#ffc65a", deep: "#7a4d06" },
-  { id: 3, name: "Платина", color: "#7ee8d6", deep: "#0f5a52" },
-  { id: 4, name: "Алмаз", color: "#7ecbff", deep: "#14478a" },
-  { id: 5, name: "Легенда", color: "#ff6fb0", deep: "#6a1655" },
+  { id: 3, name: "Платина", color: "#8fd8ff", deep: "#134a7a" },
+  { id: 4, name: "Алмаз", color: "#b89bff", deep: "#3d1f8a" },
+  { id: 5, name: "Легенда", color: "#ff6a5a", deep: "#6e1022" },
 ];
 export const MAX_LEAGUE = LEAGUES.length - 1;
 export const leagueOf = (id: number): League => LEAGUES[Math.min(Math.max(0, id | 0), MAX_LEAGUE)];
@@ -132,31 +132,74 @@ export const donorTier = (rub: number) => DONOR_TIERS.find((t) => rub >= t.from)
 
 export type ItemRarity = "common" | "rare" | "epic" | "legendary";
 export type ItemSlot = "banner" | "aura" | "frame";
+/** Особый вид предмета: от него зависит рисунок и анимация */
+export type ItemFx =
+  | "star" | "wave" | "leaf" | "sakura" | "dragon" | "eclipse" | "galaxy"
+  | "embers" | "frost" | "petals" | "storm" | "aurora" | "void" | "phoenix"
+  | "studs" | "jade" | "laurel" | "royal" | "runes" | "prism" | "crown";
 export interface ClanItem {
   id: string;
   slot: ItemSlot;
   name: string;
   rarity: ItemRarity;
-  /** Основной и вспомогательный цвета для SVG */
+  /** Основной и вспомогательный цвета */
   a: string;
   b: string;
+  fx: ItemFx;
+  /** Строка для витрины */
+  desc: string;
+  /** Рамка-картинка (как у рамок профиля): файл, масштаб к аватару и сдвиг «дыры» */
+  img?: string;
+  scale?: number;
+  dx?: number;
+  dy?: number;
+  /** Анимация живой ауры (clan-aura.css) */
+  /** Своя SVG-рамка: мотив и цвет камня */
+  motif?: "laurel" | "wings" | "crystal" | "crown" | "thorns" | "moon" | "flame" | "sakura" | "galaxy";
+  gem?: string;
+  aura?: "corona" | "rays" | "orbit" | "nebula" | "eclipse" | "embers" | "storm" | "prism" | "frost";
 }
 
 export const RARITY_NAME: Record<ItemRarity, string> = { common: "Обычный", rare: "Редкий", epic: "Эпический", legendary: "Легендарный" };
 
+/**
+ * Оформление клана. id старых предметов не меняются — купленное остаётся у кланов.
+ * Знамя висит за гербом в шапке клана, аура светится вокруг герба, рамка — оправа герба.
+ */
 export const CLAN_ITEMS: readonly ClanItem[] = [
-  { id: "banner-dawn", slot: "banner", name: "Рассвет", rarity: "common", a: "#ffb36b", b: "#ff6f91" },
-  { id: "banner-tide", slot: "banner", name: "Прилив", rarity: "common", a: "#5cc8ff", b: "#3b5bff" },
-  { id: "banner-moss", slot: "banner", name: "Мох", rarity: "rare", a: "#8be28b", b: "#1f7a4d" },
-  { id: "banner-nova", slot: "banner", name: "Новая звезда", rarity: "epic", a: "#c58bff", b: "#ff5fa8" },
-  { id: "banner-eclipse", slot: "banner", name: "Затмение", rarity: "legendary", a: "#ffd36b", b: "#7a2cff" },
-  { id: "aura-ember", slot: "aura", name: "Тлеющие угли", rarity: "common", a: "#ff9a4d", b: "#ff3a2a" },
-  { id: "aura-frost", slot: "aura", name: "Иней", rarity: "rare", a: "#bfe9ff", b: "#5aa8ff" },
-  { id: "aura-storm", slot: "aura", name: "Грозовой разряд", rarity: "epic", a: "#fff27a", b: "#7a5cff" },
-  { id: "aura-void", slot: "aura", name: "Пустота", rarity: "legendary", a: "#b36bff", b: "#12031f" },
-  { id: "frame-bronze", slot: "frame", name: "Бронзовая оправа", rarity: "common", a: "#e0955a", b: "#6b3414" },
-  { id: "frame-jade", slot: "frame", name: "Нефрит", rarity: "rare", a: "#7ee8b0", b: "#0f5a3a" },
-  { id: "frame-royal", slot: "frame", name: "Королевская", rarity: "epic", a: "#ffd36b", b: "#8a1c4a" },
-  { id: "frame-prism", slot: "frame", name: "Призма", rarity: "legendary", a: "#7ee8ff", b: "#ff6fb0" },
+  { id: "banner-dawn", slot: "banner", name: "Рассвет", rarity: "common", a: "#ffb36b", b: "#ff6f91", fx: "star", desc: "Тёплое знамя первых побед" },
+  { id: "banner-tide", slot: "banner", name: "Прилив", rarity: "common", a: "#5cc8ff", b: "#3b5bff", fx: "wave", desc: "Волна, что поднимает весь клан" },
+  { id: "banner-moss", slot: "banner", name: "Лесной дозор", rarity: "rare", a: "#8be28b", b: "#1f7a4d", fx: "leaf", desc: "Знамя тех, кто держит оборону" },
+  { id: "banner-sakura", slot: "banner", name: "Сакура", rarity: "rare", a: "#ffc2dd", b: "#e0457f", fx: "sakura", desc: "Лепестки падают с полотна" },
+  { id: "banner-nova", slot: "banner", name: "Новая звезда", rarity: "epic", a: "#c58bff", b: "#ff5fa8", fx: "star", desc: "Сияющая звезда над гербом" },
+  { id: "banner-dragon", slot: "banner", name: "Багровый дракон", rarity: "epic", a: "#ff5a4f", b: "#3a0612", fx: "dragon", desc: "Дракон обвивает древко" },
+  { id: "banner-eclipse", slot: "banner", name: "Затмение", rarity: "legendary", a: "#ffd36b", b: "#3a1a7a", fx: "eclipse", desc: "Чёрное солнце в золотой короне" },
+  { id: "banner-galaxy", slot: "banner", name: "Млечный путь", rarity: "legendary", a: "#8fd8ff", b: "#2a1460", fx: "galaxy", desc: "Живая галактика на полотне" },
+
+
+  { id: "aura-x-embers", slot: "aura", name: "Пламя очага", rarity: "rare", a: "#ffb35c", b: "#ff3d1f", fx: "embers", aura: "embers", desc: "Угли поднимаются в тёплом свете" },
+  { id: "aura-x-frost", slot: "aura", name: "Ледяной венец", rarity: "rare", a: "#dff6ff", b: "#4aa8ff", fx: "frost", aura: "frost", desc: "Колючий иней мерцает по кругу" },
+  { id: "aura-x-orbit", slot: "aura", name: "Звёздная орбита", rarity: "epic", a: "#bfe6ff", b: "#3b6bff", fx: "aurora", aura: "orbit", desc: "Три спутника кружат по орбитам" },
+  { id: "aura-x-rays", slot: "aura", name: "Сияние зенита", rarity: "epic", a: "#fff1b8", b: "#ffb020", fx: "aurora", aura: "rays", desc: "Медленные лучи золотого света" },
+  { id: "aura-x-storm", slot: "aura", name: "Грозовое око", rarity: "epic", a: "#e8f1ff", b: "#7a5cff", fx: "storm", aura: "storm", desc: "Молнии вспыхивают в вихре" },
+  { id: "aura-x-nebula", slot: "aura", name: "Туманность", rarity: "legendary", a: "#ff8ad8", b: "#5b3bff", fx: "aurora", aura: "nebula", desc: "Живое облако звёздной пыли" },
+  { id: "aura-x-corona", slot: "aura", name: "Корона звезды", rarity: "legendary", a: "#fff4d6", b: "#ff7a1a", fx: "phoenix", aura: "corona", desc: "Вращающаяся солнечная корона" },
+  { id: "aura-x-eclipse", slot: "aura", name: "Затмение", rarity: "legendary", a: "#ffd36b", b: "#1a0b33", fx: "void", aura: "eclipse", desc: "Чёрное солнце с золотым ободом" },
+  { id: "aura-x-prism", slot: "aura", name: "Призма AniGalaxy", rarity: "legendary", a: "#7ee8ff", b: "#b46bff", fx: "aurora", aura: "prism", desc: "Радужный свет преломляется вокруг" },
+  { id: "frame-f-ice", slot: "frame", name: "Ледяное оперение", rarity: "epic", a: "#e6f7ff", b: "#0a2f6a", fx: "prism", img: "/clans/frames/feather-ice.svg", scale: 1.95, desc: "Венок из ледяных перьев" },
+  { id: "frame-f-emerald", slot: "frame", name: "Изумрудное оперение", rarity: "epic", a: "#e3fff1", b: "#0a4a32", fx: "jade", img: "/clans/frames/feather-emerald.svg", scale: 1.95, desc: "Перья цвета молодой листвы" },
+  { id: "frame-f-rose", slot: "frame", name: "Розовое перо", rarity: "epic", a: "#ffeaf4", b: "#d0427f", fx: "jade", img: "/clans/frames/lunar-rose.svg", scale: 1.95, desc: "Нежный венок из розовых перьев" },
+  { id: "frame-f-crimson", slot: "frame", name: "Багровое оперение", rarity: "legendary", a: "#ffe3e8", b: "#5a0618", fx: "crown", img: "/clans/frames/feather-crimson.svg", scale: 1.95, desc: "Алые перья воинов клана" },
+  { id: "frame-f-gold", slot: "frame", name: "Золотое оперение", rarity: "legendary", a: "#fff3d1", b: "#6a3a05", fx: "crown", img: "/clans/frames/feather-gold.svg", scale: 1.95, desc: "Перья из чистого золота" },
+  { id: "frame-f-galaxy", slot: "frame", name: "Звёздное оперение", rarity: "legendary", a: "#eaf0ff", b: "#160a4a", fx: "prism", img: "/clans/frames/feather-galaxy.svg", scale: 1.95, desc: "Перья цвета ночного неба AniGalaxy" },
+  { id: "frame-l-onyx", slot: "frame", name: "Ониксовый лавр", rarity: "rare", a: "#f2f4f8", b: "#2a2d36", fx: "laurel", img: "/clans/frames/laurel-onyx.svg", scale: 1.95, desc: "Серебро и чёрная сталь, строго и дорого" },
+  { id: "frame-l-rose", slot: "frame", name: "Розовый лавр", rarity: "rare", a: "#ffe6f0", b: "#a3245a", fx: "laurel", img: "/clans/frames/laurel-rose.svg", scale: 1.95, desc: "Венок цвета сакуры" },
+  { id: "frame-l-frost", slot: "frame", name: "Морозный лавр", rarity: "epic", a: "#e8f8ff", b: "#1c5a9a", fx: "laurel", img: "/clans/frames/laurel-frost.svg", scale: 1.95, desc: "Листья, покрытые инеем" },
+  { id: "frame-l-violet", slot: "frame", name: "Фиалковый лавр", rarity: "epic", a: "#efe4ff", b: "#2a0f6a", fx: "laurel", img: "/clans/frames/laurel-violet.svg", scale: 1.95, desc: "Пышный венок цвета аметиста" },
+  { id: "frame-l-jade", slot: "frame", name: "Нефритовый лавр", rarity: "epic", a: "#e2fff3", b: "#063a28", fx: "jade", img: "/clans/frames/laurel-jade.svg", scale: 1.95, desc: "Резной нефрит с бликами" },
+  { id: "frame-l-silver", slot: "frame", name: "Серебряная печать", rarity: "epic", a: "#f4f6fb", b: "#2a3044", fx: "crown", img: "/clans/frames/seal-silver.svg", scale: 1.95, desc: "Печать с серебряными лучами" },
+  { id: "frame-l-blood", slot: "frame", name: "Кровавый лавр", rarity: "legendary", a: "#ffe3e3", b: "#3a0008", fx: "crown", img: "/clans/frames/laurel-blood.svg", scale: 1.95, desc: "Алый венок воинов клана" },
+  { id: "frame-l-azure", slot: "frame", name: "Лазурная печать", rarity: "legendary", a: "#e6f3ff", b: "#0a2a6a", fx: "crown", img: "/clans/frames/seal-azure.svg", scale: 1.95, desc: "Синяя печать AniGalaxy" },
+  { id: "frame-l-amethyst", slot: "frame", name: "Аметистовая печать", rarity: "legendary", a: "#f3e8ff", b: "#3a0f6a", fx: "crown", img: "/clans/frames/seal-amethyst.svg", scale: 1.95, desc: "Пурпурная печать с сиянием" },
 ];
 export const clanItem = (id: string): ClanItem | undefined => CLAN_ITEMS.find((i) => i.id === id);

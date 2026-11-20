@@ -1,0 +1,17 @@
+.tools/
+.gradle/
+build/
+app/build/
+out/
+*.jks
+keystore.properties
+build.log
+local.properties
+emulator.log
+emu-done.txt
+shot*.png
+focus.txt
+shot.bat
+install.bat
+install.log
+_emu.jpg

@@ -47,7 +47,7 @@ export function DeckRail({ s }: { s: CardsState }) {
             <span className="dk-mini" aria-hidden>
               {Array.from({ length: DECK_SIZE }, (_, k) => {
                 const card = inv.get(d.ids[k]);
-                return <i key={k}>{card ? <img src={`/api/cards/art/${card.cardId}`} alt="" draggable={false} /> : null}</i>;
+                return <i key={k}>{card ? <img src={`/api/cards/art/${card.cardId}?w=320`} alt="" draggable={false} /> : null}</i>;
               })}
             </span>
             {i === active && <em className="dk-act">Активна</em>}

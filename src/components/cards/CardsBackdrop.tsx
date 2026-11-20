@@ -13,7 +13,8 @@ export function CardsBackdrop() {
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    // На телефоне параллакс за пальцем не нужен, а вечный rAF греет устройство
+    if (window.matchMedia("(prefers-reduced-motion: reduce), (hover: none) and (pointer: coarse)").matches) return;
     let tx = 0;
     let ty = 0;
     let cx = 0;
@@ -24,13 +25,15 @@ export function CardsBackdrop() {
       ty = (e.clientY / window.innerHeight - 0.5) * -18;
       el.style.setProperty("--mx", `${e.clientX}px`);
       el.style.setProperty("--my", `${e.clientY}px`);
+      if (!raf) raf = window.requestAnimationFrame(tick);
     };
     const tick = () => {
       cx += (tx - cx) * 0.05;
       cy += (ty - cy) * 0.05;
       el.style.setProperty("--px", `${cx.toFixed(2)}px`);
       el.style.setProperty("--py", `${cy.toFixed(2)}px`);
-      raf = window.requestAnimationFrame(tick);
+      // Догнали курсор — цикл засыпает до следующего движения мыши
+      raf = Math.abs(tx - cx) + Math.abs(ty - cy) > 0.05 ? window.requestAnimationFrame(tick) : 0;
     };
     window.addEventListener("pointermove", onMove, { passive: true });
     raf = window.requestAnimationFrame(tick);

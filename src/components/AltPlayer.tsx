@@ -325,6 +325,24 @@ function useCompactUi(): boolean {
     () => false,
   );
 }
+/**
+ * Телефон или планшет: тач-экран без мыши. На них апскейл Anime4K не
+ * включаем — шейдерный проход греет устройство и сажает батарею, а на
+ * маленьком экране разница не видна. Остаются только реальные потоки.
+ */
+const TOUCH_MQ = "(pointer: coarse) and (hover: none)";
+function subscribeTouch(cb: () => void) {
+  const mq = window.matchMedia(TOUCH_MQ);
+  mq.addEventListener("change", cb);
+  return () => mq.removeEventListener("change", cb);
+}
+function useTouchDevice(): boolean {
+  return useSyncExternalStore(
+    subscribeTouch,
+    () => window.matchMedia(TOUCH_MQ).matches,
+    () => false,
+  );
+}
 /** Рисует детей в <body>, если `on`: так fixed-шторки не зависят от предков плеера */
 function Lift({ on, children }: { on: boolean; children: ReactNode }) {
   return on && typeof document !== "undefined" ? createPortal(children, document.body) : <>{children}</>;
@@ -417,6 +435,7 @@ export function AltPlayer({
       подписка может кончиться, и тогда цель апскейла сама откатывается
       на «Авто», без записи в состояние из эффекта. */
   const [qualityPref, setQualityPref] = useState<Quality>("auto");
+  const touchDevice = useTouchDevice();
   const [failedSrc, setFailedSrc] = useState<string | null>(null);
   const [mediaNonce, setMediaNonce] = useState(0);
   const [buffering, setBuffering] = useState(false);
@@ -917,8 +936,14 @@ export function AltPlayer({
   // Действующее качество выведено: подписка может кончиться, а серия
   // уехать за пределы бесплатных — цель сама откатывается на «Авто»,
   // без записи в состояние из эффекта.
+  /* На телефоне апскейла нет: 4K/2K и «1080 без потока 1080» недоступны,
+     сохранённая цель такого качества сама откатывается на «Авто». */
+  const upscaleTarget = (q: Quality) =>
+    q === "2160" || q === "1440" || (q === "1080" && !sources?.["1080"]);
   const quality: Quality =
-    qualityNeedsPremium_(qualityPref, episode) && !premiumActive ? "auto" : qualityPref;
+    (qualityNeedsPremium_(qualityPref, episode) && !premiumActive) || (touchDevice && upscaleTarget(qualityPref))
+      ? "auto"
+      : qualityPref;
   const src = srcFor(quality);
   const mediaFailed = Boolean(src) && failedSrc === src;
   /** Фактически играющий поток (апскейл рисуется поверх) */
@@ -928,9 +953,7 @@ export function AltPlayer({
    * Апскейл нужен: 4K/2K — всегда, «1080» — если потока 1080 нет
    * (делаем пункт доступным, но с более слабым пресетом Anime4K)
    */
-  const upscaleNeeded =
-    Boolean(src) &&
-    (quality === "2160" || quality === "1440" || (quality === "1080" && !sources?.["1080"]));
+  const upscaleNeeded = Boolean(src) && !touchDevice && upscaleTarget(quality);
   /** Подпись чипа: «Авто»/«4K»/«2K» или разрешение потока */
   const qualityLabel =
     quality === "auto"
@@ -2090,7 +2113,7 @@ export function AltPlayer({
           <div className="h-0.5 bg-gradient-to-r from-transparent via-amber-400/70 to-transparent" />
 
           <div className="p-1.5">
-            {QUALITIES.map((q) => {
+            {QUALITIES.filter((q) => !(touchDevice && upscaleTarget(q))).map((q) => {
               const available =
                 q === "auto" || q === "1080" || q === "360"
                   ? Boolean(bestSrc)
@@ -2098,7 +2121,9 @@ export function AltPlayer({
                     ? Boolean(sources?.[q])
                     : Boolean(bestSrc);
               const selected = quality === q;
-              const beta = q === "2160" || q === "1440" || q === "1080";
+              /* «Beta» — только там, где картинку дорисовывает апскейл:
+                 настоящий поток 1080p так и называется, без пометки */
+              const beta = !touchDevice && upscaleTarget(q);
               /** Замок есть только на платных сериях: кнопку не гасим, а объясняем */
               const locked = qualityNeedsPremium_(q, episode) && !premiumActive;
               return (

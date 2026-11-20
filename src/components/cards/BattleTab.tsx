@@ -225,7 +225,7 @@ export function BattleTab({ s }: { s: CardsState }) {
           </div>
           <span className="gp-mini" aria-hidden>
             {Array.from({ length: DECK_SIZE }, (_, k) => (
-              <i key={k}>{deck[k] ? <img src={`/api/cards/art/${deck[k].cardId}`} alt="" draggable={false} /> : null}</i>
+              <i key={k}>{deck[k] ? <img src={`/api/cards/art/${deck[k].cardId}?w=320`} alt="" draggable={false} /> : null}</i>
             ))}
           </span>
 

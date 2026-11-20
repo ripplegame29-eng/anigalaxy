@@ -158,6 +158,35 @@ export function markOrderPaid(db: Database, orderId: string, providerRef: string
   });
 }
 
+/**
+ * Кристаллы, оплаченные через общую кассу сайта (Platega). Запись в
+ * clan_orders нужна для титулов спонсоров (`donorRub`). Если покупатель
+ * успел сменить клан, кристаллы идут клану, в котором он был при заказе.
+ */
+export function creditClanCrystals(
+  db: Database,
+  userId: number,
+  clanIdAtOrder: number,
+  crystals: number,
+  rub: number,
+  ref: string,
+  now = Date.now(),
+): Res<{ clanId: number }> {
+  return transaction(db, (): Res<{ clanId: number }> => {
+    const exists = (id: number) => id > 0 && Boolean(db.prepare("SELECT 1 FROM clans WHERE id = ?").get(id));
+    const clanId = exists(clanIdAtOrder) ? clanIdAtOrder : (clanIdOfUser(db, userId) ?? 0);
+    if (!exists(clanId)) return fail("Клан не найден");
+    const id = `pg_${ref}`;
+    const ins = db
+      .prepare("INSERT OR IGNORE INTO clan_orders (id, user_id, clan_id, pack, rub, crystals, status, provider_ref, created_at, paid_at) VALUES (?, ?, ?, 'platega', ?, ?, 'paid', ?, ?, ?)")
+      .run(id, userId, clanId, rub, crystals, ref, now, now);
+    if (!num((ins as { changes?: number }).changes)) return { ok: true, value: { clanId } };
+    db.prepare("UPDATE clans SET crystals = crystals + ? WHERE id = ?").run(crystals, clanId);
+    logEvent(db, clanId, userId, "crystals", crystals, { order: ref }, now);
+    return { ok: true, value: { clanId } };
+  });
+}
+
 /** Сколько рублей игрок вложил в клан — для титулов спонсоров */
 export function donorRub(db: Database, userId: number): number {
   return num(db.prepare("SELECT COALESCE(SUM(rub),0) AS s FROM clan_orders WHERE user_id = ? AND status = 'paid'").get(userId)?.s);

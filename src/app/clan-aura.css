@@ -1,0 +1,72 @@
+/* Живые ауры клана: слои .xa-glow / .xa-ring / .xa-ring2 / .xa-p, цвета --a и --b. */
+.xa { position: relative; display: block; pointer-events: none; }
+.xa > i { position: absolute; display: block; }
+.xa-glow { inset: 14%; border-radius: 50%; background: radial-gradient(closest-side, color-mix(in srgb, var(--xa1) 70%, transparent), color-mix(in srgb, var(--xa2) 40%, transparent) 55%, transparent 75%);
+  filter: blur(6px); animation: xa-breathe 3.6s ease-in-out infinite; }
+.xa-ring { inset: 18%; border-radius: 50%; background: conic-gradient(from 0deg, transparent 0 10%, var(--xa1) 18%, transparent 30%, transparent 50%, var(--xa2) 62%, transparent 75%);
+  -webkit-mask: radial-gradient(closest-side, transparent 80%, #000 82% 92%, transparent 94%); mask: radial-gradient(closest-side, transparent 80%, #000 82% 92%, transparent 94%);
+  filter: blur(.6px) drop-shadow(0 0 6px var(--xa1)); animation: xa-spin 6s linear infinite; }
+.xa-ring2 { inset: 10%; border-radius: 50%; border: 1px solid color-mix(in srgb, var(--xa1) 35%, transparent); opacity: .6; animation: xa-spin 14s linear infinite reverse; }
+.xa-p { left: 50%; top: 50%; width: 5%; height: 5%; margin: -2.5% 0 0 -2.5%; border-radius: 50%; background: #fff;
+  box-shadow: 0 0 6px 2px var(--xa1), 0 0 14px 4px color-mix(in srgb, var(--xa2) 60%, transparent); opacity: 0;
+  animation: xa-float 3.4s ease-in-out infinite; animation-delay: calc(var(--k) * -.42s); --r: calc(var(--k) * 45deg); }
+
+/* угли: искры поднимаются вверх */
+.xa-embers .xa-p { width: 3.4%; height: 3.4%; background: #ffe2b0; animation: xa-rise 2.8s ease-in infinite; animation-delay: calc(var(--k) * -.35s); left: calc(28% + var(--k) * 6%); top: 70%; }
+.xa-embers .xa-ring { animation-duration: 9s; }
+/* иней: колючее кольцо из лучей */
+.xa-frost .xa-ring { background: repeating-conic-gradient(from 0deg, var(--xa1) 0 2deg, transparent 2deg 15deg); animation-duration: 30s;
+  -webkit-mask: radial-gradient(closest-side, transparent 72%, #000 76% 96%, transparent 98%); mask: radial-gradient(closest-side, transparent 72%, #000 76% 96%, transparent 98%); }
+.xa-frost .xa-p { animation-name: xa-twinkle; }
+/* орбита: три спутника на разных радиусах */
+.xa-orbit .xa-p { animation: xa-orbit 5s linear infinite; animation-delay: calc(var(--k) * -.62s); opacity: 1; }
+.xa-orbit .xa-p:nth-child(n + 7) { display: none; }
+.xa-orbit .xa-ring { animation-duration: 10s; }
+/* лучи зенита */
+.xa-rays .xa-ring { inset: 0; background: repeating-conic-gradient(from 0deg, color-mix(in srgb, var(--xa1) 70%, transparent) 0 4deg, transparent 4deg 22deg);
+  -webkit-mask: radial-gradient(closest-side, transparent 38%, #000 50%, transparent 96%); mask: radial-gradient(closest-side, transparent 38%, #000 50%, transparent 96%); filter: blur(2px); animation-duration: 40s; }
+.xa-rays .xa-p { animation-name: xa-twinkle; }
+/* гроза: вспышки */
+.xa-storm .xa-glow { animation: xa-flash 4s steps(1) infinite; }
+.xa-storm .xa-ring { animation-duration: 2.2s; }
+.xa-storm .xa-ring2 { border-style: dashed; animation-duration: 4s; }
+/* туманность: два мягких облака */
+.xa-nebula .xa-ring { inset: 4%; background: conic-gradient(from 0deg, color-mix(in srgb, var(--xa1) 60%, transparent), transparent 30%, color-mix(in srgb, var(--xa2) 70%, transparent) 55%, transparent 80%, color-mix(in srgb, var(--xa1) 60%, transparent));
+  -webkit-mask: radial-gradient(closest-side, transparent 45%, #000 62%, transparent 100%); mask: radial-gradient(closest-side, transparent 45%, #000 62%, transparent 100%); filter: blur(8px); animation-duration: 16s; }
+.xa-nebula .xa-p { animation-name: xa-twinkle; }
+/* корона: зубчатое солнце */
+.xa-corona .xa-ring { inset: 4%; background: repeating-conic-gradient(from 0deg, var(--xa1) 0 3deg, color-mix(in srgb, var(--xa2) 80%, transparent) 3deg 6deg, transparent 6deg 12deg);
+  -webkit-mask: radial-gradient(closest-side, transparent 52%, #000 58%, transparent 92%); mask: radial-gradient(closest-side, transparent 52%, #000 58%, transparent 92%); filter: blur(1.5px); animation-duration: 24s; }
+.xa-corona .xa-ring2 { border: 2px solid var(--xa1); inset: 24%; box-shadow: 0 0 20px var(--xa2); opacity: .8; }
+/* затмение: чёрный диск и золотой обод */
+.xa-eclipse .xa-glow { background: radial-gradient(closest-side, transparent 52%, var(--xa1) 58%, color-mix(in srgb, var(--xa1) 40%, transparent) 66%, transparent 80%); filter: blur(3px); }
+.xa-eclipse .xa-ring { inset: 12%; background: conic-gradient(from 0deg, transparent 0 70%, var(--xa1) 85%, transparent); animation-duration: 3.5s; }
+/* призма: радужное кольцо */
+.xa-prism .xa-ring { background: conic-gradient(from 0deg, #7ee8ff, #b46bff, #ff6fb0, #ffd36b, #6fffd2, #7ee8ff);
+  -webkit-mask: radial-gradient(closest-side, transparent 78%, #000 81% 90%, transparent 93%); mask: radial-gradient(closest-side, transparent 78%, #000 81% 90%, transparent 93%); animation-duration: 8s; filter: drop-shadow(0 0 8px #b46bff); }
+.xa-prism .xa-glow { background: conic-gradient(from 90deg, rgba(126,232,255,.45), rgba(180,107,255,.45), rgba(255,111,176,.45), rgba(126,232,255,.45)); filter: blur(14px); border-radius: 50%; animation: xa-spin 12s linear infinite; }
+
+@keyframes xa-spin { to { transform: rotate(360deg); } }
+@keyframes xa-breathe { 50% { transform: scale(1.08); opacity: .75; } }
+@keyframes xa-float { 0% { opacity: 0; transform: rotate(var(--r)) translateY(-30%) scale(.4); } 40% { opacity: 1; } 100% { opacity: 0; transform: rotate(calc(var(--r) + 40deg)) translateY(-44%) scale(1); } }
+@keyframes xa-rise { 0% { opacity: 0; transform: translateY(0) scale(.6); } 25% { opacity: 1; } 100% { opacity: 0; transform: translateY(-160%) translateX(10%) scale(1.1); } }
+@keyframes xa-twinkle { 0%, 100% { opacity: 0; transform: rotate(var(--r)) translateY(-40%) scale(.4); } 50% { opacity: 1; transform: rotate(var(--r)) translateY(-40%) scale(1.1); } }
+@keyframes xa-orbit { from { transform: rotate(calc(var(--k) * 60deg)) translateY(calc(-28% - (var(--k) - 3) * 2%)) rotate(0); } to { transform: rotate(calc(var(--k) * 60deg + 360deg)) translateY(calc(-28% - (var(--k) - 3) * 2%)); } }
+@keyframes xa-flash { 0%, 100% { opacity: .7; } 48% { opacity: .7; } 50% { opacity: 1; filter: blur(3px) brightness(1.6); } 52% { opacity: .7; } 78% { opacity: 1; filter: blur(3px) brightness(1.4); } 80% { opacity: .7; } }
+
+/* рамка-картинка */
+.cx-stage.has-imgframe { overflow: visible; }
+.cx-stage-crest.is-round, .cx-stage-crest.is-round > * { border-radius: 50% !important; overflow: hidden; }
+.cx-stage-crest.is-round img { border-radius: 50% !important; }
+.cx-stage-imgframe { position: absolute !important; left: 50%; top: 50%; max-width: none !important; z-index: 2; pointer-events: none; filter: drop-shadow(0 8px 16px rgba(0,0,0,.55)); }
+
+@media (prefers-reduced-motion: reduce) { .xa > i { animation: none !important; } }
+html[data-lite="on"] .xa-p { display: none; }
+.cx-stage-svgframe { z-index: 2; pointer-events: none; display: block; filter: drop-shadow(0 8px 14px rgba(0,0,0,.55)); }
+.cx-stage-svgframe svg { display: block; }
+
+.xf-tw { animation: xf-tw 2.4s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+.xf-spin { animation: xa-spin 30s linear infinite; transform-origin: 100px 100px; }
+.xf-flick { animation: xf-flick 1.2s ease-in-out infinite alternate; transform-box: fill-box; transform-origin: 50% 100%; }
+@keyframes xf-tw { 50% { opacity: .35; transform: scale(.6); } }
+@keyframes xf-flick { to { transform: scaleY(.82) skewX(4deg); } }

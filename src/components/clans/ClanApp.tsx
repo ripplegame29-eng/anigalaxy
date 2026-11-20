@@ -6,6 +6,7 @@
  */
 
 import "../../app/clans-aaa.css";
+import "../../app/clans-unslop.css";
 import { createPortal } from "react-dom";
 import { useCallback, useMemo, useState, useSyncExternalStore } from "react";
 import { leagueOf, type ClanRole } from "@/lib/clan-rules";
@@ -19,12 +20,14 @@ import { Landing } from "./Landing";
 import { LeagueTab } from "./LeagueTab";
 import { RosterTab } from "./RosterTab";
 import { ShopTab } from "./ShopTab";
+import { ChatTab } from "./ChatTab";
 import { ClanCtx, Ico, Skeleton, type ClanCtxValue, type TabId } from "./common";
 
 const TABS: { id: TabId; label: string; icon: string }[] = [
   { id: "overview", label: "Обзор", icon: "overview" },
   { id: "war", label: "Война", icon: "war" },
   { id: "donate", label: "Донат", icon: "donate" },
+  { id: "chat", label: "Чат", icon: "chat" },
   { id: "roster", label: "Состав", icon: "roster" },
   { id: "league", label: "Лига", icon: "league" },
   { id: "shop", label: "Магазин", icon: "shop" },
@@ -152,6 +155,7 @@ export function ClanApp() {
             {tab === "overview" && <OverviewTab />}
             {tab === "war" && <ClanWarTab />}
             {tab === "donate" && <ClanDonateTab />}
+            {tab === "chat" && <ChatTab />}
             {tab === "roster" && <RosterTab />}
             {tab === "league" && <LeagueTab />}
             {tab === "shop" && <ShopTab />}

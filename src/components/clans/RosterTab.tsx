@@ -1,16 +1,19 @@
 "use client";
 
-/** Состав клана: вклад за неделю, роли, исключение, описание, выход. */
+/** Состав клана: вклад за неделю, роли, передача власти, эмблема, описание, выход. */
 
+import Link from "next/link";
 import { useState } from "react";
+import { CLAN_EMBLEMS, EMBLEM_TIER_LABEL } from "@/lib/emblems.data";
+import { EmblemArt } from "./EmblemArt";
 import { MEMBER_WEEK_CAP, MIN_MEMBER_GAIN, type ClanRole } from "@/lib/clan-rules";
 import { CrownIcon } from "./ClanArt";
-import { Avatar, Btn, Ico, Panel, RoleBadge, fmt, useClan } from "./common";
+import { Avatar, Btn, Crest, Ico, Panel, RoleBadge, fmt, useClan } from "./common";
 
 const ORDER: Record<ClanRole, number> = { leader: 0, officer: 1, member: 2 };
 
 export function RosterTab() {
-  const { me, clan, role, manage, act } = useClan();
+  const { me, clan, role, act } = useClan();
   const [confirm, setConfirm] = useState<string | null>(null);
   const [editing, setEditing] = useState(false);
   const [desc, setDesc] = useState(clan.description);
@@ -50,11 +53,13 @@ export function RosterTab() {
         </div>
       </div>
 
+      {role === "leader" && <EmblemPicker />}
+
       <Panel
         title="Описание клана"
         icon="edit"
         aside={
-          manage &&
+          role === "leader" &&
           !editing && (
             <Btn size="sm" onClick={() => { setDesc(clan.description); setEditing(true); }}>
               Изменить
@@ -88,6 +93,7 @@ export function RosterTab() {
           {members.map((m) => {
             const mine = m.userId === me.uid;
             const canRole = role === "leader" && m.role !== "leader";
+            const canLead = role === "leader" && !mine;
             const canKick = m.role !== "leader" && !mine && (role === "leader" || (role === "officer" && m.role === "member"));
             const ok = m.gain >= MIN_MEMBER_GAIN;
             return (
@@ -109,11 +115,16 @@ export function RosterTab() {
                   </div>
                   <b className={ok ? "ok" : ""}>{fmt(m.gain)}</b>
                 </div>
-                {(canRole || canKick) && (
+                {(canRole || canKick || canLead) && (
                   <div className="ca-m-act">
                     {canRole && (
                       <Btn size="sm" onClick={() => void run(`r${m.userId}`, "role", { userId: m.userId, role: m.role === "officer" ? "member" : "officer" }, m.role === "officer" ? "Офицер разжалован" : "Назначен офицером")}>
                         {confirm === `r${m.userId}` ? "Точно?" : m.role === "officer" ? "Снять" : "В офицеры"}
+                      </Btn>
+                    )}
+                    {canLead && (
+                      <Btn size="sm" kind={confirm === `t${m.userId}` ? "gold" : undefined} onClick={() => void run(`t${m.userId}`, "transfer", { userId: m.userId }, `${m.nickname} теперь глава клана`)}>
+                        <CrownIcon size={13} /> {confirm === `t${m.userId}` ? "Передать власть?" : "Сделать главой"}
                       </Btn>
                     )}
                     {canKick && (
@@ -121,7 +132,7 @@ export function RosterTab() {
                         {confirm === `k${m.userId}` ? "Исключить?" : "Исключить"}
                       </Btn>
                     )}
-                    {(confirm === `r${m.userId}` || confirm === `k${m.userId}`) && (
+                    {(confirm === `r${m.userId}` || confirm === `k${m.userId}` || confirm === `t${m.userId}`) && (
                       <Btn size="sm" onClick={() => setConfirm(null)} aria-label="Отмена">
                         <Ico n="x" size={14} />
                       </Btn>
@@ -157,5 +168,63 @@ export function RosterTab() {
         </div>
       </Panel>
     </div>
+  );
+}
+
+/**
+ * Эмблема клана: глава выбирает из эмблем, купленных им в магазине профиля.
+ * Сервер ещё раз проверяет покупку — подменить её из браузера нельзя.
+ */
+function EmblemPicker() {
+  const { me, clan, act } = useClan();
+  const [busy, setBusy] = useState<string | null>(null);
+  const owned = new Set(me.myEmblems ?? []);
+  const list = CLAN_EMBLEMS.filter((e) => owned.has(e.id));
+  const current = clan.emblem ?? "";
+
+  const pick = async (id: string | null) => {
+    setBusy(id ?? "default");
+    await act("emblem", { emblemId: id }, id ? "Эмблема клана обновлена" : "Возвращена эмблема по умолчанию");
+    setBusy(null);
+  };
+
+  return (
+    <Panel
+      title="Эмблема клана"
+      icon="shield"
+      aside={
+        <Link href="/store" className="ca-link">
+          <Ico n="shop" size={14} /> Магазин эмблем
+        </Link>
+      }
+    >
+      <div className="ca-emb">
+        <div className="ca-emb-now">
+          <Crest clanId={clan.id} emblemId={current} size={120} />
+          <small className="ca-dim">Сейчас на гербе</small>
+        </div>
+        <div className="ca-emb-list">
+          <button type="button" className={`ca-emb-opt${!current ? " on" : ""}`} disabled={!current || busy !== null} onClick={() => void pick(null)}>
+            <span className="ca-emb-def">
+              <Ico n="shield" size={28} />
+            </span>
+            <b>По умолчанию</b>
+            <small>стандартная</small>
+          </button>
+          {list.map((e) => (
+            <button key={e.id} type="button" className={`ca-emb-opt t-${e.tier}${current === e.id ? " on" : ""}`} disabled={current === e.id || busy !== null} onClick={() => void pick(e.id)}>
+              <EmblemArt emblem={e} size={72} interactive={false} />
+              <b>{e.ru}</b>
+              <small>{EMBLEM_TIER_LABEL[e.tier]}</small>
+            </button>
+          ))}
+          {list.length === 0 && (
+            <p className="ca-dim ca-emb-empty">
+              Своих эмблем пока нет. Купите эмблему в магазине профиля за AC — и она появится здесь.
+            </p>
+          )}
+        </div>
+      </div>
+    </Panel>
   );
 }

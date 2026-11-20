@@ -32,6 +32,8 @@ export function WarIdle({ st, toast }: { st: CwState; toast: (t: string, err?: b
   const q = st.search;
   const sizes = st.sizes.length ? st.sizes : [...CW.sizes];
   const enough = st.eligible >= size;
+  /** Локальный тестовый режим: бой с ботом даже с одним бойцом */
+  const testBot = process.env.NEXT_PUBLIC_CLAN_TEST === "1" && st.eligible >= 1;
 
   if (q) {
     return (
@@ -127,7 +129,7 @@ export function WarIdle({ st, toast }: { st: CwState; toast: (t: string, err?: b
                 <Ico name="target" size={18} />
                 {busy === "search" ? "Ищем…" : "Найти соперника"}
               </button>
-              <button type="button" className="cw-btn ghost lg" disabled={!!busy || !enough} onClick={() => go("vs_bot")}>
+              <button type="button" className="cw-btn ghost lg" disabled={!!busy || (!enough && !testBot)} onClick={() => go("vs_bot")}>
                 <Ico name="skull" size={18} />
                 {busy === "vs_bot" ? "Собираем…" : "Сразиться с отрядом"}
               </button>

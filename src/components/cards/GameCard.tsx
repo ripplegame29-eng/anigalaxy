@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type CSSProperties, type ReactNode } from "react";
+import { useState, type CSSProperties, type PointerEvent, type ReactNode } from "react";
 import { CATALOG_SIZE, cardDef } from "@/lib/cards/catalog";
 import { CLASSES, ELEMENTS, RANKS } from "@/lib/cards/config";
 import { hasArt } from "@/lib/cards/client";
@@ -31,6 +31,8 @@ export interface GameCardProps {
   live?: boolean;
   /** Ступень пробуждения (0..2) */
   evo?: number;
+  /** Подсказка браузеру, какой ширины карта на экране (для выбора уменьшенного арта) */
+  sizes?: string;
   /** Закрыть арт (неоткрытая карта в альбоме) */
   unknown?: boolean;
   onClick?: () => void;
@@ -55,7 +57,7 @@ export function RankMark({ rank }: { rank: number }) {
 }
 
 /** Карточка персонажа: арт + рамка ранга + плашка имени. Размер задаёт родитель (ширина). */
-export function GameCard({ cardId, foil, level = 1, selected, dim, locked, count, stats = true, unknown, live, evo = 0, onClick, className = "", children }: GameCardProps) {
+export function GameCard({ cardId, foil, level = 1, selected, dim, locked, count, stats = true, unknown, live, evo = 0, sizes = "(max-width: 640px) 46vw, 240px", onClick, className = "", children }: GameCardProps) {
   const def = cardDef(cardId);
   // Арт пробуем загрузить всегда: список артов на клиенте мог устареть, а битый файл
   // тогда превращается в заглушку с инициалами, а не в пустую рамку
@@ -73,6 +75,18 @@ export function GameCard({ cardId, foil, level = 1, selected, dim, locked, count
     .map((w) => w[0])
     .join("");
   const Tag = onClick ? "button" : "div";
+  // Голография для эпических и выше: блик следует за курсором
+  const holo = !unknown && def.rank >= 2;
+  const onHolo = holo
+    ? (e: PointerEvent<HTMLElement>) => {
+        const el = e.currentTarget, r = el.getBoundingClientRect();
+        const x = (e.clientX - r.left) / r.width, y = (e.clientY - r.top) / r.height;
+        el.style.setProperty("--hx", `${(x * 100).toFixed(1)}%`);
+        el.style.setProperty("--hy", `${(y * 100).toFixed(1)}%`);
+        el.style.setProperty("--ha", "1");
+      }
+    : undefined;
+  const offHolo = holo ? (e: PointerEvent<HTMLElement>) => e.currentTarget.style.setProperty("--ha", "0") : undefined;
   // Размер имени подбираем по длине: длинные имена идут в две строки помельче
   const nl = def.name.length;
   const nameStyle = { fontSize: `${nl > 13 ? Math.max(5.8, Math.min(8.6, 118 / (nl * 0.72))) : Math.max(7.2, Math.min(12.6, 70 / (nl * 0.72)))}cqw` } as CSSProperties;
@@ -80,6 +94,8 @@ export function GameCard({ cardId, foil, level = 1, selected, dim, locked, count
     <Tag
       type={onClick ? "button" : undefined}
       onClick={onClick}
+      onPointerMove={onHolo}
+      onPointerLeave={offHolo}
       className={`gc gc-${rank.key} ${foil ? "gc-foil-on" : ""} ${selected ? "gc-sel" : ""} ${dim ? "gc-dim" : ""} ${unknown ? "gc-unknown" : ""} ${live && def.rank >= 2 ? "gc-live" : ""} ${evo > 0 ? `gc-evo gc-evo${evo}` : ""} ${className}`}
       style={style}
       aria-label={unknown ? "Неизвестная карта" : `${def.name}, ${rank.name}${foil ? ", анимированная" : ""}${evo > 0 ? `, пробуждение ${evo}` : ""}`}
@@ -89,6 +105,9 @@ export function GameCard({ cardId, foil, level = 1, selected, dim, locked, count
           <img
             key={tries}
             src={tries ? `/api/cards/art/${def.id}?r=${tries}` : `/api/cards/art/${def.id}`}
+            srcSet={tries ? undefined : `/api/cards/art/${def.id}?w=320 320w, /api/cards/art/${def.id}?w=480 480w, /api/cards/art/${def.id}?w=720 720w, /api/cards/art/${def.id} 1000w`}
+            sizes={tries ? undefined : sizes}
+            decoding="async"
             alt=""
             loading="lazy"
             draggable={false}
@@ -164,6 +183,7 @@ export function GameCard({ cardId, foil, level = 1, selected, dim, locked, count
           </div>
           {level > 1 && <div className="gc-lv">+{level - 1}</div>}
           {foil && <div className="gc-foil" aria-hidden />}
+          {holo && <div className="gc-holo" aria-hidden />}
           {evo > 0 && (
             <>
               <div className="gc-aura" aria-hidden />

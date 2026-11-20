@@ -22,6 +22,7 @@ import "../../app/cards-arena2.css";
 import "../../app/cards-arena3.css";
 import "../../app/cards-result.css";
 import "../../app/cards-battlefx.css";
+import "../../app/cards-mobile.css";
 import { AuctionTab } from "./AuctionTab";
 import { BattleTab } from "./BattleTab";
 import { CardsBackdrop } from "./CardsBackdrop";

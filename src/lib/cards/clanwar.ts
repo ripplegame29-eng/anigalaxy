@@ -55,6 +55,8 @@ export interface CwSideView {
   clanId: number;
   name: string;
   tag: string;
+  /** Версия своего аватара клана (0 — нет) */
+  avatarV?: number;
   score: number;
   stars: number;
   defense: number;

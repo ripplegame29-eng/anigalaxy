@@ -159,7 +159,7 @@ export function CardViewer({
             <div ref={stage} className="cv-stage" onPointerMove={move} onPointerLeave={leave}>
               <div className={`cv-flip${flip ? " is-back" : ""}`}>
                 <div className="cv-face front" key={`${id}-${card?.level ?? 0}`} style={{ ["--fr" as string]: `url(/cards/frames/edge/${rank.key}.webp)` } as CSSProperties}>
-                  <GameCard cardId={id} foil={card?.foil} level={card?.level} evo={card?.evo} locked={card?.locked} stats={false} live />
+                  <GameCard cardId={id} foil={card?.foil} level={card?.level} evo={card?.evo} locked={card?.locked} stats={false} live sizes="(max-width: 640px) 92vw, 520px" />
                   <i className="cv-holo" aria-hidden />
                   <i className="cv-glare" aria-hidden />
                   <i className="cv-rim" aria-hidden />

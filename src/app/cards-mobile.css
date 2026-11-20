@@ -1,0 +1,140 @@
+/* ============================================================
+   ГАЧА НА ТЕЛЕФОНЕ — облегчённый режим.
+   Включается на тач-экранах без мыши (iPhone, Android, планшеты) через
+   <html data-lite="on"> (см. lib/eco.ts); переключатель «Экономия: Выкл»
+   в настройках возвращает полные эффекты.
+   Почему: размытые шары во весь экран, стеклянные панели с backdrop-filter
+   поверх движущегося фона и бесконечные анимации на каждой карте (блик,
+   частицы, вращение кольца) заставляли GPU телефона перерисовывать экран
+   120 раз в секунду — гача лагала и грела устройство.
+   Здесь: стекло без размытия, неподвижный фон, украшения проигрываются
+   один раз. Анимации боя (.ar-overlay) — это сама игра, их не трогаем,
+   но и там убираем размытие подложек.
+   ============================================================ */
+
+/* 1. Стекло: размытие подложки — самая дорогая операция на iOS */
+html[data-lite="on"] .cg,
+html[data-lite="on"] .cg *,
+html[data-lite="on"] .cg *::before,
+html[data-lite="on"] .cg *::after {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+/* 2. Фон страницы: шары и подсветка сетки под пальцем не нужны */
+html[data-lite="on"] .cg2-orbs,
+html[data-lite="on"] .cg2-hot {
+  display: none !important;
+}
+html[data-lite="on"] .cg2-grid {
+  transform: none !important;
+}
+
+/* 3. Лишние слои композитора: will-change держит каждый элемент в памяти GPU */
+html[data-lite="on"] .cg *:not(.ar-overlay *) {
+  will-change: auto !important;
+}
+
+/* 4. Бесконечные украшения вне боя — один проход и стоп. У них ключевые
+      кадры 0% и 100% совпадают, поэтому элемент возвращается в исходный вид.
+      Спиннер загрузки и бегущая строка остаются живыми. */
+html[data-lite="on"] .cg *:not(.ar-overlay *):not(.cg-spin):not(.cg2-tick .tk),
+html[data-lite="on"] .cg *:not(.ar-overlay *)::before,
+html[data-lite="on"] .cg *:not(.ar-overlay *)::after {
+  animation-iteration-count: 1 !important;
+}
+
+/* 5. «Дыхание» и перелив цвета арта на каждой карте — без них: они идут
+      туда-обратно, и после одного прохода картинка дёрнулась бы */
+html[data-lite="on"] .cg .gc-art img,
+html[data-lite="on"] .cg .gc-ph {
+  animation: none !important;
+}
+
+/* ============================================================
+   Вёрстка гачи под телефон (по ширине экрана, независимо от лёгкого режима)
+   ============================================================ */
+
+/* Раздел «Бои»: сетка раздела растягивалась по самому широкому ребёнку
+   (906 px) и уезжала за экран. Колонка не шире контейнера. */
+.cg .cg-bt {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+@media (max-width: 560px) {
+  /* Шапка и нижнее меню сайта на странице гачи: плотный фон без размытия —
+     контент не просвечивает, а iOS не пересчитывает размытие при прокрутке */
+  html[data-lite="on"] .agh .hd,
+  html[data-lite="on"] .agh .hd.sc {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+    background: rgba(5, 8, 16, 0.97) !important;
+  }
+  html[data-lite="on"] .mnv-bar {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+    background: linear-gradient(rgba(16, 22, 44, 0.98), rgba(8, 12, 26, 0.99)) !important;
+  }
+  html[data-lite="on"] .cg .cg-nav {
+    background: rgba(6, 10, 24, 0.98) !important;
+  }
+  /* Панель вкладок прилипает вплотную к шапке: в щель 6 px просвечивал контент */
+  .cg2 .cg-nav {
+    top: 64px;
+  }
+
+  /* «Мой запас»: заголовок не ломается на две строки, кнопки уходят вниз */
+  .cg .sxh {
+    flex-wrap: wrap;
+    row-gap: 10px;
+    white-space: nowrap;
+  }
+  .cg .sxh .sxhr {
+    flex-wrap: wrap;
+    row-gap: 8px;
+  }
+
+  /* Выбор оплаты: три плитки — компактнее, без переносов посреди слова */
+  .cg .st-wal {
+    gap: 6px;
+  }
+  .cg .st-wal button {
+    padding: 10px 6px;
+    min-width: 0;
+  }
+  .cg .st-wal small {
+    font-size: 9.5px;
+    letter-spacing: 0.04em;
+    line-height: 1.2;
+  }
+  .cg .st-wal em {
+    font-size: 10px;
+    line-height: 1.25;
+  }
+
+  /* Итог покупки: подпись слева, значение справа, одна строка */
+  .cg .st-sum > div {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  .cg .st-sum dt {
+    white-space: nowrap;
+  }
+  .cg .st-sum dd {
+    text-align: right;
+    white-space: nowrap;
+  }
+  .cg .st-sum dd:has(small) {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+  }
+  .cg .st-sum dd small {
+    display: block;
+    margin: 0;
+    white-space: nowrap;
+  }
+}

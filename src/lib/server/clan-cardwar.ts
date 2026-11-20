@@ -97,8 +97,16 @@ function insertSlots(db: Database, warId: number, clanId: number, list: Candidat
   });
 }
 
+/** Тестовый режим (только локально, CLAN_TEST=1): война с ботом без набора состава и без подготовки */
+const TEST = process.env.CLAN_TEST === "1" && process.env.NODE_ENV !== "production";
+
 function startWar(db: Database, a: number, b: number, size: number, bot: string, now: number, rng: Rng): number | null {
   const ra = roster(db, a).slice(0, size);
+  if (TEST && !b && ra.length > 0)
+    while (ra.length < size) {
+      const units = botSquad(clamp(Math.round(850 + ra[0].power / 12), 800, 2200), rng);
+      ra.push({ userId: 0, nick: `Тест-боец ${ra.length + 1}`, units, power: power(units) });
+    }
   if (ra.length < size) return null;
   let rb: Candidate[];
   if (b) {
@@ -116,7 +124,7 @@ function startWar(db: Database, a: number, b: number, size: number, bot: string,
   }
   const info = db
     .prepare("INSERT INTO clan_cw (clan_a, clan_b, bot_name, size, status, prep_until, ends_at, created_at) VALUES (?, ?, ?, ?, 'prep', ?, ?, ?)")
-    .run(a, b, bot, size, now + CW.prepMs, now + CW.prepMs + CW.battleMs, now);
+    .run(a, b, bot, size, now + (TEST ? 0 : CW.prepMs), now + (TEST ? 0 : CW.prepMs) + CW.battleMs, now);
   const id = num(info.lastInsertRowid);
   insertSlots(db, id, a, ra);
   if (b) insertSlots(db, id, b, rb);
@@ -183,7 +191,7 @@ export function cwVsBot(db: Database, userId: number, sizeIn: number, now = Date
     cwSettle(db, now);
     if (currentWar(db, g.value)) return fail("Клан уже в войне");
     const eligible = roster(db, g.value).length;
-    if (eligible < size) return fail(`Нужно ${size} бойцов с собранным отрядом (сейчас ${eligible})`);
+    if (eligible < (TEST ? 1 : size)) return fail(`Нужно ${size} бойцов с собранным отрядом (сейчас ${eligible})`);
     db.prepare("DELETE FROM clan_cw_queue WHERE clan_id = ?").run(g.value);
     const name = CW.botNames[Math.floor(rng() * CW.botNames.length)];
     return startWar(db, g.value, 0, size, name, now, rng) ? { ok: true, value: true } : fail("Не удалось начать войну");
@@ -387,6 +395,7 @@ function sideView(db: Database, w: WarRow, clanId: number, foeClanId: number, us
     clanId,
     name: clan ? clan.name : w.bot || "Соперник",
     tag: clan ? clan.tag : "BOT",
+    avatarV: clan?.avatarV ?? 0,
     score: mine.score,
     stars: mine.stars,
     defense: mine.def,

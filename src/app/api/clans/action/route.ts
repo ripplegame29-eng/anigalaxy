@@ -1,6 +1,6 @@
 import { claimGoal } from "@/lib/server/clan-season";
 import { buyItem, buySlots, donateAc, equipItem } from "@/lib/server/clan-economy";
-import { clanIdOfUser, joinClan, kickMember, leaveClan, setRole, updateClan } from "@/lib/server/clans";
+import { clanIdOfUser, joinClan, kickMember, leaveClan, setClanEmblem, setClanMedia, setRole, transferLeader, updateClan } from "@/lib/server/clans";
 import { json, route, readJson } from "@/lib/server/http";
 
 export const runtime = "nodejs";
@@ -11,7 +11,8 @@ const SLOTS = ["banner", "aura", "frame"] as const;
 /**
  * Действия игрока в клане:
  * join {clanId} · leave · kick {userId} · role {userId, role} · donate {ac} ·
- * claim_goal {tier} · buy {itemId, currency} · equip {slot, itemId|null} · slots · update {description?, data?}
+ * claim_goal {tier} · buy {itemId, currency} · equip {slot, itemId|null} · slots · update {description?, data?} ·
+ * emblem {emblemId|null} · transfer {userId}
  */
 export const POST = route(
   async ({ db, request, user }) => {
@@ -45,6 +46,15 @@ export const POST = route(
         if (!slot) return json({ error: "Нет такой ячейки" }, 400);
         return done(equipItem(db, uid, slot, typeof body.itemId === "string" ? body.itemId : null));
       }
+      case "emblem":
+        return done(setClanEmblem(db, uid, typeof body.emblemId === "string" ? body.emblemId : null));
+      case "media": {
+        const kind = body.kind === "banner" ? "banner" : body.kind === "avatar" ? "avatar" : null;
+        if (!kind) return json({ error: "Неизвестный тип картинки" }, 400);
+        return done(setClanMedia(db, uid, kind, typeof body.image === "string" ? body.image : null));
+      }
+      case "transfer":
+        return done(transferLeader(db, uid, num(body.userId)));
       case "slots":
         return done(buySlots(db, uid));
       case "update":

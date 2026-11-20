@@ -11,6 +11,7 @@ import { randomUUID } from "node:crypto";
 import { BATTLEPASS } from "../battlepass/config";
 import { PRODUCTS, type PaymentProduct } from "../payments/catalog";
 import { grantCardBundle } from "./cards-shop";
+import { creditClanCrystals } from "./clan-economy";
 import { PROGRESS_DOC_KEY } from "../sync-keys";
 import { setPremiumDays } from "./admin";
 import { adjustBalance, editProfile, pushNotice, setItem } from "./admin-edit";
@@ -44,6 +45,8 @@ export interface GiftOrderMeta {
 export interface PaymentOrderMeta {
   gift?: GiftOrderMeta;
   withPack?: boolean;
+  /** Клан покупателя на момент заказа (товары «Кристаллы клана») */
+  clanId?: number;
 }
 
 export interface PaymentOrder {
@@ -390,6 +393,19 @@ function grantEntitlements(db: Database, order: PaymentOrder, now: number): void
 
   if (product.kind === "gift") {
     grantGift(db, order, product, now);
+    return;
+  }
+
+  if (product.kind === "clan") {
+    const r = creditClanCrystals(db, order.userId, Number(order.meta.clanId ?? 0), product.clanCrystals ?? 0, order.amount, order.id, now);
+    notice(
+      db,
+      order.userId,
+      r.ok
+        ? `${product.title}: +${product.clanCrystals} кристаллов в казну клана`
+        : `${product.title}: клан не найден — напишите в поддержку, мы вернём покупку`,
+      now,
+    );
     return;
   }
 

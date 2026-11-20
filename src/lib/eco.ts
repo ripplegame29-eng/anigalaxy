@@ -39,6 +39,11 @@ export function cpuCores(): number {
   return typeof cores === "number" && Number.isFinite(cores) ? cores : 0;
 }
 
+/** Тач-экран без мыши: телефон или планшет */
+export function touchScreen(): boolean {
+  return typeof window !== "undefined" && window.matchMedia("(hover: none) and (pointer: coarse)").matches;
+}
+
 /** Эффективное состояние: ручной выбор важнее автоматики */
 export function ecoActive(): boolean {
   const mode = ecoStore.get();
@@ -52,6 +57,10 @@ export function applyEco(): void {
   if (typeof document === "undefined") return;
   if (ecoActive()) document.documentElement.setAttribute("data-eco", "on");
   else document.documentElement.removeAttribute("data-eco");
+  // Облегчённый режим гачи на тач-экранах (cards-mobile.css): включён всегда,
+  // кроме явного «Экономия: Выкл» — тогда пользователь сам выбрал полные эффекты
+  if (touchScreen() && ecoStore.get() !== "off") document.documentElement.setAttribute("data-lite", "on");
+  else document.documentElement.removeAttribute("data-lite");
 }
 
 /** Переключатель из настроек: пишет выбор и сразу применяет */

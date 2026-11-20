@@ -41,9 +41,12 @@ export function PackStage({
   blocked,
   dim,
   art,
+  tier,
   onOpen,
   children,
 }: {
+  /** Лучшая редкость в паке (ключ ранга): во время зарядки пак светится её цветом */
+  tier?: string;
   phase: PackPhase;
   blocked?: boolean;
   dim?: boolean;
@@ -71,7 +74,7 @@ export function PackStage({
     el.style.setProperty("--ry", "0deg");
   };
   return (
-    <div className={`cg-stage ph-${phase} ${blocked ? "is-blocked" : ""} ${dim ? "is-dim" : ""}`}>
+    <div className={`cg-stage ph-${phase} ${tier ? `tier-${tier}` : ""} ${blocked ? "is-blocked" : ""} ${dim ? "is-dim" : ""}`}>
       <div className="cg-rays" aria-hidden />
       <div className="cg-particles" aria-hidden>
         {PARTICLES.map((p, i) => (

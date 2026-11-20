@@ -4,9 +4,11 @@
 
 import { CLAN_ITEMS, GOAL_TIERS, MIN_MEMBER_GAIN, clanItem, clanXpForLevel, leagueOf } from "@/lib/clan-rules";
 import { warPhaseText } from "@/lib/cards/clanwar";
-import { useClanDonate, useClanWar } from "@/lib/clans/client";
-import { ChestIcon, CrystalIcon, ItemArt, LeagueBadge, TrophyIcon } from "./ClanArt";
-import { Btn, Crest, Ico, Panel, RoleBadge, Skeleton, ago, countdown, fmt, useClan, useNow } from "./common";
+import { clanAct, clanMediaUrl, prepareClanImage, useClanDonate, useClanWar } from "@/lib/clans/client";
+import { useRef, useState } from "react";
+import { CrystalIcon, ItemArt, LeagueBadge, TrophyIcon } from "./ClanArt";
+import { CrestStage } from "./ClanCosmetics";
+import { Btn, Ico, Panel, RoleBadge, Skeleton, ago, countdown, fmt, useClan, useNow } from "./common";
 
 /* -------------------------------- Герой --------------------------------- */
 
@@ -18,15 +20,42 @@ export function ClanHero({ compact = false }: { compact?: boolean }) {
   const hi = clanXpForLevel(clan.level + 1);
   const pct = clan.level >= 50 ? 100 : Math.max(0, Math.min(100, ((clan.xp - lo) / Math.max(1, hi - lo)) * 100));
   const eq = me.data?.equipped ?? {};
-  const banner = eq.banner ? clanItem(eq.banner) : undefined;
+  const banner = undefined as ReturnType<typeof clanItem>;
   const aura = eq.aura ? clanItem(eq.aura) : undefined;
   const frame = eq.frame ? clanItem(eq.frame) : undefined;
+  const canEdit = !compact && (role === "leader" || role === "officer");
+  const avatarV = clan.avatarV ?? 0;
+  const bannerV = clan.bannerV ?? 0;
+  const fileRef = useRef<HTMLInputElement>(null);
+  const kindRef = useRef<"avatar" | "banner">("avatar");
+  const [busy, setBusy] = useState("");
+  const [err, setErr] = useState("");
+  const pick = (k: "avatar" | "banner") => { kindRef.current = k; setErr(""); fileRef.current?.click(); };
+  const onFile = async (f: File | undefined) => {
+    if (!f) return;
+    const k = kindRef.current;
+    setBusy(k);
+    try {
+      const image = await prepareClanImage(f, k);
+      const r = await clanAct("media", { kind: k, image });
+      if (!r.ok) setErr(r.error);
+    } catch (e) {
+      setErr(e instanceof Error && e.message !== "read" ? e.message : "Не удалось прочитать картинку");
+    }
+    setBusy("");
+    if (fileRef.current) fileRef.current.value = "";
+  };
+  const drop = async (k: "avatar" | "banner") => { setBusy(k); const r = await clanAct("media", { kind: k, image: null }); if (!r.ok) setErr(r.error); setBusy(""); };
 
   return (
     <header
-      className={`ca-hero${compact ? " is-compact" : ""}`}
+      className={`ca-hero${compact ? " is-compact" : ""}${bannerV && !compact ? " has-cover" : ""}`}
       style={{ ["--lc" as string]: lg.color, ["--lc2" as string]: lg.deep, ["--au" as string]: aura?.a ?? lg.color, ["--au2" as string]: aura?.b ?? lg.deep }}
     >
+      {bannerV > 0 && !compact && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img className="ca-hero-cover" src={clanMediaUrl(clan.id, "banner", bannerV)} alt="" aria-hidden />
+      )}
       <i className="ca-hero-sheen" aria-hidden />
       <i className="ca-hero-grid" aria-hidden />
       {aura && <i className="ca-hero-aura" aria-hidden />}
@@ -37,8 +66,24 @@ export function ClanHero({ compact = false }: { compact?: boolean }) {
       )}
 
       <div className={`ca-hero-crest${frame ? " has-frame" : ""}`} style={frame ? { ["--fa" as string]: frame.a, ["--fb" as string]: frame.b } : undefined}>
-        <Crest clanId={clan.id} size={compact ? 84 : 168} interactive={!compact} />
+        <CrestStage clanId={clan.id} emblemId={clan.emblem} avatarV={avatarV} size={compact ? 84 : 168} aura={aura} frame={frame} interactive={!compact} />
+        {canEdit && (
+          <button type="button" className="ca-media-btn ca-media-av" onClick={() => pick("avatar")} disabled={!!busy} title="Загрузить аватар клана">
+            <Ico n="edit" size={14} /> {busy === "avatar" ? "Загрузка…" : avatarV ? "Сменить" : "Свой аватар"}
+          </button>
+        )}
       </div>
+      {canEdit && (
+        <div className="ca-media-bar">
+          <button type="button" className="ca-media-btn" onClick={() => pick("banner")} disabled={!!busy}>
+            <Ico n="image" size={14} /> {busy === "banner" ? "Загрузка…" : bannerV ? "Сменить обложку" : "Обложка"}
+          </button>
+          {bannerV > 0 && <button type="button" className="ca-media-btn" onClick={() => drop("banner")} disabled={!!busy}>Убрать обложку</button>}
+          {avatarV > 0 && <button type="button" className="ca-media-btn" onClick={() => drop("avatar")} disabled={!!busy}>Вернуть герб</button>}
+          {err && <span className="ca-media-err">{err}</span>}
+          <input ref={fileRef} type="file" accept="image/png,image/jpeg,image/webp,image/gif" hidden onChange={(e) => onFile(e.target.files?.[0])} />
+        </div>
+      )}
 
       <div className="ca-hero-main">
         <span className="ca-eyebrow">
@@ -81,6 +126,11 @@ export function ClanHero({ compact = false }: { compact?: boolean }) {
       </div>
 
       <div className="ca-hero-league">
+        <span className="ca-hero-lgname" style={{ ["--c" as string]: lg.color }}>
+          <small>Лига</small>
+          <b>{lg.name}</b>
+          <i aria-hidden />
+        </span>
         <div className="ca-hero-badge">
           <LeagueBadge league={clan.league} size={compact ? 52 : 104} />
         </div>
@@ -270,7 +320,8 @@ function SeasonCard() {
           const ready = reached && !claimed && !!g?.eligible;
           return (
             <div key={t.id} className={`ca-chest${ready ? " ready" : ""}${claimed ? " done" : ""}`} style={{ ["--cc" as string]: t.color }}>
-              <ChestIcon color={t.color} open={claimed} size={58} />
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img className="ca-chest-img" src={`/clans/chests/${Math.min(i, 2)}.webp`} alt="" />
               <b>{t.name.replace(" сундук", "")}</b>
               <small>
                 {fmt(g?.targets[i] ?? 0)} очк. · +{t.ac} AC
@@ -301,6 +352,7 @@ function eventText(e: { kind: string; amount: number; data?: Record<string, unkn
     case "left": return "покинул клан";
     case "kicked": return "исключён из клана";
     case "leader_changed": return "теперь глава клана";
+    case "emblem": return "сменил эмблему клана";
     case "contributed": return `принёс клану ${a} опыта`;
     case "donated": return `внёс в казну ${a} AC`;
     case "bought": return "купил оформление клана";
@@ -308,12 +360,20 @@ function eventText(e: { kind: string; amount: number; data?: Record<string, unkn
     case "crystals": return `пополнил кристаллы клана: +${a}`;
     case "season": return `итоги недели: ${a} место`;
     case "war_points": return `принёс очки войны: +${a}`;
-    case "war_won": return "клан победил в войне";
-    case "war_lost": return "клан проиграл в войне";
-    default: return e.kind;
+    case "war_lost": return `проиграл войну: −${fmt(Math.abs(e.amount))} кубков`;
+    case "war_won": return `победил в войне: +${fmt(Math.abs(e.amount))} кубков`;
+    case "war_draw": return "сыграл войну вничью";
+    case "war_found": return e.data?.bot ? `нашёл соперника для войны ${a}×${a} — тренировочный бой` : `нашёл соперника для войны ${a}×${a}`;
+    case "war_hit": return `атаковал в войне: ${"★".repeat(Math.max(1, Math.min(3, e.amount)))}`;
+    case "war_miss": return "атаковал в войне, но не прорвал защиту";
+    case "donate_request": return `просит карту для коллекции (${a} шт.)`;
+    case "donate_card": return "подарил карту соклановцу";
+    case "win": return "выиграл бой";
+    case "lose": return "проиграл бой";
+    default: return "событие клана";
   }
 }
-const EVENT_ICON: Record<string, string> = { joined: "plus", created: "shield", left: "logout", kicked: "x", donated: "coin", bought: "shop", slots: "roster", crystals: "bolt", season: "league", contributed: "up" };
+const EVENT_ICON: Record<string, string> = { joined: "plus", created: "shield", left: "logout", kicked: "x", donated: "coin", bought: "shop", slots: "roster", crystals: "bolt", season: "league", contributed: "up", donate_card: "donate", donate_request: "donate" };
 
 function Feed() {
   const { me } = useClan();
@@ -347,22 +407,22 @@ function Feed() {
 function Cosmetics() {
   const { me, go } = useClan();
   const eq = me.data?.equipped ?? {};
-  const total = CLAN_ITEMS.length;
-  const owned = me.owned?.length ?? 0;
+  const total = CLAN_ITEMS.filter((i) => i.slot !== "banner").length;
+  const owned = (me.owned ?? []).filter((id) => clanItem(id)?.slot !== "banner").length;
   return (
     <Panel title="Оформление" icon="shop" className="ca-cosm" aside={<span className="ca-dim">{owned}/{total}</span>}>
       <div className="ca-cosm-row">
-        {(["banner", "aura", "frame"] as const).map((s) => {
+        {(["aura", "frame"] as const).map((s) => {
           const it = eq[s] ? clanItem(eq[s]) : undefined;
           return (
             <div key={s} className={`ca-slot${it ? ` r-${it.rarity}` : ""}`}>
               {it ? <ItemArt item={it} size={56} /> : <span className="ca-slot-empty"><Ico n="plus" size={18} /></span>}
-              <small>{s === "banner" ? "Знамя" : s === "aura" ? "Аура" : "Рамка"}</small>
+              <small>{s === "aura" ? "Аура" : "Рамка"}</small>
             </div>
           );
         })}
       </div>
-      <Btn kind="ghost" onClick={() => go("shop")}>В магазин</Btn>
+      <Btn kind="ghost" onClick={() => go("shop")}>Ауры и рамки</Btn>
     </Panel>
   );
 }

@@ -459,3 +459,33 @@
 /* Звёздочка «сохранить озвучку» в списке студий */
 .wb-vmenu li > button:not([role="option"]) { min-height: 0 !important; padding: 0 !important; width: 36px; height: 36px; border-radius: 12px; }
 .wb-vmenu li > button:not([role="option"]):hover { background: rgba(255, 255, 255, .06); }
+
+/* ===== v3: тёмный плеер в стиле поиска — графит, тонкие кромки, один синий акцент ===== */
+.wb-shell.wb-shell { animation: none; box-shadow: 0 0 0 1px rgba(255,255,255,.07), 0 40px 80px -40px #000; }
+.wb-ep { background: rgba(255,255,255,.04) !important; box-shadow: inset 0 0 0 1px rgba(255,255,255,.07); color: rgba(255,255,255,.82); transition: background-color .15s, color .15s, box-shadow .15s; }
+.wb-ep:hover { transform: none; background: rgba(255,255,255,.08) !important; box-shadow: inset 0 0 0 1px rgba(255,255,255,.14); color: #fff; }
+.wb-ep--on, .wb-ep--on:hover { background: #2b6fff !important; color: #fff !important; transform: none; box-shadow: inset 0 1px 0 rgba(255,255,255,.22), 0 8px 22px -10px rgba(43,111,255,.9) !important; }
+@media (min-width: 901px) {
+  .wb-card {
+    padding: 16px; border-radius: 26px;
+    background:
+      radial-gradient(620px 380px at 100% 0%, rgba(43,111,255,.10), transparent 65%),
+      linear-gradient(180deg, #0d0e12, #0a0a0d);
+    box-shadow: 0 0 0 1px rgba(255,255,255,.08), 0 60px 120px -60px #000;
+  }
+  .wb-card::before { display: none; }
+  .wb-card .wb-shell.wb-shell { border-radius: 18px; box-shadow: 0 0 0 1px rgba(255,255,255,.06), 0 30px 60px -30px #000; }
+  .wb-card .wb-src { background: rgba(255,255,255,.025); box-shadow: inset 0 0 0 1px rgba(255,255,255,.06); }
+  .wb-card .wb-src > button[aria-haspopup] { background: rgba(255,255,255,.06) !important; box-shadow: inset 0 0 0 1px rgba(255,255,255,.1) !important; }
+  .wb-card .wb-aside.wb-aside { background: #101115 !important; box-shadow: inset 0 0 0 1px rgba(255,255,255,.06) !important; }
+  .wb-voices { border-color: rgba(255,255,255,.06) !important; }
+  .wb-voices > div:first-child span:first-child { color: rgba(255,255,255,.45); letter-spacing: .12em; }
+  .wb-vsearch { background: rgba(255,255,255,.035); box-shadow: inset 0 0 0 1px rgba(255,255,255,.07); }
+  .wb-voices .wb-vmenu li > button[role="option"] { transition: background-color .15s; }
+  .wb-voices .wb-vmenu li > button[role="option"]:hover { background: rgba(255,255,255,.05) !important; }
+  .wb-voices .wb-vmenu li > button[aria-selected="true"] { background: rgba(43,111,255,.14) !important; box-shadow: inset 0 0 0 1px rgba(43,111,255,.45) !important; }
+  .wb-voices .wb-vmenu li > button[aria-selected="true"]::before { background: #4d8dff; box-shadow: none; }
+  .wb-voices .wb-vmenu { scrollbar-color: rgba(255,255,255,.18) transparent; }
+  .wb-epsearch { background: rgba(255,255,255,.035) !important; box-shadow: inset 0 0 0 1px rgba(255,255,255,.07) !important; }
+  .wb-epview { background: rgba(255,255,255,.04); }
+}

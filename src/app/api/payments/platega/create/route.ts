@@ -11,6 +11,7 @@ import { PlategaError, createPlategaTransaction, plategaConfigured } from "@/lib
 import { siteBaseUrl } from "@/lib/server/site-url";
 import { num, type Database } from "@/lib/server/sqlite";
 import { findUserByNickname, type UserRow } from "@/lib/server/users";
+import { clanIdOfUser } from "@/lib/server/clans";
 
 export const runtime = "nodejs";
 
@@ -103,6 +104,12 @@ export const POST = route(
       const amount = orderPrice(productId, { count, promoCode });
       if (amount === null) return json({ error: "Не удалось рассчитать стоимость подарка" }, 400);
       return createOrder(db, request, user!, product.id, amount, meta, deliverAt, now);
+    }
+
+    if (product.kind === "clan") {
+      const clanId = clanIdOfUser(db, user!.id);
+      if (clanId === null) return json({ error: "Кристаллы покупаются в казну клана — сначала вступите в клан" }, 400);
+      meta.clanId = clanId;
     }
 
     if (product.kind === "donation") meta.withPack = body.withPack !== false;

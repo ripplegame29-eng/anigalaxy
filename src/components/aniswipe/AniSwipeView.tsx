@@ -15,7 +15,7 @@
  */
 
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import { createContext, useContext, useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { isFavorite, toggleFavorite } from "@/lib/collections";
 import { kindLabel } from "@/lib/anime";
 import type { AnimeCard as Card } from "@/lib/types";
@@ -131,6 +131,20 @@ function topGenres(cards: Card[], keep: string[]): string[] {
   return [...new Set([...keep, ...top])];
 }
 
+/** Совпадение со вкусом 0–100: веса жанров + выбранные жанры + оценка */
+function matchScore(card: Card, weights: Record<string, number>, selected: string[]): number {
+  if (!card.genres.length) return 50;
+  let sum = 0;
+  for (const genre of card.genres) sum += (weights[genre] ?? 0) + (selected.includes(genre) ? 1.2 : 0);
+  const taste = Math.tanh(sum / Math.max(3, card.genres.length * 1.6)) * 30;
+  const quality = card.rating ? (card.rating - 7) * 5 : 0;
+  return Math.max(12, Math.min(98, Math.round(56 + taste + quality)));
+}
+
+const MatchCtx = createContext<(card: Card) => number>(() => 50);
+
+const STATUS_LABEL: Record<string, string> = { ongoing: "Онгоинг", released: "Вышел", anons: "Анонс" };
+
 function cardHue(id: string): number {
   return hashString(id) % 360;
 }
@@ -235,6 +249,17 @@ function ActionBar({
   );
 }
 
+function MatchBadge({ card }: { card: Card }) {
+  const value = useContext(MatchCtx)(card);
+  const tone = value >= 80 ? "hi" : value >= 60 ? "mid" : "lo";
+  return (
+    <span className={`as-match is-${tone}`} title="Совпадение с вашим вкусом">
+      <i style={{ ["--p" as string]: `${value * 3.6}deg` }} />
+      {value}%
+    </span>
+  );
+}
+
 function CardFace({ card, hue }: { card: Card; hue: number }) {
   return (
     <div className="as-card-in">
@@ -254,9 +279,11 @@ function CardFace({ card, hue }: { card: Card; hue: number }) {
       </div>
       <div className="as-card-shade" aria-hidden />
       {card.rating ? <span className="as-card-rating">★ {card.rating.toFixed(1)}</span> : null}
+      <MatchBadge card={card} />
       <div className="as-card-meta">
         <p className="as-card-sub">{metaLine(card)}</p>
         <h2>{card.title}</h2>
+        {card.description ? <p className="as-card-desc">{card.description}</p> : null}
         {card.genres.length > 0 && (
           <div className="as-card-genres">
             {card.genres.slice(0, 3).map((genre) => (
@@ -478,6 +505,9 @@ export function AniSwipeView({ cards }: { cards: Card[] }) {
   const [tab, setTab] = useState<Tab>("swipe");
   const [detail, setDetail] = useState<Card | null>(null);
   const [listTab, setListTab] = useState<ListKey>("liked");
+  const [minRating, setMinRating] = useState(0);
+  const [kindFilter, setKindFilter] = useState<"all" | "tv" | "movie" | "short">("all");
+  const [listSort, setListSort] = useState<"added" | "rating" | "match">("added");
   /** Последние решения: нужны кнопке «Вернуть» */
   const [history, setHistory] = useState<
     { id: string; kind: Vote; genres: string[]; fav: boolean }[]
@@ -506,9 +536,55 @@ export function AniSwipeView({ cards }: { cards: Card[] }) {
     [state.liked, state.later, state.skip],
   );
   const ranked = useMemo(
-    () => rankCards(cards, state.genres, state.weights, seen),
-    [cards, state.genres, state.weights, seen],
+    () =>
+      rankCards(cards, state.genres, state.weights, seen).filter((card) => {
+        if (minRating && (card.rating ?? 0) < minRating) return false;
+        if (kindFilter === "tv") return card.kind === "tv";
+        if (kindFilter === "movie") return card.kind === "movie";
+        if (kindFilter === "short") return card.kind !== "tv" && card.kind !== "movie";
+        return true;
+      }),
+    [cards, state.genres, state.weights, seen, minRating, kindFilter],
   );
+  const match = useCallback(
+    (card: Card) => matchScore(card, state.weights, state.genres),
+    [state.weights, state.genres],
+  );
+
+  /** Профиль вкуса: любимые жанры, доля лайков, средняя оценка лайкнутого */
+  const taste = useMemo(() => {
+    const total = state.liked.length + state.later.length + state.skip.length;
+    const genres = Object.entries(state.weights)
+      .filter(([, weight]) => weight > 0)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5);
+    const maxWeight = genres[0]?.[1] ?? 1;
+    const likedCards = state.liked.flatMap((id) => (byId.get(id) ? [byId.get(id)!] : []));
+    const rated = likedCards.filter((card) => card.rating);
+    const avg = rated.length ? rated.reduce((sum, card) => sum + (card.rating ?? 0), 0) / rated.length : 0;
+    const likeRate = total ? Math.round((state.liked.length / total) * 100) : 0;
+    const persona =
+      total < 5
+        ? "Новичок подборки"
+        : avg >= 8.2
+          ? "Ценитель шедевров"
+          : likeRate >= 60
+            ? "Открытый ко всему"
+            : likeRate <= 25
+              ? "Строгий критик"
+              : genres[0]
+                ? `Фанат жанра «${genres[0][0]}»`
+                : "Исследователь";
+    const badges = [
+      { id: "s10", label: "Первые 10", done: total >= 10, hint: "Оцените 10 тайтлов" },
+      { id: "s50", label: "Марафонец", done: total >= 50, hint: "Оцените 50 тайтлов" },
+      { id: "l20", label: "Коллекционер", done: state.liked.length >= 20, hint: "20 лайков" },
+      { id: "later", label: "Планировщик", done: state.later.length >= 10, hint: "10 тайтлов в «Позже»" },
+      { id: "gour", label: "Гурман", done: rated.length >= 5 && avg >= 8, hint: "Средняя оценка лайков ≥ 8" },
+      { id: "wide", label: "Широкий вкус", done: genres.length >= 5, hint: "5 любимых жанров" },
+    ];
+    return { total, genres, maxWeight, avg, likeRate, persona, badges };
+  }, [state, byId]);
 
   useEffect(() => {
     if (!hydrated) return;
@@ -700,6 +776,7 @@ export function AniSwipeView({ cards }: { cards: Card[] }) {
   }
 
   return (
+    <MatchCtx.Provider value={match}>
     <div className="as-page">
       <div className="as-ambient" aria-hidden>
         {ambient?.poster && (
@@ -707,8 +784,12 @@ export function AniSwipeView({ cards }: { cards: Card[] }) {
         )}
       </div>
       <header className="as-top">
-        <div className="as-logo">
-          Ani<span>Swipe</span>
+        <div className="as-head">
+          <h1 className="as-h1">
+            <svg viewBox="0 0 24 24" aria-hidden><rect x="5" y="3" width="11" height="15" rx="2.5" /><path d="M9 21h8.5A2.5 2.5 0 0 0 20 18.5V8" /></svg>
+            AniSwipe
+          </h1>
+          <p className="as-sub">Листайте карточки — соберём список под ваш вкус. Вдвоём найдёте общее аниме на вечер.</p>
         </div>
         <nav className="as-nav" aria-label="Разделы AniSwipe">
           {(
@@ -761,6 +842,29 @@ export function AniSwipeView({ cards }: { cards: Card[] }) {
               </em>
             </div>
             <GenreChips genres={genreList} selected={state.genres} onToggle={toggleGenre} />
+            <div className="as-filters">
+              <div className="as-seg" role="group" aria-label="Формат">
+                {(
+                  [
+                    ["all", "Все"],
+                    ["tv", "Сериалы"],
+                    ["movie", "Фильмы"],
+                    ["short", "OVA и спешлы"],
+                  ] as const
+                ).map(([value, label]) => (
+                  <button key={value} type="button" className={kindFilter === value ? "on" : undefined} onClick={() => setKindFilter(value)}>
+                    {label}
+                  </button>
+                ))}
+              </div>
+              <div className="as-seg" role="group" aria-label="Оценка">
+                {([0, 7, 8] as const).map((value) => (
+                  <button key={value} type="button" className={minRating === value ? "on" : undefined} onClick={() => setMinRating(value)}>
+                    {value ? `★ ${value}+` : "Любая оценка"}
+                  </button>
+                ))}
+              </div>
+            </div>
             {ranked.length ? (
               <SwipeDeck
                 cards={ranked}
@@ -791,6 +895,56 @@ export function AniSwipeView({ cards }: { cards: Card[] }) {
                 </button>
               </div>
             )}
+
+            <div className="as-taste">
+              <div className="as-taste-head">
+                <div>
+                  <span className="as-eyebrow">Профиль вкуса</span>
+                  <h3>{taste.persona}</h3>
+                </div>
+                <div className="as-tiles">
+                  <div><b>{taste.total}</b><span>оценено</span></div>
+                  <div><b>{taste.likeRate}<small>%</small></b><span>лайков</span></div>
+                  <div><b>{taste.avg ? taste.avg.toFixed(1) : "—"}</b><span>ср. оценка</span></div>
+                </div>
+              </div>
+              {taste.genres.length ? (
+                <ul className="as-genre-bars">
+                  {taste.genres.map(([genre, weight]) => (
+                    <li key={genre}>
+                      <span>{genre}</span>
+                      <i><em style={{ width: `${Math.max(8, (weight / taste.maxWeight) * 100)}%` }} /></i>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="as-taste-note">Поставьте пару лайков — здесь появятся ваши любимые жанры, а подбор станет точнее.</p>
+              )}
+              <div className="as-badges">
+                {taste.badges.map((badge) => (
+                  <span key={badge.id} className={badge.done ? "done" : undefined} title={badge.hint}>
+                    <svg viewBox="0 0 24 24" aria-hidden>
+                      {badge.done ? <path d="M5 12.5l4.5 4.5L19 7.5" /> : <path d="M7 11V8a5 5 0 0 1 10 0v3M6 11h12v9H6z" />}
+                    </svg>
+                    {badge.label}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            <div className="as-how">
+              {[
+                ["Листайте", "Вправо — нравится, вверх — на потом, влево — пропуск. Лайки попадают в «Избранное»."],
+                ["Подбор учится", "Каждая оценка двигает веса жанров: процент совпадения на карточке пересчитывается сразу."],
+                ["Смотрите вдвоём", "Режим «Вдвоём» показывает, что понравилось обоим, — без споров на полчаса."],
+              ].map(([title, text], index) => (
+                <div key={title}>
+                  <b>{index + 1}</b>
+                  <h4>{title}</h4>
+                  <p>{text}</p>
+                </div>
+              ))}
+            </div>
           </section>
         )}
 
@@ -810,6 +964,35 @@ export function AniSwipeView({ cards }: { cards: Card[] }) {
                 </button>
               ))}
             </div>
+            <div className="as-list-tools">
+              <div className="as-seg" role="group" aria-label="Сортировка">
+                {(
+                  [
+                    ["added", "Недавние"],
+                    ["rating", "По оценке"],
+                    ["match", "По совпадению"],
+                  ] as const
+                ).map(([value, label]) => (
+                  <button key={value} type="button" className={listSort === value ? "on" : undefined} onClick={() => setListSort(value)}>
+                    {label}
+                  </button>
+                ))}
+              </div>
+              {state[listTab].length > 1 && (
+                <button
+                  type="button"
+                  className="as-ghost as-random"
+                  onClick={() => {
+                    const ids = state[listTab];
+                    const card = byId.get(ids[Math.floor(Math.random() * ids.length)]);
+                    if (card) setDetail(card);
+                  }}
+                >
+                  <svg viewBox="0 0 24 24" aria-hidden><path d="M16 3h5v5M4 20 21 3M21 16v5h-5M15 15l6 6M4 4l5 5" /></svg>
+                  Случайный тайтл
+                </button>
+              )}
+            </div>
             <div className="as-list">
               {state[listTab].length === 0 ? (
                 <div className="as-empty">
@@ -817,15 +1000,24 @@ export function AniSwipeView({ cards }: { cards: Card[] }) {
                   <p>Свайпните несколько карточек, чтобы список наполнился.</p>
                 </div>
               ) : (
-                state[listTab].flatMap((id) => {
-                  const card = byId.get(id);
-                  if (!card) return [];
+                [...state[listTab]]
+                  .reverse()
+                  .flatMap((id) => (byId.get(id) ? [byId.get(id)!] : []))
+                  .sort((a, b) =>
+                    listSort === "rating"
+                      ? (b.rating ?? 0) - (a.rating ?? 0)
+                      : listSort === "match"
+                        ? match(b) - match(a)
+                        : 0,
+                  )
+                  .flatMap((card) => {
+                  const id = card.id;
                   return [
                     <ListRow
                       key={id}
                       card={card}
                       onOpen={setDetail}
-                      note={[card.year, kindLabel(card.kind), card.genres.slice(0, 2).join(", ")]
+                      note={[card.rating ? `★ ${card.rating.toFixed(1)}` : null, `${match(card)}% совпадение`, card.year, kindLabel(card.kind), card.genres.slice(0, 2).join(", ")]
                         .filter(Boolean)
                         .join(" · ")}
                       actions={
@@ -1010,6 +1202,15 @@ export function AniSwipeView({ cards }: { cards: Card[] }) {
                   ))}
                 </div>
               )}
+              <div className="as-facts">
+                <div><span>Совпадение</span><b className="is-acc">{match(detail)}%</b></div>
+                {detail.status ? <div><span>Статус</span><b>{STATUS_LABEL[detail.status] ?? detail.status}</b></div> : null}
+                {(detail.episodesTotal ?? 0) > 1 || (detail.lastEpisode ?? 0) > 1 ? (
+                  <div><span>Серии</span><b>{detail.lastEpisode || "?"}{detail.episodesTotal ? ` / ${detail.episodesTotal}` : ""}</b></div>
+                ) : null}
+                {detail.studios?.length ? <div><span>Студия</span><b>{detail.studios[0]}</b></div> : null}
+                {detail.ratingVotes ? <div><span>Голосов</span><b>{detail.ratingVotes.toLocaleString("ru-RU")}</b></div> : null}
+              </div>
               <p className="as-sheet-text">{detail.description || "Описание пока не загружено."}</p>
               <Link href={`/title/${detail.id}`} className="as-watch">
                 <svg viewBox="0 0 24 24" aria-hidden>
@@ -1041,5 +1242,6 @@ export function AniSwipeView({ cards }: { cards: Card[] }) {
         </div>
       )}
     </div>
+    </MatchCtx.Provider>
   );
 }

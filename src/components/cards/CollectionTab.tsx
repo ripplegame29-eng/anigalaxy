@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { cardDef, visibleCatalog } from "@/lib/cards/catalog";
 import { CLASSES, DUST_VALUE, ELEMENTS, RANKS, type CardClass, type Element } from "@/lib/cards/config";
 import { act, view, type CardsState, type InvCard } from "@/lib/cards/client";
@@ -62,6 +62,26 @@ export function CollectionTab({ s }: { s: CardsState }) {
   };
   const filtered = CATALOG.filter((c) => (!cls || c.cls === cls) && (!el || c.element === el)).filter((c) => (rank < 0 || c.rank === rank) && (own === "all" || (own === "have") === byCard.has(c.id)) && (!needle || c.name.toLowerCase().includes(needle) || c.series.toLowerCase().includes(needle) || c.search.toLowerCase().includes(needle)));
   const list = sort === "rank" ? filtered : [...filtered].sort((a, b) => (sort === "name" ? a.name.localeCompare(b.name, "ru") : power(b.id) - power(a.id)));
+  /* Альбом рисуем порциями: все 500 карт сразу — это 60 000 px вёрстки,
+     сотни SVG-рамок и картинок, на телефоне страница лагала и грелась.
+     Следующая порция подгружается, когда до конца списка остаётся экран. */
+  const STEP = 48;
+  const listKey = `${rank}|${own}|${needle}|${cls}|${el}|${sort}`;
+  const [lim, setLim] = useState({ k: listKey, n: STEP });
+  const shown = lim.k === listKey ? lim.n : STEP;
+  const moreRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const node = moreRef.current;
+    if (!node || shown >= list.length) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) setLim({ k: listKey, n: shown + STEP });
+      },
+      { rootMargin: "1200px 0px" },
+    );
+    io.observe(node);
+    return () => io.disconnect();
+  }, [shown, list.length, listKey]);
   const copies = open ? (byCard.get(open) ?? []).slice().sort((a, b) => Number(b.foil) - Number(a.foil) || b.level - a.level) : [];
   const def = open ? cardDef(open) : null;
   const current = copies.find((c) => c.id === copy) ?? copies[0];
@@ -170,7 +190,7 @@ export function CollectionTab({ s }: { s: CardsState }) {
           </button>
         </div>
         <div className="cg-album">
-          {list.map((c) => {
+          {list.slice(0, shown).map((c) => {
             const mine = byCard.get(c.id);
             return (
               <button key={c.id} type="button" className="cg-cell" onClick={() => {
@@ -182,6 +202,7 @@ export function CollectionTab({ s }: { s: CardsState }) {
             );
           })}
         </div>
+        {shown < list.length && <div ref={moreRef} aria-hidden style={{ height: 1 }} />}
         {list.length === 0 && <div className="cg-empty">Ничего не найдено</div>}
       </Panel>
 

@@ -564,3 +564,28 @@ html[data-eco="on"] .gc-ring { animation: none !important; }
 /* плашка целиком внутри карточки: у окна просмотра на самой кромке бежит радужный ободок, и он перечёркивал плашку */
 .gc-tier { bottom: 0.9cqw; padding: 0.8cqw 4.2cqw; }
 .gc-plate { bottom: 8cqw; padding-bottom: 4cqw; }
+
+/* ---------- голография эпических и выше: блик за курсором ---------- */
+.gc-holo {
+  position: absolute; inset: 0; z-index: 6; pointer-events: none; border-radius: inherit;
+  opacity: calc(var(--ha, 0) * var(--holo-k, .55));
+  transition: opacity .35s ease;
+  mix-blend-mode: soft-light;
+  background:
+    radial-gradient(circle at var(--hx, 50%) var(--hy, 30%), rgba(255,255,255,.7) 0%, rgba(255,255,255,.18) 22%, transparent 48%),
+    linear-gradient(125deg,
+      transparent calc(var(--hx, 50%) - 45%),
+      rgba(255, 120, 190, .45) calc(var(--hx, 50%) - 22%),
+      rgba(255, 230, 140, .45) calc(var(--hx, 50%) - 8%),
+      rgba(120, 255, 220, .45) calc(var(--hx, 50%) + 6%),
+      rgba(120, 170, 255, .5) calc(var(--hx, 50%) + 20%),
+      transparent calc(var(--hx, 50%) + 45%));
+}
+.gc-epic { --holo-k: .38; }
+.gc-legendary { --holo-k: .6; }
+.gc-mythic { --holo-k: .7; }
+/* мифические переливаются и без курсора — медленно */
+.gc-mythic .gc-holo { animation: gc-holo-idle 6s ease-in-out infinite; }
+@keyframes gc-holo-idle { 0%, 100% { opacity: calc(.18 + var(--ha, 0) * .52); } 50% { opacity: calc(.32 + var(--ha, 0) * .38); } }
+@media (hover: none) { .gc-holo { display: none; } .gc-mythic .gc-holo { display: block; --hx: 40%; --hy: 25%; } }
+@media (prefers-reduced-motion: reduce) { .gc-holo { animation: none !important; transition: none; } }

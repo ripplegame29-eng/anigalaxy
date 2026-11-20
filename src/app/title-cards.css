@@ -32,3 +32,67 @@
   background: linear-gradient(135deg, #2f6bff, #5aa8ff); box-shadow: 0 14px 30px -14px rgba(59, 130, 255, .95), inset 0 1px 0 rgba(255, 255, 255, .35); transition: transform .2s, box-shadow .2s; }
 .tc-cta:hover { transform: translateY(-2px); box-shadow: 0 18px 36px -14px rgba(59, 130, 255, 1), inset 0 1px 0 rgba(255, 255, 255, .4); }
 @media (prefers-reduced-motion: reduce) { .tc-card, .tc-cta { transition: none; } }
+
+/* v2: личный прогресс */
+.tc-head { align-items: center; }
+.tc-ttl .tc-chips { margin-top: 10px; }
+.tc-side { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.tc-prog { display: flex; align-items: center; gap: 10px; padding: 6px 14px 6px 6px; border-radius: 99px; background: rgba(255,255,255,.05); border: 1px solid rgba(120,150,255,.2); }
+.tc-prog small { display: block; font-size: 11px; font-weight: 700; color: #8fa0c8; letter-spacing: .04em; }
+.tc-prog strong { font-size: 18px; font-weight: 900; color: #fff; }
+.tc-prog strong em { font-style: normal; font-size: 13px; color: #8fa0c8; font-weight: 700; }
+.tc-ring { --p: 0; width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center;
+  background: conic-gradient(#3aa0ff calc(var(--p) * 1%), rgba(255,255,255,.08) 0); }
+.tc-ring b { width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; background: #0b1024; font-size: 11px; font-weight: 900; color: #cfe3ff; }
+.tc-prog.is-done { border-color: rgba(255,190,70,.6); box-shadow: 0 0 24px -6px rgba(255,180,60,.7); }
+.tc-prog.is-done .tc-ring { background: conic-gradient(#ffb020 100%, transparent 0); }
+.tc-nav { display: flex; gap: 6px; }
+.tc-nav button { width: 40px; height: 40px; border-radius: 12px; border: 1px solid rgba(120,150,255,.25); background: rgba(255,255,255,.05); color: #e8edff; font-size: 22px; line-height: 1; cursor: pointer; transition: background .2s, opacity .2s; }
+.tc-nav button:hover:not(:disabled) { background: rgba(80,130,255,.25); }
+.tc-nav button:disabled { opacity: .3; cursor: default; }
+.tc-side .tc-cta { margin-top: 0; }
+.tc-row { scrollbar-width: none; }
+.tc-row::-webkit-scrollbar { display: none; }
+.tc-num { position: absolute; z-index: 3; right: 11%; top: 8.4%; font-size: 6.4cqw; font-weight: 900; color: rgba(255,255,255,.85); text-shadow: 0 1px 4px #000; }
+.tc-own { position: absolute; z-index: 4; right: 4%; bottom: 25%; min-width: 15cqw; height: 15cqw; padding: 0 3cqw; border-radius: 99px; display: grid; place-items: center; font-size: 8cqw; font-weight: 900; color: #fff;
+  background: linear-gradient(135deg, #2f6bff, #22a6f2); box-shadow: 0 0 3cqw rgba(60,160,255,.9); }
+.tc-card.is-miss .tc-art img, .tc-card.is-miss .tc-frame { filter: grayscale(1) brightness(.45); }
+.tc-card.is-miss { filter: drop-shadow(0 14px 18px rgba(0,0,0,.55)); }
+.tc-card.is-miss .tc-rank { background: rgba(40,46,66,.9); box-shadow: none; }
+.tc-card.is-miss .tc-plate small { color: #8a93ad; }
+.tc-card.is-miss:hover .tc-art img, .tc-card.is-miss:hover .tc-frame { filter: grayscale(.6) brightness(.7); }
+.tc-lock { position: absolute; z-index: 4; left: 50%; top: 42%; width: 22cqw; height: 22cqw; transform: translate(-50%,-50%); border-radius: 50%; display: grid; place-items: center; color: #cfd8f0;
+  background: rgba(8,12,28,.75); border: 1px solid rgba(160,180,230,.3); }
+.tc-card.is-foil::after { content: ""; position: absolute; inset: 0; z-index: 3; border-radius: inherit; pointer-events: none; mix-blend-mode: screen;
+  background: linear-gradient(115deg, transparent 30%, rgba(255,255,255,.35) 45%, rgba(120,220,255,.3) 52%, rgba(255,120,220,.2) 58%, transparent 70%); }
+.tc-bar { height: 4px; margin-top: 4px; border-radius: 99px; background: rgba(255,255,255,.07); overflow: hidden; }
+.tc-bar i { display: block; height: 100%; background: linear-gradient(90deg, #2f6bff, #22a6f2, #9be6ff); box-shadow: 0 0 12px #22a6f2; transition: width .6s; }
+@media (max-width: 640px) { .tc-side { width: 100%; justify-content: space-between; } .tc-nav { display: none; } }
+
+/* v3: в стиле секций страницы тайтла */
+.tcx-side { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+.tcx-got { margin-right: 8px; font-size: 14px; color: rgba(255,255,255,.55); font-variant-numeric: tabular-nums; }
+.tcx-got b { color: #fff; font-weight: 700; }
+.tcx-nav { width: 36px; height: 36px; border-radius: 10px; display: grid; place-items: center; color: rgba(255,255,255,.8); background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.08); transition: background-color .15s, opacity .15s; }
+.tcx-nav:hover:not(:disabled) { background: rgba(255,255,255,.12); }
+.tcx-nav:disabled { opacity: .35; }
+.tcx-cta { height: 36px; padding: 0 16px; border-radius: 10px; display: inline-flex; align-items: center; font-size: 14px; font-weight: 700; color: #fff; background: var(--color-accent, #2f6bff); transition: filter .15s; }
+.tcx-cta:hover { filter: brightness(1.1); }
+.tcx-row { display: flex; gap: 16px; overflow-x: auto; scroll-snap-type: x proximity; scrollbar-width: none; padding-bottom: 4px; }
+.tcx-row::-webkit-scrollbar { display: none; }
+.tcx-item { flex: 0 0 auto; width: 156px; scroll-snap-align: start; display: grid; gap: 2px; text-decoration: none; color: #fff; }
+.tcx-card { position: relative; display: block; width: 100%; aspect-ratio: 5 / 7; margin-bottom: 8px; container-type: inline-size; border-radius: 12px; background: #05070f; overflow: hidden;
+  box-shadow: 0 0 0 1px rgba(255,255,255,.06); transition: transform .2s; }
+.tcx-item:hover .tcx-card { transform: translateY(-4px); }
+.tcx-item:focus-visible { outline: none; } .tcx-item:focus-visible .tcx-card { box-shadow: 0 0 0 2px var(--color-accent, #2f6bff); }
+.tcx-item b { font-size: 14px; font-weight: 700; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tcx-item small { font-size: 12.5px; color: rgba(255,255,255,.5); }
+.tcx-item.is-miss .tc-art img, .tcx-item.is-miss .tc-frame { filter: grayscale(1) brightness(.55); transition: filter .2s; }
+.tcx-item.is-miss:hover .tc-art img, .tcx-item.is-miss:hover .tc-frame { filter: grayscale(.4) brightness(.8); }
+.tcx-dup { position: absolute; z-index: 3; right: 8px; bottom: 8px; padding: 2px 8px; border-radius: 6px; font-size: 12px; font-weight: 700; background: rgba(0,0,0,.7); font-variant-numeric: tabular-nums; }
+@media (max-width: 640px) { .tcx-side { width: 100%; margin-left: 0; } .tcx-nav { display: none; } .tcx-cta { margin-left: auto; } .tcx-item { width: 132px; } }
+/* v4: настоящие карты GameCard */
+.tcx-card { aspect-ratio: auto; overflow: visible; background: none; box-shadow: none; border-radius: 0; container-type: normal; }
+.tcx-card .gc { width: 100%; }
+.tcx-item.is-miss .gc { filter: grayscale(1) brightness(.55); transition: filter .2s; }
+.tcx-item.is-miss:hover .gc { filter: grayscale(.4) brightness(.8); }

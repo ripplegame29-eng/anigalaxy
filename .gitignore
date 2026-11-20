@@ -80,3 +80,10 @@ _backup_before_cards/
 # Real-ESRGAN для scripts/upscale-art.ps1
 /tools/realesrgan/
 /tools/frames-hd/
+
+# локальные инструменты апскейла
+/_up/
+/_upscale.bat
+/_to_delete/
+ship.bat
+ship.log

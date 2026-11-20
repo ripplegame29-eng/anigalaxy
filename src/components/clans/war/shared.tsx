@@ -77,7 +77,7 @@ export function UnitThumb({ cardId, level, size = 52, rank }: { cardId: string; 
   return (
     <span className="cw-thumb" style={style} title={`${def.name} · ${r.short}${level && level > 1 ? ` · +${level - 1}` : ""}`}>
       {hasArt(def.id) ? (
-        <img src={`/api/cards/art/${def.id}`} alt="" loading="lazy" draggable={false} />
+        <img src={`/api/cards/art/${def.id}?w=320`} alt="" loading="lazy" draggable={false} />
       ) : (
         <b aria-hidden>{def.name.slice(0, 1)}</b>
       )}
@@ -96,7 +96,12 @@ const hue = (s: string): number => {
 };
 
 /** Герб клана: щит с тегом. Цвет — от тега, сторона задаёт кайму */
-export function Crest({ tag, size = 64, side = "mine", bot = false }: { tag: string; size?: number; side?: "mine" | "foe"; bot?: boolean }) {
+export function Crest({ tag, size = 64, side = "mine", bot = false, clanId = 0, avatarV = 0 }: { tag: string; size?: number; side?: "mine" | "foe"; bot?: boolean; clanId?: number; avatarV?: number }) {
+  if (clanId > 0 && avatarV > 0)
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img className={`cw-crest-img ${side}`} src={`/api/clans/media?id=${clanId}&kind=avatar&v=${avatarV}`} alt="" style={{ width: size * 1.1, height: size * 1.1 }} />
+    );
   const h = hue(tag || "?");
   const style = { "--cr-h": h, "--cr-s": `${size}px`, "--cr-k": tag.length > 3 ? 0.2 : 0.26, width: size, height: size * 1.12 } as CSSProperties;
   return (

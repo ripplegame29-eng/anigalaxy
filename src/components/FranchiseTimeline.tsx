@@ -87,13 +87,7 @@ export function FranchiseTimeline({ items }: { items: FranchiseItem[] }) {
       </div>
 
       <div className="relative">
-        {/*
-          Скроллится внешний div, а список — гибкий элемент с авто-полями:
-          пока карточек мало и есть свободное место, `mx-auto` центрирует ряд;
-          как только ряд шире контейнера, свободное место становится
-          отрицательным и авто-поля обнуляются — лента листается от края
-          (классический `justify-center` здесь обрезал бы левые карточки).
-        */}
+        {/* Лента всегда от левого края, на одной линии с секциями ниже */}
         <div
           ref={listRef}
           className="no-scrollbar -mx-4 flex snap-x snap-proximity overflow-x-auto scroll-px-4 px-4 pb-2 sm:-mx-1 sm:px-1 sm:scroll-px-1"
@@ -103,7 +97,7 @@ export function FranchiseTimeline({ items }: { items: FranchiseItem[] }) {
             WebkitMaskImage: `linear-gradient(to right, ${edges.left ? "transparent 0, #000 36px" : "#000 0"}, ${edges.right ? "#000 calc(100% - 36px), transparent 100%" : "#000 100%"})`,
           }}
         >
-          <ol className="mx-auto flex flex-none gap-3 sm:gap-4">
+          <ol className="flex flex-none gap-3 sm:gap-4">
             {items.map((item, index) => (
               <li
                 key={`${item.id}-${index}`}

@@ -1188,3 +1188,26 @@ html[data-eco="on"] .cg-rays {
 .pk-wrap.bundle .pk-shock { width: 70%; }
 .pk-bundle { transform-origin: center; filter: brightness(1.14) saturate(1.12); transition: transform 0.5s var(--cg-ease), opacity 0.5s; }
 .ph-burst .pk-bundle { transform: scale(1.2); opacity: 0; }
+
+/* ---------- интрига перед вскрытием: цвет лучшей карты ---------- */
+.cg-stage[class*="tier-"] { --tg: 180, 110, 255; }
+.cg-stage.tier-legendary { --tg: 255, 184, 60; }
+.cg-stage.tier-mythic { --tg: 150, 225, 255; }
+.cg-stage[class*="tier-"] .pk-halo {
+  opacity: 1;
+  background: radial-gradient(closest-side, rgba(var(--tg), .75), rgba(var(--tg), .22) 55%, transparent 75%);
+  transform: translate(-50%, -50%) scale(1.45);
+  transition: background .25s, transform .9s cubic-bezier(.2, .8, .2, 1);
+}
+.cg-stage[class*="tier-"] .pk {
+  filter: drop-shadow(0 28px 34px rgba(0, 0, 0, .65)) drop-shadow(0 0 46px rgba(var(--tg), 1)) brightness(1.15);
+}
+.cg-stage[class*="tier-"] .cg-rays { opacity: 1; }
+.cg-stage.ph-charge.tier-legendary .pk, .cg-stage.ph-charge.tier-mythic .pk { animation: pk-charge-hard .09s linear infinite; }
+@keyframes pk-charge-hard {
+  0% { translate: -4px 0; rotate: -1.2deg; }
+  50% { translate: 4px -5px; rotate: 1.2deg; }
+  100% { translate: -4px 0; rotate: -1.2deg; }
+}
+.cg-stage[class*="tier-"] .pk-flash { background: radial-gradient(closest-side, rgba(255, 255, 255, .95), rgba(var(--tg), .7) 45%, transparent 75%); }
+@media (prefers-reduced-motion: reduce) { .cg-stage[class*="tier-"] .pk { animation: none; } }

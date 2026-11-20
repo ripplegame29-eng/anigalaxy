@@ -69,6 +69,7 @@ export function PacksTab({ s }: { s: CardsState }) {
   const [sel, setSel] = useState(0);
   const [results, setResults] = useState<PackResult[]>([]);
   const [phase, setPhase] = useState<PackPhase>("idle");
+  const [tier, setTier] = useState<string | undefined>(undefined);
   const [look, setLook] = useState<number | null>(null);
   const [gal, setGal] = useState(false);
   const [ring, setRing] = useState(false);
@@ -130,17 +131,26 @@ export function PacksTab({ s }: { s: CardsState }) {
       if (!alive.current) return;
       if (!r.ok) {
         setPhase("idle");
+        setTier(undefined);
         return toast(r.error, true);
       }
       /* анимация — только после реального ответа сервера */
       const spent = Date.now() - t0;
       if (!fast && spent < 650) await wait(650 - spent);
       if (!alive.current) return;
+      /* интрига: пак наливается цветом лучшей карты; чем реже — тем дольше */
+      const best = Math.max(0, ...r.result.results.flatMap((x) => [...x.offers, x.chosen?.cardId ?? ""]).map((id) => cardDef(id)?.rank ?? 0));
+      if (best >= 2) {
+        setTier(RANKS[best]?.key);
+        if (!fast) await wait(best >= 3 ? 1000 : 520);
+        if (!alive.current) return;
+      }
       setPhase("burst");
       sfx("burst");
       if (!fast) await wait(560);
       if (!alive.current) return;
       setPhase("idle");
+      setTier(undefined);
       setResults(r.result.results);
     });
 
@@ -253,7 +263,7 @@ export function PacksTab({ s }: { s: CardsState }) {
           </div>
         </div>
       ) : (
-        <PackStage phase={phase} blocked={!!reason && !loading} art={BUNDLE_ART[sel]} onOpen={() => void open(bundle.n)} />
+        <PackStage phase={phase} tier={tier} blocked={!!reason && !loading} art={BUNDLE_ART[sel]} onOpen={() => void open(bundle.n)} />
       )}
     </div>
   );

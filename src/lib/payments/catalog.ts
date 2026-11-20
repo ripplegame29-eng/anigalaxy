@@ -8,7 +8,9 @@
  * Модуль общий для клиента и сервера — без Node.js-модулей и секретов.
  */
 
-export type ProductKind = "premium" | "battlepass" | "coins" | "donation" | "gift" | "cards";
+import { CRYSTAL_PACKS } from "../clan-rules";
+
+export type ProductKind = "premium" | "battlepass" | "coins" | "donation" | "gift" | "cards" | "clan";
 
 /** Состав набора магазина карт */
 export interface CardBundle {
@@ -49,6 +51,8 @@ export interface PaymentProduct {
   cards?: CardBundle;
   /** Покупается один раз на аккаунт */
   once?: boolean;
+  /** Кристаллы в казну клана покупателя */
+  clanCrystals?: number;
 }
 
 const product = (value: PaymentProduct): PaymentProduct => value;
@@ -202,6 +206,15 @@ export const PRODUCTS: Record<string, PaymentProduct> = {
     gift: true,
     giftTitle: "1 год",
   }),
+  /* ---------------- Кристаллы клана ----------------
+     Идут в казну клана, в котором покупатель состоит в момент оплаты.
+     Тратятся только на косметику и места в составе — силы не дают. */
+  ...Object.fromEntries(
+    CRYSTAL_PACKS.map((p) => [
+      `clan-crystals-${p.id}`,
+      product({ id: `clan-crystals-${p.id}`, kind: "clan", title: `Кристаллы клана · ${p.name}`, price: p.rub, clanCrystals: p.crystals }),
+    ]),
+  ),
 };
 
 export const GIFT_PRODUCTS: PaymentProduct[] = ["gift-month", "gift-quarter", "gift-year"]

@@ -641,11 +641,12 @@ function CoinPackBanner() {
           <div className="justify-self-center lg:justify-self-end">
             <span className="relative inline-block">
               <Image
-                src="/cat.png"
+                src="/shop-cat.png"
                 alt=""
                 aria-hidden
-                width={680}
-                height={680}
+                width={1518}
+                height={1600}
+                sizes="(max-width: 1024px) 256px, 340px"
                 /* Кот — самый крупный элемент над сгибом, поэтому Next
                    просит грузить его сразу: без priority идёт предупреждение
                    про LCP в консоли */

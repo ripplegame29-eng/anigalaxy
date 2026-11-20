@@ -420,3 +420,39 @@
 .cg .shp-gt:focus-visible { outline: 2px solid #7cc0ff; outline-offset: 4px; border-radius: 12px; }
 @media (max-width: 900px) { .cg .shp-gems { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 @media (max-width: 560px) { .cg .shp-gems { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; } .cg .shp-gt.g4 { grid-column: 1 / -1; justify-self: center; width: 60%; } }
+
+/* живые карточки кристаллов */
+.cg .shp-gt-in { position: relative; display: block; animation: shp-bob 4.2s ease-in-out infinite; animation-delay: var(--d, 0s); }
+.cg .shp-gt-sheen { position: absolute; inset: 0; pointer-events: none; mix-blend-mode: screen;
+  -webkit-mask: var(--img) center / 100% 100% no-repeat; mask: var(--img) center / 100% 100% no-repeat;
+  background: linear-gradient(115deg, transparent 35%, rgba(255,255,255,.55) 47%, rgba(150,210,255,.35) 52%, transparent 62%) no-repeat;
+  background-size: 260% 100%; background-position: 140% 0; animation: shp-sheen 5.5s ease-in-out infinite; animation-delay: calc(var(--d, 0s) * 1.6); }
+.cg .shp-gt:hover .shp-gt-sheen { animation-duration: 1.4s; }
+.cg .shp-gt-spark { position: absolute; left: var(--x); top: var(--y); width: 10px; height: 10px; pointer-events: none; opacity: 0;
+  background: radial-gradient(circle, #fff 0 18%, rgba(140,200,255,.9) 30%, transparent 70%);
+  clip-path: polygon(50% 0, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0 50%, 40% 40%);
+  animation: shp-twinkle 2.6s ease-in-out infinite; animation-delay: calc(var(--k) * .55s + var(--d, 0s)); }
+.cg .shp-gt.g4 .shp-gt-in::before { content: ""; position: absolute; inset: 6% 4%; z-index: -1; border-radius: 22px; background: radial-gradient(closest-side, rgba(150,90,255,.55), transparent);
+  filter: blur(18px); animation: shp-pulse 3s ease-in-out infinite; }
+.cg .shp-gt.g4 .shp-gt-spark { background: radial-gradient(circle, #fff 0 18%, rgba(200,150,255,.95) 30%, transparent 70%); }
+.cg .shp-gt:hover .shp-gt-in { animation-play-state: paused; }
+@keyframes shp-bob { 50% { transform: translateY(-5px); } }
+@keyframes shp-sheen { 0%, 55% { background-position: 140% 0; } 100% { background-position: -40% 0; } }
+@keyframes shp-twinkle { 0%, 100% { opacity: 0; transform: scale(.3) rotate(0deg); } 45% { opacity: 1; transform: scale(1.2) rotate(45deg); } 70% { opacity: .2; } }
+@keyframes shp-pulse { 50% { opacity: .55; transform: scale(1.05); } }
+@media (prefers-reduced-motion: reduce) { .cg .shp-gt-in, .cg .shp-gt-sheen, .cg .shp-gt-spark, .cg .shp-gt.g4 .shp-gt-in::before { animation: none; } }
+html[data-lite="on"] .cg .shp-gt-spark, html[data-lite="on"] .cg .shp-gt-sheen { display: none; }
+/* светлячки вместо блика */
+.cg .shp-gt-fly { position: absolute; left: var(--x); bottom: 22%; width: 5px; height: 5px; border-radius: 50%; pointer-events: none; opacity: 0;
+  background: #bfe6ff; box-shadow: 0 0 6px 2px rgba(80,170,255,.9), 0 0 14px 4px rgba(40,120,255,.45);
+  animation: shp-fly 4.6s ease-in-out infinite; animation-delay: calc(var(--k) * -.78s + var(--d, 0s)); }
+.cg .shp-gt.g4 .shp-gt-fly { background: #ead9ff; box-shadow: 0 0 6px 2px rgba(170,110,255,.9), 0 0 14px 4px rgba(130,70,255,.45); }
+@keyframes shp-fly {
+  0% { opacity: 0; transform: translate(0, 0) scale(.6); }
+  20% { opacity: 1; }
+  50% { transform: translate(var(--dx), -90px) scale(1); }
+  80% { opacity: .8; }
+  100% { opacity: 0; transform: translate(calc(var(--dx) * -1), -170px) scale(.4); }
+}
+@media (prefers-reduced-motion: reduce) { .cg .shp-gt-fly { animation: none; display: none; } }
+html[data-lite="on"] .cg .shp-gt-fly { display: none; }

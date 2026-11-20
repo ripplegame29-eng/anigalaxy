@@ -6,6 +6,8 @@
  */
 
 import { clanLevelFromXp, memberCap } from "../clan-rules";
+import { CLAN_EMBLEMS } from "../emblems.data";
+import { PROGRESS_DOC_KEY } from "../sync-keys";
 import { closeSeasonRow, openSeasonRow } from "./clan-points";
 import { num, str, transaction, type Database } from "./sqlite";
 
@@ -38,6 +40,14 @@ export interface ClanSummary {
   extraSlots: number;
   level: number;
   cap: number;
+  /** Эмблема, выбранная главой (id из CLAN_EMBLEMS); пусто — эмблема по номеру клана */
+  emblem: string;
+  /** Версия своего аватара клана (0 — не загружен) */
+  avatarV: number;
+  /** Версия своей обложки клана (0 — не загружена) */
+  bannerV: number;
+  /** Сколько участников заходили сегодня */
+  activeToday: number;
 }
 
 export interface ClanMember {
@@ -65,7 +75,11 @@ export interface WarInfo {
 }
 
 const SUMMARY_SQL = `
-  SELECT c.*, (SELECT COUNT(*) FROM clan_members m WHERE m.clan_id = c.id) AS members
+  SELECT c.*, (SELECT COUNT(*) FROM clan_members m WHERE m.clan_id = c.id) AS members,
+    (SELECT v FROM clan_media x WHERE x.clan_id = c.id AND x.kind = 'avatar') AS avatar_v,
+    (SELECT v FROM clan_media x WHERE x.clan_id = c.id AND x.kind = 'banner') AS banner_v,
+    (SELECT COUNT(*) FROM clan_members m2 JOIN activity_days a ON a.user_id = m2.user_id
+       WHERE m2.clan_id = c.id AND a.day = (SELECT MAX(day) FROM activity_days)) AS active_today
   FROM clans c`;
 
 function toSummary(row: Record<string, unknown>): ClanSummary {
@@ -86,7 +100,70 @@ function toSummary(row: Record<string, unknown>): ClanSummary {
     extraSlots: num(row.extra_slots),
     level: clanLevelFromXp(num(row.xp)),
     cap: memberCap(clanLevelFromXp(num(row.xp)), num(row.extra_slots)),
+    emblem: emblemOfData(row.data),
+    avatarV: num(row.avatar_v),
+    bannerV: num(row.banner_v),
+    activeToday: num(row.active_today),
   };
+}
+
+function emblemOfData(raw: unknown): string {
+  try {
+    const data = JSON.parse(str(raw) || "{}") as { emblem?: unknown };
+    return typeof data.emblem === "string" && CLAN_EMBLEMS.some((e) => e.id === data.emblem) ? data.emblem : "";
+  } catch {
+    return "";
+  }
+}
+
+/** Эмблемы кланов, купленные игроком в магазине профиля (по документу прогрессии) */
+export function ownedEmblems(db: Database, userId: number): string[] {
+  try {
+    const row = db.prepare("SELECT value FROM user_docs WHERE user_id = ? AND doc_key = ?").get(userId, PROGRESS_DOC_KEY);
+    const doc = JSON.parse(str(row?.value) || "{}") as { purchases?: { itemId?: unknown }[] };
+    const ids = new Set((doc.purchases ?? []).map((p) => String(p.itemId ?? "")));
+    return CLAN_EMBLEMS.filter((e) => ids.has(e.id)).map((e) => e.id);
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Глава ставит клану эмблему из купленных им в магазине профиля.
+ * `null` — вернуть эмблему по умолчанию.
+ */
+export function setClanEmblem(db: Database, leaderId: number, emblemId: string | null): ClanResult<ClanSummary> {
+  return transaction(db, (): ClanResult<ClanSummary> => {
+    const clanId = clanIdOfUser(db, leaderId);
+    const clan = clanId === null ? null : getClan(db, clanId);
+    if (!clan || clan.leaderId !== leaderId) return fail("Эмблему меняет только глава клана", "forbidden");
+    if (emblemId !== null) {
+      if (!CLAN_EMBLEMS.some((e) => e.id === emblemId)) return fail("Нет такой эмблемы", "invalid");
+      if (!ownedEmblems(db, leaderId).includes(emblemId)) return fail("Сначала купите эту эмблему в магазине", "forbidden");
+    }
+    const data = clanData(db, clan.id);
+    if (emblemId === null) delete data.emblem;
+    else data.emblem = emblemId;
+    db.prepare("UPDATE clans SET data = ? WHERE id = ?").run(JSON.stringify(data), clan.id);
+    logEvent(db, clan.id, leaderId, "emblem", 0, { emblem: emblemId ?? "" });
+    return { ok: true, value: getClan(db, clan.id) ?? clan };
+  });
+}
+
+/** Глава передаёт власть другому игроку клана и сам становится офицером */
+export function transferLeader(db: Database, leaderId: number, targetId: number, now = Date.now()): ClanResult<true> {
+  return transaction(db, (): ClanResult<true> => {
+    const clanId = clanIdOfUser(db, leaderId);
+    const clan = clanId === null ? null : getClan(db, clanId);
+    if (!clan || clan.leaderId !== leaderId) return fail("Передать власть может только глава", "forbidden");
+    if (targetId === leaderId) return fail("Вы уже глава клана", "invalid");
+    if (clanIdOfUser(db, targetId) !== clan.id) return fail("Игрок не состоит в вашем клане", "not_found");
+    db.prepare("UPDATE clans SET leader_id = ? WHERE id = ?").run(targetId, clan.id);
+    db.prepare("UPDATE clan_members SET role = 'leader' WHERE user_id = ?").run(targetId);
+    db.prepare("UPDATE clan_members SET role = 'officer' WHERE user_id = ?").run(leaderId);
+    logEvent(db, clan.id, targetId, "leader_changed", 0, {}, now);
+    return { ok: true, value: true };
+  });
 }
 
 export function clanIdOfUser(db: Database, userId: number): number | null {
@@ -444,4 +521,37 @@ export function setRole(db: Database, leaderId: number, targetId: number, role: 
     db.prepare("UPDATE clan_members SET role = ? WHERE user_id = ?").run(role, targetId);
     return { ok: true, value: true };
   });
+}
+
+/* ------------------------- Свои аватар и обложка ------------------------- */
+
+export type ClanMediaKind = "avatar" | "banner";
+const MEDIA_LIMIT: Record<ClanMediaKind, number> = { avatar: 2_000_000, banner: 4_000_000 };
+
+/** Глава (или офицер) загружает аватар/обложку клана data-URL-ом; `null` — убрать */
+export function setClanMedia(db: Database, userId: number, kind: ClanMediaKind, dataUrl: string | null): ClanResult<ClanSummary> {
+  const clanId = clanIdOfUser(db, userId);
+  const clan = clanId === null ? null : getClan(db, clanId);
+  if (!clan) return fail("Вы не состоите в клане", "invalid");
+  const role = str(db.prepare("SELECT role FROM clan_members WHERE clan_id = ? AND user_id = ?").get(clan.id, userId)?.role);
+  if (clan.leaderId !== userId && role !== "officer") return fail("Оформление меняют глава и офицеры", "forbidden");
+  if (dataUrl === null) {
+    db.prepare("DELETE FROM clan_media WHERE clan_id = ? AND kind = ?").run(clan.id, kind);
+  } else {
+    const m = /^data:(image\/(?:png|jpeg|webp));base64,([A-Za-z0-9+/=]+)$/.exec(dataUrl);
+    if (!m) return fail("Нужна картинка PNG, JPEG, WebP или GIF", "invalid");
+    const bytes = Buffer.from(m[2], "base64");
+    if (bytes.length > MEDIA_LIMIT[kind]) return fail("Файл слишком большой", "invalid");
+    db.prepare(
+      `INSERT INTO clan_media (clan_id, kind, mime, bytes, v) VALUES (?, ?, ?, ?, ?)
+       ON CONFLICT(clan_id, kind) DO UPDATE SET mime = excluded.mime, bytes = excluded.bytes, v = excluded.v`,
+    ).run(clan.id, kind, m[1], bytes, Date.now());
+  }
+  logEvent(db, clan.id, userId, "emblem", 0, { media: kind });
+  return { ok: true, value: getClan(db, clan.id) ?? clan };
+}
+
+export function getClanMedia(db: Database, clanId: number, kind: ClanMediaKind): { mime: string; bytes: Buffer } | null {
+  const row = db.prepare("SELECT mime, bytes FROM clan_media WHERE clan_id = ? AND kind = ?").get(clanId, kind) as { mime?: string; bytes?: Buffer } | undefined;
+  return row?.bytes ? { mime: String(row.mime), bytes: Buffer.from(row.bytes) } : null;
 }

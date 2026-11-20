@@ -145,7 +145,7 @@ export function TierTab() {
               {shown.map((c, i) => (
                 <button key={c.id} type="button" className={`tl-card${c.owners ? "" : " none"}`} style={{ ["--d" as string]: `${Math.min(i, 20) * 25}ms` }} onClick={() => setCard(c.id)} aria-label={`${cardDef(c.id)?.name}: владельцев ${c.owners}`}>
                   <span className="tl-art">
-                    <img src={`/api/cards/art/${c.id}`} alt="" loading="lazy" decoding="async" draggable={false} />
+                    <img src={`/api/cards/art/${c.id}?w=320`} alt="" loading="lazy" decoding="async" draggable={false} />
                   </span>
                   <span className="tl-badge">
                     <Ico name="user" size={11} />

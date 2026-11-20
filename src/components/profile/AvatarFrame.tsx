@@ -43,14 +43,16 @@ export function AvatarCircle({
       {...(pmAvatar ? { "data-pm-av": "" } : {})}
     >
       <span
-        className={`grid h-full w-full place-items-center bg-gradient-to-br from-accent to-accent-2 text-center font-black leading-none text-white ${textClass}`}
+        className={`relative grid h-full w-full place-items-center bg-gradient-to-br from-accent to-accent-2 text-center font-black leading-none text-white ${textClass}`}
       >
         {showImg ? (
+          /* Размеры и позиция — инлайном: чужие правила для img (рамки
+             магазина, превью) иначе сжимали картинку до половины круга */
           <img
             src={avatar}
             alt=""
             draggable={false}
-            className="h-full w-full object-cover"
+            style={{ position: "absolute", inset: 0, width: "100%", height: "100%", maxWidth: "none", objectFit: "cover", margin: 0, transform: "none" }}
             onError={() => setFailed(avatar ?? null)}
           />
         ) : (

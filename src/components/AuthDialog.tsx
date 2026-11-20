@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useRef, useState, useSyncExternalStore } from "react";
-import Image from "next/image";
 import "./auth-dialog.css";
 import {
   validateNickname,
@@ -83,26 +82,26 @@ const STARS = [
  *  Лежит внутри прокручиваемой области — ничего не перекрывает форму. */
 function Banner({ tab, bannerRef }: { tab: AuthTab; bannerRef: React.RefObject<HTMLElement | null> }) {
   return (
-    <header ref={bannerRef} className="ad-banner">
-      <span className="ad-aurora" aria-hidden />
+    <header ref={bannerRef} className="agx-banner">
+      <span className="agx-aurora" aria-hidden />
       {STARS.slice(0, 4).map((st) => (
-        <span key={st.l + st.t} className="ad-bstar" style={{ left: st.l, top: st.t, animationDelay: st.d }} aria-hidden />
+        <span key={st.l + st.t} className="agx-bstar" style={{ left: st.l, top: st.t, animationDelay: st.d }} aria-hidden />
       ))}
-      <div className="ad-scene" aria-hidden>
-        <span className="ad-ring r1"><i /></span>
-        <span className="ad-ring r2"><i /></span>
-        <span className="ad-glow" />
-        <Image className="ad-cat" src="/cat.png" alt="" width={768} height={768} sizes="200px" priority />
+      <div className="agx-scene" aria-hidden>
+        <span className="agx-ring r1"><i /></span>
+        <span className="agx-ring r2"><i /></span>
+        <span className="agx-glow" />
+        <img className="agx-cat" src="/cat-auth.webp" srcSet="/cat-auth.webp 1x, /cat-auth@2x.webp 2x, /cat-auth@2x.webp 3x" alt="" width={324} height={400} decoding="async" fetchPriority="high" />
       </div>
-      <div key={tab} className="ad-btext ad-swap">
-        <span className="ad-brandline">
+      <div key={tab} className="agx-btext agx-swap">
+        <span className="agx-brandline">
           <i />
           AniGalaxy
         </span>
-        <h2 id="auth-title" className="ad-title">
+        <h2 id="auth-title" className="agx-title">
           {tab === "login" ? "С возвращением!" : "Создай аккаунт"}
         </h2>
-        <p className="ad-sub">
+        <p className="agx-sub">
           {tab === "login" ? "Продолжи с того же места." : "Меньше минуты — и списки под рукой."}
         </p>
       </div>
@@ -138,12 +137,12 @@ function Field({
   toggle,
 }: FieldProps) {
   return (
-    <div className="ad-field">
-      <label htmlFor={id} className="ad-label">
+    <div className="agx-field">
+      <label htmlFor={id} className="agx-label">
         {label}
       </label>
-      <div className="ad-wrap">
-        <span className="ad-ic">{icon}</span>
+      <div className="agx-wrap">
+        <span className="agx-ic">{icon}</span>
         <input
           id={id}
           type={type}
@@ -160,7 +159,7 @@ function Field({
             onClick={toggle.onToggle}
             tabIndex={-1}
             aria-label={toggle.shown ? "Скрыть пароль" : "Показать пароль"}
-            className="ad-eye"
+            className="agx-eye"
           >
             <EyeIcon open={toggle.shown} />
           </button>
@@ -273,13 +272,13 @@ export function AuthDialog() {
 
   return (
     <div
-      className="ad-root fixed inset-0 z-[120] flex items-end justify-center sm:items-center sm:p-6"
+      className="agx-root fixed inset-0 z-[120] flex items-end justify-center sm:items-center sm:p-6"
       onMouseDown={onBackdrop}
       onPointerMove={onMove}
     >
-      <div className="ad-backdrop" aria-hidden />
+      <div className="agx-backdrop" aria-hidden />
       {STARS.map((st) => (
-        <span key={st.l + st.t} className="ad-star" style={{ left: st.l, top: st.t, animationDelay: st.d }} aria-hidden />
+        <span key={st.l + st.t} className="agx-star" style={{ left: st.l, top: st.t, animationDelay: st.d }} aria-hidden />
       ))}
 
       <div
@@ -288,22 +287,22 @@ export function AuthDialog() {
         aria-modal="true"
         aria-labelledby="auth-title"
         tabIndex={-1}
-        className="ad-panel relative flex w-full flex-col outline-none"
+        className="agx-panel relative flex w-full flex-col outline-none"
       >
         {/* Форма */}
-        <div className="ad-scroll relative flex min-w-0 flex-1 flex-col overflow-y-auto">
+        <div className="agx-scroll relative flex min-w-0 flex-1 flex-col overflow-y-auto">
           <Banner tab={tab} bannerRef={shellRef} />
 
-          <div className="ad-body flex flex-1 flex-col px-5 pb-7 sm:px-9">
+          <div className="agx-body flex flex-1 flex-col px-5 pb-7 sm:px-9">
             {/* Переключатель «Вход / Регистрация» */}
-            <div className="ad-tabs" data-tab={tab}>
+            <div className="agx-tabs" data-tab={tab}>
               {(["login", "register"] as AuthTab[]).map((value) => (
                 <button
                   key={value}
                   type="button"
                   onClick={() => switchTab(value)}
                   aria-pressed={tab === value}
-                  className="ad-tab"
+                  className="agx-tab"
                 >
                   {value === "login" ? "Вход" : "Регистрация"}
                 </button>
@@ -312,7 +311,7 @@ export function AuthDialog() {
 
             {tab === "login" ? (
               <>
-              <form key="l" onSubmit={onLogin} className="ad-form ad-swap mt-6 flex flex-col gap-4">
+              <form key="l" onSubmit={onLogin} className="agx-form agx-swap mt-6 flex flex-col gap-4">
                 <Field
                   id="auth-login"
                   label="Никнейм или почта"
@@ -356,7 +355,7 @@ export function AuthDialog() {
                   <button
                     type="button"
                     onClick={() => switchTab("register")}
-                    className="ad-link"
+                    className="agx-link"
                   >
                     Зарегистрироваться
                   </button>
@@ -365,15 +364,15 @@ export function AuthDialog() {
 
               {/* Вход через Telegram: один настоящий виджет, без кастомной
                   кнопки-дублёра поверх него */}
-              <div className="mt-5 ad-swap">
-                <div className="ad-or">или войти через</div>
-                <div className="ad-tg">
+              <div className="mt-5 agx-swap">
+                <div className="agx-or">или войти через</div>
+                <div className="agx-tg">
                   <TelegramBotLogin onDone={close} onError={setError} />
                 </div>
               </div>
               </>
             ) : (
-              <form key="r" onSubmit={onRegister} className="ad-form ad-swap mt-6 flex flex-col gap-4">
+              <form key="r" onSubmit={onRegister} className="agx-form agx-swap mt-6 flex flex-col gap-4">
                 <Field
                   id="auth-nickname"
                   label="Никнейм"
@@ -445,7 +444,7 @@ export function AuthDialog() {
                   <button
                     type="button"
                     onClick={() => switchTab("login")}
-                    className="ad-link"
+                    className="agx-link"
                   >
                     Войти
                   </button>
@@ -466,7 +465,7 @@ export function AuthDialog() {
             type="button"
             onClick={close}
             aria-label="Закрыть"
-            className="ad-x"
+            className="agx-x"
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
               <path strokeLinecap="round" d="M6 6l12 12M18 6 6 18" />
@@ -488,7 +487,7 @@ function PasswordStrength({ value }: { value: string }) {
   const label = ["Слишком короткий", "Простой", "Хороший", "Надёжный", "Отличный"][score];
   return (
     <div style={{ ["--c" as string]: color }}>
-      <div className="ad-strength" aria-hidden>
+      <div className="agx-strength" aria-hidden>
         {[0, 1, 2, 3].map((i) => (
           <i key={i} className={i < score ? "on" : ""} />
         ))}
@@ -502,7 +501,7 @@ function PasswordStrength({ value }: { value: string }) {
 
 function ErrorBox({ message }: { message: string }) {
   return (
-    <div className="ad-err" role="alert">
+    <div className="agx-err" role="alert">
       <b>!</b>
       <p>{message}</p>
     </div>

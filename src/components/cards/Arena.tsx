@@ -1053,7 +1053,7 @@ export function Arena({ report: initial, onClose }: { report: BattleReport; onCl
                   if (!u) return null;
                   return (
                     <span key={`${q.at}`} className={`aq-it side-${u.side} ${i === 0 ? "now" : ""}`} title={u.name} style={{ ["--rc" as string]: RANKS[u.rank]?.color ?? "#8fb0ff" }}>
-                      <img src={`/api/cards/art/${u.cardId}`} alt="" loading="lazy" draggable={false} />
+                      <img src={`/api/cards/art/${u.cardId}?w=480`} alt="" loading="lazy" draggable={false} />
                     </span>
                   );
                 })}
@@ -1164,7 +1164,7 @@ export function Arena({ report: initial, onClose }: { report: BattleReport; onCl
                 <div className="in-pics">
                   {report.you.map((u, i) => (
                     <span key={u.key} style={{ ["--rc" as string]: RANKS[u.rank]?.color ?? "#8fb0ff", ["--i" as string]: i }}>
-                      <img src={`/api/cards/art/${u.cardId}`} alt="" draggable={false} />
+                      <img src={`/api/cards/art/${u.cardId}?w=480`} alt="" draggable={false} />
                     </span>
                   ))}
                 </div>
@@ -1185,7 +1185,7 @@ export function Arena({ report: initial, onClose }: { report: BattleReport; onCl
                 <div className="in-pics">
                   {report.foe.map((u, i) => (
                     <span key={u.key} style={{ ["--rc" as string]: RANKS[u.rank]?.color ?? "#ff8fb0", ["--i" as string]: i }}>
-                      <img src={`/api/cards/art/${u.cardId}`} alt="" draggable={false} />
+                      <img src={`/api/cards/art/${u.cardId}?w=480`} alt="" draggable={false} />
                     </span>
                   ))}
                 </div>
@@ -1240,7 +1240,7 @@ export function Arena({ report: initial, onClose }: { report: BattleReport; onCl
               <i className="bk-ring r3" />
               <span className="bk-kanji">{cine.bk.kanji}</span>
               <span className="bk-hero">
-                <img src={`/api/cards/art/${cine.cardId}`} alt="" draggable={false} />
+                <img src={`/api/cards/art/${cine.cardId}?w=720`} alt="" draggable={false} />
               </span>
               <i className="bk-embers" />
               <div className="bk-txt">
@@ -1329,7 +1329,7 @@ export function Arena({ report: initial, onClose }: { report: BattleReport; onCl
             <div className={`ar-cmd ec-${u.element}`}>
               <div className="cmd-who">
                 <span className="cmd-av">
-                  <img src={`/api/cards/art/${u.cardId}`} alt="" draggable={false} />
+                  <img src={`/api/cards/art/${u.cardId}?w=480`} alt="" draggable={false} />
                 </span>
                 <span className="cmd-wt">
                   <small>Ваш ход · раунд {pend.round}</small>
@@ -1531,7 +1531,7 @@ export function Arena({ report: initial, onClose }: { report: BattleReport; onCl
                   const alive = (report.outcome.a.find((x) => x.key === u.key)?.hp ?? 0) > 0;
                   return (
                     <div key={u.key} className={`rs-row ${stats.mvp?.u.key === u.key ? "mvp" : ""} ${alive ? "" : "out"}`}>
-                      <span className="rs-av" style={{ ["--rc" as string]: RANKS[u.rank]?.color ?? "#8fb0ff" }}><img src={`/api/cards/art/${u.cardId}`} alt="" loading="lazy" /></span>
+                      <span className="rs-av" style={{ ["--rc" as string]: RANKS[u.rank]?.color ?? "#8fb0ff" }}><img src={`/api/cards/art/${u.cardId}?w=480`} alt="" loading="lazy" /></span>
                       <span className="rs-nm"><b>{u.name}</b><small>{v.kills ? `побед ${v.kills} · ` : ""}{v.crits ? `критов ${v.crits}` : alive ? "в строю" : "выбыл"}</small></span>
                       <span className="rs-bar"><i style={{ width: `${(v.dmg / top) * 100}%` }} /></span>
                       <span className="rs-num"><b>{fmt(v.dmg)}</b>{v.heal > 0 && <small>+{fmt(v.heal)}</small>}</span>

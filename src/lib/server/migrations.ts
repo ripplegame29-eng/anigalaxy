@@ -931,4 +931,47 @@ export const MIGRATIONS: Migration[] = [
       DELETE FROM card_inv WHERE card_id IN ('yuji-itadori','yoriichi-tsugikuni','hagoromo-otsutsuki','yhwach','tenten','ino-yamanaka','choji-akimichi','kiba-inuzuka','nefertari-vivi','connie-springer','genya-shinazugawa','mai-zenin','alex-louis-armstrong','mina-ashido','mumen-rider','heiter','lalatina-dustiness-ford','nagato','jinbe','silver-fang','marco','king-bradley','van-hohenheim','vegito','kai-chisaki','flashy-flash','sinon','tobirama-senju','marshall-d-teach','jugram-haschwalth','ymir-fritz','neferpitou','all-for-one','zeno','anos-voldigoad','kars','hinata-tachibana','keisuke-baji','chifuyu-matsuno','atsushi-sendou','kazutora-hanemiya','izana-kurokawa','naoto-tachibana','jinpachi-ego','anri-teieri','rensuke-kunigami','maki-oze','tamaki-kotatsu','sho-kusakabe','hibana','takehisa-hinawa','vulcan-joseph','rekka-hoshimiya','koushi-sugawara','daichi-sawamura','kenma-kozume','hitoka-yachi','kiyoko-shimizu','kushina-uzumaki','shizune','chiyo','haku','kakuzu','jugo','karin','mei-terumi','makarov-dreyar','mavis-vermilion','gildarts-clive','juvia-lockser','elfman-strauss','lisanna-strauss','jellal-fernandes','hawk','zeldris','gilthunder','muhammad-avdol','guido-mista','narancia-ghirga','charmy-pappitson','fuegoleon-vermillion','magna-swing','luck-voltia','secre-swallowtail','vanessa-enoteca','zora-ideale','videl','yamcha','rui','kyougai','denki-kaminari','tenshinhan','fumikage-tokoyami','maes-hughes','rangiku-matsumoto','stain','lan-fan','shoko-ieiri','retsu-unohana','alluka-zoldyck','juushirou-ukitake','father','barragan-luisenbarn','akihiko-kayaba','silva-zoldyck','hit','quanxi','sasori','medea','illyasviel-von-einzbern','blast','zeref-dragneel','pochita','walter-c-dornez');
     `,
   },
+  {
+    version: 29,
+    name: "clan-media",
+    sql: `
+      -- Свои аватар и обложка клана (загружает глава)
+      CREATE TABLE clan_media (
+        clan_id INTEGER NOT NULL REFERENCES clans(id) ON DELETE CASCADE,
+        kind TEXT NOT NULL,
+        mime TEXT NOT NULL,
+        bytes BLOB NOT NULL,
+        v INTEGER NOT NULL,
+        PRIMARY KEY (clan_id, kind)
+      );
+    `,
+  },
+  {
+    version: 30,
+    name: "clan-chat",
+    sql: `
+      CREATE TABLE clan_chat (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        clan_id INTEGER NOT NULL REFERENCES clans(id) ON DELETE CASCADE,
+        user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        text TEXT NOT NULL,
+        created_at INTEGER NOT NULL
+      );
+      CREATE INDEX idx_clan_chat ON clan_chat(clan_id, id);
+    `,
+  },
+  {
+    version: 31,
+    name: "clan-market",
+    sql: `
+      -- Покупки на клановом рынке: недельные лимиты на игрока
+      CREATE TABLE clan_market_buys (
+        user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        item_id TEXT NOT NULL,
+        week INTEGER NOT NULL,
+        n INTEGER NOT NULL DEFAULT 0,
+        PRIMARY KEY (user_id, item_id, week)
+      );
+    `,
+  },
 ];

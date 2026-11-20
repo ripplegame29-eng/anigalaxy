@@ -2234,3 +2234,239 @@ html[data-eco="on"] .ca *::after {
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
 }
+
+/* ============================================================
+   Трон лиг на обложке кланов: объёмные эмблемы вместо плоских щитов.
+   Легенда — в лучах над подиумом, остальные лиги стоят по дуге.
+   ============================================================ */
+.ca-throne {
+  position: relative;
+  width: min(100%, 520px);
+  aspect-ratio: 1.18;
+  margin-inline: auto;
+}
+.ca-throne > * {
+  position: absolute;
+  pointer-events: none;
+}
+.ca-throne-halo {
+  left: 50%;
+  top: 33%;
+  width: 78%;
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--lc) 42%, transparent), color-mix(in srgb, #ffb347 14%, transparent) 55%, transparent 75%);
+  filter: blur(6px);
+}
+.ca-throne-rays {
+  left: 50%;
+  top: 33%;
+  width: 115%;
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  border-radius: 50%;
+  background: repeating-conic-gradient(from 0deg, rgba(255, 214, 140, 0.16) 0deg 4deg, transparent 4deg 18deg);
+  -webkit-mask-image: radial-gradient(closest-side, #000 18%, transparent 70%);
+  mask-image: radial-gradient(closest-side, #000 18%, transparent 70%);
+  animation: ca-thr-spin 60s linear infinite;
+}
+.ca-throne-ring {
+  left: 50%;
+  top: 79%;
+  width: 92%;
+  height: 26%;
+  translate: -50% -50%;
+  border-radius: 50%;
+  border: 1.5px solid color-mix(in srgb, #ffd38a 55%, transparent);
+  box-shadow: 0 0 24px -4px rgba(255, 190, 90, 0.55), inset 0 0 30px -10px rgba(255, 190, 90, 0.5);
+  background: radial-gradient(closest-side, rgba(255, 170, 60, 0.16), transparent 75%);
+}
+.ca-throne-ring.r2 {
+  top: 55%;
+  width: 46%;
+  height: 11%;
+  border-color: color-mix(in srgb, var(--lc) 70%, transparent);
+  box-shadow: 0 0 30px color-mix(in srgb, var(--lc) 60%, transparent), inset 0 0 18px color-mix(in srgb, var(--lc) 55%, transparent);
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--lc) 38%, transparent), transparent 80%);
+}
+.ca-throne-top {
+  left: 50%;
+  top: 31%;
+  width: 42%;
+  translate: -50% -50%;
+  z-index: 6;
+  filter: drop-shadow(0 18px 30px rgba(0, 0, 0, 0.6)) drop-shadow(0 0 34px color-mix(in srgb, var(--lc) 65%, transparent));
+  animation: ca-thr-float 5s ease-in-out infinite alternate;
+}
+.ca-throne-top img {
+  width: 100% !important;
+  height: auto !important;
+}
+.ca-throne-name {
+  left: 50%;
+  top: 65.5%;
+  translate: -50% -50%;
+  z-index: 6;
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  white-space: nowrap;
+}
+.ca-throne-name b {
+  font: 900 clamp(15px, 1.7vw, 19px) / 1 var(--font-display, inherit);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  background: linear-gradient(180deg, #fff3d6, #ffc061 55%, #ff7a4d);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 2px 10px rgba(255, 140, 60, 0.5));
+}
+.ca-throne-name small {
+  font: 700 10.5px / 1 var(--font-body, inherit);
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: rgba(255, 230, 190, 0.6);
+}
+.ca-throne-step {
+  width: 17%;
+  translate: -50% -50%;
+  scale: var(--s);
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  filter: drop-shadow(0 10px 16px rgba(0, 0, 0, 0.55)) drop-shadow(0 0 16px color-mix(in srgb, var(--lc) 45%, transparent));
+  animation: ca-thr-bob 4.2s ease-in-out infinite alternate;
+  animation-delay: var(--d);
+}
+.ca-throne-step img {
+  width: 100% !important;
+  height: auto !important;
+}
+.ca-throne-step em {
+  font: 800 9.5px / 1 var(--font-body, inherit);
+  font-style: normal;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--lc) 75%, #fff);
+  white-space: nowrap;
+}
+.ca-throne-spark {
+  left: calc(30% + var(--k) * 4.4%);
+  top: 62%;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: #fff3d6;
+  box-shadow: 0 0 8px 2px rgba(255, 190, 90, 0.9);
+  opacity: 0;
+  animation: ca-thr-spark 3.6s ease-out infinite;
+  animation-delay: calc(var(--k) * -0.37s);
+}
+@keyframes ca-thr-spin { to { rotate: 360deg; } }
+@keyframes ca-thr-float { from { translate: -50% -52%; } to { translate: -50% -47%; } }
+@keyframes ca-thr-bob { from { translate: -50% -54%; } to { translate: -50% -46%; } }
+@keyframes ca-thr-spark {
+  0% { opacity: 0; transform: translateY(0) scale(0.6); }
+  20% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(-140px) scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ca-throne * { animation: none !important; }
+}
+html[data-lite="on"] .ca-throne-rays,
+html[data-lite="on"] .ca-throne-spark { animation: none; }
+html[data-lite="on"] .ca-throne-spark { display: none; }
+/* Эмблема лиги в остальных местах кланов: мягкое свечение цвета лиги */
+.ca-lbadge {
+  display: block;
+  filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.45));
+}
+
+/* ----------------------------- Эмблема клана ----------------------------- */
+.ca-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #ffd38a;
+  text-decoration: none;
+}
+.ca-link:hover { color: #fff; }
+.ca-emb {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+.ca-emb-now {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  padding: 14px 18px;
+  border-radius: 20px;
+  background: radial-gradient(80% 70% at 50% 40%, color-mix(in srgb, var(--lc) 22%, transparent), transparent 75%), rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--ca-line);
+}
+.ca-emb-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(112px, 1fr));
+  gap: 10px;
+}
+.ca-emb-opt {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  padding: 12px 8px 10px;
+  border-radius: 18px;
+  border: 1px solid var(--ca-line);
+  background: rgba(255, 255, 255, 0.03);
+  color: inherit;
+  cursor: pointer;
+  text-align: center;
+  transition: transform 0.18s, border-color 0.18s, background 0.18s;
+}
+.ca-emb-opt:hover:not(:disabled) { transform: translateY(-2px); border-color: rgba(255, 211, 138, 0.5); }
+.ca-emb-opt:disabled { cursor: default; }
+.ca-emb-opt.on {
+  border-color: #ffd38a;
+  background: linear-gradient(180deg, rgba(255, 198, 90, 0.16), rgba(255, 198, 90, 0.03));
+  box-shadow: 0 0 0 1px rgba(255, 211, 138, 0.35), 0 12px 28px -14px rgba(255, 170, 40, 0.7);
+}
+.ca-emb-opt b { font-size: 12.5px; font-weight: 800; line-height: 1.2; }
+.ca-emb-opt small { font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ca-text2); }
+.ca-emb-opt.t-e small { color: #c59bff; }
+.ca-emb-opt.t-l small { color: #ffc65a; }
+.ca-emb-def {
+  display: grid;
+  place-items: center;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  color: rgba(255, 255, 255, 0.55);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px dashed rgba(255, 255, 255, 0.2);
+}
+.ca-emb-empty { grid-column: 1 / -1; align-self: center; margin: 0; }
+@media (max-width: 640px) {
+  .ca-emb { grid-template-columns: 1fr; }
+  .ca-emb-list { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+/* Вкладки «Война» и «Донат» используют компоненты гачи (обёртка .cg).
+   У .cg свой фон страницы — fixed-слои ::before/::after. Внутри кланов
+   анимация вкладки создаёт контейнер для fixed, и фон гачи вставал
+   чёрным прямоугольником за контентом. В кланах фон свой — гасим чужой. */
+.ca .cg::before,
+.ca .cg::after {
+  content: none !important;
+  display: none !important;
+}
+/* Значок валюты в строке текста (общий img из гачи): не переносится на свою строку */
+.ca .cur-art {
+  display: inline-block;
+  vertical-align: -3px;
+  margin: 0 2px;
+}
