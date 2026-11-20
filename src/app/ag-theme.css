@@ -1624,8 +1624,17 @@ body {
     margin-top: -96px;
   }
 
-  .ag-root .ag-pf-lay {
-    grid-template-columns: 1fr;
+  .ag-root .ag-pf-lay,
+  .ag-root.is-guest .ag-pf-lay {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .ag-root .ag-pf-side,
+  .ag-root .ag-pf-main,
+  .ag-root .gst {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
   }
 
   /* Мобильный аватар уменьшен, но рамка должна уменьшиться вместе с ним:

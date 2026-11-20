@@ -87,3 +87,6 @@ _backup_before_cards/
 /_to_delete/
 ship.bat
 ship.log
+
+push.bat
+push.log
