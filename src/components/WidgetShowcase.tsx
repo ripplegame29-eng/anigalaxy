@@ -25,6 +25,7 @@ import {
   type WidgetSlot,
 } from "@/lib/widgets";
 import { WidgetBody } from "@/components/profile/Widgets";
+import { WidgetIcon } from "@/components/profile/WidgetIcon";
 
 export function WidgetShowcase({ readOnly = false }: { readOnly?: boolean }) {
   const [slots, setSlots] = useState<WidgetSlot[]>([]);
@@ -54,6 +55,7 @@ export function WidgetShowcase({ readOnly = false }: { readOnly?: boolean }) {
               style={accentVars(slot.c) as React.CSSProperties | undefined}
             >
               <header className="ag-wv-card-head">
+                <WidgetIcon name={def.icon} />
                 <span>{def.title}</span>
               </header>
               <WidgetBody id={slot.id} readOnly={readOnly} />

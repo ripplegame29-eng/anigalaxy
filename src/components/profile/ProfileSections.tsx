@@ -118,7 +118,7 @@ export interface SectionMeta {
 /** Пункты меню профиля: порядок как в макете + разделы без сервера */
 export const SECTIONS: SectionMeta[] = [
   { id: "main", label: "Основное" },
-  { id: "showcase", label: "Виджеты", fresh: true },
+  { id: "showcase", label: "Виджеты" },
   { id: "favorites", label: "Любимое" },
   { id: "collections", label: "Подборки", hidden: true },
   { id: "achievements", label: "Достижения" },
@@ -324,21 +324,17 @@ function PremiumCard({ account }: { account: Account | null }) {
 
   if (!premium) {
     return (
-      <Panel className="relative overflow-hidden">
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-accent-2/10 via-transparent to-transparent" />
-        <div className="relative flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <p className="text-base font-extrabold text-white">Premium не подключён</p>
-            <p className="mt-1 max-w-md text-xs leading-relaxed text-muted">
-              Подписка открывает рамки, титулы и расширенный профиль. Оплата в этом демо не производится —
-              всё хранится в браузере.
-            </p>
-          </div>
-          <Link href="/premium" className="btn-premium glow-ring rounded-xl px-4 py-2.5 text-sm font-bold">
-            Оформить Premium
-          </Link>
-        </div>
-      </Panel>
+      <Link href="/premium" className="ag-pf-prem">
+        <span className="ag-pf-prem-ic" aria-hidden>
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2">
+            <path strokeLinecap="round" strokeLinejoin="round" d="m3 8 4 3 5-6 5 6 4-3-2 11H5L3 8Z" />
+          </svg>
+        </span>
+        <span className="ag-pf-prem-t">
+          <b>Premium</b> — премиум-рамки, титулы и расширенный профиль
+        </span>
+        <span className="ag-pf-prem-go">Подробнее →</span>
+      </Link>
     );
   }
 
@@ -425,9 +421,8 @@ export function LevelCard() {
           </div>
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="era">
-              Пробуждение: {emblemEra.n} · ещё {info.left.toLocaleString("ru-RU")} XP до уровня{" "}
-              {info.level + 1}
-              {nextEmblemEra ? ` · следующее пробуждение «${nextEmblemEra.name}» с ${nextEmblemEra.from} уровня` : ""}
+              Ещё <b>{info.left.toLocaleString("ru-RU")} XP</b> до {info.level + 1} уровня
+              {nextEmblemEra ? <span> · «{nextEmblemEra.name}» с {nextEmblemEra.from} уровня</span> : null}
             </div>
             <button
               type="button"

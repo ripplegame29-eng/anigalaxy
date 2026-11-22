@@ -333,7 +333,7 @@ export function AchievementsWidget({ onOpenAll }: { onOpenAll?: () => void }) {
               </b>
               <span className="ag-aw-rar">
                 <i />
-                {meta.rarity} · <b>{item.def.trophy}</b> оч.
+                {RARITY_RU[meta.rarity] ?? meta.rarity} · <b>{item.def.trophy}</b> оч.
               </span>
             </article>
           );
@@ -782,6 +782,17 @@ function LevelPlaqueWidget() {
     </div>
   );
 }
+
+/** Редкость достижения по-русски: в разметке была служебная метка «common» */
+const RARITY_RU: Record<string, string> = {
+  common: "Обычное",
+  uncommon: "Необычное",
+  rare: "Редкое",
+  epic: "Эпическое",
+  legendary: "Легендарное",
+  mythic: "Мифическое",
+  secret: "Секретное",
+};
 
 const BODIES: Record<WidgetId, (props: { readOnly?: boolean }) => React.JSX.Element> = {
   ach: () => <AchievementsWidget />,

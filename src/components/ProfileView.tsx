@@ -1,5 +1,7 @@
 "use client";
 
+import "@/app/profile-unslop.css";
+
 import { ProfileThemeLayers, themeVars } from "./profile/ProfileThemeLayers";
 import { useProfileTheme } from "@/lib/ptheme";
 import { ProfileDecor } from "@/components/battlepass/ProfilePreview";
@@ -375,10 +377,6 @@ export function ProfileView({ mode = "owner", basePath: basePathProp }: { mode?:
               <ProfileNav active={allowedSection} go={go} badge={badge} />
 
               <div className="ag-card ag-pf-sum">
-                <p className="ag-w-sub">
-                  Списки, история, достижения и косметика сохраняются на сервере AniGalaxy
-                  и доступны на любом устройстве после входа.
-                </p>
                 <div className="ag-pf-sum-grid">
                   {/* data-text читают псевдоэлементы глитча: у суммы они
                       рисуют цветные копии числа. Само число не меняется. */}
@@ -396,8 +394,11 @@ export function ProfileView({ mode = "owner", basePath: basePathProp }: { mode?:
                     </b>
                     <span>AC</span>
                   </div>
+                  <div>
+                    <b data-text={watch.records.length}>{watch.records.length}</b>
+                    <span>в истории</span>
+                  </div>
                 </div>
-                <p className="ag-w-sub">Записей в истории: {watch.records.length}</p>
               </div>
             </aside>
           )}

@@ -1,0 +1,106 @@
+/* Профиль · «тихий графит» (анслоп).
+   Ровные тёмные поверхности, тонкие кромки, один синий акцент.
+   Свой цвет блока (--wa) остаётся, но только кромкой и значком —
+   без светящихся пятен в углу. Металл и свечение — только у наград. */
+
+/* ----------------------------- блоки витрины ----------------------------- */
+.ag-root .ag-wv-card,
+.ag-root .ag-w {
+  background: var(--pf-surface, #0d0d14) !important;
+  border: 1px solid rgba(255, 255, 255, .07) !important;
+  box-shadow: none;
+}
+.ag-root .ag-wv-card[data-accent],
+.ag-root .ag-w[data-accent] {
+  border-color: rgb(var(--wa) / .28) !important;
+}
+.ag-root .ag-w:hover {
+  background: var(--pf-surface-2, #11121a) !important;
+  border-color: rgba(255, 255, 255, .12) !important;
+}
+
+/* заголовок блока: значок + обычный жирный текст вместо серого капса */
+.ag-root .ag-wv-card-head {
+  gap: 10px;
+  margin-bottom: 14px;
+  font: 800 15px var(--font-body);
+  letter-spacing: -.01em;
+  text-transform: none;
+  color: #fff;
+}
+.ag-root .ag-wv-card-head svg {
+  width: 16px;
+  height: 16px;
+  color: rgb(var(--wa, 43 127 255));
+  flex-shrink: 0;
+}
+
+/* тепловая карта: самый яркий день без неонового ореола */
+.ag-root .ag-w-heat i[data-l="4"] {
+  box-shadow: none;
+  background: #5aa8ff;
+}
+
+/* --------------------------------- Premium -------------------------------- */
+.ag-pf-prem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 16px;
+  background: var(--pf-surface, #0d0d14);
+  border: 1px solid rgba(255, 255, 255, .07);
+  color: rgba(255, 255, 255, .62);
+  font-size: 13px;
+  transition: border-color .15s, background .15s;
+}
+.ag-pf-prem:hover {
+  border-color: rgba(245, 200, 90, .35);
+  background: #101018;
+}
+.ag-pf-prem-ic {
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  color: #f5c85a;
+  background: rgba(245, 200, 90, .1);
+}
+.ag-pf-prem-t {
+  flex: 1;
+  min-width: 0;
+}
+.ag-pf-prem-t b {
+  color: #fff;
+  font-weight: 800;
+}
+.ag-pf-prem-go {
+  font-weight: 700;
+  color: #f5c85a;
+  white-space: nowrap;
+}
+
+/* ------------------------------ сводка справа ----------------------------- */
+.ag-root .ag-pf-sum-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+}
+
+/* ------------------------------ карточка уровня ---------------------------- */
+.ag-root .era b {
+  color: #fff;
+  font-weight: 700;
+}
+.ag-root .era span {
+  color: rgba(255, 255, 255, .4);
+}
+
+@media (max-width: 640px) {
+  .ag-pf-prem { padding: 11px 12px; gap: 10px; font-size: 12px; }
+  .ag-pf-prem-go { display: none; }
+  /* уровень на телефоне: эмблема меньше, текст получает ширину */
+  .ag-root .ag-pf-main .card > .lvb { zoom: .62; flex-shrink: 0; }
+  .ag-root .ag-pf-main .card > .b { flex: 1; min-width: 0; }
+  .ag-root .era span { display: none; }
+}
