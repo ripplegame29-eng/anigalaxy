@@ -96,6 +96,7 @@ import {
   STYLE_EFFECTS,
 } from "@/lib/profile-effects";
 import { TelegramLink } from "@/components/TelegramLink";
+import { ProfileStudio } from "./ProfileStudio";
 
 /* --------------------------- Каркас модалки ----------------------------- */
 
@@ -3794,6 +3795,9 @@ export function ProfileDialogHost() {
       break;
     case "erase":
       dialog = <EraseAccountDialog />;
+      break;
+    case "studio":
+      dialog = <ProfileStudio />;
       break;
     default:
       dialog = null;

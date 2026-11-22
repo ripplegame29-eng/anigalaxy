@@ -58,7 +58,9 @@ export type WidgetId =
   /** Арт-витрина в стиле Steam: гифки и арты в раскладках */
   | "artwork"
   /** Свободный текст: цитата, девиз */
-  | "text";
+  | "text"
+  /** Любимые карты из коллекции гачи */
+  | "cards";
 
 /** `s` — 1×1, `l` — на всю ширину */
 export type WidgetSize = "s" | "l";
@@ -94,11 +96,12 @@ export const WIDGETS: WidgetDef[] = [
   { id: "level", title: "Плашка уровня", icon: "crown", size: "l" },
   { id: "artwork", title: "Арт-витрина (гифки)", icon: "grid", size: "l" },
   { id: "text", title: "Текст / цитата", icon: "chat", size: "l" },
+  { id: "cards", title: "Любимые карты", icon: "star", size: "l" },
 ];
 
 /** Категории каталога: блоки в редакторе разложены по смыслу */
 export const WIDGET_CATS: { id: string; label: string; ids: WidgetId[] }[] = [
-  { id: "show", label: "Витрины и арты", ids: ["artwork", "art", "feat", "fav", "tier", "coll", "pick"] },
+  { id: "show", label: "Витрины и арты", ids: ["cards", "artwork", "art", "feat", "fav", "tier", "coll", "pick"] },
   { id: "stat", label: "Статистика и прогресс", ids: ["level", "stats", "act", "week", "ach", "shelf", "chrono", "stud"] },
   { id: "me", label: "О себе и общение", ids: ["text", "about", "gifts", "compat"] },
 ];

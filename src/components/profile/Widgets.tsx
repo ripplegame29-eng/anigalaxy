@@ -13,6 +13,7 @@
  * сравнивает списки пользователя между собой, а не его с друзьями.
  */
 
+import { FavCardsWidget } from "./FavCardsWidget";
 import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { COLLECTIONS_KEY, FAVORITES_KEY, type Collection } from "@/lib/collections";
 import { parseList, useLocalSnapshot } from "@/lib/use-local-storage";
@@ -804,6 +805,7 @@ const BODIES: Record<WidgetId, (props: { readOnly?: boolean }) => React.JSX.Elem
   level: LevelPlaqueWidget,
   artwork: ({ readOnly }) => <ArtworkWidget readOnly={readOnly} />,
   text: ({ readOnly }) => <TextWidget readOnly={readOnly} />,
+  cards: ({ readOnly }) => <FavCardsWidget readOnly={readOnly} />,
 };
 
 

@@ -15,7 +15,7 @@ import { watchStore } from "@/lib/history";
 import { BACKGROUNDS, FRAMES, TITLES, titleTag } from "@/lib/cosmetics";
 import { COLLECTIONS_KEY, FAVORITES_KEY, type Collection } from "@/lib/collections";
 import { parseList, useLocalSnapshot } from "@/lib/use-local-storage";
-import { openProfileDialog } from "@/lib/profile-dialog";
+import { openProfileDialog, openStudio } from "@/lib/profile-dialog";
 import { readyQuestCount, useProgress } from "@/lib/progression/events";
 import { PROGRESSION_CONFIG } from "@/lib/progression/progression.config";
 import { AgTag } from "@/components/progression/AgTag";
@@ -231,8 +231,7 @@ export function ProfileView({ mode = "owner", basePath: basePathProp }: { mode?:
     : [
         { id: "share", label: "Поделиться", icon: "share", run: () => openProfileDialog("share") },
         { id: "preview", label: "Как видят другие", icon: "eye", run: () => openProfileDialog("preview") },
-        { id: "theme", label: "Тема", icon: "pal", run: () => openProfileDialog("theme") },
-        { id: "effects", label: "Косметика", icon: "star", run: () => openProfileDialog("effects"), primary: true },
+        { id: "studio", label: "Настроить профиль", icon: "pal", run: () => openStudio(), primary: true },
       ];
 
   const badge = (item: SectionMeta) =>
@@ -260,7 +259,7 @@ export function ProfileView({ mode = "owner", basePath: basePathProp }: { mode?:
           {!isGuest && (
             <button
               type="button"
-              onClick={() => openProfileDialog("background")}
+              onClick={() => openStudio("banner")}
               className="btn g"
               style={{ position: "absolute", right: "max(16px, calc(50% - 590px))", top: 16, zIndex: 2 }}
             >
@@ -288,7 +287,7 @@ export function ProfileView({ mode = "owner", basePath: basePathProp }: { mode?:
           ) : (
             <button
               type="button"
-              onClick={() => openProfileDialog("avatar")}
+              onClick={() => openStudio("avatar")}
               aria-label="Изменить аватар"
               className="ag-pf-av"
               data-fx

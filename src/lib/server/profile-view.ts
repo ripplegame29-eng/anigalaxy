@@ -33,6 +33,7 @@ const PUBLIC_KEYS = new Set<string>([
   "animehub:links:v1",
   "animehub:artwork:v1",
   "animehub:ratings:v1",
+  "animehub:favcards:v1",
 ]);
 
 export type ProfileViewResult =
