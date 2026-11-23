@@ -24,7 +24,7 @@ export const APP_PLATFORMS: readonly AppPlatform[] = [
   { id: "windows", name: "Windows", device: "desktop", hint: "Windows 10 и 11", url: process.env.NEXT_PUBLIC_APP_URL_WINDOWS ?? "", file: "установщик .exe" },
   { id: "macos", name: "macOS", device: "desktop", hint: "Mac на Apple Silicon и Intel", url: process.env.NEXT_PUBLIC_APP_URL_MACOS ?? "", file: "образ .dmg" },
   { id: "linux", name: "Linux", device: "desktop", hint: "Ubuntu, Fedora, Arch", url: process.env.NEXT_PUBLIC_APP_URL_LINUX ?? "", file: "пакет AppImage" },
-  { id: "android", name: "Android", device: "phone", hint: "Android 8 и новее", url: process.env.NEXT_PUBLIC_APP_URL_ANDROID ?? "", file: "установщик .apk" },
+  { id: "android", name: "Android", device: "phone", hint: "Android 5 и новее", url: process.env.NEXT_PUBLIC_APP_URL_ANDROID || "/download/AniGalaxy.apk", file: "установщик .apk" },
   { id: "ios", name: "iPhone и iPad", device: "phone", hint: "iOS 16 и новее", url: process.env.NEXT_PUBLIC_APP_URL_IOS ?? "", file: "App Store" },
 ];
 
@@ -57,7 +57,8 @@ export const INSTALL_GUIDES = [
 ] as const;
 
 export const APP_FAQ = [
-  { q: "Это отдельная программа или сайт?", a: "Сейчас приложение — это сам AniGalaxy, установленный на устройство. Он открывается в своём окне и работает с тем же аккаунтом. Нативные сборки для Windows, macOS, Linux и Android появятся отдельно." },
+  { q: "Телефон не даёт установить .apk — что делать?", a: "Android спросит разрешение «Установка из неизвестных источников» для браузера, из которого вы скачали файл. Разрешите его один раз — установщик подписан нами и открывает только AniGalaxy." },
+  { q: "Это отдельная программа или сайт?", a: "Сейчас приложение — это сам AniGalaxy, установленный на устройство. Он открывается в своём окне и работает с тем же аккаунтом. Для Android уже есть отдельный установщик .apk, сборки для Windows, macOS и Linux появятся позже." },
   { q: "Нужно ли платить?", a: "Нет. Установка бесплатна, Premium остаётся тем же, что и на сайте." },
   { q: "Как удалить?", a: "Как любое приложение: на компьютере — через меню приложения или «Установка и удаление программ», на телефоне — долгим нажатием на иконку." },
   { q: "Мой прогресс сохранится?", a: "Да. Войдите в тот же аккаунт — уровень, монеты, список и настройки подтянутся с сервера." },

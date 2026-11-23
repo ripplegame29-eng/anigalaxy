@@ -35,7 +35,10 @@ const subscribe = (cb: () => void) => {
   return () => listeners.delete(cb);
 };
 const canInstall = () => deferred !== null;
-const isInstalled = () => installed || (typeof window !== "undefined" && window.matchMedia("(display-mode: standalone)").matches);
+const isInstalled = () =>
+  installed ||
+  (typeof window !== "undefined" &&
+    (window.matchMedia("(display-mode: standalone)").matches || /AniGalaxyApp\//.test(navigator.userAgent)));
 
 function detectOs(): AppPlatformId | "other" {
   if (typeof navigator === "undefined") return "other";
@@ -152,7 +155,9 @@ export function AppsView() {
   }, [hint]);
 
   const mobile = os === "android" || os === "ios";
-  const primaryLabel = done ? "Приложение уже установлено" : mobile ? "Установить на телефон" : "Установить на компьютер";
+  const apk = APP_PLATFORMS.find((p) => p.id === "android")?.url ?? "";
+  const directApk = !done && os === "android" && Boolean(apk);
+  const primaryLabel = done ? "Приложение уже установлено" : directApk ? "Скачать для Android" : mobile ? "Установить на телефон" : "Установить на компьютер";
 
   const onPrimary = () => {
     if (done) return;
@@ -174,10 +179,17 @@ export function AppsView() {
           <h1>Галактика аниме — <br />на твоём экране</h1>
           <p className="ap-lead">Свой значок, окно без вкладок и тот же аккаунт: уровень, монеты и список серий всегда с тобой.</p>
           <div className="ap-cta">
-            <button type="button" className="ap-btn ap-btn-main" onClick={onPrimary} disabled={done}>
-              <DeviceIcon kind={mobile ? "phone" : "desktop"} />
-              {primaryLabel}
-            </button>
+            {directApk ? (
+              <a className="ap-btn ap-btn-main" href={apk} download="AniGalaxy.apk" onClick={() => setHint("Откройте скачанный AniGalaxy.apk и разрешите установку из браузера, если телефон спросит.")}>
+                <DeviceIcon kind="phone" />
+                {primaryLabel}
+              </a>
+            ) : (
+              <button type="button" className="ap-btn ap-btn-main" onClick={onPrimary} disabled={done}>
+                <DeviceIcon kind={mobile ? "phone" : "desktop"} />
+                {primaryLabel}
+              </button>
+            )}
             <a className="ap-btn ap-btn-ghost" href="#platforms">Все платформы</a>
           </div>
           {hint && <p className="ap-hint" role="status">{hint}</p>}
@@ -191,7 +203,7 @@ export function AppsView() {
       <section id="platforms" className="ap-sec">
         <header className="ap-head">
           <h2>Выбери платформу</h2>
-          <p>Нативные сборки готовятся. Пока всё ставится из браузера — это занимает полминуты.</p>
+          <p>Для Android есть готовый установщик. На остальных устройствах приложение ставится из браузера за полминуты.</p>
         </header>
         <ul className="ap-grid">
           {APP_PLATFORMS.map((p) => {
@@ -204,7 +216,7 @@ export function AppsView() {
                 <p>{p.hint}</p>
                 <span className={`ap-state${ready ? " ok" : ""}`}>{ready ? `Доступно · ${p.file}` : "Скоро"}</span>
                 {ready ? (
-                  <a className="ap-btn ap-btn-main ap-sm" href={p.url} rel="noopener">Скачать</a>
+                  <a className="ap-btn ap-btn-main ap-sm" href={p.url} rel="noopener" download={p.url.endsWith(".apk") ? "AniGalaxy.apk" : undefined}>Скачать</a>
                 ) : (
                   <button type="button" className="ap-btn ap-btn-ghost ap-sm" onClick={() => document.getElementById("install")?.scrollIntoView({ behavior: "smooth" })}>
                     Установить из браузера

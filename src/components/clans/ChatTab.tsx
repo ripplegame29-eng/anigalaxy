@@ -81,7 +81,7 @@ export function ChatTab() {
                 {!grouped && (
                   <div className="ca-msg-h">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={`/api/avatar?u=${m.userId}`} alt="" onError={(e) => { e.currentTarget.style.visibility = "hidden"; }} />
+                    <img src={`/api/avatar?u=${m.userId}&s=128`} alt="" onError={(e) => { e.currentTarget.style.visibility = "hidden"; }} />
                     <b>{m.nickname}</b>
                     {ROLE[m.role] && <span className={`ca-msg-role r-${m.role}`}>{ROLE[m.role]}</span>}
                     <time>{time(m.at)}</time>

@@ -39,7 +39,7 @@ export function looksOf(db: Database, userIds: number[]): Map<number, Look> {
       const raw = typeof profile.avatar === "string" ? profile.avatar : "";
       const userId = num(doc.user_id);
       const avatar = raw.startsWith("data:image/")
-        ? `/api/avatar?u=${userId}&v=${num(doc.updated_at)}`
+        ? `/api/avatar?u=${userId}&s=192&v=${num(doc.updated_at)}`
         : /^https?:\/\//.test(raw) || raw.startsWith("/")
           ? raw
           : "";
@@ -48,7 +48,7 @@ export function looksOf(db: Database, userIds: number[]): Map<number, Look> {
         avatar,
         frameId: typeof profile.frameId === "string" ? profile.frameId : "",
         backgroundId: typeof profile.backgroundId === "string" ? profile.backgroundId : "",
-        bgImage: custom ? `/api/avatar?u=${userId}&kind=bg&v=${num(doc.updated_at)}` : "",
+        bgImage: custom ? `/api/avatar?u=${userId}&kind=bg&s=900&v=${num(doc.updated_at)}` : "",
       });
     } catch {
       /* битый профиль — остаются инициалы */
