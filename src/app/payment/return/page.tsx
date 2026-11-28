@@ -41,7 +41,7 @@ function PaymentReturnContent() {
 
     async function checkStatus() {
       try {
-        const res = await fetch(`/api/payments/platega/order/${encodeURIComponent(orderId)}`);
+        const res = await fetch(`/api/payments/rollypay/order/${encodeURIComponent(orderId)}`);
         if (!res.ok) {
           if (res.status === 401) {
             setError("Пожалуйста, войдите в аккаунт для просмотра статуса заказа");
@@ -104,7 +104,7 @@ function PaymentReturnContent() {
             <div className="mx-auto h-16 w-16 animate-spin rounded-full border-4 border-cyan-500/20 border-t-cyan-400" />
             <h2 className="text-xl font-bold text-white">Проверяем статус оплаты…</h2>
             <p className="text-sm text-white/60">
-              Связываемся со шлюзом Platega, пожалуйста, подождите несколько секунд.
+              Связываемся с платёжным шлюзом, пожалуйста, подождите несколько секунд.
             </p>
           </div>
         )}
@@ -173,7 +173,7 @@ function PaymentReturnContent() {
             <div>
               <h2 className="text-2xl font-black text-white">Платёж не завершён</h2>
               <p className="mt-1 text-sm text-white/60">
-                Оплата была отменена или шлюз Platega вернул ошибку. Деньги не списаны.
+                Оплата была отменена или время на оплату истекло. Деньги не списаны.
               </p>
             </div>
 

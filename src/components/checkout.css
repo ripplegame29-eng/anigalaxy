@@ -133,6 +133,8 @@
 .ck-tile[data-t="sbp"]{--t1:#19c37d;--t2:#22d3ee}
 .ck-tile[data-t="crypto"]{--t1:#ff9f1c;--t2:#ff5d8f}
 .ck-tile[data-t="card"]{--t1:#6366f1;--t2:#a78bfa}
+.ck-tile[data-t="cryptobot"]{--t1:#2b7fff;--t2:#38bdf8}
+.ck-tile[data-t="xrocket"]{--t1:#6366f1;--t2:#a78bfa}
 .ck-tile[data-t="stars"]{--t1:#8b5cf6;--t2:#38bdf8}
 .ck-ti{color:#fff!important;background:linear-gradient(135deg,var(--t1),var(--t2))!important;box-shadow:0 8px 20px color-mix(in srgb,var(--t1) 45%,transparent)}
 .ck-tile.on{border-color:var(--t1)!important;background:linear-gradient(160deg,color-mix(in srgb,var(--t1) 28%,transparent),color-mix(in srgb,var(--t2) 8%,transparent))!important;box-shadow:0 0 0 3px color-mix(in srgb,var(--t1) 22%,transparent),0 16px 40px color-mix(in srgb,var(--t1) 30%,transparent)!important}

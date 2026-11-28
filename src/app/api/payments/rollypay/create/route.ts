@@ -1,13 +1,13 @@
 import { GIFT_MAX_COUNT, GIFT_PROMO_CODES, PRODUCTS, normalizePromoCode, orderPrice } from "@/lib/payments/catalog";
 import { json, readJson, route } from "@/lib/server/http";
 import {
-  attachPlategaTransaction,
+  attachProviderTransaction,
   createPaymentOrder,
   failPaymentOrder,
   type GiftOrderMeta,
   type PaymentOrderMeta,
 } from "@/lib/server/payment-orders";
-import { PlategaError, createPlategaTransaction, plategaConfigured } from "@/lib/server/platega";
+import { RollyPayError, createRollyPayPayment, rollypayConfigured } from "@/lib/server/rollypay";
 import { siteBaseUrl } from "@/lib/server/site-url";
 import { num, type Database } from "@/lib/server/sqlite";
 import { findUserByNickname, type UserRow } from "@/lib/server/users";
@@ -24,14 +24,14 @@ function cleanText(value: unknown, max = 120): string {
 }
 
 /**
- * Создание заказа и платёжной ссылки Platega.
+ * Создание заказа и платёжной ссылки RollyPay.
  *
  * Браузер присылает только `productId` и параметры подарка. Цену, состав
  * покупки и получателя проверяет сервер; клиентская цена не используется.
  */
 export const POST = route(
   async ({ db, request, user }) => {
-    if (!plategaConfigured()) {
+    if (!rollypayConfigured()) {
       return json({ error: "Онлайн-оплата пока не настроена", code: "payments_unavailable" }, 503);
     }
 
@@ -145,26 +145,24 @@ async function createOrder(
   const failedUrl = `${base}/payment/return?order=${encodeURIComponent(order.id)}&failed=1`;
 
   try {
-    const created = await createPlategaTransaction({
+    const created = await createRollyPayPayment({
       amount,
+      orderId: order.id,
       description: `AniGalaxy · ${product.title}`,
-      returnUrl,
-      failedUrl,
-      payload: order.id,
-      userEmail: user.email,
-      userId: String(user.id),
-      userName: user.nickname,
+      successUrl: returnUrl,
+      failUrl: failedUrl,
+      customerId: String(user.id),
     });
-    attachPlategaTransaction(db, order.id, {
-      transactionId: created.transactionId,
+    attachProviderTransaction(db, order.id, {
+      transactionId: created.paymentId,
       checkoutUrl: created.url,
       status: created.status,
     });
     return json({ ok: true, orderId: order.id, url: created.url, amount, title: product.title });
   } catch (error) {
     failPaymentOrder(db, order.id);
-    if (error instanceof PlategaError) {
-      console.error("[platega] create", error.status, error.code, error.message);
+    if (error instanceof RollyPayError) {
+      console.error("[rollypay] create", error.status, error.code, error.message);
       const message =
         error.status === 401
           ? "Платёжный шлюз отклонил авторизацию магазина"
@@ -173,7 +171,7 @@ async function createOrder(
             : "Не удалось создать платёж. Попробуйте ещё раз.";
       return json({ error: message, code: error.code || "provider_error" }, 502);
     }
-    console.error("[platega] create", error);
+    console.error("[rollypay] create", error);
     return json({ error: "Не удалось создать платёж. Попробуйте ещё раз." }, 502);
   }
 }

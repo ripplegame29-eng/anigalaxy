@@ -11,7 +11,7 @@ import "./checkout.css";
 /**
  * Окно оплаты AniGalaxy — «звёздный билет».
  *
- * Способы оплаты выбирает Platega на своей странице: здесь только состав
+ * Способ оплаты выбирают на странице RollyPay: здесь только состав
  * заказа и кнопка перехода. Цену и товар сервер проверяет по каталогу,
  * поэтому подменить сумму в запросе нельзя.
  */
@@ -26,6 +26,7 @@ const ic = (d: ReactNode) => (
 const I = {
   card: ic(<><rect x="3" y="5" width="18" height="14" rx="3" /><path d="M3 10h18M7 15h3" /></>),
   sbp: ic(<path d="M4 7l8-4 8 4v6c0 4-3.4 6.8-8 8-4.6-1.2-8-4-8-8z M9 12l2 2 4-4" />),
+  tg: ic(<path d="M21 4 3 11l6 2 2 6 3-4 5 4z M9 13l8-6" />),
   btc: ic(<path d="M9 5v14M9 5h5a3 3 0 0 1 0 6H9m0 0h5.5a3 3 0 0 1 0 6H9M11 3v2m3-2v2m-3 14v2m3-2v2" />),
   lock: ic(<><rect x="5" y="11" width="14" height="9" rx="2" /><path d="M8 11V8a4 4 0 0 1 8 0v3" /></>),
   x: ic(<path d="M6 6l12 12M18 6L6 18" />),
@@ -37,8 +38,9 @@ const rub = (n: number) => `${n.toLocaleString("ru-RU")} ₽`;
 
 const METHODS = [
   { id: "sbp", name: "СБП", hint: "по QR-коду", icon: I.sbp },
-  { id: "card", name: "Карта", hint: "Visa · Mastercard · МИР", icon: I.card },
   { id: "crypto", name: "Крипта", hint: "USDT · TON · BTC", icon: I.btc },
+  { id: "cryptobot", name: "CryptoBot", hint: "в Telegram", icon: I.tg },
+  { id: "xrocket", name: "xRocket", hint: "в Telegram", icon: I.tg },
 ] as const;
 
 export function CheckoutDialog() {
@@ -78,7 +80,7 @@ export function CheckoutDialog() {
       // Сначала досылаем прогресс: после оплаты сервер обновит документы,
       // и старый локальный прогресс не должен уехать поверх выдачи.
       await flushBeforePayment();
-      const response = await fetch("/api/payments/platega/create", {
+      const response = await fetch("/api/payments/rollypay/create", {
         method: "POST",
         credentials: "same-origin",
         headers: { "Content-Type": "application/json" },
@@ -103,7 +105,7 @@ export function CheckoutDialog() {
         setError(typeof data?.error === "string" ? data.error : "Не удалось создать платёж. Попробуйте ещё раз.");
         return;
       }
-      // Профиль открыт во вложенном окне (iframe), а страница Platega не разрешает показ во фрейме —
+      // Профиль открыт во вложенном окне (iframe), а платёжная страница не разрешает показ во фрейме —
       // поэтому уходим на оплату из верхнего окна.
       try {
         (window.top ?? window).location.assign(data.url);
@@ -170,7 +172,7 @@ export function CheckoutDialog() {
           {step === "form" && (
             <>
               <h3 className="ck-h"><span>{I.lock}</span>Безопасная оплата</h3>
-              <div className="ck-tiles ck-tiles--static" aria-label="Способы оплаты на странице Platega">
+              <div className="ck-tiles ck-tiles--static" aria-label="Способы оплаты на странице RollyPay">
                 {METHODS.map((method) => (
                   <div key={method.id} className="ck-tile" data-t={method.id}>
                     <span className="ck-ti">{method.icon}</span>
@@ -181,8 +183,8 @@ export function CheckoutDialog() {
               </div>
 
               <ol className="ck-steps">
-                <li><b>1</b><span>Откроется защищённая страница <em>Platega</em></span></li>
-                <li><b>2</b><span>Выберите СБП, карту или крипту</span></li>
+                <li><b>1</b><span>Откроется защищённая страница <em>RollyPay</em></span></li>
+                <li><b>2</b><span>Выберите СБП или крипту</span></li>
                 <li><b>3</b><span>Покупка зачислится автоматически</span></li>
               </ol>
 
@@ -198,7 +200,7 @@ export function CheckoutDialog() {
             <div className="ck-state">
               <div className="ck-orbit" aria-hidden><i /><i /><i /></div>
               <b>Готовим оплату</b>
-              <small>Создаём защищённый платёж в Platega…</small>
+              <small>Создаём защищённый платёж в RollyPay…</small>
             </div>
           )}
         </div>

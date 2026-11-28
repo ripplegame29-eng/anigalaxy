@@ -214,7 +214,7 @@ export function ShopTab() {
       {openCard && <OwnersModal cardId={openCard} onClose={() => setOpenCard(null)} onPlayer={setNick} />}
       {nick && <CollectorModal nick={nick} onClose={() => setNick(null)} />}
       <p className="shp-note">
-        <Ico name="lock" size={14} /> Оплата картой или СБП через Platega. Карта гарантированного ранга выбирается на сервере в момент зачисления. Шансы обычных паков: SS 0,1%, S 0,4%, A 2,4%, B 21,5%, C 75,6% за карту; гарантия эпика — каждые {PACK.pityEpic} паков, легенды — каждые {PACK.pityLegend}.
+        <Ico name="lock" size={14} /> Оплата по СБП или криптовалютой через RollyPay. Карта гарантированного ранга выбирается на сервере в момент зачисления. Шансы обычных паков: SS 0,1%, S 0,4%, A 2,4%, B 21,5%, C 75,6% за карту; гарантия эпика — каждые {PACK.pityEpic} паков, легенды — каждые {PACK.pityLegend}.
       </p>
     </div>
   );

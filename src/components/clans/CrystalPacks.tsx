@@ -1,6 +1,6 @@
 "use client";
 
-/** Пополнение кристаллов клана: четыре набора, оплата через общее окно Platega. */
+/** Пополнение кристаллов клана: четыре набора, оплата через общее окно оплаты сайта. */
 
 import { CRYSTAL_PACKS, CRYSTAL_PRICE } from "@/lib/clan-rules";
 import { openCheckout } from "@/lib/checkout";

@@ -1,7 +1,7 @@
 /**
  * Заказы оплаты и выдача покупок.
  *
- * Заказ создаётся до похода в Platega и хранит товар, сумму и метаданные.
+ * Заказ создаётся до похода в платёжный шлюз (RollyPay) и хранит товар, сумму и метаданные.
  * Подтверждённый платёж выдаёт покупку ровно один раз: `granted_at` —
  * атомарная отметка в SQLite, повторный колбэк или поллинг ничего не удвоит.
  */
@@ -31,6 +31,7 @@ export type PaymentOrderStatus =
   | "INVALID"
   | "CHARGEBACKED"
   | "PARTIALLY_REFUNDED"
+  | "REFUNDED"
   | "DISPUTED";
 
 export interface GiftOrderMeta {
@@ -137,7 +138,7 @@ export function createPaymentOrder(
   db.prepare(
     `INSERT INTO payment_orders
        (id, user_id, product_id, title, amount, currency, status, provider, payload, meta, deliver_at, created_at, updated_at)
-     VALUES (?, ?, ?, ?, ?, 'RUB', 'PENDING', 'platega', ?, ?, ?, ?, ?)`,
+     VALUES (?, ?, ?, ?, ?, 'RUB', 'PENDING', 'rollypay', ?, ?, ?, ?, ?)`,
   ).run(
     id,
     input.userId,
@@ -176,7 +177,7 @@ export function findPaymentOrderByPayload(db: Database, payload: string): Paymen
   return row ? toOrder(row) : null;
 }
 
-export function attachPlategaTransaction(
+export function attachProviderTransaction(
   db: Database,
   orderId: string,
   input: { transactionId: string; checkoutUrl: string; status?: string },
@@ -209,7 +210,7 @@ function sameAmounts(a: number, b: number): boolean {
 }
 
 /**
- * Применить статус Platega к заказу. Вызывается из колбэка и из проверки
+ * Применить статус платёжного шлюза к заказу (уже в виде статуса заказа). Вызывается из колбэка и из проверки
  * статуса; оба пути идемпотентны. Сумма и валюта сверяются с заказом.
  */
 export function reconcilePaymentOrder(
@@ -262,7 +263,7 @@ export function reconcilePaymentOrder(
     return { ok: true, order: findPaymentOrder(db, order.id) ?? order, granted: false };
   }
 
-  const known: PaymentOrderStatus[] = ["CHARGEBACKED", "PARTIALLY_REFUNDED", "DISPUTED"];
+  const known: PaymentOrderStatus[] = ["CHARGEBACKED", "PARTIALLY_REFUNDED", "REFUNDED", "DISPUTED"];
   if (known.includes(status as PaymentOrderStatus)) {
     db.prepare("UPDATE payment_orders SET status = ?, updated_at = ? WHERE id = ? AND status = 'CONFIRMED'").run(
       status,

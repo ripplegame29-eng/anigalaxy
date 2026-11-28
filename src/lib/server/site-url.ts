@@ -3,7 +3,7 @@
  *
  * В продакшене задаётся `NEXT_PUBLIC_SITE_URL` (deploy/setup.sh выставляет его
  * из DOMAIN). Без переменной берём адрес текущего запроса — это удобно на
- * localhost, но для колбэков Platega всё равно нужен публичный HTTPS-домен.
+ * localhost, но для колбэков RollyPay всё равно нужен публичный HTTPS-домен.
  */
 export function siteBaseUrl(request: Request): string {
   const configured = (process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || "").trim();
